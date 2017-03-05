@@ -3,6 +3,9 @@
     <string name="action_settings">Settings</string>
     <string name="artists">Artists</string>
     <string name="playlists">Playlists</string>
+    <string name="song_count">%1$d songs</string>
+    <string name="play_next">Play next</string>
+    <string name="play_last">Play last</string>
     <string name="song">%1$d of %2$d</string>
     <string name="previous">Previous</string>
     <string name="pause_play">Pause/Play</string>

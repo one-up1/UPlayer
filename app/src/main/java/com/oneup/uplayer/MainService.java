@@ -24,12 +24,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final String ARG_REQUEST_CODE = "request_code";
     public static final String ARG_SONGS = "songs";
     public static final String ARG_SONG_INDEX = "song_index";
+    public static final String ARG_SONG = "song";
 
     public static final int REQUEST_START = 1;
-    public static final int REQUEST_PREVIOUS = 2;
-    public static final int REQUEST_PAUSE_PLAY = 3;
-    public static final int REQUEST_NEXT = 4;
-    public static final int REQUEST_STOP = 5;
+    public static final int REQUEST_PLAY_NEXT = 2;
+    public static final int REQUEST_PLAY_LAST = 3;
+    public static final int REQUEST_PREVIOUS = 4;
+    public static final int REQUEST_PAUSE_PLAY = 5;
+    public static final int REQUEST_NEXT = 6;
+    public static final int REQUEST_STOP = 7;
 
     private static final String TAG = "UPlayer";
 
@@ -83,6 +86,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);
                 songIndex = intent.getIntExtra(ARG_SONG_INDEX, 0);
                 play();
+                break;
+            case REQUEST_PLAY_NEXT:
+                songs.add(songIndex + 1, (Song)intent.getParcelableExtra(ARG_SONG));
+                startForeground(1, notification);
+                break;
+            case REQUEST_PLAY_LAST:
+                songs.add((Song)intent.getParcelableExtra(ARG_SONG));
+                startForeground(1, notification);
                 break;
             case REQUEST_PREVIOUS:
                 previous();

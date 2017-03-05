@@ -31,7 +31,6 @@ import com.oneup.uplayer.obj.Artist;
 import com.oneup.uplayer.obj.Playlist;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";

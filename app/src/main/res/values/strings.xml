@@ -8,7 +8,7 @@
     <string name="play_last">Play last</string>
     <string name="song">%1$d of %2$d</string>
     <string name="previous">Previous</string>
-    <string name="pause_play">Pause/Play</string>
+    <string name="play_pause">Play/Pause</string>
     <string name="next">Next</string>
     <string name="stop">Stop</string>
 </resources>

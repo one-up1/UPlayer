@@ -7,13 +7,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -52,9 +51,6 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
         String selection = intent.getStringExtra(ARG_SELECTION);
         String[] selectionArgs = intent.getStringArrayExtra(ARG_SELECTION_ARGS);
 
-        lvSongs = (ListView)findViewById(R.id.lvSongs);
-        lvSongs.setOnItemClickListener(this);
-
         Cursor c = getContentResolver().query(uri,
                 new String[] { idColumn, titleColumn, artistColumn, yearColumn },
                 selection, selectionArgs, null);
@@ -75,37 +71,10 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
 
             Log.d(TAG, "Queried " + songs.size() + " songs");
             setTitle(getString(R.string.song_count, songs.size()));
+
+            lvSongs = (ListView)findViewById(R.id.lvSongs);
             lvSongs.setAdapter(new SongAdapter(this, songs));
-            registerForContextMenu(lvSongs);
-        }
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-        if (v == lvSongs) {
-            getMenuInflater().inflate(R.menu.row_song, menu);
-        }
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        Song song = songs.get(((AdapterView.AdapterContextMenuInfo)item.getMenuInfo()).position);
-        switch (item.getItemId()) {
-            case R.id.play_next:
-                Log.d(TAG, "Play next: " + song);
-                startService(new Intent(this, MainService.class)
-                        .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
-                        .putExtra(MainService.ARG_SONG, song));
-                return true;
-            case R.id.play_last:
-                Log.d(TAG, "Play last: " + song);
-                startService(new Intent(this, MainService.class)
-                        .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
-                        .putExtra(MainService.ARG_SONG, song));
-                return true;
-            default:
-                return super.onContextItemSelected(item);
+            lvSongs.setOnItemClickListener(this);
         }
     }
 
@@ -120,13 +89,13 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                 .putExtra(MainService.ARG_SONG_INDEX, position));
     }
 
-    private static class SongAdapter extends BaseAdapter {
+    private class SongAdapter extends BaseAdapter implements View.OnClickListener {
         private Context context;
         private ArrayList<Song> songs;
 
         private LayoutInflater layoutInflater;
 
-        public SongAdapter(Context context, ArrayList<Song> songs) {
+        private SongAdapter(Context context, ArrayList<Song> songs) {
             this.context = context;
             this.songs = songs;
 
@@ -152,14 +121,42 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
         public View getView(int position, View convertView, ViewGroup parent) {
             LinearLayout ret = (LinearLayout)(convertView == null ?
                     layoutInflater.inflate(R.layout.row_song, parent, false) : convertView);
-            TextView tvTitle = (TextView)ret.findViewById(R.id.tvTitle);
-            TextView tvArtist = (TextView)ret.findViewById(R.id.tvArtist);
-
             Song song = songs.get(position);
+
+            TextView tvTitle = (TextView)ret.findViewById(R.id.tvTitle);
             tvTitle.setText(song.getTitle());
+
+            TextView tvArtist = (TextView)ret.findViewById(R.id.tvArtist);
             tvArtist.setText(song.getArtist());
 
+            ImageButton ibPlayNext = (ImageButton)ret.findViewById(R.id.ibPlayNext);
+            ibPlayNext.setTag(song);
+            ibPlayNext.setOnClickListener(this);
+
+            ImageButton ibPlayLast = (ImageButton)ret.findViewById(R.id.ibPlayLast);
+            ibPlayLast.setTag(song);
+            ibPlayLast.setOnClickListener(this);
+
             return ret;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Song song = (Song)v.getTag();
+            switch (v.getId()) {
+                case R.id.ibPlayNext:
+                    Log.d(TAG, "Play next: " + song);
+                    startService(new Intent(SongsActivity.this, MainService.class)
+                            .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
+                            .putExtra(MainService.ARG_SONG, song));
+                    break;
+                case R.id.ibPlayLast:
+                    Log.d(TAG, "Play last: " + song);
+                    startService(new Intent(SongsActivity.this, MainService.class)
+                            .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
+                            .putExtra(MainService.ARG_SONG, song));
+                    break;
+            }
         }
     }
 }

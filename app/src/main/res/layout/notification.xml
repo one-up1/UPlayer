@@ -35,11 +35,10 @@
             android:contentDescription="@string/previous" />
 
         <ImageButton
-            android:id="@+id/ibPausePlay"
+            android:id="@+id/ibPlayPause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_pause"
-            android:contentDescription="@string/pause_play" />
+            android:contentDescription="@string/play_pause" />
 
         <ImageButton
             android:id="@+id/ibNext"

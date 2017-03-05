@@ -30,7 +30,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final int REQUEST_PLAY_NEXT = 2;
     public static final int REQUEST_PLAY_LAST = 3;
     public static final int REQUEST_PREVIOUS = 4;
-    public static final int REQUEST_PAUSE_PLAY = 5;
+    public static final int REQUEST_PLAY_PAUSE = 5;
     public static final int REQUEST_NEXT = 6;
     public static final int REQUEST_STOP = 7;
 
@@ -42,6 +42,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private ArrayList<Song> songs;
     private int songIndex;
+    private boolean prepared;
 
     @Nullable
     @Override
@@ -64,7 +65,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         notificationViews = new RemoteViews(getApplicationContext().getPackageName(),
                 R.layout.notification);
         setOnClickPendingIntent(notificationViews, R.id.ibPrevious, REQUEST_PREVIOUS);
-        setOnClickPendingIntent(notificationViews, R.id.ibPausePlay, REQUEST_PAUSE_PLAY);
+        setOnClickPendingIntent(notificationViews, R.id.ibPlayPause, REQUEST_PLAY_PAUSE);
         setOnClickPendingIntent(notificationViews, R.id.ibNext, REQUEST_NEXT);
         setOnClickPendingIntent(notificationViews, R.id.ibStop, REQUEST_STOP);
 
@@ -88,18 +89,18 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 play();
                 break;
             case REQUEST_PLAY_NEXT:
-                songs.add(songIndex + 1, (Song)intent.getParcelableExtra(ARG_SONG));
-                startForeground(1, notification);
+                addSong(songs == null ? 0 : songIndex + 1,
+                        (Song)intent.getParcelableExtra(ARG_SONG));
                 break;
             case REQUEST_PLAY_LAST:
-                songs.add((Song)intent.getParcelableExtra(ARG_SONG));
-                startForeground(1, notification);
+                addSong(songs == null ? 0 : songs.size(),
+                        (Song)intent.getParcelableExtra(ARG_SONG));
                 break;
             case REQUEST_PREVIOUS:
                 previous();
                 break;
-            case REQUEST_PAUSE_PLAY:
-                pausePlay();
+            case REQUEST_PLAY_PAUSE:
+                playPause();
                 break;
             case REQUEST_NEXT:
                 next();
@@ -130,13 +131,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     @Override
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "MainService.onPrepared()");
-        mp.start();
+        prepared = true;
+        player.start();
 
         Song song = songs.get(songIndex);
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
         notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
                 songIndex + 1, songs.size()));
+        notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_pause);
         startForeground(1, notification);
     }
 
@@ -144,12 +147,18 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Log.d(TAG, "MainService.onError(), what=" + what + ", extra=" + extra);
         player.reset();
+
+        notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
+        startForeground(1, notification);
         return false;
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
         Log.d(TAG, "MainService.onCompletion()");
+        notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
+        startForeground(1, notification);
+
         if (player.getCurrentPosition() > 0) {
             next();
         }
@@ -158,7 +167,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void play() {
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         player.reset();
-
         try {
             player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songs.get(songIndex).getId()));
@@ -166,6 +174,22 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
         }
+    }
+
+    private void addSong(int index, Song song) {
+        Log.d(TAG, "MainService.addSong(), index=" + index + ", song=" + song);
+        if (songs == null) {
+            songs = new ArrayList<>();
+
+            notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
+            notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+            notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
+        }
+        songs.add(index, song);
+
+        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
+                songIndex + 1, songs.size()));
+        startForeground(1, notification);
     }
 
     private void previous() {
@@ -176,17 +200,23 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void pausePlay() {
-        Log.d(TAG, "MainService.pausePlay()");
+    private void playPause() {
+        Log.d(TAG, "MainService.playPause()");
         int ibSrcId;
         if (player.isPlaying()) {
+            Log.d(TAG, "Pausing");
             player.pause();
             ibSrcId = R.drawable.ic_play;
         } else {
-            player.start();
+            if (prepared) {
+                Log.d(TAG, "Resuming");
+                player.start();
+            } else {
+                play();
+            }
             ibSrcId = R.drawable.ic_pause;
         }
-        notificationViews.setImageViewResource(R.id.ibPausePlay, ibSrcId);
+        notificationViews.setImageViewResource(R.id.ibPlayPause, ibSrcId);
         startForeground(1, notification);
     }
 

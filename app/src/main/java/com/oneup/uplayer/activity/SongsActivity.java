@@ -62,6 +62,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                 int iArtist = c.getColumnIndex(artistColumn);
                 int iYear = c.getColumnIndex(yearColumn);
                 while (c.moveToNext()) {
+                    Log.d(TAG, "Year: " + c.getString(iYear));
                     songs.add(new Song(c.getLong(iId), c.getString(iTitle),
                             c.getString(iArtist), c.getInt(iYear)));
                 }
@@ -128,6 +129,9 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
 
             TextView tvArtist = (TextView)ret.findViewById(R.id.tvArtist);
             tvArtist.setText(song.getArtist());
+
+            TextView tvYear = (TextView)ret.findViewById(R.id.tvYear);
+            tvYear.setText(Integer.toString(song.getYear()));
 
             ImageButton ibPlayNext = (ImageButton)ret.findViewById(R.id.ibPlayNext);
             ibPlayNext.setTag(song);

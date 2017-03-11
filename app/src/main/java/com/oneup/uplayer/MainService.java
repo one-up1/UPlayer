@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.IBinder;
@@ -44,6 +45,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private int songIndex;
     private boolean prepared;
 
+    private MainReceiver mainReceiver;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -75,6 +78,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 .setCustomBigContentView(notificationViews)
                 .setOngoing(true)
                 .build();
+
+        mainReceiver = new MainReceiver();
+        registerReceiver(mainReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
     }
 
     @Override
@@ -125,6 +131,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.stop();
             player.release();
             Log.d(TAG, "MediaPlayer released");
+        }
+
+        if (mainReceiver != null) {
+            unregisterReceiver(mainReceiver);
         }
     }
 

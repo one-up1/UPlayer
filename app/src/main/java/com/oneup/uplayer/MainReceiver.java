@@ -24,8 +24,12 @@ public class MainReceiver extends BroadcastReceiver {
         switch (state) {
             case 0:
                 Log.d(TAG, "Headset unplugged");
-                context.stopService(new Intent(context, MainService.class));
+                if (context.getSharedPreferences(TAG, 0).getInt("headset_state", 0) == 1) {
+                    context.stopService(new Intent(context, MainService.class));
+                }
                 break;
         }
+
+        context.getSharedPreferences(TAG, 0).edit().putInt("headset_state", state).apply();
     }
 }

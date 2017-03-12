@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.MediaStore;
@@ -16,6 +17,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.oneup.uplayer.activity.PlayerActivity;
 import com.oneup.uplayer.obj.Song;
 
 import java.util.ArrayList;
@@ -37,6 +39,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private static final String TAG = "UPlayer";
 
+    private final IBinder mainBinder = new MainBinder();
+
     private MediaPlayer player;
     private RemoteViews notificationViews;
     private Notification notification;
@@ -50,7 +54,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mainBinder;
     }
 
     @Override
@@ -77,6 +81,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 .setCustomContentView(notificationViews)
                 .setCustomBigContentView(notificationViews)
                 .setOngoing(true)
+                .setContentIntent(PendingIntent.getActivity(this, 0,
+                        new Intent(this, PlayerActivity.class)
+                                .putExtra(ARG_SONGS, songs)
+                                .putExtra(ARG_SONG_INDEX, songIndex),
+                        PendingIntent.FLAG_UPDATE_CURRENT))
                 .build();
 
         mainReceiver = new MainReceiver();
@@ -174,6 +183,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
+    public MediaPlayer getPlayer() {
+        return player;
+    }
+
     private void play() {
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         player.reset();
@@ -243,5 +256,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 new Intent(this, MainService.class)
                         .putExtra(ARG_REQUEST_CODE, requestCode),
                 PendingIntent.FLAG_UPDATE_CURRENT));
+    }
+
+    public class MainBinder extends Binder {
+        public MainService getService() {
+            return MainService.this;
+        }
     }
 }

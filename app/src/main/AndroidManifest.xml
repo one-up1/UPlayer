@@ -25,6 +25,8 @@
 
         <activity android:name=".activity.SongsActivity" />
 
+        <activity android:name=".activity.PlayerActivity" />
+
         <service android:name=".MainService" />
 
         <receiver android:name=".MainReceiver">

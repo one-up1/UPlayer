@@ -16,6 +16,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -153,12 +154,16 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                     startService(new Intent(SongsActivity.this, MainService.class)
                             .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
                             .putExtra(MainService.ARG_SONG, song));
+                    Toast.makeText(context, getString(R.string.playing_next, song),
+                            Toast.LENGTH_LONG).show();
                     break;
                 case R.id.ibPlayLast:
                     Log.d(TAG, "Play last: " + song);
                     startService(new Intent(SongsActivity.this, MainService.class)
                             .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
                             .putExtra(MainService.ARG_SONG, song));
+                    Toast.makeText(context, getString(R.string.playing_last, song),
+                            Toast.LENGTH_LONG).show();
                     break;
             }
         }

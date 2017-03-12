@@ -6,7 +6,9 @@
     <string name="years">Years</string>
     <string name="song_count">%1$d songs</string>
     <string name="play_next">Play next</string>
+    <string name="playing_next">Playing next: %1$s</string>
     <string name="play_last">Play last</string>
+    <string name="playing_last">Playing last: %1$s</string>
     <string name="song">%1$d of %2$d</string>
     <string name="previous">Previous</string>
     <string name="play_pause">Play/Pause</string>

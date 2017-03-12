@@ -24,6 +24,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     private MainService mainService;
     private MusicController controller;
     private boolean paused;
+    private boolean controllerShown;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,18 +36,14 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        controller.show(0);
-    }
-
-    @Override
     protected void onStart() {
         super.onStart();
 
-        bindService(new Intent(this, MainService.class), mainConnection, Context.BIND_AUTO_CREATE);
-
-        setController();
+        if (mainService == null) {
+            Log.d(TAG, "Binding service");
+            bindService(new Intent(this, MainService.class), serviceConnection,
+                    Context.BIND_AUTO_CREATE);
+        }
     }
 
     @Override
@@ -58,9 +55,21 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     @Override
     protected void onResume() {
         super.onResume();
+
         if (paused) {
             setController();
             paused = false;
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (!controllerShown) {
+            Log.d(TAG, "Showing controller");
+            controller.show(0);
+            controllerShown = true;
         }
     }
 
@@ -72,8 +81,10 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     @Override
     protected void onDestroy() {
-        unbindService(mainConnection);
-        mainConnection = null;
+        Log.d(TAG, "Unbinding service");
+        unbindService(serviceConnection);
+        mainService = null;
+
         super.onDestroy();
     }
 
@@ -93,20 +104,12 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     @Override
     public int getDuration() {
-        if (mainService != null) {
-            return mainService.getPlayer().getDuration();
-        } else {
-            return 0;
-        }
+        return mainService == null ? 0 : mainService.getPlayer().getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
-        if (mainService != null) {
-            return mainService.getPlayer().getCurrentPosition();
-        } else {
-            return 0;
-        }
+        return mainService == null ? 0 : mainService.getPlayer().getCurrentPosition();
     }
 
     @Override
@@ -118,11 +121,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     @Override
     public boolean isPlaying() {
-        if (mainService != null) {
-            return mainService.getPlayer().isPlaying();
-        } else {
-            return false;
-        }
+        return mainService != null && mainService.getPlayer().isPlaying();
     }
 
     @Override
@@ -174,15 +173,17 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         controller.setEnabled(true);
     }
 
-    private ServiceConnection mainConnection = new ServiceConnection() {
+    private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "Service connected");
             MainService.MainBinder binder = (MainService.MainBinder)service;
             mainService = binder.getService();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "Service diconnected");
             mainService = null;
         }
     };

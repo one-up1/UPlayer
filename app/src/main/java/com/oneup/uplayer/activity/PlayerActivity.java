@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.MediaController;
 
@@ -22,6 +23,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     private MainService mainService;
     private MusicController controller;
+    private boolean paused;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,46 +31,98 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         setContentView(R.layout.activity_player);
 
         lvSongs = (ListView)findViewById(R.id.lvSongs);
+        setController();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        controller.show(0);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         bindService(new Intent(this, MainService.class), mainConnection, Context.BIND_AUTO_CREATE);
 
+        setController();
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        paused = true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (paused) {
+            setController();
+            paused = false;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        controller.hide();
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        controller.hide();
+        unbindService(mainConnection);
+        mainConnection = null;
         super.onDestroy();
     }
 
     @Override
     public void start() {
-        mainService.getPlayer().start();
+        if (mainService != null) {
+            mainService.getPlayer().start();
+        }
     }
 
     @Override
     public void pause() {
-        mainService.getPlayer().pause();
+        if (mainService != null) {
+            mainService.getPlayer().pause();
+        }
     }
 
     @Override
     public int getDuration() {
-        return mainService.getPlayer().getDuration();
+        if (mainService != null) {
+            return mainService.getPlayer().getDuration();
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public int getCurrentPosition() {
-        return mainService.getPlayer().getCurrentPosition();
+        if (mainService != null) {
+            return mainService.getPlayer().getCurrentPosition();
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public void seekTo(int pos) {
-        mainService.getPlayer().seekTo(pos);
+        if (mainService != null) {
+            mainService.getPlayer().seekTo(pos);
+        }
     }
 
     @Override
     public boolean isPlaying() {
-        return mainService.getPlayer().isPlaying();
+        if (mainService != null) {
+            return mainService.getPlayer().isPlaying();
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -83,7 +137,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     @Override
     public boolean canSeekBackward() {
-        return false;
+        return true;
     }
 
     @Override
@@ -93,7 +147,31 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     @Override
     public int getAudioSessionId() {
-        return 0;//testz
+        return 0;
+    }
+
+    private void setController() {
+        controller = new MusicController(PlayerActivity.this);
+        controller.setPrevNextListeners(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mainService != null) {
+                    mainService.previous();
+                }
+                controller.show(0);
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mainService != null) {
+                    mainService.next();
+                }
+                controller.show(0);
+            }
+        });
+        controller.setMediaPlayer(PlayerActivity.this);
+        controller.setAnchorView(lvSongs);
+        controller.setEnabled(true);
     }
 
     private ServiceConnection mainConnection = new ServiceConnection() {
@@ -101,16 +179,11 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         public void onServiceConnected(ComponentName name, IBinder service) {
             MainService.MainBinder binder = (MainService.MainBinder)service;
             mainService = binder.getService();
-
-            controller = new MusicController(PlayerActivity.this);
-            controller.setMediaPlayer(PlayerActivity.this);
-            controller.setAnchorView(lvSongs);
-            controller.setEnabled(true);
-            controller.show(0);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            mainService = null;
         }
     };
 

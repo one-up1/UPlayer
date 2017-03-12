@@ -187,7 +187,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         return player;
     }
 
-    private void play() {
+    public void play() {
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         player.reset();
         try {
@@ -199,7 +199,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void addSong(int index, Song song) {
+    public void addSong(int index, Song song) {
         Log.d(TAG, "MainService.addSong(), index=" + index + ", song=" + song);
         if (songs == null) {
             songs = new ArrayList<>();
@@ -215,7 +215,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
     }
 
-    private void previous() {
+    public void previous() {
         Log.d(TAG, "MainService.previous()");
         if (songIndex > 0) {
             songIndex--;
@@ -223,7 +223,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void playPause() {
+    public void playPause() {
         Log.d(TAG, "MainService.playPause()");
         int ibSrcId;
         if (player.isPlaying()) {
@@ -243,7 +243,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
     }
 
-    private void next() {
+    public void next() {
         Log.d(TAG, "MainService.next()");
         if (songIndex < songs.size() - 1) {
             songIndex++;

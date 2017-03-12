@@ -93,7 +93,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     @Override
     public int getAudioSessionId() {
-        return 0;//test
+        return 0;//testz
     }
 
     private ServiceConnection mainConnection = new ServiceConnection() {

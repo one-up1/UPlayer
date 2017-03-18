@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View ret = inflater.inflate(R.layout.fragment_years, container, false);
-            ListView lvYears = (ListView) ret.findViewById(R.id.lvYears);
+            ListView lvYears = (ListView)ret.findViewById(R.id.lvYears);
             lvYears.setOnItemClickListener(this);
 
             return ret;
@@ -324,6 +324,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 default:
                     yearSelection = null;
+                    break;
             }
             startActivity(new Intent(getContext(), SongsActivity.class)
                     .putExtra(SongsActivity.ARG_URI,

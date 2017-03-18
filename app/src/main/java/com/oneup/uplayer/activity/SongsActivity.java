@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.SongAdapter;
 import com.oneup.uplayer.obj.Song;
 
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
             setTitle(getString(R.string.song_count, songs.size()));
 
             lvSongs = (ListView)findViewById(R.id.lvSongs);
-            lvSongs.setAdapter(new SongAdapter(this, songs));
+            lvSongs.setAdapter(new SongAdapter(this, songs, true, null));
             lvSongs.setOnItemClickListener(this);
         }
     }
@@ -89,83 +90,5 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                 .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
                 .putExtra(MainService.ARG_SONGS, songs)
                 .putExtra(MainService.ARG_SONG_INDEX, position));
-    }
-
-    private class SongAdapter extends BaseAdapter implements View.OnClickListener {
-        private Context context;
-        private ArrayList<Song> songs;
-
-        private LayoutInflater layoutInflater;
-
-        private SongAdapter(Context context, ArrayList<Song> songs) {
-            this.context = context;
-            this.songs = songs;
-
-            layoutInflater = LayoutInflater.from(context);
-        }
-
-        @Override
-        public int getCount() {
-            return songs.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LinearLayout ret = (LinearLayout)(convertView == null ?
-                    layoutInflater.inflate(R.layout.row_song, parent, false) : convertView);
-            Song song = songs.get(position);
-
-            TextView tvTitle = (TextView)ret.findViewById(R.id.tvTitle);
-            tvTitle.setText(song.getTitle());
-
-            TextView tvArtist = (TextView)ret.findViewById(R.id.tvArtist);
-            tvArtist.setText(song.getArtist());
-
-            TextView tvYear = (TextView)ret.findViewById(R.id.tvYear);
-            tvYear.setText(Integer.toString(song.getYear()));
-
-            ImageButton ibPlayNext = (ImageButton)ret.findViewById(R.id.ibPlayNext);
-            ibPlayNext.setTag(song);
-            ibPlayNext.setOnClickListener(this);
-
-            ImageButton ibPlayLast = (ImageButton)ret.findViewById(R.id.ibPlayLast);
-            ibPlayLast.setTag(song);
-            ibPlayLast.setOnClickListener(this);
-
-            return ret;
-        }
-
-        @Override
-        public void onClick(View v) {
-            Song song = (Song)v.getTag();
-            switch (v.getId()) {
-                case R.id.ibPlayNext:
-                    Log.d(TAG, "Play next: " + song);
-                    startService(new Intent(SongsActivity.this, MainService.class)
-                            .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
-                            .putExtra(MainService.ARG_SONG, song));
-                    Toast.makeText(context, getString(R.string.playing_next, song),
-                            Toast.LENGTH_LONG).show();
-                    break;
-                case R.id.ibPlayLast:
-                    Log.d(TAG, "Play last: " + song);
-                    startService(new Intent(SongsActivity.this, MainService.class)
-                            .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
-                            .putExtra(MainService.ARG_SONG, song));
-                    Toast.makeText(context, getString(R.string.playing_last, song),
-                            Toast.LENGTH_LONG).show();
-                    break;
-            }
-        }
     }
 }

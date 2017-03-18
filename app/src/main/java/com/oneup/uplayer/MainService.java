@@ -104,12 +104,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 play();
                 break;
             case REQUEST_PLAY_NEXT:
-                addSong(songs == null ? 0 : songIndex + 1,
-                        (Song)intent.getParcelableExtra(ARG_SONG));
+                addSong((Song)intent.getParcelableExtra(ARG_SONG), true);
                 break;
             case REQUEST_PLAY_LAST:
-                addSong(songs == null ? 0 : songs.size(),
-                        (Song)intent.getParcelableExtra(ARG_SONG));
+                addSong((Song)intent.getParcelableExtra(ARG_SONG), false);
                 break;
             case REQUEST_PREVIOUS:
                 previous();
@@ -199,16 +197,20 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public void addSong(int index, Song song) {
-        Log.d(TAG, "MainService.addSong(), index=" + index + ", song=" + song);
+    public void addSong(Song song, boolean next) {
+        Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
         if (songs == null) {
             songs = new ArrayList<>();
+            songs.add(song);
 
             notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
             notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
             notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
+        } else if (next) {
+            songs.add(songIndex + 1, song);
+        } else {
+            songs.add(song);
         }
-        songs.add(index, song);
 
         notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
                 songIndex + 1, songs.size()));
@@ -249,6 +251,31 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             songIndex++;
             play();
         }
+    }
+
+    public ArrayList<Song> getSongs() {
+        return songs;
+    }
+
+    public void setSongIndex(int songIndex) {
+        this.songIndex = songIndex;
+        play();
+    }
+
+    public void deleteSong(Song song) {
+        Log.d(TAG, "MainService.deleteSong(), song=" + song);
+        int songIndex = songs.indexOf(song);
+        Log.d(TAG, "songIndex=" + songIndex + ", current=" + this.songIndex);
+        songs.remove(song);
+        if (songIndex < this.songIndex) {
+            this.songIndex--;
+        } else if (songIndex == this.songIndex) {
+            play();
+        }
+
+        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
+                songIndex + 1, songs.size()));
+        startForeground(1, notification);
     }
 
     private void setOnClickPendingIntent(RemoteViews views, int viewId, int requestCode) {

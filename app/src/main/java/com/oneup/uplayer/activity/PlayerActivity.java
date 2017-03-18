@@ -10,16 +10,21 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.MediaController;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.SongAdapter;
+import com.oneup.uplayer.obj.Song;
 
-public class PlayerActivity extends Activity implements MediaController.MediaPlayerControl {
+public class PlayerActivity extends Activity implements
+        AdapterView.OnItemClickListener, MediaController.MediaPlayerControl {
     private static final String TAG = "UPlayer";
 
     private ListView lvSongs;
+    private SongAdapter songsAdapter;
 
     private MainService mainService;
     private MusicController controller;
@@ -27,11 +32,13 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     private boolean controllerShown;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
         lvSongs = (ListView)findViewById(R.id.lvSongs);
+        lvSongs.setOnItemClickListener(this);
+
         setController();
     }
 
@@ -86,6 +93,13 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         mainService = null;
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (mainService != null) {
+            mainService.setSongIndex(position);
+        }
     }
 
     @Override
@@ -179,6 +193,20 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
             Log.d(TAG, "Service connected");
             MainService.MainBinder binder = (MainService.MainBinder)service;
             mainService = binder.getService();
+
+            PlayerActivity.this.songsAdapter = new SongAdapter(PlayerActivity.this,
+                    mainService.getSongs(), false, new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View v) {
+                            Song song = (Song)v.getTag();
+                            Log.d(TAG, "Deleting: " + song);
+                            mainService.deleteSong(song);
+                            PlayerActivity.this.songsAdapter.notifyDataSetChanged();
+                        }
+                    }
+            );
+            lvSongs.setAdapter(PlayerActivity.this.songsAdapter);
         }
 
         @Override

@@ -1,5 +1,6 @@
 package com.oneup.uplayer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -48,6 +49,7 @@ public class SongAdapter extends BaseAdapter implements View.OnClickListener {
         return 0;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View ret = convertView == null ?

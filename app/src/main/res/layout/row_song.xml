@@ -9,7 +9,7 @@
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="16sp"
         android:maxLines="1" />
 
     <TextView
@@ -22,19 +22,21 @@
         android:id="@+id/tvYear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/tvArtist"
-        android:layout_alignParentEnd="true" />
+        android:layout_below="@+id/tvTitle"
+        android:layout_toStartOf="@+id/llButtons"/>
 
     <LinearLayout
+        android:id="@+id/llButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvArtist"
-        android:layout_alignParentEnd="true">
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true">
 
         <ImageButton
             android:id="@+id/ibPlayNext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
             android:src="@drawable/ic_play_next"
             android:contentDescription="@string/play_next" />
 
@@ -42,6 +44,7 @@
             android:id="@+id/ibPlayLast"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
             android:src="@drawable/ic_play_last"
             android:contentDescription="@string/play_last" />
 
@@ -49,6 +52,7 @@
             android:id="@+id/ibDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
             android:src="@drawable/ic_delete"
             android:contentDescription="@string/delete" />
 

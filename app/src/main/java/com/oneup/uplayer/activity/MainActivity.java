@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_GRANTED) {
             init();
         } else {
+            Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, 0);
         }
     }
@@ -53,12 +54,14 @@ public class MainActivity extends AppCompatActivity {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             init();
         } else {
+            Log.w(TAG, "Permissions not granted");
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             finish();
         }
     }
 
     private void init() {
+        Log.d(TAG, "MainActivity.init()");
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

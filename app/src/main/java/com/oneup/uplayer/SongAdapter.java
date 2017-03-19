@@ -97,7 +97,7 @@ public class SongAdapter extends BaseAdapter implements View.OnClickListener {
         Song song = (Song)v.getTag();
         switch (v.getId()) {
             case R.id.ibPlayNext:
-                Log.d(TAG, "Play next: " + song);
+                Log.d(TAG, "Playing next: " + song);
                 context.startService(new Intent(context, MainService.class)
                         .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
                         .putExtra(MainService.ARG_SONG, song));
@@ -105,7 +105,7 @@ public class SongAdapter extends BaseAdapter implements View.OnClickListener {
                         Toast.LENGTH_SHORT).show();
                 break;
             case R.id.ibPlayLast:
-                Log.d(TAG, "Play last: " + song);
+                Log.d(TAG, "Playing last: " + song);
                 context.startService(new Intent(context, MainService.class)
                         .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
                         .putExtra(MainService.ARG_SONG, song));

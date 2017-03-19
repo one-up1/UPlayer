@@ -11,7 +11,7 @@ public class MainReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d(TAG, "MainReceiver.onReceive(" + action + ")");
+        Log.d(TAG, "MainReceiver.onReceive(), action=" + action);
 
         if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
             onHeadsetPlug(context, intent.getIntExtra("state", -1));
@@ -19,7 +19,7 @@ public class MainReceiver extends BroadcastReceiver {
     }
 
     private void onHeadsetPlug(Context context, int state) {
-        Log.d(TAG, "MainReceiver.onHeadsetPlug(" + state + ")");
+        Log.d(TAG, "MainReceiver.onHeadsetPlug(), state=" + state);
 
         switch (state) {
             case 0:

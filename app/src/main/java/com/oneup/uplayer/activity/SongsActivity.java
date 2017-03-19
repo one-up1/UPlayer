@@ -75,9 +75,8 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Song song = songs.get(position);
-        Log.d(TAG, "Playing song: " + song);
-
+        Log.d(TAG, "Playing " + songs.size() + " songs, songIndex=" + position +
+                " (" + songs.get(position) + ")");
         startService(new Intent(this, MainService.class)
                 .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
                 .putExtra(MainService.ARG_SONGS, songs)

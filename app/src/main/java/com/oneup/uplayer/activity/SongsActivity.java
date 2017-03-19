@@ -56,7 +56,6 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                 int iArtist = c.getColumnIndex(artistColumn);
                 int iYear = c.getColumnIndex(yearColumn);
                 while (c.moveToNext()) {
-                    Log.d(TAG, "Year: " + c.getString(iYear));
                     songs.add(new Song(c.getLong(iId), c.getString(iTitle),
                             c.getString(iArtist), c.getInt(iYear)));
                 }
@@ -65,7 +64,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
             }
 
             Log.d(TAG, "Queried " + songs.size() + " songs");
-            setTitle(getString(R.string.song_count, songs.size()));
+            setTitle(getResources().getQuantityString(R.plurals.songs, songs.size(), songs.size()));
 
             lvSongs = (ListView)findViewById(R.id.lvSongs);
             lvSongs.setAdapter(new SongAdapter(this, songs, true, null));

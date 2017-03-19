@@ -113,15 +113,13 @@ public class MainActivity extends AppCompatActivity {
                     return ArtistsFragment.newInstance();
                 case 1:
                     return PlaylistsFragment.newInstance();
-                case 2:
-                    return YearsFragment.newInstance();
             }
             return null;
         }
 
         @Override
         public int getCount() {
-            return 3;
+            return 2;
         }
 
         @Override
@@ -131,8 +129,6 @@ public class MainActivity extends AppCompatActivity {
                     return getString(R.string.artists);
                 case 1:
                     return getString(R.string.playlists);
-                case 2:
-                    return getString(R.string.years);
             }
             return null;
         }
@@ -161,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                     new String[] {
                             MediaStore.Audio.Artists._ID,
                             MediaStore.Audio.Artists.ARTIST },
-                    null, null, null);
+                    null, null, MediaStore.Audio.Artists.ARTIST);
             if (c != null) {
                 try {
                     artists = new ArrayList<>();
@@ -226,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
                             MediaStore.Audio.Playlists._ID,
                             MediaStore.Audio.Playlists.NAME
                     },
-                    null, null, null);
+                    null, null, MediaStore.Audio.Playlists.NAME);
             if (c != null) {
                 try {
                     playlists = new ArrayList<>();
@@ -261,85 +257,6 @@ public class MainActivity extends AppCompatActivity {
                             MediaStore.Audio.Playlists.Members.ARTIST)
                     .putExtra(SongsActivity.ARG_YEAR_COLUMN,
                             MediaStore.Audio.Playlists.Members.YEAR));
-        }
-    }
-
-    public static class YearsFragment extends Fragment
-            implements AdapterView.OnItemClickListener {
-        public YearsFragment() {
-        }
-
-        public static YearsFragment newInstance() {
-            return new YearsFragment();
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View ret = inflater.inflate(R.layout.fragment_years, container, false);
-            ListView lvYears = (ListView)ret.findViewById(R.id.lvYears);
-            lvYears.setOnItemClickListener(this);
-
-            return ret;
-        }
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            String yearSelection;
-            switch (position) {
-                case 0:
-                    yearSelection = ">=2017";
-                    break;
-                case 1:
-                    yearSelection = "=2016";
-                    break;
-                case 2:
-                    yearSelection = "=2015";
-                    break;
-                case 3:
-                    yearSelection = "=2014";
-                    break;
-                case 4:
-                    yearSelection = "=2013";
-                    break;
-                case 5:
-                    yearSelection = "=2012";
-                    break;
-                case 6:
-                    yearSelection = "=2011";
-                    break;
-                case 7:
-                    yearSelection = "=2010";
-                    break;
-                case 8:
-                    yearSelection = ">=2005 AND " + MediaStore.Audio.Media.YEAR + "<=2009";
-                    break;
-                case 9:
-                    yearSelection = "BETWEEN 2000 AND 2004";
-                    break;
-                case 10:
-                    yearSelection = "BETWEEN 1990 AND 1999";
-                    break;
-                case 11:
-                    yearSelection = "<1990";
-                    break;
-                default:
-                    yearSelection = null;
-                    break;
-            }
-            startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(SongsActivity.ARG_URI,
-                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-                    .putExtra(SongsActivity.ARG_ID_COLUMN,
-                            MediaStore.Audio.Media._ID)
-                    .putExtra(SongsActivity.ARG_TITLE_COLUMN,
-                            MediaStore.Audio.Media.TITLE)
-                    .putExtra(SongsActivity.ARG_ARTIST_COLUMN,
-                            MediaStore.Audio.Media.ARTIST)
-                    .putExtra(SongsActivity.ARG_YEAR_COLUMN,
-                            MediaStore.Audio.Media.YEAR)
-                    .putExtra(SongsActivity.ARG_SELECTION,
-                            MediaStore.Audio.Media.YEAR + " " + yearSelection));
         }
     }
 }

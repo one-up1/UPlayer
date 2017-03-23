@@ -22,7 +22,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.obj.Artist;
@@ -74,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
         viewPager = (ViewPager) findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
+        /*TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);*/
     }
 
     @Override
@@ -113,13 +117,15 @@ public class MainActivity extends AppCompatActivity {
                     return ArtistsFragment.newInstance();
                 case 1:
                     return PlaylistsFragment.newInstance();
+                case 2:
+                    return QueryFragment.newInstance();
             }
             return null;
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -129,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
                     return getString(R.string.artists);
                 case 1:
                     return getString(R.string.playlists);
+                case 2:
+                    return getString(R.string.query);
             }
             return null;
         }
@@ -185,16 +193,12 @@ public class MainActivity extends AppCompatActivity {
                             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
                     .putExtra(SongsActivity.ARG_ID_COLUMN,
                             MediaStore.Audio.Media._ID)
-                    .putExtra(SongsActivity.ARG_TITLE_COLUMN,
-                            MediaStore.Audio.Media.TITLE)
-                    .putExtra(SongsActivity.ARG_ARTIST_COLUMN,
-                            MediaStore.Audio.Media.ARTIST)
-                    .putExtra(SongsActivity.ARG_YEAR_COLUMN,
-                            MediaStore.Audio.Media.YEAR)
                     .putExtra(SongsActivity.ARG_SELECTION,
                             MediaStore.Audio.Media.ARTIST_ID + "=?")
                     .putExtra(SongsActivity.ARG_SELECTION_ARGS,
-                            new String[] { Long.toString(artists.get(position).getId()) }));
+                            new String[] { Long.toString(artists.get(position).getId()) })
+                    .putExtra(SongsActivity.ARG_SORT_ORDER,
+                            MediaStore.Audio.AudioColumns.TITLE));
         }
     }
 
@@ -251,12 +255,63 @@ public class MainActivity extends AppCompatActivity {
                                     playlists.get(position).getId()))
                     .putExtra(SongsActivity.ARG_ID_COLUMN,
                             MediaStore.Audio.Playlists.Members.AUDIO_ID)
-                    .putExtra(SongsActivity.ARG_TITLE_COLUMN,
-                            MediaStore.Audio.Playlists.Members.TITLE)
-                    .putExtra(SongsActivity.ARG_ARTIST_COLUMN,
-                            MediaStore.Audio.Playlists.Members.ARTIST)
-                    .putExtra(SongsActivity.ARG_YEAR_COLUMN,
-                            MediaStore.Audio.Playlists.Members.YEAR));
+                    .putExtra(SongsActivity.ARG_SORT_ORDER,
+                            MediaStore.Audio.Playlists.Members.PLAY_ORDER));
+        }
+    }
+
+    public static class QueryFragment extends Fragment implements View.OnClickListener {
+        private EditText etSelection;
+        private Spinner sSortColumn;
+        private CheckBox cbSortDescending;
+        private Button bOk;
+
+        public QueryFragment() {
+        }
+
+        public static QueryFragment newInstance() {
+            return new QueryFragment();
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View ret = inflater.inflate(R.layout.fragment_query, container, false);
+
+            etSelection = (EditText)ret.findViewById(R.id.etSelection);
+            sSortColumn = (Spinner)ret.findViewById(R.id.sSortColumn);
+            cbSortDescending = (CheckBox)ret.findViewById(R.id.cbSortDescending);
+
+            bOk = (Button)ret.findViewById(R.id.bOk);
+            bOk.setOnClickListener(this);
+
+            return ret;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (v == bOk) {
+                Intent intent = new Intent(getContext(), SongsActivity.class)
+                        .putExtra(SongsActivity.ARG_URI,
+                                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
+                        .putExtra(SongsActivity.ARG_ID_COLUMN,
+                                MediaStore.Audio.Media._ID);
+
+                String selection = etSelection.getText().toString().trim();
+                if (!selection.isEmpty()) {
+                    intent.putExtra(SongsActivity.ARG_SELECTION, selection);
+                }
+
+                String sortColumn = (String)sSortColumn.getSelectedItem();
+                if (!sortColumn.isEmpty()) {
+                    if (cbSortDescending.isChecked()) {
+                        sortColumn += " DESC";
+                    }
+                    intent.putExtra(SongsActivity.ARG_SORT_ORDER, sortColumn);
+                }
+
+                startActivity(intent);
+            }
         }
     }
 }

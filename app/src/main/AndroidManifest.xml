@@ -23,7 +23,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.SongsActivity" />
+        <activity
+            android:name=".activity.SongsActivity"
+            android:parentActivityName=".activity.MainActivity" />
 
         <activity android:name=".activity.PlayerActivity" />
 

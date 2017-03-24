@@ -181,22 +181,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public MediaPlayer getPlayer() {
-        return player;
-    }
-
-    public void play() {
-        Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
-        player.reset();
-        try {
-            player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songs.get(songIndex).getId()));
-            player.prepareAsync();
-        } catch (Exception ex) {
-            Log.e(TAG, "Error setting data source", ex);
-        }
-    }
-
     public void addSong(Song song, boolean next) {
         Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
         if (songs == null) {
@@ -225,32 +209,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public void playPause() {
-        Log.d(TAG, "MainService.playPause()");
-        int ibSrcId;
-        if (player.isPlaying()) {
-            Log.d(TAG, "Pausing");
-            player.pause();
-            ibSrcId = R.drawable.ic_play;
-        } else {
-            if (prepared) {
-                Log.d(TAG, "Resuming");
-                player.start();
-            } else {
-                play();
-            }
-            ibSrcId = R.drawable.ic_pause;
-        }
-        notificationViews.setImageViewResource(R.id.ibPlayPause, ibSrcId);
-        startForeground(1, notification);
-    }
-
     public void next() {
         Log.d(TAG, "MainService.next()");
         if (songIndex < songs.size() - 1) {
             songIndex++;
             play();
         }
+    }
+
+    public MediaPlayer getPlayer() {
+        return player;
     }
 
     public ArrayList<Song> getSongs() {
@@ -288,6 +256,38 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 new Intent(this, MainService.class)
                         .putExtra(ARG_REQUEST_CODE, requestCode),
                 PendingIntent.FLAG_UPDATE_CURRENT));
+    }
+
+    private void play() {
+        Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
+        player.reset();
+        try {
+            player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songs.get(songIndex).getId()));
+            player.prepareAsync();
+        } catch (Exception ex) {
+            Log.e(TAG, "Error setting data source", ex);
+        }
+    }
+
+    private void playPause() {
+        Log.d(TAG, "MainService.playPause()");
+        int ibSrcId;
+        if (player.isPlaying()) {
+            Log.d(TAG, "Pausing");
+            player.pause();
+            ibSrcId = R.drawable.ic_play;
+        } else {
+            if (prepared) {
+                Log.d(TAG, "Resuming");
+                player.start();
+            } else {
+                play();
+            }
+            ibSrcId = R.drawable.ic_pause;
+        }
+        notificationViews.setImageViewResource(R.id.ibPlayPause, ibSrcId);
+        startForeground(1, notification);
     }
 
     public class MainBinder extends Binder {

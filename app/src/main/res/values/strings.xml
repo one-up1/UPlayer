@@ -6,7 +6,7 @@
     <string name="query">Query</string>
     <string name="selection">Selection</string>
     <string-array name="columns">
-        <item></item>
+        <item />
         <item>title</item>
         <item>artist</item>
         <item>year</item>

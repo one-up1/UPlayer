@@ -119,7 +119,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 next();
                 break;
             case REQUEST_STOP:
-                stopSelf();
+                stopSelf(); // FIXME: Service should stop even when bound (PlayerActivity is open).
                 break;
             default:
                 Log.w(TAG, "Invalid request");
@@ -232,11 +232,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void deleteSong(Song song) {
-        int songIndex = songs.indexOf(song);
-        Log.d(TAG, "MainService.deleteSong(), song=" + song + ", songIndex=" + songIndex +
-                ", current=" + this.songIndex + ":" + songs.get(this.songIndex));
-        songs.remove(song);
+        Log.d(TAG, "MainService.deleteSong(), song=" + song + ", " + songs.size() + " songs");
         if (songs.size() > 1) {
+            int songIndex = songs.indexOf(song);
+            Log.d(TAG, "songIndex=" + songIndex + ", current=" + this.songIndex +
+                    ":" + songs.get(this.songIndex));
+            songs.remove(song);
+
             if (songIndex < this.songIndex) {
                 this.songIndex--;
             } else if (songIndex == this.songIndex) {

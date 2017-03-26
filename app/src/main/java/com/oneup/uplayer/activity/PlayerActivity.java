@@ -198,10 +198,14 @@ public class PlayerActivity extends Activity implements
 
                         @Override
                         public void onClick(View v) {
-                            Song song = (Song)v.getTag();
-                            Log.d(TAG, "Deleting: " + song);
-                            mainService.deleteSong(song);
-                            PlayerActivity.this.songsAdapter.notifyDataSetChanged();
+                            if (mainService.getSongs().size() > 1) {
+                                Song song = (Song) v.getTag();
+                                Log.d(TAG, "Deleting: " + song);
+                                mainService.deleteSong(song);
+                                PlayerActivity.this.songsAdapter.notifyDataSetChanged();
+                            } else {
+                                Log.d(TAG, "Not deleting last song");
+                            }
                         }
                     }
             );

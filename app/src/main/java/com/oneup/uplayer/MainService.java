@@ -232,25 +232,20 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void deleteSong(Song song) {
-        Log.d(TAG, "MainService.deleteSong(), song=" + song + ", " + songs.size() + " songs");
-        if (songs.size() > 1) {
-            int songIndex = songs.indexOf(song);
-            Log.d(TAG, "songIndex=" + songIndex + ", current=" + this.songIndex +
-                    ":" + songs.get(this.songIndex));
-            songs.remove(song);
+        int songIndex = songs.indexOf(song);
+        Log.d(TAG, "MainService.deleteSong(), song=" + songIndex + ":" + song +
+                ", current=" + this.songIndex + ":" + songs.get(this.songIndex));
+        songs.remove(song);
 
-            if (songIndex < this.songIndex) {
-                this.songIndex--;
-            } else if (songIndex == this.songIndex) {
-                play();
-            }
-
-            notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
-                    songIndex + 1, songs.size()));
-            startForeground(1, notification);
-        } else {
-            stopSelf();
+        if (songIndex < this.songIndex) {
+            this.songIndex--;
+        } else if (songIndex == this.songIndex) {
+            play();
         }
+
+        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
+                songIndex + 1, songs.size()));
+        startForeground(1, notification);
     }
 
     private void setOnClickPendingIntent(RemoteViews views, int viewId, int requestCode) {

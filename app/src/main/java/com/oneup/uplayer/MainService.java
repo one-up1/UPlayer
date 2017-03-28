@@ -18,6 +18,8 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlayerActivity;
+import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.PlayedSong;
 import com.oneup.uplayer.obj.Song;
 
 import java.util.ArrayList;
@@ -41,6 +43,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private final IBinder mainBinder = new MainBinder();
 
+    private DbOpenHelper dbOpenHelper;
+
     private MediaPlayer player;
     private RemoteViews notificationViews;
     private Notification notification;
@@ -61,6 +65,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void onCreate() {
         Log.d(TAG, "MainService.onCreate()");
         super.onCreate();
+
+        dbOpenHelper = new DbOpenHelper(this);
 
         player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
@@ -119,7 +125,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 next();
                 break;
             case REQUEST_STOP:
-                stopSelf(); // FIXME: Service should stop even when bound (PlayerActivity is open).
+                stopSelf();
                 break;
             default:
                 Log.w(TAG, "Invalid request");
@@ -142,6 +148,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         if (mainReceiver != null) {
             unregisterReceiver(mainReceiver);
+        }
+
+        if (dbOpenHelper != null) {
+            dbOpenHelper.close();
         }
     }
 
@@ -259,9 +269,20 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         player.reset();
         try {
+            long mediaId = songs.get(songIndex).getId();
             player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songs.get(songIndex).getId()));
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaId));
             player.prepareAsync();
+
+            PlayedSong playedSong = dbOpenHelper.queryPlayedSong(mediaId);
+            if (playedSong == null) {
+                playedSong = new PlayedSong(mediaId);
+                dbOpenHelper.insertPlayedSong(playedSong);
+            } else {
+                playedSong.setLastPlayed(System.currentTimeMillis());
+                playedSong.setTimesPlayed(playedSong.getTimesPlayed() + 1);
+                dbOpenHelper.updatePlayedSong(playedSong);
+            }
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
         }

@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
             ListView lvArtists = (ListView)ret.findViewById(R.id.lvArtists);
             lvArtists.setOnItemClickListener(this);
 
-            Cursor c = getActivity().getContentResolver().query(
+            Cursor c = getContext().getContentResolver().query(
                     MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                     new String[] {
                             MediaStore.Audio.Artists._ID,
@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
             ListView lvPlaylists = (ListView)ret.findViewById(R.id.lvPlaylists);
             lvPlaylists.setOnItemClickListener(this);
 
-            Cursor c = getActivity().getContentResolver().query(
+            Cursor c = getContext().getContentResolver().query(
                     MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
                     new String[] {
                             MediaStore.Audio.Playlists._ID,

@@ -1,5 +1,6 @@
 package com.oneup.uplayer.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -67,7 +70,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                 setTitle(getResources().getQuantityString(R.plurals.songs, songs.size(), songs.size()));
 
                 lvSongs = (ListView) findViewById(R.id.lvSongs);
-                lvSongs.setAdapter(new SongAdapter(this, songs, true, null));
+                lvSongs.setAdapter(new ListAdapter(this, songs));
                 lvSongs.setOnItemClickListener(this);
             }
         } catch (Exception ex) {
@@ -85,5 +88,60 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                 .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
                 .putExtra(MainService.ARG_SONGS, songs)
                 .putExtra(MainService.ARG_SONG_INDEX, position));
+    }
+
+    private class ListAdapter extends SongAdapter implements View.OnClickListener {
+        private ListAdapter(Context context, ArrayList<Song> songs) {
+            super(context, songs);
+        }
+
+        @Override
+        public void addButtons(LinearLayout llButtons) {
+            ImageButton ibPlayNext = new ImageButton(SongsActivity.this);
+            ibPlayNext.setId(R.id.ibPlayNext);
+            ibPlayNext.setImageResource(R.drawable.ic_play_next);
+            ibPlayNext.setContentDescription(getString(R.string.play_next));
+            ibPlayNext.setOnClickListener(this);
+            llButtons.addView(ibPlayNext);
+
+            ImageButton ibPlayLast = new ImageButton(SongsActivity.this);
+            ibPlayLast.setId(R.id.ibPlayLast);
+            ibPlayLast.setImageResource(R.drawable.ic_play_last);
+            ibPlayLast.setContentDescription(getString(R.string.play_last));
+            ibPlayLast.setOnClickListener(this);
+            llButtons.addView(ibPlayLast);
+        }
+
+        @Override
+        public void setButtons(View view, Song song) {
+            ImageButton ibPlayNext = (ImageButton)view.findViewById(R.id.ibPlayNext);
+            ibPlayNext.setTag(song);
+
+            ImageButton ibPlayLast = (ImageButton)view.findViewById(R.id.ibPlayLast);
+            ibPlayLast.setTag(song);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Song song = (Song)v.getTag();
+            switch (v.getId()) {
+                case R.id.ibPlayNext:
+                    Log.d(TAG, "Playing next: " + song);
+                    startService(new Intent(SongsActivity.this, MainService.class)
+                            .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
+                            .putExtra(MainService.ARG_SONG, song));
+                    Toast.makeText(SongsActivity.this, getString(R.string.playing_next, song),
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.ibPlayLast:
+                    Log.d(TAG, "Playing last: " + song);
+                    startService(new Intent(SongsActivity.this, MainService.class)
+                            .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
+                            .putExtra(MainService.ARG_SONG, song));
+                    Toast.makeText(SongsActivity.this, getString(R.string.playing_last, song),
+                            Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
     }
 }

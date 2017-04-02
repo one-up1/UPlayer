@@ -10,6 +10,8 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.MediaController;
 
@@ -17,6 +19,8 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
 import com.oneup.uplayer.obj.Song;
+
+import java.util.ArrayList;
 
 public class PlayerActivity extends Activity implements
         AdapterView.OnItemClickListener, MediaController.MediaPlayerControl {
@@ -166,22 +170,8 @@ public class PlayerActivity extends Activity implements
                 MainService.MainBinder binder = (MainService.MainBinder) service;
                 mainService = binder.getService();
 
-                PlayerActivity.this.songsAdapter = new SongAdapter(PlayerActivity.this,
-                        mainService.getSongs(), false, new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        if (mainService.getSongs().size() > 1) {
-                            Song song = (Song) v.getTag();
-                            Log.d(TAG, "Deleting: " + song);
-                            mainService.deleteSong(song);
-                            PlayerActivity.this.songsAdapter.notifyDataSetChanged();
-                        } else {
-                            Log.d(TAG, "Not deleting last song");
-                        }
-                    }
-                }
-                );
+                PlayerActivity.this.songsAdapter = new ListAdapter(PlayerActivity.this,
+                        mainService.getSongs());
                 lvSongs.setAdapter(PlayerActivity.this.songsAdapter);
             } catch (Exception ex) {
                 Log.e(TAG, "Err", ex);
@@ -196,4 +186,42 @@ public class PlayerActivity extends Activity implements
             mainService = null;
         }
     };
+
+    private class ListAdapter extends SongAdapter implements View.OnClickListener {
+        private ListAdapter(Context context, ArrayList<Song> songs) {
+            super(context, songs);
+        }
+
+        @Override
+        public void addButtons(LinearLayout llButtons) {
+            ImageButton ibDelete = new ImageButton(PlayerActivity.this);
+            ibDelete.setId(R.id.ibDelete);
+            ibDelete.setImageResource(R.drawable.ic_delete);
+            ibDelete.setContentDescription(getString(R.string.delete));
+            ibDelete.setOnClickListener(this);
+            llButtons.addView(ibDelete);
+        }
+
+        @Override
+        public void setButtons(View view, Song song) {
+            ImageButton ibDelete = (ImageButton)view.findViewById(R.id.ibDelete);
+            ibDelete.setTag(song);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Song song = (Song)v.getTag();
+            switch (v.getId()) {
+                case R.id.ibDelete:
+                    if (mainService.getSongs().size() > 1) {
+                        Log.d(TAG, "Deleting: " + song);
+                        mainService.deleteSong(song);
+                        PlayerActivity.this.songsAdapter.notifyDataSetChanged();
+                    } else {
+                        Log.d(TAG, "Not deleting last song");
+                    }
+                    break;
+            }
+        }
+    }
 }

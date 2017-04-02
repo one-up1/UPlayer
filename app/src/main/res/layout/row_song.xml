@@ -31,29 +31,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/ibPlayNext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_play_next"
-            android:contentDescription="@string/play_next" />
-
-        <ImageButton
-            android:id="@+id/ibPlayLast"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_play_last"
-            android:contentDescription="@string/play_last" />
-
-        <ImageButton
-            android:id="@+id/ibDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_delete"
-            android:contentDescription="@string/delete" />
-
-    </LinearLayout>
+        android:orientation="horizontal" />
 
 </RelativeLayout>

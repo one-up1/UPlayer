@@ -108,7 +108,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         int requestCode = intent.getIntExtra(ARG_REQUEST_CODE, 0);
         Log.d(TAG, "requestCode=" + requestCode);
-        
+
         switch (requestCode) {
             case REQUEST_START:
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);
@@ -256,6 +256,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (songIndex < this.songIndex) {
             this.songIndex--;
         } else if (songIndex == this.songIndex) {
+            if (songIndex == songs.size()) {
+                this.songIndex--;
+            }
             play();
         }
 

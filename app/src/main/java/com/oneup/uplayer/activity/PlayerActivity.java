@@ -25,10 +25,8 @@ public class PlayerActivity extends Activity implements
     private ListView lvSongs;
     private SongAdapter songsAdapter;
 
+    private MediaController controller;
     private MainService mainService;
-    private MusicController controller;
-    private boolean paused;
-    private boolean controllerShown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +36,25 @@ public class PlayerActivity extends Activity implements
         lvSongs = (ListView)findViewById(R.id.lvSongs);
         lvSongs.setOnItemClickListener(this);
 
-        setController();
+        controller = new MediaController(this);
+        controller.setPrevNextListeners(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mainService != null) {
+                    mainService.previous();
+                }
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mainService != null) {
+                    mainService.next();
+                }
+            }
+        });
+        controller.setMediaPlayer(PlayerActivity.this);
+        controller.setAnchorView(lvSongs);
+        controller.setEnabled(true);
     }
 
     @Override
@@ -53,45 +69,20 @@ public class PlayerActivity extends Activity implements
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        paused = true;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (paused) {
-            setController();
-            paused = false;
-        }
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        if (!controllerShown) {
-            Log.d(TAG, "Showing controller");
-            controller.show(0);
-            controllerShown = true;
-        }
+    public void onAttachedToWindow() {
+        Log.d(TAG, "onAttachedToWindow()");
+        super.onAttachedToWindow();
+        controller.show(0);
     }
 
     @Override
     protected void onStop() {
-        controller.hide();
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
         Log.d(TAG, "Unbinding service");
+        controller.setEnabled(false);
+        controller.hide();
         unbindService(serviceConnection);
         mainService = null;
-
-        super.onDestroy();
+        super.onStop();
     }
 
     @Override
@@ -162,72 +153,47 @@ public class PlayerActivity extends Activity implements
         return 0;
     }
 
-    private void setController() {
-        controller = new MusicController(PlayerActivity.this);
-        controller.setPrevNextListeners(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mainService != null) {
-                    mainService.previous();
-                }
-                controller.show(0);
-            }
-        }, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mainService != null) {
-                    mainService.next();
-                }
-                controller.show(0);
-            }
-        });
-        controller.setMediaPlayer(PlayerActivity.this);
-        controller.setAnchorView(lvSongs);
-        controller.setEnabled(true);
-    }
-
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.d(TAG, "Service connected");
-            MainService.MainBinder binder = (MainService.MainBinder)service;
-            mainService = binder.getService();
+            if (isFinishing()) {
+                Log.d(TAG, "finishing");
+                return;
+            }
 
-            PlayerActivity.this.songsAdapter = new SongAdapter(PlayerActivity.this,
-                    mainService.getSongs(), false, new View.OnClickListener() {
+            try {
+                MainService.MainBinder binder = (MainService.MainBinder) service;
+                mainService = binder.getService();
 
-                        @Override
-                        public void onClick(View v) {
-                            if (mainService.getSongs().size() > 1) {
-                                Song song = (Song) v.getTag();
-                                Log.d(TAG, "Deleting: " + song);
-                                mainService.deleteSong(song);
-                                PlayerActivity.this.songsAdapter.notifyDataSetChanged();
-                            } else {
-                                Log.d(TAG, "Not deleting last song");
-                            }
+                PlayerActivity.this.songsAdapter = new SongAdapter(PlayerActivity.this,
+                        mainService.getSongs(), false, new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        if (mainService.getSongs().size() > 1) {
+                            Song song = (Song) v.getTag();
+                            Log.d(TAG, "Deleting: " + song);
+                            mainService.deleteSong(song);
+                            PlayerActivity.this.songsAdapter.notifyDataSetChanged();
+                        } else {
+                            Log.d(TAG, "Not deleting last song");
                         }
                     }
-            );
-            lvSongs.setAdapter(PlayerActivity.this.songsAdapter);
+                }
+                );
+                lvSongs.setAdapter(PlayerActivity.this.songsAdapter);
+            } catch (Exception ex) {
+                Log.e(TAG, "Err", ex);
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "Service diconnected");
+            controller.hide();
+            controller.setEnabled(false);
             mainService = null;
         }
     };
-
-    private class MusicController extends MediaController {
-        public MusicController(Context context) {
-            super(context);
-        }
-
-        @Override
-        public void hide() {
-            Log.d(TAG, "MusicController.hide()");
-            finish();
-        }
-    }
 }

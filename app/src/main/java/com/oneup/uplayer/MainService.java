@@ -100,9 +100,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        int requestCode = intent.getIntExtra(ARG_REQUEST_CODE, 0);
-        Log.d(TAG, "MainService.onStartCommand(), requestCode=" + requestCode);
+        Log.d(TAG, "MainService.onStartCommand()");
+        if (intent == null) {
+            Log.wtf(TAG, "No intent");
+            return START_STICKY;
+        }
 
+        int requestCode = intent.getIntExtra(ARG_REQUEST_CODE, 0);
+        Log.d(TAG, "requestCode=" + requestCode);
+        
         switch (requestCode) {
             case REQUEST_START:
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);

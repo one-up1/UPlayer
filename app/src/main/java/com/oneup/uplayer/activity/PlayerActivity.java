@@ -29,7 +29,7 @@ public class PlayerActivity extends Activity implements
     private ListView lvSongs;
     private SongAdapter songsAdapter;
 
-    private MediaController controller;
+    private MusicController controller;
     private MainService mainService;
 
     @Override
@@ -40,7 +40,7 @@ public class PlayerActivity extends Activity implements
         lvSongs = (ListView)findViewById(R.id.lvSongs);
         lvSongs.setOnItemClickListener(this);
 
-        controller = new MediaController(this);
+        controller = new MusicController();
         controller.setPrevNextListeners(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,7 +83,7 @@ public class PlayerActivity extends Activity implements
     protected void onStop() {
         Log.d(TAG, "Unbinding service");
         controller.setEnabled(false);
-        controller.hide();
+        //controller.hide();
         unbindService(serviceConnection);
         mainService = null;
         super.onStop();
@@ -181,7 +181,7 @@ public class PlayerActivity extends Activity implements
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "Service diconnected");
-            controller.hide();
+            //controller.hide();
             controller.setEnabled(false);
             mainService = null;
         }
@@ -222,6 +222,28 @@ public class PlayerActivity extends Activity implements
                     }
                     break;
             }
+        }
+    }
+
+    private class MusicController extends MediaController {
+        public MusicController() {
+            super(PlayerActivity.this);
+        }
+
+        @Override
+        public void show() {
+            super.show(0);
+        }
+
+        @Override
+        public void show(int timeout) {
+            super.show(0);
+        }
+
+        @Override
+        public void hide() {
+            super.hide();
+            finish();
         }
     }
 }

@@ -27,6 +27,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 
+import com.oneup.uplayer.DbOpenHelper;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.obj.Artist;
 import com.oneup.uplayer.obj.Playlist;
@@ -117,6 +118,10 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     return PlaylistsFragment.newInstance();
                 case 2:
+                    return LastPlayedFragment.newInstance();
+                case 3:
+                    return MostPlayedFragment.newInstance();
+                case 4:
                     return QueryFragment.newInstance();
             }
             return null;
@@ -124,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 3;
+            return 5;
         }
 
         @Override
@@ -135,6 +140,10 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     return getString(R.string.playlists);
                 case 2:
+                    return getString(R.string.last_played);
+                case 3:
+                    return getString(R.string.most_played);
+                case 4:
                     return getString(R.string.query);
             }
             return null;
@@ -188,6 +197,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_SRC,
+                            SongsActivity.SRC_CONTENT_RESOLVER)
                     .putExtra(SongsActivity.ARG_URI,
                             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
                     .putExtra(SongsActivity.ARG_ID_COLUMN,
@@ -249,6 +260,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_SRC,
+                            SongsActivity.SRC_CONTENT_RESOLVER)
                     .putExtra(SongsActivity.ARG_URI,
                             MediaStore.Audio.Playlists.Members.getContentUri("external",
                                     playlists.get(position).getId()))
@@ -256,6 +269,78 @@ public class MainActivity extends AppCompatActivity {
                             MediaStore.Audio.Playlists.Members.AUDIO_ID)
                     .putExtra(SongsActivity.ARG_SORT_ORDER,
                             MediaStore.Audio.Playlists.Members.PLAY_ORDER));
+        }
+    }
+
+    public static class LastPlayedFragment extends Fragment
+            implements AdapterView.OnItemClickListener {
+        private ArrayList<Artist> artists;
+
+        public LastPlayedFragment() {
+        }
+
+        public static LastPlayedFragment newInstance() {
+            return new LastPlayedFragment();
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View ret = inflater.inflate(R.layout.fragment_artists, container, false);
+            ListView lvArtists = (ListView)ret.findViewById(R.id.lvArtists);
+            lvArtists.setOnItemClickListener(this);
+
+            artists = new DbOpenHelper(getContext()).queryLastPlayedArtists();
+
+            lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
+                    android.R.layout.simple_list_item_1, artists));
+
+            return ret;
+        }
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_SRC,
+                            SongsActivity.SRC_LAST_PLAYED)
+                    .putExtra(SongsActivity.ARG_ARTIST_ID,
+                            artists.get(position).getId()));
+        }
+    }
+
+    public static class MostPlayedFragment extends Fragment
+            implements AdapterView.OnItemClickListener {
+        private ArrayList<Artist> artists;
+
+        public MostPlayedFragment() {
+        }
+
+        public static MostPlayedFragment newInstance() {
+            return new MostPlayedFragment();
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View ret = inflater.inflate(R.layout.fragment_artists, container, false);
+            ListView lvArtists = (ListView)ret.findViewById(R.id.lvArtists);
+            lvArtists.setOnItemClickListener(this);
+
+            artists = new DbOpenHelper(getContext()).queryMostPlayedArtists();
+
+            lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
+                    android.R.layout.simple_list_item_1, artists));
+
+            return ret;
+        }
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_SRC,
+                            SongsActivity.SRC_MOST_PLAYED)
+                    .putExtra(SongsActivity.ARG_ARTIST_ID,
+                            artists.get(position).getId()));
         }
     }
 
@@ -291,6 +376,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (v == bOk) {
                 Intent intent = new Intent(getContext(), SongsActivity.class)
+                        .putExtra(SongsActivity.ARG_SRC,
+                                SongsActivity.SRC_CONTENT_RESOLVER)
                         .putExtra(SongsActivity.ARG_URI,
                                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
                         .putExtra(SongsActivity.ARG_ID_COLUMN,

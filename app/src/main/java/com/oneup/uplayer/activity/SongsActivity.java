@@ -18,11 +18,18 @@ import android.widget.Toast;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
+import com.oneup.uplayer.DbOpenHelper;
 import com.oneup.uplayer.obj.Song;
 
 import java.util.ArrayList;
 
 public class SongsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+    public static final String ARG_SRC = "src";
+    public static final int SRC_CONTENT_RESOLVER = 1;
+    public static final int SRC_LAST_PLAYED = 2;
+    public static final int SRC_MOST_PLAYED = 3;
+    public static final String ARG_ARTIST_ID = "artist_id";
+
     public static final String ARG_URI = "uri";
     public static final String ARG_ID_COLUMN = "id_column";
     public static final String ARG_SELECTION = "selection";
@@ -30,6 +37,8 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
     public static final String ARG_SORT_ORDER = "sort_order";
 
     private static final String TAG = "UPlayer";
+
+    private DbOpenHelper dbOpenHelper;
 
     private ListView lvSongs;
     private ArrayList<Song> songs;
@@ -39,45 +48,73 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_songs);
 
-        Intent intent = getIntent();
-        Uri uri = intent.getParcelableExtra(ARG_URI);
-        String idColumn = intent.getStringExtra(ARG_ID_COLUMN);
-        String selection = intent.getStringExtra(ARG_SELECTION);
-        String[] selectionArgs = intent.getStringArrayExtra(ARG_SELECTION_ARGS);
-        String sortOrder = intent.getStringExtra(ARG_SORT_ORDER);
-
         try {
-            Cursor c = getContentResolver().query(uri, new String[] { idColumn,
-                    MediaStore.Audio.AudioColumns.TITLE,
-                    MediaStore.Audio.AudioColumns.ARTIST,
-                    MediaStore.Audio.AudioColumns.YEAR }, selection, selectionArgs, sortOrder);
-            if (c != null) {
-                try {
-                    songs = new ArrayList<>();
-                    int iId = c.getColumnIndex(idColumn);
-                    int iTitle = c.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE);
-                    int iArtist = c.getColumnIndex(MediaStore.Audio.AudioColumns.ARTIST);
-                    int iYear = c.getColumnIndex(MediaStore.Audio.AudioColumns.YEAR);
-                    while (c.moveToNext()) {
-                        songs.add(new Song(c.getLong(iId), c.getString(iTitle),
-                                c.getString(iArtist), c.getInt(iYear)));
+            dbOpenHelper = new DbOpenHelper(this);
+
+            Intent intent = getIntent();
+            int src = intent.getIntExtra(ARG_SRC, 0);
+            switch (src) {
+                case SRC_CONTENT_RESOLVER:
+                    Uri uri = intent.getParcelableExtra(ARG_URI);
+                    String idColumn = intent.getStringExtra(ARG_ID_COLUMN);
+                    String selection = intent.getStringExtra(ARG_SELECTION);
+                    String[] selectionArgs = intent.getStringArrayExtra(ARG_SELECTION_ARGS);
+                    String sortOrder = intent.getStringExtra(ARG_SORT_ORDER);
+
+                    Cursor c = getContentResolver().query(uri, new String[] { idColumn,
+                            MediaStore.Audio.AudioColumns.TITLE,
+                            MediaStore.Audio.AudioColumns.ARTIST_ID,
+                            MediaStore.Audio.AudioColumns.ARTIST,
+                            MediaStore.Audio.AudioColumns.YEAR },
+                            selection, selectionArgs, sortOrder);
+                    if (c != null) {
+                        try {
+                            songs = new ArrayList<>();
+                            int iId = c.getColumnIndex(idColumn);
+                            int iTitle = c.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE);
+                            int iArtistId = c.getColumnIndex(MediaStore.Audio.AudioColumns.ARTIST_ID);
+                            int iArtist = c.getColumnIndex(MediaStore.Audio.AudioColumns.ARTIST);
+                            int iYear = c.getColumnIndex(MediaStore.Audio.AudioColumns.YEAR);
+                            while (c.moveToNext()) {
+                                Song song = new Song(c.getLong(iId), c.getString(iTitle),
+                                        c.getLong(iArtistId), c.getString(iArtist), c.getInt(iYear));
+                                //Log.d(TAG, song + ":" + song.getPlayedSong());
+                                songs.add(song);
+                            }
+                        } finally {
+                            c.close();
+                        }
                     }
-                } finally {
-                    c.close();
-                }
-
-                Log.d(TAG, "Queried " + songs.size() + " songs");
-                setTitle(getResources().getQuantityString(R.plurals.songs, songs.size(), songs.size()));
-
-                lvSongs = (ListView) findViewById(R.id.lvSongs);
-                lvSongs.setAdapter(new ListAdapter(this, songs));
-                lvSongs.setOnItemClickListener(this);
+                    break;
+                case SRC_LAST_PLAYED:
+                    songs = dbOpenHelper.queryLastPlayedSongs(intent.getLongExtra(ARG_ARTIST_ID, 0));
+                    break;
+                case SRC_MOST_PLAYED:
+                    songs = dbOpenHelper.queryMostPlayedSongs(intent.getLongExtra(ARG_ARTIST_ID, 0));
+                    break;
+                default:
+                    throw new Exception("Invalid src");
             }
+
+            Log.d(TAG, "Queried " + songs.size() + " songs");
+            setTitle(getResources().getQuantityString(R.plurals.songs, songs.size(), songs.size()));
+
+            lvSongs = (ListView) findViewById(R.id.lvSongs);
+            lvSongs.setAdapter(new ListAdapter(this, songs));
+            lvSongs.setOnItemClickListener(this);
         } catch (Exception ex) {
             Log.e(TAG, "Error querying songs", ex);
             Toast.makeText(this, ex.getMessage(), Toast.LENGTH_LONG).show();
             finish();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (dbOpenHelper != null) {
+            dbOpenHelper.close();
+        }
+        super.onDestroy();
     }
 
     @Override

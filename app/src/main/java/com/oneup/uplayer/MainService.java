@@ -18,8 +18,6 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlayerActivity;
-import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.PlayedSong;
 import com.oneup.uplayer.obj.Song;
 
 import java.util.ArrayList;
@@ -278,20 +276,24 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         player.reset();
         try {
-            long mediaId = songs.get(songIndex).getId();
+            Song song = songs.get(songIndex);
+            long mediaId = song.getId();
             player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaId));
             player.prepareAsync();
 
-            PlayedSong playedSong = dbOpenHelper.queryPlayedSong(mediaId);
+            dbOpenHelper.updatePlayed(song);
+
+            /*PlayedSong playedSong = song.getPlayedSong();
             if (playedSong == null) {
                 playedSong = new PlayedSong(mediaId);
                 dbOpenHelper.insertPlayedSong(playedSong);
+                song.setPlayedSong(playedSong);
             } else {
                 playedSong.setLastPlayed(System.currentTimeMillis());
                 playedSong.setTimesPlayed(playedSong.getTimesPlayed() + 1);
                 dbOpenHelper.updatePlayedSong(playedSong);
-            }
+            }*/
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
         }

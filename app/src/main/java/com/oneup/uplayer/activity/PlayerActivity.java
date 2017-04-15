@@ -76,7 +76,7 @@ public class PlayerActivity extends Activity implements
     public void onAttachedToWindow() {
         Log.d(TAG, "onAttachedToWindow()");
         super.onAttachedToWindow();
-        controller.show(0);
+        controller.show();
     }
 
     @Override

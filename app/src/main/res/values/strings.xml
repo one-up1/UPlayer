@@ -3,6 +3,8 @@
     <string name="action_settings">Settings</string>
     <string name="artists">Artists</string>
     <string name="playlists">Playlists</string>
+    <string name="last_played">Last played</string>
+    <string name="most_played">Most played</string>
     <string name="query">Query</string>
     <string name="selection">Selection</string>
     <string-array name="columns">

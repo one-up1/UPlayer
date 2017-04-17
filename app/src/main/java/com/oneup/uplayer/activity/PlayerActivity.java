@@ -18,7 +18,7 @@ import android.widget.MediaController;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
-import com.oneup.uplayer.obj.Song;
+import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
@@ -37,7 +37,7 @@ public class PlayerActivity extends Activity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        lvSongs = (ListView)findViewById(R.id.lvSongs);
+        lvSongs = (ListView) findViewById(R.id.lvSongs);
         lvSongs.setOnItemClickListener(this);
 
         controller = new MusicController();
@@ -204,13 +204,13 @@ public class PlayerActivity extends Activity implements
 
         @Override
         public void setButtons(View view, Song song) {
-            ImageButton ibDelete = (ImageButton)view.findViewById(R.id.ibDelete);
+            ImageButton ibDelete = (ImageButton) view.findViewById(R.id.ibDelete);
             ibDelete.setTag(song);
         }
 
         @Override
         public void onClick(View v) {
-            Song song = (Song)v.getTag();
+            Song song = (Song) v.getTag();
             switch (v.getId()) {
                 case R.id.ibDelete:
                     if (mainService.getSongs().size() > 1) {

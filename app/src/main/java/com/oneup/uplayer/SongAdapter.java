@@ -9,7 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.oneup.uplayer.obj.Song;
+import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
@@ -42,18 +42,18 @@ public class SongAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = layoutInflater.inflate(R.layout.row_song, parent, false);
-            addButtons((LinearLayout)convertView.findViewById(R.id.llButtons));
+            addButtons((LinearLayout) convertView.findViewById(R.id.llButtons));
         }
 
         Song song = songs.get(position);
 
-        TextView tvTitle = (TextView)convertView.findViewById(R.id.tvTitle);
+        TextView tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
         tvTitle.setText(song.getTitle());
 
-        TextView tvArtist = (TextView)convertView.findViewById(R.id.tvArtist);
+        TextView tvArtist = (TextView) convertView.findViewById(R.id.tvArtist);
         tvArtist.setText(song.getArtist());
 
-        TextView tvYear = (TextView)convertView.findViewById(R.id.tvYear);
+        TextView tvYear = (TextView) convertView.findViewById(R.id.tvYear);
         tvYear.setText(Integer.toString(song.getYear()));
 
         setButtons(convertView, song);

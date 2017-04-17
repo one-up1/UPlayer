@@ -4,13 +4,17 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
@@ -18,7 +22,10 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlayerActivity;
-import com.oneup.uplayer.obj.Song;
+import com.oneup.uplayer.db.DbColumns;
+import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.obj.Artist;
+import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
@@ -114,10 +121,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 play();
                 break;
             case REQUEST_PLAY_NEXT:
-                addSong((Song)intent.getParcelableExtra(ARG_SONG), true);
+                addSong((Song) intent.getParcelableExtra(ARG_SONG), true);
                 break;
             case REQUEST_PLAY_LAST:
-                addSong((Song)intent.getParcelableExtra(ARG_SONG), false);
+                addSong((Song) intent.getParcelableExtra(ARG_SONG), false);
                 break;
             case REQUEST_PREVIOUS:
                 previous();
@@ -191,6 +198,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
 
         if (player.getCurrentPosition() > 0) {
+            updatePlayedSong();
             next();
         }
     }
@@ -281,19 +289,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaId));
             player.prepareAsync();
-
-            dbOpenHelper.updatePlayed(song);
-
-            /*PlayedSong playedSong = song.getPlayedSong();
-            if (playedSong == null) {
-                playedSong = new PlayedSong(mediaId);
-                dbOpenHelper.insertPlayedSong(playedSong);
-                song.setPlayedSong(playedSong);
-            } else {
-                playedSong.setLastPlayed(System.currentTimeMillis());
-                playedSong.setTimesPlayed(playedSong.getTimesPlayed() + 1);
-                dbOpenHelper.updatePlayedSong(playedSong);
-            }*/
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
         }
@@ -317,6 +312,71 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         notificationViews.setImageViewResource(R.id.ibPlayPause, ibSrcId);
         startForeground(1, notification);
+    }
+
+    private void updatePlayedSong() {
+        Song song = songs.get(songIndex);
+        Log.d(TAG, "DbOpenHelper.updatePlayed(" + song + ")");
+
+        try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
+            long lastPlayed = System.currentTimeMillis();
+            int timesPlayed;
+            ContentValues values;
+
+            timesPlayed = queryTimesPlayed(db, Song.TABLE_NAME, song.getId());
+            Log.d(TAG, "Song timesPlayed=" + timesPlayed);
+
+            values = new ContentValues();
+            values.put(Song.LAST_PLAYED, lastPlayed);
+            values.put(Song.TIMES_PLAYED, timesPlayed + 1);
+            if (timesPlayed == 0) {
+                values.put(BaseColumns._ID, song.getId());
+                values.put(MediaStore.MediaColumns.TITLE, song.getTitle());
+                if (song.getArtistId() > 0) {
+                    values.put(MediaStore.Audio.AudioColumns.ARTIST_ID, song.getArtistId());
+                    values.put(MediaStore.Audio.AudioColumns.ARTIST, song.getArtist());
+                }
+                if (song.getYear() > 0) {
+                    values.put(MediaStore.Audio.AudioColumns.YEAR, song.getYear());
+                }
+                db.insert(Song.TABLE_NAME, null, values);
+                Log.d(TAG, "Song inserted");
+            } else {
+                db.update(Song.TABLE_NAME, values, BaseColumns._ID + "=?",
+                        new String[]{Long.toString(song.getId())});
+                Log.d(TAG, "Song updated");
+            }
+
+            timesPlayed = queryTimesPlayed(db, Artist.TABLE_NAME, song.getArtistId());
+            Log.d(TAG, "Artist timesPlayed=" + timesPlayed);
+
+            values = new ContentValues();
+            values.put(Artist.LAST_PLAYED, lastPlayed);
+            values.put(Artist.TIMES_PLAYED, timesPlayed + 1);
+            if (timesPlayed == 0) {
+                values.put(BaseColumns._ID, song.getArtistId());
+                values.put(MediaStore.Audio.Artists.ARTIST, song.getArtist());
+                db.insert(Artist.TABLE_NAME, null, values);
+                Log.d(TAG, "Artist inserted");
+            } else {
+                db.update(Artist.TABLE_NAME, values, BaseColumns._ID + "=?",
+                        new String[]{Long.toString(song.getArtistId())});
+                Log.d(TAG, "Artist updated");
+            }
+        }
+    }
+
+    private int queryTimesPlayed(SQLiteDatabase db, String table, long id) {
+        Log.d(TAG, "DbOpenHelper.queryTimesPlayed(" + table + "," + id + ")");
+        try (Cursor c = db.query(table,
+                new String[] {
+                        DbColumns.TIMES_PLAYED
+                },
+                BaseColumns._ID + "=?",
+                new String[] { Long.toString(id) },
+                null, null, null)) {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
     }
 
     public class MainBinder extends Binder {

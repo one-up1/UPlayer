@@ -1,25 +1,31 @@
-package com.oneup.uplayer.obj;
+package com.oneup.uplayer.db.obj;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.BaseColumns;
+import android.provider.MediaStore;
 
-public class Playlist implements Parcelable {
+import com.oneup.uplayer.db.DbColumns;
+
+public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbColumns, Parcelable {
+    public static final String TABLE_NAME = "artists";
+
     private long id;
-    private String name;
+    private String artist;
 
-    public Playlist(long id, String name) {
+    public Artist(long id, String artist) {
         this.id = id;
-        this.name = name;
+        this.artist = artist;
     }
 
-    private Playlist(Parcel in) {
+    private Artist(Parcel in) {
         id = in.readLong();
-        name = in.readString();
+        artist = in.readString();
     }
 
     @Override
     public String toString() {
-        return name;
+        return artist;
     }
 
     @Override
@@ -30,27 +36,27 @@ public class Playlist implements Parcelable {
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeLong(id);
-        out.writeString(name);
+        out.writeString(artist);
     }
 
     public long getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getArtist() {
+        return artist;
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
 
         @Override
         public Object createFromParcel(Parcel in) {
-            return new Playlist(in);
+            return new Artist(in);
         }
 
         @Override
         public Object[] newArray(int size) {
-            return new Playlist[size];
+            return new Artist[size];
         }
     };
 }

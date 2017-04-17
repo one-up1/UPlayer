@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -27,10 +28,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 
-import com.oneup.uplayer.DbOpenHelper;
+import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.obj.Artist;
-import com.oneup.uplayer.obj.Playlist;
+import com.oneup.uplayer.db.obj.Artist;
+import com.oneup.uplayer.db.obj.Playlist;
+import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             init();
         } else {
             Log.d(TAG, "Requesting permissions");
-            requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, 0);
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
         }
     }
 
@@ -114,13 +116,16 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return ArtistsFragment.newInstance();
+                    return ArtistsFragment.newInstance(
+                            ArtistsFragment.SOURCE_ANDROID, Artist.ARTIST);
                 case 1:
                     return PlaylistsFragment.newInstance();
                 case 2:
-                    return LastPlayedFragment.newInstance();
+                    return ArtistsFragment.newInstance(
+                            ArtistsFragment.SOURCE_DB, Artist.LAST_PLAYED + " DESC");
                 case 3:
-                    return MostPlayedFragment.newInstance();
+                    return ArtistsFragment.newInstance(
+                            ArtistsFragment.SOURCE_DB, Artist.TIMES_PLAYED + " DESC");
                 case 4:
                     return QueryFragment.newInstance();
             }
@@ -152,12 +157,23 @@ public class MainActivity extends AppCompatActivity {
 
     public static class ArtistsFragment extends Fragment
             implements AdapterView.OnItemClickListener {
+        private static final String ARG_SOURCE = "source";
+        private static final String ARG_ORDER_BY = "order_by";
+
+        private static final int SOURCE_ANDROID = 1;
+        private static final int SOURCE_DB = 2;
+
         private ArrayList<Artist> artists;
 
         public ArtistsFragment() {
         }
 
-        public static ArtistsFragment newInstance() {
+        public static ArtistsFragment newInstance(int source, String orderBy) {
+            ArtistsFragment fragment = new ArtistsFragment();
+            Bundle args = new Bundle();
+            args.putInt(ARG_SOURCE, source);
+            args.putString(ARG_ORDER_BY, orderBy);
+            fragment.setArguments(args);
             return new ArtistsFragment();
         }
 
@@ -165,31 +181,46 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View ret = inflater.inflate(R.layout.fragment_artists, container, false);
-            ListView lvArtists = (ListView)ret.findViewById(R.id.lvArtists);
+            ListView lvArtists = (ListView) ret.findViewById(R.id.lvArtists);
             lvArtists.setOnItemClickListener(this);
 
-            Cursor c = getContext().getContentResolver().query(
-                    MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                    new String[] {
-                            MediaStore.Audio.Artists._ID,
-                            MediaStore.Audio.Artists.ARTIST },
-                    null, null, MediaStore.Audio.Artists.ARTIST);
-            if (c != null) {
-                try {
-                    artists = new ArrayList<>();
-                    int iId = c.getColumnIndex(MediaStore.Audio.Artists._ID);
-                    int iArtist = c.getColumnIndex(MediaStore.Audio.Artists.ARTIST);
-                    while (c.moveToNext()) {
-                        artists.add(new Artist(c.getLong(iId), c.getString(iArtist)));
+            String[] columns = {Artist._ID, Artist.ARTIST};
+            Cursor cursor;
+            switch (getArguments().getInt(ARG_SOURCE)) {
+                case SOURCE_ANDROID:
+                    cursor = getContext().getContentResolver().query(
+                            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI, columns, null, null,
+                            getArguments().getString(ARG_ORDER_BY));
+                    if (cursor == null) {
+                        Log.w(TAG, "No cursor");
+                        return ret;
                     }
-                } finally {
-                    c.close();
-                }
-
-                Log.d(TAG, "Queried " + artists.size() + " artists");
-                lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
-                        android.R.layout.simple_list_item_1, artists));
+                    break;
+                case SOURCE_DB:
+                    try (SQLiteDatabase db = new DbOpenHelper(getActivity())
+                            .getReadableDatabase()) {
+                        cursor = db.query(Artist.TABLE_NAME, columns, null, null, null, null,
+                                getArguments().getString(ARG_ORDER_BY));
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid source");
             }
+
+            try {
+                artists = new ArrayList<>();
+                int iId = cursor.getColumnIndex(Artist._ID);
+                int iArtist = cursor.getColumnIndex(Artist.ARTIST);
+                while (cursor.moveToNext()) {
+                    artists.add(new Artist(cursor.getLong(iId), cursor.getString(iArtist)));
+                }
+            } finally {
+                cursor.close();
+            }
+
+            Log.d(TAG, "Queried " + artists.size() + " artists");
+            lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
+                    android.R.layout.simple_list_item_1, artists));
 
             return ret;
         }
@@ -197,18 +228,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(SongsActivity.ARG_SRC,
-                            SongsActivity.SRC_CONTENT_RESOLVER)
-                    .putExtra(SongsActivity.ARG_URI,
-                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-                    .putExtra(SongsActivity.ARG_ID_COLUMN,
-                            MediaStore.Audio.Media._ID)
-                    .putExtra(SongsActivity.ARG_SELECTION,
-                            MediaStore.Audio.Media.ARTIST_ID + "=?")
+                    .putExtra(SongsActivity.ARG_SOURCE, getArguments().getInt(ARG_SOURCE))
+                    .putExtra(SongsActivity.ARG_URI, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
+                    .putExtra(SongsActivity.ARG_ID_COLUMN, Song._ID)
+                    .putExtra(SongsActivity.ARG_SELECTION, Song.ARTIST_ID + "=?")
                     .putExtra(SongsActivity.ARG_SELECTION_ARGS,
-                            new String[] { Long.toString(artists.get(position).getId()) })
-                    .putExtra(SongsActivity.ARG_SORT_ORDER,
-                            MediaStore.Audio.AudioColumns.TITLE));
+                            new String[]{Long.toString(artists.get(position).getId())})
+                    .putExtra(SongsActivity.ARG_ORDER_BY, Song.TITLE));
         }
     }
 
@@ -227,16 +253,15 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View ret = inflater.inflate(R.layout.fragment_playlists, container, false);
-            ListView lvPlaylists = (ListView)ret.findViewById(R.id.lvPlaylists);
+            ListView lvPlaylists = (ListView) ret.findViewById(R.id.lvPlaylists);
             lvPlaylists.setOnItemClickListener(this);
 
             Cursor c = getContext().getContentResolver().query(
                     MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
-                    new String[] {
+                    new String[]{
                             MediaStore.Audio.Playlists._ID,
                             MediaStore.Audio.Playlists.NAME
-                    },
-                    null, null, MediaStore.Audio.Playlists.NAME);
+                    }, null, null, MediaStore.Audio.Playlists.NAME);
             if (c != null) {
                 try {
                     playlists = new ArrayList<>();
@@ -260,87 +285,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(SongsActivity.ARG_SRC,
-                            SongsActivity.SRC_CONTENT_RESOLVER)
-                    .putExtra(SongsActivity.ARG_URI,
-                            MediaStore.Audio.Playlists.Members.getContentUri("external",
-                                    playlists.get(position).getId()))
+                    .putExtra(SongsActivity.ARG_SOURCE, SongsActivity.SOURCE_ANDROID)
+                    .putExtra(SongsActivity.ARG_URI, MediaStore.Audio.Playlists.Members
+                            .getContentUri("external", playlists.get(position).getId()))
                     .putExtra(SongsActivity.ARG_ID_COLUMN,
                             MediaStore.Audio.Playlists.Members.AUDIO_ID)
-                    .putExtra(SongsActivity.ARG_SORT_ORDER,
+                    .putExtra(SongsActivity.ARG_ORDER_BY,
                             MediaStore.Audio.Playlists.Members.PLAY_ORDER));
-        }
-    }
-
-    public static class LastPlayedFragment extends Fragment
-            implements AdapterView.OnItemClickListener {
-        private ArrayList<Artist> artists;
-
-        public LastPlayedFragment() {
-        }
-
-        public static LastPlayedFragment newInstance() {
-            return new LastPlayedFragment();
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View ret = inflater.inflate(R.layout.fragment_artists, container, false);
-            ListView lvArtists = (ListView)ret.findViewById(R.id.lvArtists);
-            lvArtists.setOnItemClickListener(this);
-
-            artists = new DbOpenHelper(getContext()).queryLastPlayedArtists();
-
-            lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
-                    android.R.layout.simple_list_item_1, artists));
-
-            return ret;
-        }
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(SongsActivity.ARG_SRC,
-                            SongsActivity.SRC_LAST_PLAYED)
-                    .putExtra(SongsActivity.ARG_ARTIST_ID,
-                            artists.get(position).getId()));
-        }
-    }
-
-    public static class MostPlayedFragment extends Fragment
-            implements AdapterView.OnItemClickListener {
-        private ArrayList<Artist> artists;
-
-        public MostPlayedFragment() {
-        }
-
-        public static MostPlayedFragment newInstance() {
-            return new MostPlayedFragment();
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View ret = inflater.inflate(R.layout.fragment_artists, container, false);
-            ListView lvArtists = (ListView)ret.findViewById(R.id.lvArtists);
-            lvArtists.setOnItemClickListener(this);
-
-            artists = new DbOpenHelper(getContext()).queryMostPlayedArtists();
-
-            lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
-                    android.R.layout.simple_list_item_1, artists));
-
-            return ret;
-        }
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(SongsActivity.ARG_SRC,
-                            SongsActivity.SRC_MOST_PLAYED)
-                    .putExtra(SongsActivity.ARG_ARTIST_ID,
-                            artists.get(position).getId()));
         }
     }
 
@@ -362,11 +313,11 @@ public class MainActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View ret = inflater.inflate(R.layout.fragment_query, container, false);
 
-            etSelection = (EditText)ret.findViewById(R.id.etSelection);
-            sSortColumn = (Spinner)ret.findViewById(R.id.sSortColumn);
-            cbSortDescending = (CheckBox)ret.findViewById(R.id.cbSortDescending);
+            etSelection = (EditText) ret.findViewById(R.id.etSelection);
+            sSortColumn = (Spinner) ret.findViewById(R.id.sSortColumn);
+            cbSortDescending = (CheckBox) ret.findViewById(R.id.cbSortDescending);
 
-            bOk = (Button)ret.findViewById(R.id.bOk);
+            bOk = (Button) ret.findViewById(R.id.bOk);
             bOk.setOnClickListener(this);
 
             return ret;
@@ -376,8 +327,7 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (v == bOk) {
                 Intent intent = new Intent(getContext(), SongsActivity.class)
-                        .putExtra(SongsActivity.ARG_SRC,
-                                SongsActivity.SRC_CONTENT_RESOLVER)
+                        .putExtra(SongsActivity.ARG_SOURCE, SongsActivity.SOURCE_ANDROID)
                         .putExtra(SongsActivity.ARG_URI,
                                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
                         .putExtra(SongsActivity.ARG_ID_COLUMN,
@@ -388,12 +338,12 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra(SongsActivity.ARG_SELECTION, selection);
                 }
 
-                String sortColumn = (String)sSortColumn.getSelectedItem();
+                String sortColumn = (String) sSortColumn.getSelectedItem();
                 if (!sortColumn.isEmpty()) {
                     if (cbSortDescending.isChecked()) {
                         sortColumn += " DESC";
                     }
-                    intent.putExtra(SongsActivity.ARG_SORT_ORDER, sortColumn);
+                    intent.putExtra(SongsActivity.ARG_ORDER_BY, sortColumn);
                 }
 
                 startActivity(intent);

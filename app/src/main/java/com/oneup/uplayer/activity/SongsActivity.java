@@ -3,6 +3,7 @@ package com.oneup.uplayer.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,23 +19,21 @@ import android.widget.Toast;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
-import com.oneup.uplayer.DbOpenHelper;
-import com.oneup.uplayer.obj.Song;
+import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
 public class SongsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
-    public static final String ARG_SRC = "src";
-    public static final int SRC_CONTENT_RESOLVER = 1;
-    public static final int SRC_LAST_PLAYED = 2;
-    public static final int SRC_MOST_PLAYED = 3;
-    public static final String ARG_ARTIST_ID = "artist_id";
-
+    public static final String ARG_SOURCE = "source";
     public static final String ARG_URI = "uri";
     public static final String ARG_ID_COLUMN = "id_column";
     public static final String ARG_SELECTION = "selection";
     public static final String ARG_SELECTION_ARGS = "selection_args";
-    public static final String ARG_SORT_ORDER = "sort_order";
+    public static final String ARG_ORDER_BY = "order_by";
+
+    public static final int SOURCE_ANDROID = 1;
+    public static final int SOURCE_DB = 2;
 
     private static final String TAG = "UPlayer";
 
@@ -51,49 +50,53 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
         try {
             dbOpenHelper = new DbOpenHelper(this);
 
-            Intent intent = getIntent();
-            int src = intent.getIntExtra(ARG_SRC, 0);
-            switch (src) {
-                case SRC_CONTENT_RESOLVER:
-                    Uri uri = intent.getParcelableExtra(ARG_URI);
-                    String idColumn = intent.getStringExtra(ARG_ID_COLUMN);
-                    String selection = intent.getStringExtra(ARG_SELECTION);
-                    String[] selectionArgs = intent.getStringArrayExtra(ARG_SELECTION_ARGS);
-                    String sortOrder = intent.getStringExtra(ARG_SORT_ORDER);
-
-                    Cursor c = getContentResolver().query(uri, new String[] { idColumn,
-                            MediaStore.Audio.AudioColumns.TITLE,
-                            MediaStore.Audio.AudioColumns.ARTIST_ID,
-                            MediaStore.Audio.AudioColumns.ARTIST,
-                            MediaStore.Audio.AudioColumns.YEAR },
-                            selection, selectionArgs, sortOrder);
-                    if (c != null) {
-                        try {
-                            songs = new ArrayList<>();
-                            int iId = c.getColumnIndex(idColumn);
-                            int iTitle = c.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE);
-                            int iArtistId = c.getColumnIndex(MediaStore.Audio.AudioColumns.ARTIST_ID);
-                            int iArtist = c.getColumnIndex(MediaStore.Audio.AudioColumns.ARTIST);
-                            int iYear = c.getColumnIndex(MediaStore.Audio.AudioColumns.YEAR);
-                            while (c.moveToNext()) {
-                                Song song = new Song(c.getLong(iId), c.getString(iTitle),
-                                        c.getLong(iArtistId), c.getString(iArtist), c.getInt(iYear));
-                                //Log.d(TAG, song + ":" + song.getPlayedSong());
-                                songs.add(song);
-                            }
-                        } finally {
-                            c.close();
-                        }
+            String[] columns = {
+                    getIntent().getStringExtra(ARG_ID_COLUMN),
+                    Song.TITLE,
+                    Song.ARTIST_ID,
+                    Song.ARTIST,
+                    Song.YEAR
+            };
+            Cursor cursor;
+            switch (getIntent().getIntExtra(ARG_SOURCE, 0)) {
+                case SOURCE_ANDROID:
+                    cursor = getContentResolver().query(
+                            (Uri)getIntent().getParcelableExtra(ARG_URI), columns,
+                            getIntent().getStringExtra(ARG_SELECTION),
+                            getIntent().getStringArrayExtra(ARG_SELECTION_ARGS),
+                            getIntent().getStringExtra(ARG_ORDER_BY));
+                    if (cursor == null) {
+                        Log.w(TAG, "No cursor");
+                        return;
                     }
                     break;
-                case SRC_LAST_PLAYED:
-                    songs = dbOpenHelper.queryLastPlayedSongs(intent.getLongExtra(ARG_ARTIST_ID, 0));
-                    break;
-                case SRC_MOST_PLAYED:
-                    songs = dbOpenHelper.queryMostPlayedSongs(intent.getLongExtra(ARG_ARTIST_ID, 0));
+                case SOURCE_DB:
+                    try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+                        cursor = db.query(Song.TABLE_NAME, columns,
+                                getIntent().getStringExtra(ARG_SELECTION),
+                                getIntent().getStringArrayExtra(ARG_SELECTION_ARGS),
+                                null, null, null);
+                    }
                     break;
                 default:
-                    throw new Exception("Invalid src");
+                    throw new IllegalArgumentException("Invalid source");
+            }
+
+            try {
+                songs = new ArrayList<>();
+                int iId = cursor.getColumnIndex(columns[0]);
+                int iTitle = cursor.getColumnIndex(columns[1]);
+                int iArtistId = cursor.getColumnIndex(columns[2]);
+                int iArtist = cursor.getColumnIndex(columns[3]);
+                int iYear = cursor.getColumnIndex(columns[4]);
+                while (cursor.moveToNext()) {
+                    Song song = new Song(cursor.getLong(iId), cursor.getString(iTitle),
+                            cursor.getLong(iArtistId), cursor.getString(iArtist),
+                            cursor.getInt(iYear));
+                    songs.add(song);
+                }
+            } finally {
+                cursor.close();
             }
 
             Log.d(TAG, "Queried " + songs.size() + " songs");
@@ -151,16 +154,16 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
 
         @Override
         public void setButtons(View view, Song song) {
-            ImageButton ibPlayNext = (ImageButton)view.findViewById(R.id.ibPlayNext);
+            ImageButton ibPlayNext = (ImageButton) view.findViewById(R.id.ibPlayNext);
             ibPlayNext.setTag(song);
 
-            ImageButton ibPlayLast = (ImageButton)view.findViewById(R.id.ibPlayLast);
+            ImageButton ibPlayLast = (ImageButton) view.findViewById(R.id.ibPlayLast);
             ibPlayLast.setTag(song);
         }
 
         @Override
         public void onClick(View v) {
-            Song song = (Song)v.getTag();
+            Song song = (Song) v.getTag();
             switch (v.getId()) {
                 case R.id.ibPlayNext:
                     Log.d(TAG, "Playing next: " + song);

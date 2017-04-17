@@ -1,25 +1,25 @@
-package com.oneup.uplayer.obj;
+package com.oneup.uplayer.db.obj;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Artist implements Parcelable {
+public class Playlist implements Parcelable {
     private long id;
-    private String artist;
+    private String name;
 
-    public Artist(long id, String artist) {
+    public Playlist(long id, String name) {
         this.id = id;
-        this.artist = artist;
+        this.name = name;
     }
 
-    private Artist(Parcel in) {
+    private Playlist(Parcel in) {
         id = in.readLong();
-        artist = in.readString();
+        name = in.readString();
     }
 
     @Override
     public String toString() {
-        return artist;
+        return name;
     }
 
     @Override
@@ -30,27 +30,27 @@ public class Artist implements Parcelable {
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeLong(id);
-        out.writeString(artist);
+        out.writeString(name);
     }
 
     public long getId() {
         return id;
     }
 
-    public String getArtist() {
-        return artist;
+    public String getName() {
+        return name;
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
 
         @Override
         public Object createFromParcel(Parcel in) {
-            return new Artist(in);
+            return new Playlist(in);
         }
 
         @Override
         public Object[] newArray(int size) {
-            return new Artist[size];
+            return new Playlist[size];
         }
     };
 }

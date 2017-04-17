@@ -1,9 +1,14 @@
-package com.oneup.uplayer.obj;
+package com.oneup.uplayer.db.obj;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 
-public class Song implements Parcelable {
+import com.oneup.uplayer.db.DbColumns;
+
+public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelable {
+    public static final String TABLE_NAME = "songs";
+
     private long id;
     private String title;
     private long artistId;

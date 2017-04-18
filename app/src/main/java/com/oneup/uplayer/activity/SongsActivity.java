@@ -37,8 +37,6 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
 
     private static final String TAG = "UPlayer";
 
-    private DbOpenHelper dbOpenHelper;
-
     private ListView lvSongs;
     private ArrayList<Song> songs;
 
@@ -48,8 +46,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
         setContentView(R.layout.activity_songs);
 
         try {
-            dbOpenHelper = new DbOpenHelper(this);
-
+            DbOpenHelper dbOpenHelper = new DbOpenHelper(this);
             String[] columns = {
                     getIntent().getStringExtra(ARG_ID_COLUMN),
                     Song.TITLE,
@@ -71,12 +68,10 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                     }
                     break;
                 case SOURCE_DB:
-                    try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-                        cursor = db.query(Song.TABLE_NAME, columns,
-                                getIntent().getStringExtra(ARG_SELECTION),
-                                getIntent().getStringArrayExtra(ARG_SELECTION_ARGS),
-                                null, null, null);
-                    }
+                    cursor = dbOpenHelper.getReadableDatabase().query(Song.TABLE_NAME, columns,
+                            getIntent().getStringExtra(ARG_SELECTION),
+                            getIntent().getStringArrayExtra(ARG_SELECTION_ARGS),
+                            null, null, null);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid source");
@@ -97,6 +92,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                 }
             } finally {
                 cursor.close();
+                dbOpenHelper.close();
             }
 
             Log.d(TAG, "Queried " + songs.size() + " songs");
@@ -110,14 +106,6 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
             Toast.makeText(this, ex.getMessage(), Toast.LENGTH_LONG).show();
             finish();
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (dbOpenHelper != null) {
-            dbOpenHelper.close();
-        }
-        super.onDestroy();
     }
 
     @Override

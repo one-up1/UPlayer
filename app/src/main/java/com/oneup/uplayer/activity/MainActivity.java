@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
         private static final int SOURCE_ANDROID = 1;
         private static final int SOURCE_DB = 2;
 
+        private DbOpenHelper dbOpenHelper;
         private ArrayList<Artist> artists;
 
         public ArtistsFragment() {
@@ -174,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
             args.putInt(ARG_SOURCE, source);
             args.putString(ARG_ORDER_BY, orderBy);
             fragment.setArguments(args);
-            return new ArtistsFragment();
+            return fragment;
         }
 
         @Override
@@ -184,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
             ListView lvArtists = (ListView) ret.findViewById(R.id.lvArtists);
             lvArtists.setOnItemClickListener(this);
 
+            DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
             String[] columns = {Artist._ID, Artist.ARTIST};
             Cursor cursor;
             switch (getArguments().getInt(ARG_SOURCE)) {
@@ -197,11 +199,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 case SOURCE_DB:
-                    try (SQLiteDatabase db = new DbOpenHelper(getActivity())
-                            .getReadableDatabase()) {
-                        cursor = db.query(Artist.TABLE_NAME, columns, null, null, null, null,
-                                getArguments().getString(ARG_ORDER_BY));
-                    }
+                    cursor = dbOpenHelper.getReadableDatabase().query(Artist.TABLE_NAME, columns,
+                            null, null, null, null, getArguments().getString(ARG_ORDER_BY));
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid source");
@@ -216,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } finally {
                 cursor.close();
+                dbOpenHelper.close();
             }
 
             Log.d(TAG, "Queried " + artists.size() + " artists");

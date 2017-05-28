@@ -45,14 +45,14 @@ public class PlayerActivity extends Activity implements
             @Override
             public void onClick(View v) {
                 if (mainService != null) {
-                    mainService.previous();
+                    mainService.next();
                 }
             }
         }, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mainService != null) {
-                    mainService.next();
+                    mainService.previous();
                 }
             }
         });

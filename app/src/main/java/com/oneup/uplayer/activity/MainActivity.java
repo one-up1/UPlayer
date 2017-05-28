@@ -35,6 +35,10 @@ import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
+//TODO: Recently added.
+//TODO: Display total playlist duration.
+//FIXME: Error -38 "You seem to try to start the playing before the preparation is complete"
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 

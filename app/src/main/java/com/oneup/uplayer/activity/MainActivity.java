@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -87,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
 
@@ -211,7 +210,10 @@ public class MainActivity extends AppCompatActivity {
                 int iId = cursor.getColumnIndex(Artist._ID);
                 int iArtist = cursor.getColumnIndex(Artist.ARTIST);
                 while (cursor.moveToNext()) {
-                    artists.add(new Artist(cursor.getLong(iId), cursor.getString(iArtist)));
+                    Artist artist = new Artist();
+                    artist.setId(cursor.getLong(iId));
+                    artist.setArtist(cursor.getString(iArtist));
+                    artists.add(artist);
                 }
             } finally {
                 cursor.close();

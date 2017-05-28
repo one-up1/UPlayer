@@ -41,7 +41,7 @@ public class SongAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = layoutInflater.inflate(R.layout.row_song, parent, false);
+            convertView = layoutInflater.inflate(R.layout.list_item_song, parent, false);
             addButtons((LinearLayout) convertView.findViewById(R.id.llButtons));
         }
 
@@ -55,6 +55,14 @@ public class SongAdapter extends BaseAdapter {
 
         TextView tvYear = (TextView) convertView.findViewById(R.id.tvYear);
         tvYear.setText(Integer.toString(song.getYear()));
+
+        TextView tvTimesPlayed = (TextView) convertView.findViewById(R.id.tvTimesPlayed);
+        if (song.getTimesPlayed() == 0) {
+            tvTimesPlayed.setVisibility(View.GONE);
+        } else {
+            tvTimesPlayed.setVisibility(View.VISIBLE);
+            tvTimesPlayed.setText(Integer.toString(song.getTimesPlayed()));
+        }
 
         setButtons(convertView, song);
         return convertView;

@@ -23,6 +23,7 @@ import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SongsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     public static final String ARG_SOURCE = "source";
@@ -45,20 +46,20 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_songs);
 
+        String idColumn = getIntent().getStringExtra(ARG_ID_COLUMN);
         try {
             DbOpenHelper dbOpenHelper = new DbOpenHelper(this);
-            String[] columns = {
-                    getIntent().getStringExtra(ARG_ID_COLUMN),
-                    Song.TITLE,
-                    Song.ARTIST_ID,
-                    Song.ARTIST,
-                    Song.YEAR
-            };
             Cursor cursor;
             switch (getIntent().getIntExtra(ARG_SOURCE, 0)) {
                 case SOURCE_ANDROID:
                     cursor = getContentResolver().query(
-                            (Uri)getIntent().getParcelableExtra(ARG_URI), columns,
+                            (Uri)getIntent().getParcelableExtra(ARG_URI), new String[] {
+                                    idColumn,
+                                    Song.TITLE,
+                                    Song.ARTIST_ID,
+                                    Song.ARTIST,
+                                    Song.YEAR
+                            },
                             getIntent().getStringExtra(ARG_SELECTION),
                             getIntent().getStringArrayExtra(ARG_SELECTION_ARGS),
                             getIntent().getStringExtra(ARG_ORDER_BY));
@@ -68,7 +69,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                     }
                     break;
                 case SOURCE_DB:
-                    cursor = dbOpenHelper.getReadableDatabase().query(Song.TABLE_NAME, columns,
+                    cursor = dbOpenHelper.getReadableDatabase().query(Song.TABLE_NAME, null,
                             getIntent().getStringExtra(ARG_SELECTION),
                             getIntent().getStringArrayExtra(ARG_SELECTION_ARGS),
                             null, null, null);
@@ -79,20 +80,35 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
 
             try {
                 songs = new ArrayList<>();
-                int iId = cursor.getColumnIndex(columns[0]);
-                int iTitle = cursor.getColumnIndex(columns[1]);
-                int iArtistId = cursor.getColumnIndex(columns[2]);
-                int iArtist = cursor.getColumnIndex(columns[3]);
-                int iYear = cursor.getColumnIndex(columns[4]);
+                int iId = cursor.getColumnIndex(idColumn);
+                int iTitle = cursor.getColumnIndex(Song.TITLE);
+                int iArtistId = cursor.getColumnIndex(Song.ARTIST_ID);
+                int iArtist = cursor.getColumnIndex(Song.ARTIST);
+                int iYear = cursor.getColumnIndex(Song.YEAR);
+
+                int iLastPlayed = cursor.getColumnIndex(Song.LAST_PLAYED);
+                int iTimesPlayed = cursor.getColumnIndex(Song.TIMES_PLAYED);
+
                 while (cursor.moveToNext()) {
-                    Song song = new Song(cursor.getLong(iId), cursor.getString(iTitle),
-                            cursor.getLong(iArtistId), cursor.getString(iArtist),
-                            cursor.getInt(iYear));
+                    Song song = new Song();
+
+                    song.setId(cursor.getLong(iId));
+                    song.setTitle(cursor.getString(iTitle));
+                    song.setArtistId(cursor.getLong(iArtistId));
+                    song.setArtist(cursor.getString(iArtist));
+                    song.setYear(cursor.getInt(iYear));
+
+                    if (iLastPlayed != -1) {
+                        song.setLastPlayed(cursor.getLong(iLastPlayed));
+                    }
+                    if (iTimesPlayed != -1) {
+                        song.setTimesPlayed(cursor.getInt(iTimesPlayed));
+                    }
+
                     songs.add(song);
                 }
             } finally {
                 cursor.close();
-                dbOpenHelper.close();
             }
 
             Log.d(TAG, "Queried " + songs.size() + " songs");

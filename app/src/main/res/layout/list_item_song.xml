@@ -23,7 +23,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvTitle"
-        android:layout_toStartOf="@+id/llButtons"/>
+        android:layout_toStartOf="@+id/tvTimesPlayed" />
+
+    <TextView
+        android:id="@+id/tvTimesPlayed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@+id/llButtons" />
 
     <LinearLayout
         android:id="@+id/llButtons"

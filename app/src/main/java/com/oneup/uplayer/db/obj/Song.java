@@ -1,5 +1,6 @@
 package com.oneup.uplayer.db.obj;
 
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -15,20 +16,10 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     private String artist;
     private int year;
 
-    public Song(long id, String title, long artistId, String artist, int year) {
-        this.id = id;
-        this.title = title;
-        this.artistId = artistId;
-        this.artist = artist;
-        this.year = year;
-    }
+    private long lastPlayed;
+    private int timesPlayed;
 
-    private Song(Parcel in) {
-        id = in.readLong();
-        title = in.readString();
-        artistId = in.readLong();
-        artist = in.readString();
-        year = in.readInt();
+    public Song() {
     }
 
     @Override
@@ -54,27 +45,69 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         return id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public long getArtistId() {
         return artistId;
     }
 
+    public void setArtistId(long artistId) {
+        this.artistId = artistId;
+    }
+
     public String getArtist() {
         return artist;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
     }
 
     public int getYear() {
         return year;
     }
 
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public long getLastPlayed() {
+        return lastPlayed;
+    }
+
+    public void setLastPlayed(long lastPlayed) {
+        this.lastPlayed = lastPlayed;
+    }
+
+    public int getTimesPlayed() {
+        return timesPlayed;
+    }
+
+    public void setTimesPlayed(int timesPlayed) {
+        this.timesPlayed = timesPlayed;
+    }
+
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
 
         @Override
         public Object createFromParcel(Parcel in) {
-            return new Song(in);
+            Song ret = new Song();
+            ret.id = in.readLong();
+            ret.title = in.readString();
+            ret.artistId = in.readLong();
+            ret.artist = in.readString();
+            ret.year = in.readInt();
+            return ret;
         }
 
         @Override

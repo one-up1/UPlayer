@@ -7,6 +7,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
@@ -14,12 +15,14 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import com.oneup.uplayer.activity.PlayerActivity;
 import com.oneup.uplayer.db.DbColumns;
@@ -43,14 +46,22 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final int REQUEST_PLAY_PAUSE = 5;
     public static final int REQUEST_NEXT = 6;
     public static final int REQUEST_STOP = 7;
+    public static final int REQUEST_VOLUME_DOWN = 8;
+    public static final int REQUEST_VOLUME_UP = 9;
 
     private static final String TAG = "UPlayer";
 
+    private static final String KEY_VOLUME = "volume";
+    private static final int MAX_VOLUME = 100;
+
     private final IBinder mainBinder = new MainBinder();
 
+    private SharedPreferences preferences;
     private DbOpenHelper dbOpenHelper;
 
     private MediaPlayer player;
+    private int volume;
+
     private RemoteViews notificationViews;
     private Notification notification;
 
@@ -71,6 +82,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onCreate()");
         super.onCreate();
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         dbOpenHelper = new DbOpenHelper(this);
 
         player = new MediaPlayer();
@@ -80,12 +92,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setOnErrorListener(this);
         player.setOnCompletionListener(this);
 
+        volume = preferences.getInt(KEY_VOLUME, MAX_VOLUME);
+
         notificationViews = new RemoteViews(getApplicationContext().getPackageName(),
                 R.layout.notification);
         setOnClickPendingIntent(notificationViews, R.id.ibPrevious, REQUEST_PREVIOUS);
         setOnClickPendingIntent(notificationViews, R.id.ibPlayPause, REQUEST_PLAY_PAUSE);
         setOnClickPendingIntent(notificationViews, R.id.ibNext, REQUEST_NEXT);
         setOnClickPendingIntent(notificationViews, R.id.ibStop, REQUEST_STOP);
+        setOnClickPendingIntent(notificationViews, R.id.ibVolumeDown, REQUEST_VOLUME_DOWN);
+        setOnClickPendingIntent(notificationViews, R.id.ibVolumeUp, REQUEST_VOLUME_UP);
 
         notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -138,6 +154,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             case REQUEST_STOP:
                 stopSelf();
                 break;
+            case REQUEST_VOLUME_DOWN:
+                volumeDown();
+                break;
+            case REQUEST_VOLUME_UP:
+                volumeUp();
+                break;
             default:
                 Log.w(TAG, "Invalid request");
                 break;
@@ -170,6 +192,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "MainService.onPrepared()");
         prepared = true;
+
+        setVolume();
         player.start();
 
         Song song = songs.get(songIndex);
@@ -294,6 +318,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
+    private void setVolume() {
+        Log.d(TAG, "MainService.setVolume()");
+        float f = (float) (1 - (Math.log(MAX_VOLUME + 1 - volume) / Math.log(MAX_VOLUME)));
+        Log.d(TAG, "volume=" + volume + ":" + f);
+        player.setVolume(f, f);
+
+        notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(this.volume));
+        startForeground(1, notification);
+    }
+
     private void playPause() {
         Log.d(TAG, "MainService.playPause()");
         int ibSrcId;
@@ -312,6 +346,27 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         notificationViews.setImageViewResource(R.id.ibPlayPause, ibSrcId);
         startForeground(1, notification);
+    }
+
+    private void volumeDown() {
+        Log.d(TAG, "MainService.volumeDown()");
+        if (volume > 0) {
+            volume--;
+            changeVolume();
+        }
+    }
+
+    private void volumeUp() {
+        Log.d(TAG, "MainService.volumeUp()");
+        if (volume < MAX_VOLUME) {
+            volume++;
+            changeVolume();
+        }
+    }
+
+    private void changeVolume() {
+        setVolume();
+        preferences.edit().putInt(KEY_VOLUME, volume).apply();
     }
 
     private void updatePlayedSong() {

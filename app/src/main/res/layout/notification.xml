@@ -54,6 +54,27 @@
             android:src="@drawable/ic_stop"
             android:contentDescription="@string/stop" />
 
+        <TextView
+            android:id="@+id/tvVolume"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center" />
+
+        <ImageButton
+            android:id="@+id/ibVolumeDown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_volume_down"
+            android:contentDescription="@string/stop" />
+
+        <ImageButton
+            android:id="@+id/ibVolumeUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/stop"
+            android:src="@drawable/ic_volume_up" />
+
     </LinearLayout>
 
 </LinearLayout>

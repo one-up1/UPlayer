@@ -3,10 +3,8 @@ package com.oneup.uplayer.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,7 +21,6 @@ import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class SongsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     public static final String ARG_SOURCE = "source";
@@ -72,7 +69,7 @@ public class SongsActivity extends AppCompatActivity implements AdapterView.OnIt
                     cursor = dbOpenHelper.getReadableDatabase().query(Song.TABLE_NAME, null,
                             getIntent().getStringExtra(ARG_SELECTION),
                             getIntent().getStringArrayExtra(ARG_SELECTION_ARGS),
-                            null, null, null);
+                            null, null, getIntent().getStringExtra(ARG_ORDER_BY));
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid source");

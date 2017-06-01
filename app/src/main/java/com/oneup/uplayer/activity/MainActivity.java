@@ -7,34 +7,30 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 
-import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.obj.Artist;
 import com.oneup.uplayer.db.obj.Playlist;
 import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
+//TODO: Favorite.
+//TODO: Clean database option to delete songs that don't exist anymore.
 //TODO: Recently added.
 //TODO: Display total playlist duration.
 //FIXME: Error -38 "You seem to try to start the playing before the preparation is complete"
@@ -73,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "MainActivity.init()");
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -82,31 +76,10 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         viewPager = (ViewPager) findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.setCurrentItem(2);
 
-        /*TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);*/
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -119,18 +92,18 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return ArtistsFragment.newInstance(
-                            ArtistsFragment.SOURCE_ANDROID, Artist.ARTIST);
-                case 1:
                     return PlaylistsFragment.newInstance();
+                case 1:
+                    return StarredFragment.newInstance();
                 case 2:
-                    return ArtistsFragment.newInstance(
-                            ArtistsFragment.SOURCE_DB, Artist.LAST_PLAYED + " DESC");
+                    return ArtistsFragment.newInstance(ArtistsFragment.SOURCE_ANDROID,
+                            Artist.ARTIST, Song.TITLE);
                 case 3:
-                    return ArtistsFragment.newInstance(
-                            ArtistsFragment.SOURCE_DB, Artist.TIMES_PLAYED + " DESC");
+                    return ArtistsFragment.newInstance(ArtistsFragment.SOURCE_DB,
+                            Artist.LAST_PLAYED + " DESC", Song.LAST_PLAYED + " DESC");
                 case 4:
-                    return QueryFragment.newInstance();
+                    return ArtistsFragment.newInstance(ArtistsFragment.SOURCE_DB,
+                            Artist.TIMES_PLAYED + " DESC", Song.TIMES_PLAYED + " DESC");
             }
             return null;
         }
@@ -144,17 +117,92 @@ public class MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return getString(R.string.artists);
-                case 1:
                     return getString(R.string.playlists);
+                case 1:
+                    return getString(R.string.starred);
                 case 2:
-                    return getString(R.string.last_played);
+                    return getString(R.string.artists);
                 case 3:
-                    return getString(R.string.most_played);
+                    return getString(R.string.last_played);
                 case 4:
-                    return getString(R.string.query);
+                    return getString(R.string.most_played);
             }
             return null;
+        }
+    }
+
+    public static class PlaylistsFragment extends Fragment
+            implements AdapterView.OnItemClickListener {
+        private ArrayList<Playlist> playlists;
+
+        public PlaylistsFragment() {
+        }
+
+        public static PlaylistsFragment newInstance() {
+            return new PlaylistsFragment();
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View ret = inflater.inflate(R.layout.fragment_playlists, container, false);
+            ListView lvPlaylists = (ListView) ret.findViewById(R.id.lvPlaylists);
+            lvPlaylists.setOnItemClickListener(this);
+
+            Cursor c = getContext().getContentResolver().query(
+                    MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+                    new String[]{
+                            MediaStore.Audio.Playlists._ID,
+                            MediaStore.Audio.Playlists.NAME
+                    }, null, null, MediaStore.Audio.Playlists.NAME);
+            if (c != null) {
+                try {
+                    playlists = new ArrayList<>();
+                    int iId = c.getColumnIndex(MediaStore.Audio.Playlists._ID);
+                    int iName = c.getColumnIndex(MediaStore.Audio.Playlists.NAME);
+                    while (c.moveToNext()) {
+                        playlists.add(new Playlist(c.getLong(iId), c.getString(iName)));
+                    }
+                } finally {
+                    c.close();
+                }
+
+                Log.d(TAG, "Queried " + playlists.size() + " playlists");
+                lvPlaylists.setAdapter(new ArrayAdapter<>(getContext(),
+                        android.R.layout.simple_list_item_1, playlists));
+            }
+
+            return ret;
+        }
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_SOURCE, SongsActivity.SOURCE_ANDROID)
+                    .putExtra(SongsActivity.ARG_URI, MediaStore.Audio.Playlists.Members
+                            .getContentUri("external", playlists.get(position).getId()))
+                    .putExtra(SongsActivity.ARG_ID_COLUMN,
+                            MediaStore.Audio.Playlists.Members.AUDIO_ID)
+                    .putExtra(SongsActivity.ARG_ORDER_BY,
+                            MediaStore.Audio.Playlists.Members.PLAY_ORDER));
+        }
+    }
+
+    public static class StarredFragment extends Fragment {
+        public StarredFragment() {
+        }
+
+        public static StarredFragment newInstance() {
+            StarredFragment fragment = new StarredFragment();
+            return fragment;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View ret = inflater.inflate(R.layout.fragment_starred, container, false);
+            ListView lvSongs = (ListView) ret.findViewById(R.id.lvSongs);
+            return ret;
         }
     }
 
@@ -162,21 +210,22 @@ public class MainActivity extends AppCompatActivity {
             implements AdapterView.OnItemClickListener {
         private static final String ARG_SOURCE = "source";
         private static final String ARG_ORDER_BY = "order_by";
+        private static final String ARG_SONGS_ORDER_BY = "songs_order_by";
 
         private static final int SOURCE_ANDROID = 1;
         private static final int SOURCE_DB = 2;
 
-        private DbOpenHelper dbOpenHelper;
         private ArrayList<Artist> artists;
 
         public ArtistsFragment() {
         }
 
-        public static ArtistsFragment newInstance(int source, String orderBy) {
+        public static ArtistsFragment newInstance(int source, String orderBy, String songsOrderBy) {
             ArtistsFragment fragment = new ArtistsFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SOURCE, source);
             args.putString(ARG_ORDER_BY, orderBy);
+            args.putString(ARG_SONGS_ORDER_BY, songsOrderBy);
             fragment.setArguments(args);
             return fragment;
         }
@@ -240,120 +289,8 @@ public class MainActivity extends AppCompatActivity {
                     .putExtra(SongsActivity.ARG_SELECTION, Song.ARTIST_ID + "=?")
                     .putExtra(SongsActivity.ARG_SELECTION_ARGS,
                             new String[]{Long.toString(artists.get(position).getId())})
-                    .putExtra(SongsActivity.ARG_ORDER_BY, Song.TITLE));
-        }
-    }
-
-    public static class PlaylistsFragment extends Fragment
-            implements AdapterView.OnItemClickListener {
-        private ArrayList<Playlist> playlists;
-
-        public PlaylistsFragment() {
-        }
-
-        public static PlaylistsFragment newInstance() {
-            return new PlaylistsFragment();
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View ret = inflater.inflate(R.layout.fragment_playlists, container, false);
-            ListView lvPlaylists = (ListView) ret.findViewById(R.id.lvPlaylists);
-            lvPlaylists.setOnItemClickListener(this);
-
-            Cursor c = getContext().getContentResolver().query(
-                    MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
-                    new String[]{
-                            MediaStore.Audio.Playlists._ID,
-                            MediaStore.Audio.Playlists.NAME
-                    }, null, null, MediaStore.Audio.Playlists.NAME);
-            if (c != null) {
-                try {
-                    playlists = new ArrayList<>();
-                    int iId = c.getColumnIndex(MediaStore.Audio.Playlists._ID);
-                    int iName = c.getColumnIndex(MediaStore.Audio.Playlists.NAME);
-                    while (c.moveToNext()) {
-                        playlists.add(new Playlist(c.getLong(iId), c.getString(iName)));
-                    }
-                } finally {
-                    c.close();
-                }
-
-                Log.d(TAG, "Queried " + playlists.size() + " playlists");
-                lvPlaylists.setAdapter(new ArrayAdapter<>(getContext(),
-                        android.R.layout.simple_list_item_1, playlists));
-            }
-
-            return ret;
-        }
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(SongsActivity.ARG_SOURCE, SongsActivity.SOURCE_ANDROID)
-                    .putExtra(SongsActivity.ARG_URI, MediaStore.Audio.Playlists.Members
-                            .getContentUri("external", playlists.get(position).getId()))
-                    .putExtra(SongsActivity.ARG_ID_COLUMN,
-                            MediaStore.Audio.Playlists.Members.AUDIO_ID)
                     .putExtra(SongsActivity.ARG_ORDER_BY,
-                            MediaStore.Audio.Playlists.Members.PLAY_ORDER));
-        }
-    }
-
-    public static class QueryFragment extends Fragment implements View.OnClickListener {
-        private EditText etSelection;
-        private Spinner sSortColumn;
-        private CheckBox cbSortDescending;
-        private Button bOk;
-
-        public QueryFragment() {
-        }
-
-        public static QueryFragment newInstance() {
-            return new QueryFragment();
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View ret = inflater.inflate(R.layout.fragment_query, container, false);
-
-            etSelection = (EditText) ret.findViewById(R.id.etSelection);
-            sSortColumn = (Spinner) ret.findViewById(R.id.sSortColumn);
-            cbSortDescending = (CheckBox) ret.findViewById(R.id.cbSortDescending);
-
-            bOk = (Button) ret.findViewById(R.id.bOk);
-            bOk.setOnClickListener(this);
-
-            return ret;
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (v == bOk) {
-                Intent intent = new Intent(getContext(), SongsActivity.class)
-                        .putExtra(SongsActivity.ARG_SOURCE, SongsActivity.SOURCE_ANDROID)
-                        .putExtra(SongsActivity.ARG_URI,
-                                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-                        .putExtra(SongsActivity.ARG_ID_COLUMN,
-                                MediaStore.Audio.Media._ID);
-
-                String selection = etSelection.getText().toString().trim();
-                if (!selection.isEmpty()) {
-                    intent.putExtra(SongsActivity.ARG_SELECTION, selection);
-                }
-
-                String sortColumn = (String) sSortColumn.getSelectedItem();
-                if (!sortColumn.isEmpty()) {
-                    if (cbSortDescending.isChecked()) {
-                        sortColumn += " DESC";
-                    }
-                    intent.putExtra(SongsActivity.ARG_ORDER_BY, sortColumn);
-                }
-
-                startActivity(intent);
-            }
+                            getArguments().getString(ARG_SONGS_ORDER_BY)));
         }
     }
 }

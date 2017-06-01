@@ -12,7 +12,6 @@
     <ListView
         android:id="@+id/lvArtists"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="50dp" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

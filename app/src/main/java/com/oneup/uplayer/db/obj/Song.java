@@ -1,6 +1,5 @@
 package com.oneup.uplayer.db.obj;
 
-import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;

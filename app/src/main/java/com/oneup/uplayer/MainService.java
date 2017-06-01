@@ -22,7 +22,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import com.oneup.uplayer.activity.PlayerActivity;
 import com.oneup.uplayer.db.DbColumns;
@@ -322,7 +321,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.setVolume()");
         float f = (float) (1 - (Math.log(MAX_VOLUME + 1 - volume) / Math.log(MAX_VOLUME)));
         Log.d(TAG, "volume=" + volume + ":" + f);
-        player.setVolume(f, f);
+        //player.setVolume(f, f);
 
         notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(this.volume));
         startForeground(1, notification);

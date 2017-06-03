@@ -15,4 +15,6 @@
     <string name="play_pause">Play/Pause</string>
     <string name="next">Next</string>
     <string name="stop">Stop</string>
+    <string name="song_starred">Song starred</string>
+    <string name="song_unstarred">Song unstarred</string>
 </resources>

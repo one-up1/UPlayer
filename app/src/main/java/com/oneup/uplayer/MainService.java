@@ -321,7 +321,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.setVolume()");
         float f = (float) (1 - (Math.log(MAX_VOLUME + 1 - volume) / Math.log(MAX_VOLUME)));
         Log.d(TAG, "volume=" + volume + ":" + f);
-        //player.setVolume(f, f);
+        player.setVolume(f, f);
 
         notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(this.volume));
         startForeground(1, notification);

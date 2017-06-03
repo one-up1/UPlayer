@@ -72,5 +72,6 @@ public class SongAdapter extends BaseAdapter {
     }
 
     public void setButtons(View view, Song song) {
+
     }
 }

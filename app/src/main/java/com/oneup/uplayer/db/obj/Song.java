@@ -9,6 +9,8 @@ import com.oneup.uplayer.db.DbColumns;
 public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelable {
     public static final String TABLE_NAME = "songs";
 
+    public static final String STARRED = "starred";
+
     private long id;
     private String title;
     private long artistId;
@@ -17,6 +19,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     private long lastPlayed;
     private int timesPlayed;
+    private boolean starred;
 
     public Song() {
     }
@@ -38,6 +41,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         out.writeLong(artistId);
         out.writeString(artist);
         out.writeInt(year);
+        out.writeInt(starred ? 1 : 0);
     }
 
     public long getId() {
@@ -96,6 +100,14 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.timesPlayed = timesPlayed;
     }
 
+    public boolean isStarred() {
+        return starred;
+    }
+
+    public void setStarred(boolean starred) {
+        this.starred = starred;
+    }
+
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
 
         @Override
@@ -106,6 +118,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
             ret.artistId = in.readLong();
             ret.artist = in.readString();
             ret.year = in.readInt();
+            ret.starred = in.readInt() == 1;
             return ret;
         }
 

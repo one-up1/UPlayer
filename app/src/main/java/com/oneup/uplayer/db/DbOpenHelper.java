@@ -29,7 +29,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             Song.ARTIST + " TEXT," +
             Song.YEAR + " INTEGER," +
             Song.LAST_PLAYED + " INTEGER," +
-            Song.TIMES_PLAYED + " INTEGER)";
+            Song.TIMES_PLAYED + " INTEGER," +
+            Song.STARRED + " INTEGER)";
 
     public DbOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

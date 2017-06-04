@@ -19,7 +19,7 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.PlaylistsFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: Favorite.
+//FIXME: Database not updated when starring/unstarring.
 //TODO: Clean database option to delete songs that don't exist anymore.
 //TODO: Recently added.
 //TODO: Display total playlist duration.
@@ -41,6 +41,12 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sectionsPagerAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -97,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
                             Artist.TIMES_PLAYED + " DESC", Song.TIMES_PLAYED + " DESC");
             }
             return null;
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            // POSITION_NONE makes it possible to reload the PagerAdapter.
+            return POSITION_NONE;
         }
 
         @Override

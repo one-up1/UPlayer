@@ -1,14 +1,10 @@
 package com.oneup.uplayer.fragment;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.BaseColumns;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,19 +13,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
+import com.oneup.uplayer.SongsListView;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
-public class SongsFragment extends Fragment implements AdapterView.OnItemClickListener,
-        AdapterView.OnItemLongClickListener {
+public class SongsFragment extends Fragment implements AdapterView.OnItemClickListener {
     public static final int SOURCE_ANDROID = 1;
     public static final int SOURCE_DB = 2;
 
@@ -42,7 +37,6 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
     private static final String ARG_SELECTION_ARGS = "selection_args";
     private static final String ARG_ORDER_BY = "order_by";
 
-    private ListView lvSongs;
     private ArrayList<Song> songs;
 
     public SongsFragment() {
@@ -66,9 +60,8 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View ret = inflater.inflate(R.layout.fragment_songs, container, false);
-        ListView lvSongs = (ListView) ret.findViewById(R.id.lvSongs);
-        lvSongs.setOnItemClickListener(this);
-        lvSongs.setOnItemLongClickListener(this);
+        SongsListView slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
+        slvSongs.setOnItemClickListener(this);
 
         String idColumn = getArguments().getString(ARG_ID_COLUMN);
         DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
@@ -139,7 +132,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
         }
 
         Log.d(TAG, "Queried " + songs.size() + " songs");
-        lvSongs.setAdapter(new ListAdapter(getContext(), songs));
+        slvSongs.setAdapter(new ListAdapter(getContext(), songs));
 
         return ret;
     }
@@ -152,49 +145,6 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
                 .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
                 .putExtra(MainService.ARG_SONGS, songs)
                 .putExtra(MainService.ARG_SONG_INDEX, position));
-    }
-
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
-        Song song = songs.get(position);
-
-        try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
-            String selection = Song._ID + "=?";
-            String[] selectionArgs = new String[] { Long.toString(song.getId()) };
-            ContentValues values = new ContentValues();
-            try (Cursor c = db.query(Song.TABLE_NAME, new String[] { Song.STARRED },
-                    selection, selectionArgs, null, null, null)) {
-                if (c.moveToNext()) {
-                    song.setStarred(c.getInt(0) != 1);
-                    values.put(Song.STARRED, song.isStarred() ? 1 : 0);
-                    db.update(Song.TABLE_NAME, values, selection, selectionArgs);
-                } else {
-                    song.setStarred(true);
-                    values.put(BaseColumns._ID, song.getId());
-                    values.put(MediaStore.MediaColumns.TITLE, song.getTitle());
-                    if (song.getArtistId() > 0) {
-                        values.put(MediaStore.Audio.AudioColumns.ARTIST_ID, song.getArtistId());
-                        values.put(MediaStore.Audio.AudioColumns.ARTIST, song.getArtist());
-                    }
-                    if (song.getYear() > 0) {
-                        values.put(MediaStore.Audio.AudioColumns.YEAR, song.getYear());
-                    }
-                    values.put(Song.STARRED, song.isStarred() ? 1 : 0);
-                    db.insert(Song.TABLE_NAME, null, values);
-                }
-            }
-        }
-
-        if (song.isStarred()) {
-            Toast.makeText(getContext(), R.string.song_starred, Toast.LENGTH_SHORT).show();
-            song.setStarred(false);
-        } else {
-            Toast.makeText(getContext(), R.string.song_unstarred, Toast.LENGTH_SHORT).show();
-            song.setStarred(true);
-        }
-
-        return true;
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {

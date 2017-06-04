@@ -29,12 +29,12 @@ public class SongAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return null;
+        return songs.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return songs.get(position).getId();
     }
 
     @SuppressLint("SetTextI18n")
@@ -72,6 +72,5 @@ public class SongAdapter extends BaseAdapter {
     }
 
     public void setButtons(View view, Song song) {
-
     }
 }

@@ -12,12 +12,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.MediaController;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
+import com.oneup.uplayer.SongsListView;
 import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class PlayerActivity extends Activity implements
         AdapterView.OnItemClickListener, MediaController.MediaPlayerControl {
     private static final String TAG = "UPlayer";
 
-    private ListView lvSongs;
+    private SongsListView slvSongs;
     private SongAdapter songsAdapter;
 
     private MusicController controller;
@@ -37,8 +37,8 @@ public class PlayerActivity extends Activity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        lvSongs = (ListView) findViewById(R.id.lvSongs);
-        lvSongs.setOnItemClickListener(this);
+        slvSongs = (SongsListView) findViewById(R.id.slvSongs);
+        slvSongs.setOnItemClickListener(this);
 
         controller = new MusicController();
         controller.setPrevNextListeners(new View.OnClickListener() {
@@ -57,7 +57,7 @@ public class PlayerActivity extends Activity implements
             }
         });
         controller.setMediaPlayer(PlayerActivity.this);
-        controller.setAnchorView(lvSongs);
+        controller.setAnchorView(slvSongs);
         controller.setEnabled(true);
     }
 
@@ -170,9 +170,8 @@ public class PlayerActivity extends Activity implements
                 MainService.MainBinder binder = (MainService.MainBinder) service;
                 mainService = binder.getService();
 
-                PlayerActivity.this.songsAdapter = new ListAdapter(PlayerActivity.this,
-                        mainService.getSongs());
-                lvSongs.setAdapter(PlayerActivity.this.songsAdapter);
+                songsAdapter = new ListAdapter(PlayerActivity.this, mainService.getSongs());
+                slvSongs.setAdapter(songsAdapter);
             } catch (Exception ex) {
                 Log.e(TAG, "Err", ex);
             }
@@ -216,7 +215,7 @@ public class PlayerActivity extends Activity implements
                     if (mainService.getSongs().size() > 1) {
                         Log.d(TAG, "Deleting: " + song);
                         mainService.deleteSong(song);
-                        PlayerActivity.this.songsAdapter.notifyDataSetChanged();
+                        songsAdapter.notifyDataSetChanged();
                     } else {
                         Log.d(TAG, "Not deleting last song");
                     }

@@ -19,11 +19,7 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.PlaylistsFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//FIXME: Database not updated when starring/unstarring.
-//TODO: Clean database option to delete songs that don't exist anymore.
 //TODO: Recently added.
-//TODO: Display total playlist duration.
-//FIXME: Error -38 "You seem to try to start the playing before the preparation is complete"
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
@@ -46,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        sectionsPagerAdapter.notifyDataSetChanged();
+        notifyDataSetChanged();
     }
 
     @Override
@@ -59,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             finish();
         }
+    }
+
+    public void notifyDataSetChanged() {
+        sectionsPagerAdapter.notifyDataSetChanged();
     }
 
     private void init() {
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                     return PlaylistsFragment.newInstance();
                 case 1:
                     return SongsFragment.newInstance(SongsFragment.SOURCE_DB, null, Song._ID,
-                            Song.STARRED + "=1", null, Song.LAST_PLAYED);
+                            Song.STARRED + " IS NOT NULL", null, Song.STARRED + " DESC");
                 case 2:
                     return ArtistsFragment.newInstance(ArtistsFragment.SOURCE_ANDROID,
                             Artist.ARTIST, Song.TITLE);

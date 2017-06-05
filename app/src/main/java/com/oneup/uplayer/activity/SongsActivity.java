@@ -3,12 +3,9 @@ package com.oneup.uplayer.activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.obj.Song;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 public class SongsActivity extends FragmentActivity {

@@ -22,6 +22,9 @@ import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
+//FIXME: Media controls.
+//TODO: Display total playlist duration.
+
 public class PlayerActivity extends Activity implements
         AdapterView.OnItemClickListener, MediaController.MediaPlayerControl {
     private static final String TAG = "UPlayer";

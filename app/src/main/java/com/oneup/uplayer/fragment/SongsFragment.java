@@ -19,12 +19,14 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
 import com.oneup.uplayer.SongsListView;
+import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
-public class SongsFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class SongsFragment extends Fragment implements AdapterView.OnItemClickListener,
+        SongsListView.OnDataSetChangedListener {
     public static final int SOURCE_ANDROID = 1;
     public static final int SOURCE_DB = 2;
 
@@ -62,6 +64,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
         View ret = inflater.inflate(R.layout.fragment_songs, container, false);
         SongsListView slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
         slvSongs.setOnItemClickListener(this);
+        slvSongs.setOnDataSetChangedListener(this);
 
         String idColumn = getArguments().getString(ARG_ID_COLUMN);
         DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
@@ -96,6 +99,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
 
         try {
             songs = new ArrayList<>();
+
             int iId = cursor.getColumnIndex(idColumn);
             int iTitle = cursor.getColumnIndex(Song.TITLE);
             int iArtistId = cursor.getColumnIndex(Song.ARTIST_ID);
@@ -104,6 +108,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
 
             int iLastPlayed = cursor.getColumnIndex(Song.LAST_PLAYED);
             int iTimesPlayed = cursor.getColumnIndex(Song.TIMES_PLAYED);
+
             int iStarred = cursor.getColumnIndex(Song.STARRED);
 
             while (cursor.moveToNext()) {
@@ -122,7 +127,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
                     song.setTimesPlayed(cursor.getInt(iTimesPlayed));
                 }
                 if (iStarred != -1) {
-                    song.setStarred(cursor.getInt(iTimesPlayed) == 1);
+                    song.setStarred(cursor.getLong(iStarred));
                 }
 
                 songs.add(song);
@@ -145,6 +150,13 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
                 .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
                 .putExtra(MainService.ARG_SONGS, songs)
                 .putExtra(MainService.ARG_SONG_INDEX, position));
+    }
+
+    @Override
+    public void onDataSetChanged() {
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).notifyDataSetChanged();
+        }
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {

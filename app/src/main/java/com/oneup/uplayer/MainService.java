@@ -31,6 +31,8 @@ import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
+//FIXME: Error -38 "You seem to try to start the playing before the preparation is complete"
+
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     public static final String ARG_REQUEST_CODE = "request_code";
@@ -305,15 +307,24 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void play() {
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
-        player.reset();
+        Song song = songs.get(songIndex);
         try {
-            Song song = songs.get(songIndex);
-            long mediaId = song.getId();
+            player.reset();
+            prepared = false;
+
             player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaId));
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.getId()));
             player.prepareAsync();
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
+
+            // Delete song from DB when it doesn't exist anymore.
+            try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
+                db.delete(Song.TABLE_NAME, BaseColumns._ID + "=?",
+                        new String[]{Long.toString(song.getId())});
+            }
+            deleteSong(song);
+            Log.d(TAG, "Song deleted");
         }
     }
 

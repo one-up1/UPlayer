@@ -10,26 +10,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:maxLines="1" />
+        android:maxLength="22" />
 
     <TextView
         android:id="@+id/tvArtist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvTitle" />
+        android:layout_below="@+id/tvTitle"
+        android:maxLength="26" />
 
     <TextView
         android:id="@+id/tvYear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvTitle"
-        android:layout_toStartOf="@+id/tvTimesPlayed" />
+        android:layout_toStartOf="@+id/llButtons" />
 
     <TextView
         android:id="@+id/tvTimesPlayed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toStartOf="@+id/llButtons" />
+        android:layout_toStartOf="@+id/llButtons"
+        android:layout_below="@+id/tvTitle" />
 
     <LinearLayout
         android:id="@+id/llButtons"

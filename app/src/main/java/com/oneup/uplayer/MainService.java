@@ -316,6 +316,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         mediaMetadataRetriever.setDataSource(getApplicationContext(), song.getContentUri());
         song.setDuration(Integer.parseInt(mediaMetadataRetriever.extractMetadata(
                 MediaMetadataRetriever.METADATA_KEY_DURATION)));
+        mediaMetadataRetriever.release();
         Log.d(TAG, song + ": " + song.getDuration());
     }
 
@@ -393,7 +394,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void updateSongTextView() {
         long timeLeft = 0;
         for (int i = songIndex + 1; i < songs.size(); i++) {
-            timeLeft += songs.get(songIndex).getDuration();
+            timeLeft += songs.get(i).getDuration();
         }
 
         notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,

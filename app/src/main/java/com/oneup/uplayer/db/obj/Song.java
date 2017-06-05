@@ -1,5 +1,7 @@
 package com.oneup.uplayer.db.obj;
 
+import android.content.ContentUris;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -21,6 +23,8 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     private int timesPlayed;
 
     private long starred;
+
+    private int duration;
 
     public Song() {
     }
@@ -107,6 +111,18 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     public void setStarred(long starred) {
         this.starred = starred;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public Uri getContentUri() {
+        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

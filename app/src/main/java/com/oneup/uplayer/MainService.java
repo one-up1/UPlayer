@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
@@ -135,6 +136,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             case REQUEST_START:
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);
                 songIndex = intent.getIntExtra(ARG_SONG_INDEX, 0);
+
+                for (Song song : songs) {
+                    setSongDuration(song);
+                }
                 play();
                 break;
             case REQUEST_PLAY_NEXT:
@@ -192,18 +197,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     @Override
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "MainService.onPrepared()");
-        prepared = true;
-
         setVolume();
         player.start();
 
         Song song = songs.get(songIndex);
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
-        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
-                songIndex + 1, songs.size()));
+        updateSongTextView();
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_pause);
         startForeground(1, notification);
+
+        prepared = true;
     }
 
     @Override
@@ -213,6 +217,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
         startForeground(1, notification);
+
+        prepared = false;
         return false;
     }
 
@@ -221,6 +227,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onCompletion()");
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
         startForeground(1, notification);
+        prepared = false;
 
         if (player.getCurrentPosition() > 0) {
             updatePlayedSong();
@@ -230,6 +237,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     public void addSong(Song song, boolean next) {
         Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
+        setSongDuration(song);
         if (songs == null) {
             songs = new ArrayList<>();
             songs.add(song);
@@ -243,8 +251,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             songs.add(song);
         }
 
-        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
-                songIndex + 1, songs.size()));
+        updateSongTextView();
         startForeground(1, notification);
     }
 
@@ -293,8 +300,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             play();
         }
 
-        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
-                songIndex + 1, songs.size()));
+        updateSongTextView();
         startForeground(1, notification);
     }
 
@@ -305,15 +311,20 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
+    private void setSongDuration(Song song) {
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(getApplicationContext(), song.getContentUri());
+        song.setDuration(Integer.parseInt(mediaMetadataRetriever.extractMetadata(
+                MediaMetadataRetriever.METADATA_KEY_DURATION)));
+        Log.d(TAG, song + ": " + song.getDuration());
+    }
+
     private void play() {
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         Song song = songs.get(songIndex);
         try {
             player.reset();
-            prepared = false;
-
-            player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.getId()));
+            player.setDataSource(getApplicationContext(), song.getContentUri());
             player.prepareAsync();
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
@@ -377,6 +388,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void changeVolume() {
         setVolume();
         preferences.edit().putInt(KEY_VOLUME, volume).apply();
+    }
+
+    private void updateSongTextView() {
+        long timeLeft = 0;
+        for (int i = songIndex + 1; i < songs.size(); i++) {
+            timeLeft += songs.get(songIndex).getDuration();
+        }
+
+        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
+                songIndex + 1, songs.size(), Util.formatDuration(timeLeft)));
     }
 
     private void updatePlayedSong() {

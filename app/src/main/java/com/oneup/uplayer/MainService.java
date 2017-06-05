@@ -32,6 +32,7 @@ import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
+//TODO: Songs should be deleted when getting duration fails, not when playback starts.
 //FIXME: Error -38 "You seem to try to start the playing before the preparation is complete"
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
@@ -136,11 +137,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             case REQUEST_START:
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);
                 songIndex = intent.getIntExtra(ARG_SONG_INDEX, 0);
-
-                for (Song song : songs) {
-                    setSongDuration(song);
-                }
-                play();
+                start();
                 break;
             case REQUEST_PLAY_NEXT:
                 addSong((Song) intent.getParcelableExtra(ARG_SONG), true);
@@ -235,6 +232,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
+    public void start() {
+        for (Song song : songs) {
+            setSongDuration(song);
+        }
+
+        play();
+    }
+
     public void addSong(Song song, boolean next) {
         Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
         setSongDuration(song);
@@ -286,22 +291,25 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void deleteSong(Song song) {
-        int songIndex = songs.indexOf(song);
-        Log.d(TAG, "MainService.deleteSong(), song=" + songIndex + ":" + song +
-                ", current=" + this.songIndex + ":" + songs.get(this.songIndex));
-        songs.remove(song);
+        Log.d(TAG, "MainService.deleteSong(" + song + ")");
+        if (songs.size() > 1) {
+            int songIndex = songs.indexOf(song);
+            songs.remove(song);
 
-        if (songIndex < this.songIndex) {
-            this.songIndex--;
-        } else if (songIndex == this.songIndex) {
-            if (songIndex == songs.size()) {
+            if (songIndex < this.songIndex) {
                 this.songIndex--;
+            } else if (songIndex == this.songIndex) {
+                if (songIndex == songs.size()) {
+                    this.songIndex--;
+                }
+                play();
             }
-            play();
-        }
 
-        updateSongTextView();
-        startForeground(1, notification);
+            updateSongTextView();
+            startForeground(1, notification);
+        } else {
+            stopSelf();
+        }
     }
 
     private void setOnClickPendingIntent(RemoteViews views, int viewId, int requestCode) {
@@ -312,12 +320,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void setSongDuration(Song song) {
-        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-        mediaMetadataRetriever.setDataSource(getApplicationContext(), song.getContentUri());
-        song.setDuration(Integer.parseInt(mediaMetadataRetriever.extractMetadata(
-                MediaMetadataRetriever.METADATA_KEY_DURATION)));
-        mediaMetadataRetriever.release();
-        Log.d(TAG, song + ": " + song.getDuration());
+        try {
+            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+            mediaMetadataRetriever.setDataSource(getApplicationContext(), song.getContentUri());
+            song.setDuration(Integer.parseInt(mediaMetadataRetriever.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_DURATION)));
+            mediaMetadataRetriever.release();
+            Log.d(TAG, song + ": " + song.getDuration());
+        } catch (Exception ex) {
+            Log.e(TAG, "Error getting duration of " + song, ex);
+        }
     }
 
     private void play() {

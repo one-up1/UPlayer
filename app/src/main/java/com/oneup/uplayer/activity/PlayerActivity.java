@@ -214,13 +214,9 @@ public class PlayerActivity extends Activity implements
             Song song = (Song) v.getTag();
             switch (v.getId()) {
                 case R.id.ibDelete:
-                    if (mainService.getSongs().size() > 1) {
-                        Log.d(TAG, "Deleting: " + song);
-                        mainService.deleteSong(song);
-                        songsAdapter.notifyDataSetChanged();
-                    } else {
-                        Log.d(TAG, "Not deleting last song");
-                    }
+                    Log.d(TAG, "Deleting: " + song);
+                    mainService.deleteSong(song);
+                    songsAdapter.notifyDataSetChanged();
                     break;
             }
         }

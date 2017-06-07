@@ -427,8 +427,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
             values = new ContentValues();
             values.put(Song.LAST_PLAYED, lastPlayed);
-            values.put(Song.TIMES_PLAYED, timesPlayed + 1);
-            if (timesPlayed == 0) {
+            if (timesPlayed == -1) {
                 values.put(BaseColumns._ID, song.getId());
                 values.put(MediaStore.MediaColumns.TITLE, song.getTitle());
                 if (song.getArtistId() > 0) {
@@ -438,9 +437,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 if (song.getYear() > 0) {
                     values.put(MediaStore.Audio.AudioColumns.YEAR, song.getYear());
                 }
+                values.put(Song.TIMES_PLAYED, 1);
                 db.insert(Song.TABLE_NAME, null, values);
                 Log.d(TAG, "Song inserted");
             } else {
+                values.put(Song.TIMES_PLAYED, timesPlayed + 1);
                 db.update(Song.TABLE_NAME, values, BaseColumns._ID + "=?",
                         new String[]{Long.toString(song.getId())});
                 Log.d(TAG, "Song updated");
@@ -451,15 +452,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
             values = new ContentValues();
             values.put(Artist.LAST_PLAYED, lastPlayed);
-            values.put(Artist.TIMES_PLAYED, timesPlayed + 1);
-            if (timesPlayed == 0) {
+            if (timesPlayed == -1) {
                 values.put(BaseColumns._ID, song.getArtistId());
                 values.put(MediaStore.Audio.Artists.ARTIST, song.getArtist());
+                values.put(Artist.TIMES_PLAYED, 1);
                 db.insert(Artist.TABLE_NAME, null, values);
                 Log.d(TAG, "Artist inserted");
             } else {
                 db.update(Artist.TABLE_NAME, values, BaseColumns._ID + "=?",
                         new String[]{Long.toString(song.getArtistId())});
+                values.put(Artist.TIMES_PLAYED, timesPlayed + 1);
                 Log.d(TAG, "Artist updated");
             }
         }
@@ -474,7 +476,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 BaseColumns._ID + "=?",
                 new String[] { Long.toString(id) },
                 null, null, null)) {
-            return c.moveToFirst() ? c.getInt(0) : 0;
+            return c.moveToFirst() ? c.getInt(0) : -1;
         }
     }
 

@@ -22,7 +22,7 @@ import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
-//FIXME: Media controls.
+//FIXME: Media controls. Controller not updated when going to next song.
 
 public class PlayerActivity extends Activity implements
         AdapterView.OnItemClickListener, MediaController.MediaPlayerControl {

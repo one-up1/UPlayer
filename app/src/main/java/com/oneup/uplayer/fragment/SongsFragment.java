@@ -131,6 +131,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
                 }
 
                 songs.add(song);
+                Log.d(TAG, song + ":" + song.getLastPlayed() + "," + song.getTimesPlayed());
             }
         } finally {
             cursor.close();

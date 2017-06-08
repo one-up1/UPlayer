@@ -7,9 +7,7 @@ public class Playlist implements Parcelable {
     private long id;
     private String name;
 
-    public Playlist(long id, String name) {
-        this.id = id;
-        this.name = name;
+    public Playlist() {
     }
 
     private Playlist(Parcel in) {
@@ -37,8 +35,16 @@ public class Playlist implements Parcelable {
         return id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

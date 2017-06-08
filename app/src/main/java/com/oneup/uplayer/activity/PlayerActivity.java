@@ -22,7 +22,7 @@ import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
 
-//FIXME: Media controls. Controller not updated when going to next song.
+//FIXME: Media controls. Controller not updated when going to next song, occurs when seeking is used?
 
 public class PlayerActivity extends Activity implements
         AdapterView.OnItemClickListener, MediaController.MediaPlayerControl {
@@ -93,8 +93,10 @@ public class PlayerActivity extends Activity implements
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (mainService != null) {
-            mainService.setSongIndex(position);
+        if (parent == slvSongs) {
+            if (mainService != null) {
+                mainService.setSongIndex(position);
+            }
         }
     }
 

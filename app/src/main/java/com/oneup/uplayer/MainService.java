@@ -3,7 +3,6 @@ package com.oneup.uplayer;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -33,7 +32,7 @@ import com.oneup.uplayer.db.obj.Song;
 import java.util.ArrayList;
 
 //TODO: Songs should be deleted when getting duration fails, not when playback starts.
-//FIXME: Error -38 "You seem to try to start the playing before the preparation is complete"
+//FIXME: Song updated without being played, error -38 "You seem to try to start the playing before the preparation is complete", occurs when seeking is used?
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
@@ -336,6 +335,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         Song song = songs.get(songIndex);
         try {
+            //getApplicationContext().getContentResolver().delete(song.getContentUri(), null, null);
+
             player.reset();
             player.setDataSource(getApplicationContext(), song.getContentUri());
             player.prepareAsync();

@@ -21,7 +21,8 @@ import java.util.ArrayList;
 
 public class PlaylistsFragment extends Fragment implements AdapterView.OnItemClickListener {
     private static final String TAG = "UPlayer";
-    
+
+    private ListView lvPlaylists;
     private ArrayList<Playlist> playlists;
 
     public PlaylistsFragment() {
@@ -35,44 +36,50 @@ public class PlaylistsFragment extends Fragment implements AdapterView.OnItemCli
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View ret = inflater.inflate(R.layout.fragment_playlists, container, false);
-        ListView lvPlaylists = (ListView) ret.findViewById(R.id.lvPlaylists);
+        lvPlaylists = (ListView) ret.findViewById(R.id.lvPlaylists);
         lvPlaylists.setOnItemClickListener(this);
 
-        Cursor c = getContext().getContentResolver().query(
+        try (Cursor c = getContext().getContentResolver().query(
                 MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
                 new String[]{
                         MediaStore.Audio.Playlists._ID,
                         MediaStore.Audio.Playlists.NAME
-                }, null, null, MediaStore.Audio.Playlists.NAME);
-        if (c != null) {
-            try {
-                playlists = new ArrayList<>();
-                int iId = c.getColumnIndex(MediaStore.Audio.Playlists._ID);
-                int iName = c.getColumnIndex(MediaStore.Audio.Playlists.NAME);
-                while (c.moveToNext()) {
-                    playlists.add(new Playlist(c.getLong(iId), c.getString(iName)));
-                }
-            } finally {
-                c.close();
+                }, null, null, MediaStore.Audio.Playlists.NAME)) {
+            if (c == null) {
+                Log.wtf(TAG, "No cursor");
+                return ret;
             }
 
-            Log.d(TAG, "Queried " + playlists.size() + " playlists");
-            lvPlaylists.setAdapter(new ArrayAdapter<>(getContext(),
-                    android.R.layout.simple_list_item_1, playlists));
+            playlists = new ArrayList<>();
+            int iId = c.getColumnIndex(MediaStore.Audio.Playlists._ID);
+            int iName = c.getColumnIndex(MediaStore.Audio.Playlists.NAME);
+            while (c.moveToNext()) {
+                Playlist playlist = new Playlist();
+                playlist.setId(c.getLong(iId));
+                playlist.setName(c.getString(iName));
+                playlists.add(playlist);
+            }
         }
+
+        Log.d(TAG, "Queried " + playlists.size() + " playlists");
+        lvPlaylists.setAdapter(new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_list_item_1, playlists));
 
         return ret;
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        startActivity(new Intent(getContext(), SongsActivity.class)
-                .putExtra(SongsActivity.ARG_SOURCE, SongsFragment.SOURCE_ANDROID)
-                .putExtra(SongsActivity.ARG_URI, MediaStore.Audio.Playlists.Members.getContentUri(
-                        "external", playlists.get(position).getId()))
-                .putExtra(SongsActivity.ARG_ID_COLUMN, MediaStore.Audio.Playlists.Members.AUDIO_ID)
-                .putExtra(SongsActivity.ARG_ORDER_BY,
-                        MediaStore.Audio.Playlists.Members.PLAY_ORDER)
-        );
+        if (parent == lvPlaylists) {
+            startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_URI,
+                            MediaStore.Audio.Playlists.Members.getContentUri("external",
+                                    playlists.get(position).getId()))
+                    .putExtra(SongsActivity.ARG_ID_COLUMN,
+                            MediaStore.Audio.Playlists.Members.AUDIO_ID)
+                    .putExtra(SongsActivity.ARG_ORDER_BY,
+                            MediaStore.Audio.Playlists.Members.PLAY_ORDER)
+            );
+        }
     }
 }

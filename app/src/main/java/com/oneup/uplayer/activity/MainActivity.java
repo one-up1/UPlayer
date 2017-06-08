@@ -2,7 +2,10 @@ package com.oneup.uplayer.activity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -11,18 +14,26 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.LongSparseArray;
 
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.obj.Artist;
 import com.oneup.uplayer.db.obj.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.PlaylistsFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: Recently added.
+import java.util.ArrayList;
+
+//TODO: Delete option.
+//TODO: Statistics like total songs played.
+//TODO: notifyDataSet not in onResume
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
+
+    private ArrayList<Artist> artists;
 
     private SectionsPagerAdapter sectionsPagerAdapter;
     private ViewPager viewPager;
@@ -30,12 +41,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             init();
         } else {
             Log.d(TAG, "Requesting permissions");
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
     }
 
@@ -58,12 +69,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void notifyDataSetChanged() {
-        sectionsPagerAdapter.notifyDataSetChanged();
+        if (sectionsPagerAdapter != null) {
+            sectionsPagerAdapter.notifyDataSetChanged();
+        }
     }
 
     private void init() {
         Log.d(TAG, "MainActivity.init()");
         setContentView(R.layout.activity_main);
+
+        // Query artists from MediaStore.
+        LongSparseArray<Artist> artists = new LongSparseArray<>();
+        Artist artist;
+        try (Cursor c = getContentResolver().query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+                new String[]{Artist._ID, Artist.ARTIST}, null, null, null)) {
+            if (c == null) {
+                Log.wtf(TAG, "No cursor");
+                return;
+            }
+
+            int iId = c.getColumnIndex(Artist._ID);
+            int iArtist = c.getColumnIndex(Artist.ARTIST);
+            while (c.moveToNext()) {
+                artist = new Artist();
+                artist.setId(c.getLong(iId));
+                artist.setArtist(c.getString(iArtist));
+                artists.put(artist.getId(), artist);
+            }
+        }
+
+        // Query artists from DB and set values.
+        DbOpenHelper dbOpenHelper = new DbOpenHelper(this);
+        try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+            try (Cursor c = db.query(Artist.TABLE_NAME,
+                    new String[]{Artist._ID, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+                    null, null, null, null, null)) {
+                while (c.moveToNext()) {
+                    artist = artists.get(c.getLong(0));
+                    if (artist == null) {
+                        Log.i(TAG, "Deleting artist");
+                        //TODO: Delete artist from DB. and all songs?
+                    } else {
+                        artist.setLastPlayed(c.getLong(1));
+                        artist.setTimesPlayed(c.getInt(2));
+                    }
+                }
+            }
+        }
+
+        // Convert SparseArray to ArrayList.
+        this.artists = new ArrayList<>();
+        for (int i = 0; i < artists.size(); i++) {
+            this.artists.add(artists.valueAt(i));
+        }
+        Log.d(TAG, "Queried " + this.artists.size() + " artists");
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -86,21 +145,30 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
+            // Copy list to prevent fragments from keeping a reference to the original list.
+            ArrayList<Artist> artists = new ArrayList<>();
+            for (Artist artist : MainActivity.this.artists) {
+                artists.add(artist);
+            }
+
             switch (position) {
                 case 0:
                     return PlaylistsFragment.newInstance();
                 case 1:
-                    return SongsFragment.newInstance(SongsFragment.SOURCE_DB, null, Song._ID,
-                            Song.STARRED + " IS NOT NULL", null, Song.STARRED + " DESC");
+                    /*return SongsFragment.newInstance(null, Song._ID, Song.STARRED + " IS NOT NULL",
+                            null, 0);*/
+                    return SongsFragment.newInstance(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                            Song._ID, Song.STARRED + " IS NOT NULL", null, Song.STARRED + " DESC",
+                            SongsFragment.SORT_BY_STARRED);
                 case 2:
-                    return ArtistsFragment.newInstance(ArtistsFragment.SOURCE_ANDROID,
-                            Artist.ARTIST, Song.TITLE);
+                    return ArtistsFragment.newInstance(artists,
+                            ArtistsFragment.SORT_BY_NAME);
                 case 3:
-                    return ArtistsFragment.newInstance(ArtistsFragment.SOURCE_DB,
-                            Artist.LAST_PLAYED + " DESC", Song.LAST_PLAYED + " DESC");
+                    return ArtistsFragment.newInstance(artists,
+                            ArtistsFragment.SORT_BY_LAST_PLAYED);
                 case 4:
-                    return ArtistsFragment.newInstance(ArtistsFragment.SOURCE_DB,
-                            Artist.TIMES_PLAYED + " DESC", Song.TIMES_PLAYED + " DESC");
+                    return ArtistsFragment.newInstance(artists,
+                            ArtistsFragment.SORT_BY_TIMES_PLAYED);
             }
             return null;
         }

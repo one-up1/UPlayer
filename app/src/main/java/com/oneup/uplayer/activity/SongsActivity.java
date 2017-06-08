@@ -6,10 +6,10 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-public class SongsActivity extends FragmentActivity {
-    public static final String ARG_SOURCE = "source";
+public class SongsActivity extends FragmentActivity implements BaseArgs {
     public static final String ARG_URI = "uri";
     public static final String ARG_ID_COLUMN = "id_column";
     public static final String ARG_SELECTION = "selection";
@@ -25,12 +25,12 @@ public class SongsActivity extends FragmentActivity {
             Intent intent = getIntent();
             getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,
                     SongsFragment.newInstance(
-                            intent.getIntExtra(ARG_SOURCE, 0),
                             (Uri) intent.getParcelableExtra(ARG_URI),
                             intent.getStringExtra(ARG_ID_COLUMN),
                             intent.getStringExtra(ARG_SELECTION),
                             intent.getStringArrayExtra(ARG_SELECTION_ARGS),
-                            intent.getStringExtra(ARG_ORDER_BY)))
+                            intent.getStringExtra(ARG_ORDER_BY),
+                            intent.getIntExtra(ARG_SORT_BY, 0)))
                     .commit();
         }
     }

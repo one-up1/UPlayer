@@ -3,10 +3,12 @@ package com.oneup.uplayer.fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.LongSparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,36 +26,35 @@ import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.obj.Song;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
-public class SongsFragment extends Fragment implements AdapterView.OnItemClickListener,
+public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener {
-    public static final int SOURCE_ANDROID = 1;
-    public static final int SOURCE_DB = 2;
-
     private static final String TAG = "UPlayer";
 
-    private static final String ARG_SOURCE = "source";
     private static final String ARG_URI = "uri";
     private static final String ARG_ID_COLUMN = "id_column";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTION_ARGS = "selection_args";
     private static final String ARG_ORDER_BY = "order_by";
 
+    private SongsListView slvSongs;
     private ArrayList<Song> songs;
 
     public SongsFragment() {
     }
 
-    public static SongsFragment newInstance(int source, Uri uri, String idColumn, String selection,
-                                            String[] selectionArgs, String orderBy) {
+    public static SongsFragment newInstance(Uri uri, String idColumn, String selection,
+                                            String[] selectionArgs, String orderBy, int sortBy) {
         SongsFragment fragment = new SongsFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_SOURCE, source);
         args.putParcelable(ARG_URI, uri);
         args.putString(ARG_ID_COLUMN, idColumn);
         args.putString(ARG_SELECTION, selection);
         args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
         args.putString(ARG_ORDER_BY, orderBy);
+        args.putInt(ARG_SORT_BY, sortBy);
         fragment.setArguments(args);
         return fragment;
     }
@@ -62,95 +63,164 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View ret = inflater.inflate(R.layout.fragment_songs, container, false);
-        SongsListView slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
+        slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
         slvSongs.setOnItemClickListener(this);
         slvSongs.setOnDataSetChangedListener(this);
 
-        String idColumn = getArguments().getString(ARG_ID_COLUMN);
-        DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
-        Cursor cursor;
-        switch (getArguments().getInt(ARG_SOURCE, 0)) {
-            case SOURCE_ANDROID:
-                cursor = getContext().getContentResolver().query(
-                        (Uri) getArguments().getParcelable(ARG_URI), new String[] {
-                                idColumn,
-                                Song.TITLE,
-                                Song.ARTIST_ID,
-                                Song.ARTIST,
-                                Song.YEAR
-                        },
-                        getArguments().getString(ARG_SELECTION),
-                        getArguments().getStringArray(ARG_SELECTION_ARGS),
-                        getArguments().getString(ARG_ORDER_BY));
-                if (cursor == null) {
-                    Log.w(TAG, "No cursor");
+        Log.d(TAG, "Querying songs");
+        songs = new ArrayList<>();
+
+        // Query songs from MediaStore.
+        LongSparseArray<Song> songs;
+        Song song;
+        if (getArguments().getInt(ARG_SORT_BY) == SORT_BY_STARRED) {
+            songs = null;
+        } else {
+            try (Cursor c = getContext().getContentResolver().query(
+                    (Uri) getArguments().getParcelable(ARG_URI),
+                    new String[]{
+                            getArguments().getString(ARG_ID_COLUMN),
+                            Song.TITLE,
+                            Song.ARTIST_ID,
+                            Song.ARTIST,
+                            Song.YEAR
+                    },
+                    getArguments().getString(ARG_SELECTION),
+                    getArguments().getStringArray(ARG_SELECTION_ARGS),
+                    getArguments().getString(ARG_ORDER_BY))) {
+                if (c == null) {
+                    Log.wtf(TAG, "No cursor");
                     return ret;
                 }
-                break;
-            case SOURCE_DB:
-                cursor = dbOpenHelper.getReadableDatabase().query(Song.TABLE_NAME, null,
+
+                int iId = c.getColumnIndex(getArguments().getString(ARG_ID_COLUMN));
+                int iTitle = c.getColumnIndex(Song.TITLE);
+                int iArtistId = c.getColumnIndex(Song.ARTIST_ID);
+                int iArtist = c.getColumnIndex(Song.ARTIST);
+                int iYear = c.getColumnIndex(Song.YEAR);
+                if (getArguments().getInt(ARG_SORT_BY) == 0) {
+                    songs = null;
+                } else {
+                    songs = new LongSparseArray<>();
+                }
+                while (c.moveToNext()) {
+                    song = new Song();
+                    song.setId(c.getLong(iId));
+                    song.setTitle(c.getString(iTitle));
+                    song.setArtistId(c.getLong(iArtistId));
+                    song.setArtist(c.getString(iArtist));
+                    song.setYear(c.getInt(iYear));
+                    if (songs == null) {
+                        this.songs.add(song);
+                    } else {
+                        songs.put(song.getId(), song);
+                    }
+                }
+            }
+        }
+
+        if (getArguments().getInt(ARG_SORT_BY) > 0) {
+            // Query songs from DB and set values.
+            DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
+            try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+                try (Cursor c = db.query(Song.TABLE_NAME,
+                        songs == null ? null : new String[]{Song._ID, Song.LAST_PLAYED,
+                                Song.TIMES_PLAYED, Song.STARRED},
                         getArguments().getString(ARG_SELECTION),
                         getArguments().getStringArray(ARG_SELECTION_ARGS),
-                        null, null, getArguments().getString(ARG_ORDER_BY));
+                        null, null, getArguments().getString(ARG_ORDER_BY))) {
+                    while (c.moveToNext()) {
+                        if (songs == null) {
+                            song = new Song();
+                            song.setId(c.getLong(0));
+                            song.setTitle(c.getString(1));
+                            song.setArtistId(c.getLong(2));
+                            song.setArtist(c.getString(3));
+                            song.setYear(c.getInt(4));
+                            song.setLastPlayed(c.getLong(5));
+                            song.setTimesPlayed(c.getInt(6));
+                            song.setStarred(c.getLong(7));
+                            this.songs.add(song);
+                        } else {
+                            song = songs.get(c.getLong(0));
+                            if (song == null) {
+                                Log.i(TAG, "Deleting song");
+                                //TODO: Delete song from DB.
+                            } else {
+                                song.setLastPlayed(c.getLong(1));
+                                song.setTimesPlayed(c.getInt(2));
+                                song.setStarred(c.getLong(3));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (songs != null) {
+            // Convert SparseArray to ArrayList.
+            for (int i = 0; i < songs.size(); i++) {
+                song = songs.valueAt(i);
+                if (getArguments().getInt(ARG_SORT_BY) != SORT_BY_STARRED || song.getStarred() > 0) {
+                    this.songs.add(song);
+                }
+            }
+        }
+
+        Comparator<? super Song> c;
+        switch (getArguments().getInt(ARG_SORT_BY)) {
+            case SORT_BY_NAME:
+                c = new Comparator<Song>() {
+
+                    @Override
+                    public int compare(Song song1, Song song2) {
+                        return song1.getTitle().compareTo(song2.getTitle());
+                    }
+                };
+                break;
+            case SORT_BY_LAST_PLAYED:
+                c = new Comparator<Song>() {
+
+                    @Override
+                    public int compare(Song song1, Song song2) {
+                        return Long.compare(song2.getLastPlayed(), song1.getLastPlayed());
+                    }
+                };
+                break;
+            case SORT_BY_TIMES_PLAYED:
+                c = new Comparator<Song>() {
+
+                    @Override
+                    public int compare(Song song1, Song song2) {
+                        return Long.compare(song2.getTimesPlayed(), song1.getTimesPlayed());
+                    }
+                };
                 break;
             default:
-                throw new IllegalArgumentException("Invalid source");
+                c = null;
+                break;
         }
 
-        try {
-            songs = new ArrayList<>();
-
-            int iId = cursor.getColumnIndex(idColumn);
-            int iTitle = cursor.getColumnIndex(Song.TITLE);
-            int iArtistId = cursor.getColumnIndex(Song.ARTIST_ID);
-            int iArtist = cursor.getColumnIndex(Song.ARTIST);
-            int iYear = cursor.getColumnIndex(Song.YEAR);
-
-            int iLastPlayed = cursor.getColumnIndex(Song.LAST_PLAYED);
-            int iTimesPlayed = cursor.getColumnIndex(Song.TIMES_PLAYED);
-
-            int iStarred = cursor.getColumnIndex(Song.STARRED);
-
-            while (cursor.moveToNext()) {
-                Song song = new Song();
-
-                song.setId(cursor.getLong(iId));
-                song.setTitle(cursor.getString(iTitle));
-                song.setArtistId(cursor.getLong(iArtistId));
-                song.setArtist(cursor.getString(iArtist));
-                song.setYear(cursor.getInt(iYear));
-
-                if (iLastPlayed != -1) {
-                    song.setLastPlayed(cursor.getLong(iLastPlayed));
-                }
-                if (iTimesPlayed != -1) {
-                    song.setTimesPlayed(cursor.getInt(iTimesPlayed));
-                }
-                if (iStarred != -1) {
-                    song.setStarred(cursor.getLong(iStarred));
-                }
-
-                songs.add(song);
-                Log.d(TAG, song + ":" + song.getLastPlayed() + "," + song.getTimesPlayed());
-            }
-        } finally {
-            cursor.close();
+        if (c != null) {
+            Collections.sort(this.songs, c);
         }
+        Log.d(TAG, "Queried " + this.songs.size() + " songs");
 
-        Log.d(TAG, "Queried " + songs.size() + " songs");
-        slvSongs.setAdapter(new ListAdapter(getContext(), songs));
+        slvSongs.setAdapter(new ListAdapter(getContext(), this.songs));
 
         return ret;
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.d(TAG, "Playing " + songs.size() + " songs, songIndex=" + position +
-                " (" + songs.get(position) + ")");
-        getContext().startService(new Intent(getContext(), MainService.class)
-                .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
-                .putExtra(MainService.ARG_SONGS, songs)
-                .putExtra(MainService.ARG_SONG_INDEX, position));
+        if (parent == slvSongs) {
+            Log.d(TAG, "Playing " + songs.size() + " songs, songIndex=" + position +
+                    " (" + songs.get(position) + ")");
+            getContext().startService(new Intent(getContext(), MainService.class)
+                    .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
+                    .putExtra(MainService.ARG_SONGS, songs)
+                    .putExtra(MainService.ARG_SONG_INDEX, position));
+        }
     }
 
     @Override

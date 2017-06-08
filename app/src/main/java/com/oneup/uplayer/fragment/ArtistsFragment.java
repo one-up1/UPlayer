@@ -94,6 +94,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == lvArtists) {
             startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_SOURCE, SongsFragment.SOURCE_JOINED)
                     .putExtra(SongsActivity.ARG_URI, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
                     .putExtra(SongsActivity.ARG_ID_COLUMN, Song._ID)
                     .putExtra(SongsActivity.ARG_SELECTION, Song.ARTIST_ID + "=?")

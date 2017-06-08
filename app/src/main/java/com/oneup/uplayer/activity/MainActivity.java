@@ -27,6 +27,7 @@ import com.oneup.uplayer.fragment.SongsFragment;
 import java.util.ArrayList;
 
 //TODO: Delete option.
+//TODO: SDK version.
 //TODO: Statistics like total songs played.
 //TODO: notifyDataSet not in onResume
 
@@ -155,11 +156,8 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return PlaylistsFragment.newInstance();
                 case 1:
-                    /*return SongsFragment.newInstance(null, Song._ID, Song.STARRED + " IS NOT NULL",
-                            null, 0);*/
-                    return SongsFragment.newInstance(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                            Song._ID, Song.STARRED + " IS NOT NULL", null, Song.STARRED + " DESC",
-                            SongsFragment.SORT_BY_STARRED);
+                    return SongsFragment.newInstance(SongsFragment.SOURCE_DB, null, Song._ID,
+                            Song.STARRED + " IS NOT NULL", null, Song.STARRED + " DESC", 0);
                 case 2:
                     return ArtistsFragment.newInstance(artists,
                             ArtistsFragment.SORT_BY_NAME);

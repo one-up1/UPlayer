@@ -335,8 +335,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         Song song = songs.get(songIndex);
         try {
-            //getApplicationContext().getContentResolver().delete(song.getContentUri(), null, null);
-
             player.reset();
             player.setDataSource(getApplicationContext(), song.getContentUri());
             player.prepareAsync();
@@ -345,7 +343,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
             // Delete song from DB when it doesn't exist anymore.
             try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
-                db.delete(Song.TABLE_NAME, BaseColumns._ID + "=?",
+                db.delete(Song.TABLE_NAME, Song._ID + "=?",
                         new String[]{Long.toString(song.getId())});
             }
             deleteSong(song);
@@ -429,21 +427,21 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             values = new ContentValues();
             values.put(Song.LAST_PLAYED, lastPlayed);
             if (timesPlayed == -1) {
-                values.put(BaseColumns._ID, song.getId());
-                values.put(MediaStore.MediaColumns.TITLE, song.getTitle());
+                values.put(Song._ID, song.getId());
+                values.put(Song.TITLE, song.getTitle());
                 if (song.getArtistId() > 0) {
-                    values.put(MediaStore.Audio.AudioColumns.ARTIST_ID, song.getArtistId());
-                    values.put(MediaStore.Audio.AudioColumns.ARTIST, song.getArtist());
+                    values.put(Song.ARTIST_ID, song.getArtistId());
+                    values.put(Song.ARTIST, song.getArtist());
                 }
                 if (song.getYear() > 0) {
-                    values.put(MediaStore.Audio.AudioColumns.YEAR, song.getYear());
+                    values.put(Song.YEAR, song.getYear());
                 }
                 values.put(Song.TIMES_PLAYED, 1);
                 db.insert(Song.TABLE_NAME, null, values);
                 Log.d(TAG, "Song inserted");
             } else {
                 values.put(Song.TIMES_PLAYED, timesPlayed + 1);
-                db.update(Song.TABLE_NAME, values, BaseColumns._ID + "=?",
+                db.update(Song.TABLE_NAME, values, Song._ID + "=?",
                         new String[]{Long.toString(song.getId())});
                 Log.d(TAG, "Song updated");
             }
@@ -454,13 +452,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             values = new ContentValues();
             values.put(Artist.LAST_PLAYED, lastPlayed);
             if (timesPlayed == -1) {
-                values.put(BaseColumns._ID, song.getArtistId());
+                values.put(Artist._ID, song.getArtistId());
                 values.put(MediaStore.Audio.Artists.ARTIST, song.getArtist());
                 values.put(Artist.TIMES_PLAYED, 1);
                 db.insert(Artist.TABLE_NAME, null, values);
                 Log.d(TAG, "Artist inserted");
             } else {
-                db.update(Artist.TABLE_NAME, values, BaseColumns._ID + "=?",
+                db.update(Artist.TABLE_NAME, values, Artist._ID + "=?",
                         new String[]{Long.toString(song.getArtistId())});
                 values.put(Artist.TIMES_PLAYED, timesPlayed + 1);
                 Log.d(TAG, "Artist updated");
@@ -471,11 +469,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private int queryTimesPlayed(SQLiteDatabase db, String table, long id) {
         Log.d(TAG, "DbOpenHelper.queryTimesPlayed(" + table + "," + id + ")");
         try (Cursor c = db.query(table,
-                new String[] {
+                new String[]{
                         DbColumns.TIMES_PLAYED
                 },
                 BaseColumns._ID + "=?",
-                new String[] { Long.toString(id) },
+                new String[]{Long.toString(id)},
                 null, null, null)) {
             return c.moveToFirst() ? c.getInt(0) : -1;
         }

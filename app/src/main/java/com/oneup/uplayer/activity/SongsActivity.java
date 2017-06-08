@@ -10,6 +10,7 @@ import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 public class SongsActivity extends FragmentActivity implements BaseArgs {
+    public static final String ARG_SOURCE = "source";
     public static final String ARG_URI = "uri";
     public static final String ARG_ID_COLUMN = "id_column";
     public static final String ARG_SELECTION = "selection";
@@ -25,6 +26,7 @@ public class SongsActivity extends FragmentActivity implements BaseArgs {
             Intent intent = getIntent();
             getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,
                     SongsFragment.newInstance(
+                            intent.getIntExtra(ARG_SOURCE, 0),
                             (Uri) intent.getParcelableExtra(ARG_URI),
                             intent.getStringExtra(ARG_ID_COLUMN),
                             intent.getStringExtra(ARG_SELECTION),

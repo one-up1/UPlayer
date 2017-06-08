@@ -8,6 +8,8 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -61,6 +63,27 @@ public class PlayerActivity extends Activity implements
         controller.setMediaPlayer(PlayerActivity.this);
         controller.setAnchorView(slvSongs);
         controller.setEnabled(true);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        getMenuInflater().inflate(R.menu.activity_player, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.delete:
+                if (mainService != null) {
+                    Song song = mainService.getSongs().get(
+                            ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
+                    Log.d(TAG, "Deleting song: " + song);
+                    getContentResolver().delete(song.getContentUri(), null, null);
+                }
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 
     @Override

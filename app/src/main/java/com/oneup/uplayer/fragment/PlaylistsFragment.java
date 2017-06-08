@@ -72,6 +72,7 @@ public class PlaylistsFragment extends Fragment implements AdapterView.OnItemCli
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == lvPlaylists) {
             startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(SongsActivity.ARG_SOURCE, SongsFragment.SOURCE_MEDIA_STORE)
                     .putExtra(SongsActivity.ARG_URI,
                             MediaStore.Audio.Playlists.Members.getContentUri("external",
                                     playlists.get(position).getId()))

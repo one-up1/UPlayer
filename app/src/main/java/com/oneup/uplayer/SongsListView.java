@@ -4,8 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
-import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -33,9 +31,9 @@ public class SongsListView extends ListView implements AdapterView.OnItemLongCli
 
         try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
             String selection = Song._ID + "=?";
-            String[] selectionArgs = new String[] { Long.toString(song.getId()) };
+            String[] selectionArgs = new String[]{Long.toString(song.getId())};
             ContentValues values = new ContentValues();
-            try (Cursor c = db.query(Song.TABLE_NAME, new String[] { Song.STARRED },
+            try (Cursor c = db.query(Song.TABLE_NAME, new String[]{Song.STARRED},
                     selection, selectionArgs, null, null, null)) {
                 if (c.moveToNext()) {
                     if (c.isNull(0)) {
@@ -52,14 +50,14 @@ public class SongsListView extends ListView implements AdapterView.OnItemLongCli
                 } else {
                     Log.d(TAG, "Starring song");
                     song.setStarred(System.currentTimeMillis());
-                    values.put(BaseColumns._ID, song.getId());
-                    values.put(MediaStore.MediaColumns.TITLE, song.getTitle());
+                    values.put(Song._ID, song.getId());
+                    values.put(Song.TITLE, song.getTitle());
                     if (song.getArtistId() > 0) {
-                        values.put(MediaStore.Audio.AudioColumns.ARTIST_ID, song.getArtistId());
-                        values.put(MediaStore.Audio.AudioColumns.ARTIST, song.getArtist());
+                        values.put(Song.ARTIST_ID, song.getArtistId());
+                        values.put(Song.ARTIST, song.getArtist());
                     }
                     if (song.getYear() > 0) {
-                        values.put(MediaStore.Audio.AudioColumns.YEAR, song.getYear());
+                        values.put(Song.YEAR, song.getYear());
                     }
                     values.put(Song.STARRED, song.getStarred());
                     db.insert(Song.TABLE_NAME, null, values);

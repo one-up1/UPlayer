@@ -31,8 +31,13 @@ import java.util.Comparator;
 
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener {
+    public static final int SOURCE_MEDIA_STORE = 1;
+    public static final int SOURCE_DB = 2;
+    public static final int SOURCE_JOINED = 3;
+
     private static final String TAG = "UPlayer";
 
+    private static final String ARG_SOURCE = "source";
     private static final String ARG_URI = "uri";
     private static final String ARG_ID_COLUMN = "id_column";
     private static final String ARG_SELECTION = "selection";
@@ -45,10 +50,11 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     public SongsFragment() {
     }
 
-    public static SongsFragment newInstance(Uri uri, String idColumn, String selection,
+    public static SongsFragment newInstance(int source, Uri uri, String idColumn, String selection,
                                             String[] selectionArgs, String orderBy, int sortBy) {
         SongsFragment fragment = new SongsFragment();
         Bundle args = new Bundle();
+        args.putInt(ARG_SOURCE, source);
         args.putParcelable(ARG_URI, uri);
         args.putString(ARG_ID_COLUMN, idColumn);
         args.putString(ARG_SELECTION, selection);
@@ -63,46 +69,44 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View ret = inflater.inflate(R.layout.fragment_songs, container, false);
-        slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
-        slvSongs.setOnItemClickListener(this);
-        slvSongs.setOnDataSetChangedListener(this);
+
+        int source = getArguments().getInt(ARG_SOURCE);
+        Uri uri = getArguments().getParcelable(ARG_URI);
+        String idColumn = getArguments().getString(ARG_ID_COLUMN);
+        String selection = getArguments().getString(ARG_SELECTION);
+        String[] selectionArgs = getArguments().getStringArray(ARG_SELECTION_ARGS);
+        String orderBy = getArguments().getString(ARG_ORDER_BY);
+        int sortBy = getArguments().getInt(ARG_SORT_BY);
 
         Log.d(TAG, "Querying songs");
         songs = new ArrayList<>();
-
-        // Query songs from MediaStore.
         LongSparseArray<Song> songs;
         Song song;
-        if (getArguments().getInt(ARG_SORT_BY) == SORT_BY_STARRED) {
-            songs = null;
+
+        if (source == SOURCE_JOINED) {
+            songs = new LongSparseArray<>();
         } else {
-            try (Cursor c = getContext().getContentResolver().query(
-                    (Uri) getArguments().getParcelable(ARG_URI),
-                    new String[]{
-                            getArguments().getString(ARG_ID_COLUMN),
-                            Song.TITLE,
-                            Song.ARTIST_ID,
-                            Song.ARTIST,
-                            Song.YEAR
-                    },
-                    getArguments().getString(ARG_SELECTION),
-                    getArguments().getStringArray(ARG_SELECTION_ARGS),
-                    getArguments().getString(ARG_ORDER_BY))) {
+            songs = null;
+        }
+
+        if (source == SOURCE_MEDIA_STORE || source == SOURCE_JOINED) {
+            if (uri == null) {
+                throw new IllegalArgumentException("No URI");
+            }
+
+            try (Cursor c = getContext().getContentResolver().query(uri,
+                    new String[]{idColumn, Song.TITLE, Song.ARTIST_ID, Song.ARTIST, Song.YEAR},
+                    selection, selectionArgs, orderBy)) {
                 if (c == null) {
                     Log.wtf(TAG, "No cursor");
                     return ret;
                 }
 
-                int iId = c.getColumnIndex(getArguments().getString(ARG_ID_COLUMN));
+                int iId = c.getColumnIndex(idColumn);
                 int iTitle = c.getColumnIndex(Song.TITLE);
                 int iArtistId = c.getColumnIndex(Song.ARTIST_ID);
                 int iArtist = c.getColumnIndex(Song.ARTIST);
                 int iYear = c.getColumnIndex(Song.YEAR);
-                if (getArguments().getInt(ARG_SORT_BY) == 0) {
-                    songs = null;
-                } else {
-                    songs = new LongSparseArray<>();
-                }
                 while (c.moveToNext()) {
                     song = new Song();
                     song.setId(c.getLong(iId));
@@ -119,16 +123,13 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
         }
 
-        if (getArguments().getInt(ARG_SORT_BY) > 0) {
-            // Query songs from DB and set values.
+        if (source == SOURCE_DB || source == SOURCE_JOINED) {
             DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
             try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
                 try (Cursor c = db.query(Song.TABLE_NAME,
                         songs == null ? null : new String[]{Song._ID, Song.LAST_PLAYED,
                                 Song.TIMES_PLAYED, Song.STARRED},
-                        getArguments().getString(ARG_SELECTION),
-                        getArguments().getStringArray(ARG_SELECTION_ARGS),
-                        null, null, getArguments().getString(ARG_ORDER_BY))) {
+                        selection, selectionArgs, null, null, orderBy)) {
                     while (c.moveToNext()) {
                         if (songs == null) {
                             song = new Song();
@@ -160,53 +161,53 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (songs != null) {
             // Convert SparseArray to ArrayList.
             for (int i = 0; i < songs.size(); i++) {
-                song = songs.valueAt(i);
-                if (getArguments().getInt(ARG_SORT_BY) != SORT_BY_STARRED || song.getStarred() > 0) {
-                    this.songs.add(song);
-                }
+                this.songs.add(songs.valueAt(i));
             }
-        }
 
-        Comparator<? super Song> c;
-        switch (getArguments().getInt(ARG_SORT_BY)) {
-            case SORT_BY_NAME:
-                c = new Comparator<Song>() {
+            Comparator<? super Song> c;
+            switch (sortBy) {
+                case SORT_BY_NAME:
+                    c = new Comparator<Song>() {
 
-                    @Override
-                    public int compare(Song song1, Song song2) {
-                        return song1.getTitle().compareTo(song2.getTitle());
-                    }
-                };
-                break;
-            case SORT_BY_LAST_PLAYED:
-                c = new Comparator<Song>() {
+                        @Override
+                        public int compare(Song song1, Song song2) {
+                            return song1.getTitle().compareTo(song2.getTitle());
+                        }
+                    };
+                    break;
+                case SORT_BY_LAST_PLAYED:
+                    c = new Comparator<Song>() {
 
-                    @Override
-                    public int compare(Song song1, Song song2) {
-                        return Long.compare(song2.getLastPlayed(), song1.getLastPlayed());
-                    }
-                };
-                break;
-            case SORT_BY_TIMES_PLAYED:
-                c = new Comparator<Song>() {
+                        @Override
+                        public int compare(Song song1, Song song2) {
+                            return Long.compare(song2.getLastPlayed(), song1.getLastPlayed());
+                        }
+                    };
+                    break;
+                case SORT_BY_TIMES_PLAYED:
+                    c = new Comparator<Song>() {
 
-                    @Override
-                    public int compare(Song song1, Song song2) {
-                        return Long.compare(song2.getTimesPlayed(), song1.getTimesPlayed());
-                    }
-                };
-                break;
-            default:
-                c = null;
-                break;
-        }
+                        @Override
+                        public int compare(Song song1, Song song2) {
+                            return Long.compare(song2.getTimesPlayed(), song1.getTimesPlayed());
+                        }
+                    };
+                    break;
+                default:
+                    c = null;
+                    break;
+            }
 
-        if (c != null) {
-            Collections.sort(this.songs, c);
+            if (c != null) {
+                Collections.sort(this.songs, c);
+            }
         }
         Log.d(TAG, "Queried " + this.songs.size() + " songs");
 
+        slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
         slvSongs.setAdapter(new ListAdapter(getContext(), this.songs));
+        slvSongs.setOnItemClickListener(this);
+        slvSongs.setOnDataSetChangedListener(this);
 
         return ret;
     }

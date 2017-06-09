@@ -9,11 +9,11 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.oneup.uplayer.db.obj.Song;
+import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
-public class SongAdapter extends BaseAdapter {
+public abstract class SongAdapter extends BaseAdapter {
     private LayoutInflater layoutInflater;
     private ArrayList<Song> songs;
 
@@ -51,7 +51,7 @@ public class SongAdapter extends BaseAdapter {
         tvTitle.setText(song.getTitle());
 
         TextView tvArtist = (TextView) convertView.findViewById(R.id.tvArtist);
-        tvArtist.setText(song.getArtist());
+        tvArtist.setText(song.getArtist().getArtist());
 
         TextView tvYear = (TextView) convertView.findViewById(R.id.tvYear);
         tvYear.setText(Integer.toString(song.getYear()));
@@ -68,9 +68,7 @@ public class SongAdapter extends BaseAdapter {
         return convertView;
     }
 
-    public void addButtons(LinearLayout llButtons) {
-    }
+    public abstract void addButtons(LinearLayout llButtons);
 
-    public void setButtons(View view, Song song) {
-    }
+    public abstract void setButtons(View view, Song song);
 }

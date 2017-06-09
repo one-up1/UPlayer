@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">UPlayer</string>
-    <string name="playlists">Play lists</string>
-    <string name="starred">Star red</string>
+    <string name="starred">Starred</string>
     <string name="artists">Artists</string>
     <string name="last_played">Last played</string>
     <string name="most_played">Most played</string>
@@ -9,7 +8,11 @@
     <string name="playing_next">Playing next: %1$s</string>
     <string name="play_last">Play last</string>
     <string name="playing_last">Playing last: %1$s</string>
+    <string name="star_unstar">Star/unstar</string>
     <string name="delete">Delete</string>
+    <string name="delete_song_confirm">Delete %1$s?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="song">%1$d of %2$d (%3$s left)</string>
     <string name="previous">Previous</string>
     <string name="play_pause">Play/Pause</string>

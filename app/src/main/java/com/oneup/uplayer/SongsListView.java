@@ -1,78 +1,69 @@
 package com.oneup.uplayer;
 
-import android.content.ContentValues;
+import android.app.AlertDialog;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.DialogInterface;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.View;
+import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.obj.Song;
+import com.oneup.uplayer.db.Song;
 
-public class SongsListView extends ListView implements AdapterView.OnItemLongClickListener {
+public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";
 
     private OnDataSetChangedListener onDataSetChangedListener;
 
     public SongsListView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setOnItemLongClickListener(this);
     }
 
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        DbOpenHelper dbOpenHelper = new DbOpenHelper(getContext());
-        Song song = (Song) getItemAtPosition(position);
-
-        try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
-            String selection = Song._ID + "=?";
-            String[] selectionArgs = new String[]{Long.toString(song.getId())};
-            ContentValues values = new ContentValues();
-            try (Cursor c = db.query(Song.TABLE_NAME, new String[]{Song.STARRED},
-                    selection, selectionArgs, null, null, null)) {
-                if (c.moveToNext()) {
-                    if (c.isNull(0)) {
-                        Log.d(TAG, "Starring song");
-                        song.setStarred(System.currentTimeMillis());
-                        values.put(Song.STARRED, song.getStarred());
-                    } else {
-                        Log.d(TAG, "Unstarring song");
-                        song.setStarred(0);
-                        values.putNull(Song.STARRED);
-                    }
-                    db.update(Song.TABLE_NAME, values, selection, selectionArgs);
-                    Log.d(TAG, "Song updated");
-                } else {
-                    Log.d(TAG, "Starring song");
+    public boolean onContextItemSelected(MenuItem item) {
+        final Song song = (Song) getItemAtPosition(
+                ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
+        switch (item.getItemId()) {
+            case R.id.star_unstar:
+                if (song.getStarred() == 0) {
                     song.setStarred(System.currentTimeMillis());
-                    values.put(Song._ID, song.getId());
-                    values.put(Song.TITLE, song.getTitle());
-                    if (song.getArtistId() > 0) {
-                        values.put(Song.ARTIST_ID, song.getArtistId());
-                        values.put(Song.ARTIST, song.getArtist());
-                    }
-                    if (song.getYear() > 0) {
-                        values.put(Song.YEAR, song.getYear());
-                    }
-                    values.put(Song.STARRED, song.getStarred());
-                    db.insert(Song.TABLE_NAME, null, values);
-                    Log.d(TAG, "Song inserted");
+                    Toast.makeText(getContext(), R.string.song_starred,
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    song.setStarred(0);
+                    Toast.makeText(getContext(), R.string.song_unstarred,
+                            Toast.LENGTH_SHORT).show();
                 }
-            }
+                new DbOpenHelper(getContext()).insertOrUpdateSong(song);
+
+                if (onDataSetChangedListener != null) {
+                    onDataSetChangedListener.onDataSetChanged();
+                }
+                return true;
+            case R.id.delete:
+                new AlertDialog.Builder(getContext())
+                        .setMessage(getContext().getString(
+                                R.string.delete_song_confirm, song.getTitle()))
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.d(TAG, "Deleting song: " + song);
+                                Log.d(TAG, getContext().getContentResolver().delete(
+                                        song.getContentUri(), null, null) + " songs deleted");
+                                new DbOpenHelper(getContext()).deleteSong(song);
+
+                                if (onDataSetChangedListener != null) {
+                                    onDataSetChangedListener.onDataSetChanged();
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+                return true;
         }
-
-        if (onDataSetChangedListener != null) {
-            onDataSetChangedListener.onDataSetChanged();
-        }
-
-        Toast.makeText(getContext(), song.getStarred() > 0 ?
-                R.string.song_starred : R.string.song_unstarred, Toast.LENGTH_SHORT).show();
-
         return true;
     }
 

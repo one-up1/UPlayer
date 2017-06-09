@@ -1,4 +1,4 @@
-package com.oneup.uplayer.db.obj;
+package com.oneup.uplayer.db;
 
 import android.content.ContentUris;
 import android.net.Uri;
@@ -6,17 +6,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
-import com.oneup.uplayer.db.DbColumns;
-
 public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelable {
     public static final String TABLE_NAME = "songs";
 
     public static final String STARRED = "starred";
 
-    private long id;
+    private int id;
     private String title;
-    private long artistId;
-    private String artist;
+    private Artist artist;
     private int year;
 
     private long lastPlayed;
@@ -41,19 +38,21 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeLong(id);
+        out.writeInt(id);
         out.writeString(title);
-        out.writeLong(artistId);
-        out.writeString(artist);
+        out.writeParcelable(artist, flags);
         out.writeInt(year);
+        out.writeLong(lastPlayed);
+        out.writeInt(timesPlayed);
         out.writeLong(starred);
+        out.writeInt(duration);
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -65,19 +64,11 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.title = title;
     }
 
-    public long getArtistId() {
-        return artistId;
-    }
-
-    public void setArtistId(long artistId) {
-        this.artistId = artistId;
-    }
-
-    public String getArtist() {
+    public Artist getArtist() {
         return artist;
     }
 
-    public void setArtist(String artist) {
+    public void setArtist(Artist artist) {
         this.artist = artist;
     }
 
@@ -130,12 +121,14 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         @Override
         public Object createFromParcel(Parcel in) {
             Song ret = new Song();
-            ret.id = in.readLong();
+            ret.id = in.readInt();
             ret.title = in.readString();
-            ret.artistId = in.readLong();
-            ret.artist = in.readString();
+            ret.artist = in.readParcelable(Artist.class.getClassLoader());
             ret.year = in.readInt();
+            ret.lastPlayed = in.readLong();
+            ret.timesPlayed = in.readInt();
             ret.starred = in.readLong();
+            ret.duration = in.readInt();
             return ret;
         }
 

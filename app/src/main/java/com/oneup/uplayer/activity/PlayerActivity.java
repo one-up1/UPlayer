@@ -20,7 +20,7 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.SongAdapter;
 import com.oneup.uplayer.SongsListView;
-import com.oneup.uplayer.db.obj.Song;
+import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
@@ -43,6 +43,7 @@ public class PlayerActivity extends Activity implements
 
         slvSongs = (SongsListView) findViewById(R.id.slvSongs);
         slvSongs.setOnItemClickListener(this);
+        registerForContextMenu(slvSongs);
 
         controller = new MusicController();
         controller.setPrevNextListeners(new View.OnClickListener() {
@@ -66,24 +67,14 @@ public class PlayerActivity extends Activity implements
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        getMenuInflater().inflate(R.menu.activity_player, menu);
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        getMenuInflater().inflate(R.menu.list_item_song, menu);
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.delete:
-                if (mainService != null) {
-                    Song song = mainService.getSongs().get(
-                            ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
-                    Log.d(TAG, "Deleting song: " + song);
-                    getContentResolver().delete(song.getContentUri(), null, null);
-                }
-                return true;
-            default:
-                return super.onContextItemSelected(item);
-        }
+        return slvSongs.onContextItemSelected(item);
     }
 
     @Override

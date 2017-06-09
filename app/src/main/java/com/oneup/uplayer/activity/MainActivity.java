@@ -14,27 +14,25 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.LongSparseArray;
+import android.util.SparseArray;
 
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.obj.Artist;
-import com.oneup.uplayer.db.obj.Song;
+import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
-import com.oneup.uplayer.fragment.PlaylistsFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-import java.util.ArrayList;
-
-//TODO: Delete option.
-//TODO: SDK version.
+//TODO: Sort by last played/times played AND name.
+//TODO: notifyDataSet not in onResume, it is now called twice.
+//TODO: getContext()/getActivity()/getApplicationContext()
 //TODO: Statistics like total songs played.
-//TODO: notifyDataSet not in onResume
+//TODO: SDK version.
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
-    private ArrayList<Artist> artists;
+    private SparseArray<Artist> artists;
 
     private SectionsPagerAdapter sectionsPagerAdapter;
     private ViewPager viewPager;
@@ -70,18 +68,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void notifyDataSetChanged() {
-        if (sectionsPagerAdapter != null) {
-            sectionsPagerAdapter.notifyDataSetChanged();
-        }
-    }
-
-    private void init() {
-        Log.d(TAG, "MainActivity.init()");
-        setContentView(R.layout.activity_main);
-
-        // Query artists from MediaStore.
-        LongSparseArray<Artist> artists = new LongSparseArray<>();
+        Log.d(TAG, "Querying artists");
+        artists.clear();
         Artist artist;
+
         try (Cursor c = getContentResolver().query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                 new String[]{Artist._ID, Artist.ARTIST}, null, null, null)) {
             if (c == null) {
@@ -93,37 +83,41 @@ public class MainActivity extends AppCompatActivity {
             int iArtist = c.getColumnIndex(Artist.ARTIST);
             while (c.moveToNext()) {
                 artist = new Artist();
-                artist.setId(c.getLong(iId));
+                artist.setId(c.getInt(iId));
                 artist.setArtist(c.getString(iArtist));
                 artists.put(artist.getId(), artist);
             }
         }
 
-        // Query artists from DB and set values.
         DbOpenHelper dbOpenHelper = new DbOpenHelper(this);
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             try (Cursor c = db.query(Artist.TABLE_NAME,
                     new String[]{Artist._ID, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
                     null, null, null, null, null)) {
                 while (c.moveToNext()) {
-                    artist = artists.get(c.getLong(0));
+                    int id = c.getInt(0);
+                    artist = artists.get(id);
                     if (artist == null) {
-                        Log.i(TAG, "Deleting artist");
-                        //TODO: Delete artist from DB. and all songs?
+                        dbOpenHelper.deleteArtist(id);
                     } else {
-                        artist.setLastPlayed(c.getLong(1));
+                        artist.setLastPlayed(id);
                         artist.setTimesPlayed(c.getInt(2));
                     }
                 }
             }
         }
 
-        // Convert SparseArray to ArrayList.
-        this.artists = new ArrayList<>();
-        for (int i = 0; i < artists.size(); i++) {
-            this.artists.add(artists.valueAt(i));
+        Log.d(TAG, "Queried " + artists.size() + " artists");
+
+        if (sectionsPagerAdapter != null) {
+            sectionsPagerAdapter.notifyDataSetChanged();
         }
-        Log.d(TAG, "Queried " + this.artists.size() + " artists");
+    }
+
+    private void init() {
+        Log.d(TAG, "MainActivity.init()");
+        setContentView(R.layout.activity_main);
+        artists = new SparseArray<>();
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -132,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         viewPager = (ViewPager) findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(2);
+        viewPager.setCurrentItem(1);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -146,25 +140,17 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            // Copy list to prevent fragments from keeping a reference to the original list.
-            ArrayList<Artist> artists = new ArrayList<>();
-            for (Artist artist : MainActivity.this.artists) {
-                artists.add(artist);
-            }
-
             switch (position) {
                 case 0:
-                    return PlaylistsFragment.newInstance();
+                    return SongsFragment.newInstance(artists, 0,
+                            Song.STARRED + " IS NOT NULL", Song.STARRED + " DESC");
                 case 1:
-                    return SongsFragment.newInstance(SongsFragment.SOURCE_DB, null, Song._ID,
-                            Song.STARRED + " IS NOT NULL", null, Song.STARRED + " DESC", 0);
-                case 2:
                     return ArtistsFragment.newInstance(artists,
                             ArtistsFragment.SORT_BY_NAME);
-                case 3:
+                case 2:
                     return ArtistsFragment.newInstance(artists,
                             ArtistsFragment.SORT_BY_LAST_PLAYED);
-                case 4:
+                case 3:
                     return ArtistsFragment.newInstance(artists,
                             ArtistsFragment.SORT_BY_TIMES_PLAYED);
             }
@@ -179,21 +165,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 5;
+            return 4;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return getString(R.string.playlists);
-                case 1:
                     return getString(R.string.starred);
-                case 2:
+                case 1:
                     return getString(R.string.artists);
-                case 3:
+                case 2:
                     return getString(R.string.last_played);
-                case 4:
+                case 3:
                     return getString(R.string.most_played);
             }
             return null;

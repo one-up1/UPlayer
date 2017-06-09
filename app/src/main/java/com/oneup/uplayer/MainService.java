@@ -3,11 +3,9 @@ package com.oneup.uplayer;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
@@ -16,21 +14,18 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.provider.BaseColumns;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlayerActivity;
-import com.oneup.uplayer.db.DbColumns;
 import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.obj.Artist;
-import com.oneup.uplayer.db.obj.Song;
+import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
+//TODO: MainActivity not updated after updating played song.
 //TODO: Songs should be deleted when getting duration fails, not when playback starts.
 //FIXME: Song updated without being played, error -38 "You seem to try to start the playing before the preparation is complete", occurs when seeking is used?
 
@@ -198,7 +193,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         Song song = songs.get(songIndex);
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
-        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist().getArtist());
         updateSongTextView();
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_pause);
         startForeground(1, notification);
@@ -226,7 +221,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         prepared = false;
 
         if (player.getCurrentPosition() > 0) {
-            updatePlayedSong();
+            Song song = songs.get(songIndex);
+            long lastPlayed = System.currentTimeMillis();
+
+            song.getArtist().setLastPlayed(lastPlayed);
+            song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
+            dbOpenHelper.insertOrUpdateArtist(song.getArtist());
+
+            song.setLastPlayed(lastPlayed);
+            song.setTimesPlayed(song.getTimesPlayed() + 1);
+            dbOpenHelper.insertOrUpdateSong(song);
+
             next();
         }
     }
@@ -247,7 +252,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             songs.add(song);
 
             notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
-            notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+            notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist().getArtist());
             notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
         } else if (next) {
             songs.add(songIndex + 1, song);
@@ -344,7 +349,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             // Delete song from DB when it doesn't exist anymore.
             try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
                 db.delete(Song.TABLE_NAME, Song._ID + "=?",
-                        new String[]{Long.toString(song.getId())});
+                        new String[]{Integer.toString(song.getId())});
             }
             deleteSong(song);
             Log.d(TAG, "Song deleted");
@@ -403,80 +408,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void updateSongTextView() {
-        long timeLeft = 0;
+        int timeLeft = 0;
         for (int i = songIndex + 1; i < songs.size(); i++) {
             timeLeft += songs.get(i).getDuration();
         }
 
         notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
                 songIndex + 1, songs.size(), Util.formatDuration(timeLeft)));
-    }
-
-    private void updatePlayedSong() {
-        Song song = songs.get(songIndex);
-        Log.d(TAG, "DbOpenHelper.updatePlayed(" + song + ")");
-
-        try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
-            long lastPlayed = System.currentTimeMillis();
-            int timesPlayed;
-            ContentValues values;
-
-            timesPlayed = queryTimesPlayed(db, Song.TABLE_NAME, song.getId());
-            Log.d(TAG, "Song timesPlayed=" + timesPlayed);
-
-            values = new ContentValues();
-            values.put(Song.LAST_PLAYED, lastPlayed);
-            if (timesPlayed == -1) {
-                values.put(Song._ID, song.getId());
-                values.put(Song.TITLE, song.getTitle());
-                if (song.getArtistId() > 0) {
-                    values.put(Song.ARTIST_ID, song.getArtistId());
-                    values.put(Song.ARTIST, song.getArtist());
-                }
-                if (song.getYear() > 0) {
-                    values.put(Song.YEAR, song.getYear());
-                }
-                values.put(Song.TIMES_PLAYED, 1);
-                db.insert(Song.TABLE_NAME, null, values);
-                Log.d(TAG, "Song inserted");
-            } else {
-                values.put(Song.TIMES_PLAYED, timesPlayed + 1);
-                db.update(Song.TABLE_NAME, values, Song._ID + "=?",
-                        new String[]{Long.toString(song.getId())});
-                Log.d(TAG, "Song updated");
-            }
-
-            timesPlayed = queryTimesPlayed(db, Artist.TABLE_NAME, song.getArtistId());
-            Log.d(TAG, "Artist timesPlayed=" + timesPlayed);
-
-            values = new ContentValues();
-            values.put(Artist.LAST_PLAYED, lastPlayed);
-            if (timesPlayed == -1) {
-                values.put(Artist._ID, song.getArtistId());
-                values.put(MediaStore.Audio.Artists.ARTIST, song.getArtist());
-                values.put(Artist.TIMES_PLAYED, 1);
-                db.insert(Artist.TABLE_NAME, null, values);
-                Log.d(TAG, "Artist inserted");
-            } else {
-                db.update(Artist.TABLE_NAME, values, Artist._ID + "=?",
-                        new String[]{Long.toString(song.getArtistId())});
-                values.put(Artist.TIMES_PLAYED, timesPlayed + 1);
-                Log.d(TAG, "Artist updated");
-            }
-        }
-    }
-
-    private int queryTimesPlayed(SQLiteDatabase db, String table, long id) {
-        Log.d(TAG, "DbOpenHelper.queryTimesPlayed(" + table + "," + id + ")");
-        try (Cursor c = db.query(table,
-                new String[]{
-                        DbColumns.TIMES_PLAYED
-                },
-                BaseColumns._ID + "=?",
-                new String[]{Long.toString(id)},
-                null, null, null)) {
-            return c.moveToFirst() ? c.getInt(0) : -1;
-        }
     }
 
     public class MainBinder extends Binder {

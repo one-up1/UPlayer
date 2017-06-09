@@ -69,7 +69,8 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
                     @Override
                     public int compare(Artist artist1, Artist artist2) {
-                        return Long.compare(artist2.getLastPlayed(), artist1.getLastPlayed());
+                        int i = Long.compare(artist2.getLastPlayed(), artist1.getLastPlayed());
+                        return i == 0 ? artist1.getArtist().compareTo(artist2.getArtist()) : i;
                     }
                 };
                 break;
@@ -78,7 +79,8 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
                     @Override
                     public int compare(Artist artist1, Artist artist2) {
-                        return Integer.compare(artist2.getTimesPlayed(), artist1.getTimesPlayed());
+                        int i = Integer.compare(artist2.getTimesPlayed(), artist1.getTimesPlayed());
+                        return i == 0 ? artist1.getArtist().compareTo(artist2.getArtist()) : i;
                     }
                 };
                 break;

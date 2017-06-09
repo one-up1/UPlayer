@@ -154,7 +154,8 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            return Long.compare(song2.getLastPlayed(), song1.getLastPlayed());
+                            int i = Long.compare(song2.getLastPlayed(), song1.getLastPlayed());
+                            return i == 0 ? song1.getTitle().compareTo(song2.getTitle()) : i;
                         }
                     };
                     break;
@@ -163,7 +164,8 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            return Integer.compare(song2.getTimesPlayed(), song1.getTimesPlayed());
+                            int i = Integer.compare(song2.getTimesPlayed(), song1.getTimesPlayed());
+                            return i == 0 ? song1.getTitle().compareTo(song2.getTitle()) : i;
                         }
                     };
                     break;

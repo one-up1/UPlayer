@@ -23,8 +23,6 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: Sort by last played/times played AND name.
-//TODO: notifyDataSet not in onResume, it is now called twice.
 //TODO: getContext()/getActivity()/getApplicationContext()
 //TODO: Statistics like total songs played.
 //TODO: SDK version.

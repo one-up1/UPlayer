@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     if (artist == null) {
                         dbOpenHelper.deleteArtist(id);
                     } else {
-                        artist.setLastPlayed(id);
+                        artist.setLastPlayed(c.getLong(1));
                         artist.setTimesPlayed(c.getInt(2));
                     }
                 }

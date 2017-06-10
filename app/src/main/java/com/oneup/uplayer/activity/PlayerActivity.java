@@ -26,8 +26,8 @@ import java.util.ArrayList;
 
 //FIXME: Media controls. Controller not updated when going to next song, occurs when seeking is used?
 
-public class PlayerActivity extends Activity implements
-        AdapterView.OnItemClickListener, MediaController.MediaPlayerControl {
+public class PlayerActivity extends Activity implements AdapterView.OnItemClickListener,
+        SongsListView.OnSongDeletedListener, MediaController.MediaPlayerControl {
     private static final String TAG = "UPlayer";
 
     private SongsListView slvSongs;
@@ -43,6 +43,7 @@ public class PlayerActivity extends Activity implements
 
         slvSongs = (SongsListView) findViewById(R.id.slvSongs);
         slvSongs.setOnItemClickListener(this);
+        slvSongs.setOnSongDeletedListener(this);
         registerForContextMenu(slvSongs);
 
         controller = new MusicController();
@@ -112,6 +113,13 @@ public class PlayerActivity extends Activity implements
                 mainService.setSongIndex(position);
             }
         }
+    }
+
+    @Override
+    public void onSongDeleted(Song song) {
+        Log.d(TAG, "onSongDeleted(" + song + ")");
+        mainService.deleteSong(song);
+        songsAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -230,9 +238,7 @@ public class PlayerActivity extends Activity implements
             Song song = (Song) v.getTag();
             switch (v.getId()) {
                 case R.id.ibDelete:
-                    Log.d(TAG, "Deleting: " + song);
-                    mainService.deleteSong(song);
-                    songsAdapter.notifyDataSetChanged();
+                    onSongDeleted(song);
                     break;
             }
         }

@@ -25,7 +25,6 @@ import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: getContext()/getActivity()/getApplicationContext()
 //TODO: Statistics like total songs played.
-//TODO: SDK version.
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
@@ -38,9 +37,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        artists = new SparseArray<>();
+
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        // Set up the ViewPager with the sections adapter.
+        viewPager = (ViewPager) findViewById(R.id.container);
+        viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.setCurrentItem(1);
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume()");
+
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
-            init();
+            notifyDataSetChanged();
         } else {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
@@ -48,17 +69,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        notifyDataSetChanged();
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            init();
-        } else {
+        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "Permissions not granted");
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             finish();
@@ -110,24 +123,6 @@ public class MainActivity extends AppCompatActivity {
         if (sectionsPagerAdapter != null) {
             sectionsPagerAdapter.notifyDataSetChanged();
         }
-    }
-
-    private void init() {
-        Log.d(TAG, "MainActivity.init()");
-        setContentView(R.layout.activity_main);
-        artists = new SparseArray<>();
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        viewPager = (ViewPager) findViewById(R.id.container);
-        viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(1);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {

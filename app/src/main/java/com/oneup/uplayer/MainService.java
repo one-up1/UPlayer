@@ -26,7 +26,6 @@ import com.oneup.uplayer.db.Song;
 import java.util.ArrayList;
 
 //TODO: MainActivity not updated after updating played song.
-//TODO: Songs should be deleted when getting duration fails, not when playback starts.
 //FIXME: Song updated without being played, error -38 "You seem to try to start the playing before the preparation is complete", occurs when seeking is used?
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
@@ -237,11 +236,22 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void start() {
-        for (Song song : songs) {
-            setSongDuration(song);
+        for (int i = 0; i < songs.size(); i++) {
+            Song song = songs.get(i);
+            if (!setSongDuration(song)) {
+                // Delete song from DB when it doesn't exist anymore.
+                dbOpenHelper.deleteSong(song);
+                songs.remove(i);
+                i--;
+            }
         }
 
-        play();
+        if (songs.size() == 0) {
+            Log.d(TAG, "No songs to play");
+            stopSelf();
+        } else {
+            play();
+        }
     }
 
     public void addSong(Song song, boolean next) {
@@ -298,7 +308,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.deleteSong(" + song + ")");
         if (songs.size() > 1) {
             int songIndex = songs.indexOf(song);
-            songs.remove(song);
+            songs.remove(songIndex);
 
             if (songIndex < this.songIndex) {
                 this.songIndex--;
@@ -323,16 +333,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
-    private void setSongDuration(Song song) {
+    private boolean setSongDuration(Song song) {
         try {
             MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
             mediaMetadataRetriever.setDataSource(getApplicationContext(), song.getContentUri());
             song.setDuration(Integer.parseInt(mediaMetadataRetriever.extractMetadata(
                     MediaMetadataRetriever.METADATA_KEY_DURATION)));
             mediaMetadataRetriever.release();
-            Log.d(TAG, song + ": " + song.getDuration());
+            return true;
         } catch (Exception ex) {
             Log.e(TAG, "Error getting duration of " + song, ex);
+            return false;
         }
     }
 
@@ -345,14 +356,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.prepareAsync();
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
-
-            // Delete song from DB when it doesn't exist anymore.
-            try (SQLiteDatabase db = dbOpenHelper.getWritableDatabase()) {
-                db.delete(Song.TABLE_NAME, Song._ID + "=?",
-                        new String[]{Integer.toString(song.getId())});
-            }
-            deleteSong(song);
-            Log.d(TAG, "Song deleted");
         }
     }
 

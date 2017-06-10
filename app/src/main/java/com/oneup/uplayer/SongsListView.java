@@ -17,6 +17,7 @@ public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";
 
     private OnDataSetChangedListener onDataSetChangedListener;
+    private OnSongDeletedListener onSongDeletedListener;
 
     public SongsListView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -58,6 +59,9 @@ public class SongsListView extends ListView {
                                 if (onDataSetChangedListener != null) {
                                     onDataSetChangedListener.onDataSetChanged();
                                 }
+                                if (onSongDeletedListener != null) {
+                                    onSongDeletedListener.onSongDeleted(song);
+                                }
                             }
                         })
                         .setNegativeButton(R.string.no, null)
@@ -71,7 +75,15 @@ public class SongsListView extends ListView {
         this.onDataSetChangedListener = onDataSetChangedListener;
     }
 
+    public void setOnSongDeletedListener(OnSongDeletedListener onSongDeletedListener) {
+        this.onSongDeletedListener = onSongDeletedListener;
+    }
+
     public interface OnDataSetChangedListener {
         void onDataSetChanged();
+    }
+
+    public interface OnSongDeletedListener {
+        void onSongDeleted(Song song);
     }
 }

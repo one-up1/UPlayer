@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
-        SongsListView.OnDataSetChangedListener {
+        SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
 
     private SparseArray<Artist> artists;
@@ -42,6 +42,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private String dbOrderBy;
 
     private ArrayList<Song> songs;
+    private ListAdapter listAdapter;
     private SongsListView slvSongs;
 
     public SongsFragment() {
@@ -178,9 +179,11 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         Log.d(TAG, "Queried " + this.songs.size() + " songs");
 
         slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
-        slvSongs.setAdapter(new ListAdapter(getContext(), this.songs));
+        listAdapter = new ListAdapter(getContext(), this.songs);
+        slvSongs.setAdapter(listAdapter);
         slvSongs.setOnItemClickListener(this);
         slvSongs.setOnDataSetChangedListener(this);
+        slvSongs.setOnSongDeletedListener(this);
         registerForContextMenu(slvSongs);
 
         return ret;
@@ -214,6 +217,12 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onSongDeleted(Song song) {
+        songs.remove(song);
+        listAdapter.notifyDataSetChanged();
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {

@@ -55,6 +55,7 @@ public class SongsListView extends ListView {
                                 Log.d(TAG, getContext().getContentResolver().delete(
                                         song.getContentUri(), null, null) + " songs deleted");
                                 new DbOpenHelper(getContext()).deleteSong(song);
+                                //FIXME: Delete doesn't delete from disk.
 
                                 if (onDataSetChangedListener != null) {
                                     onDataSetChangedListener.onDataSetChanged();

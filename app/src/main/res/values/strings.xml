@@ -12,6 +12,8 @@
     <string name="max_date">Max date&#8230;</string>
     <string name="invalid_date_range">Invalid date range</string>
 
+    <string name="song_count">%1$d songs</string>
+
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>
     <string name="play_last">Play last</string>
@@ -29,6 +31,7 @@
     <string name="delete_song_confirm">Delete %1$s?</string>
     <string name="song_deleted">Song deleted</string>
 
+    <string name="song_count_duration">%1$d songs, %2$s</string>
     <string name="song">%1$d of %2$d (%3$s left)</string>
     <string name="previous">Previous</string>
     <string name="play_pause">Play/Pause</string>

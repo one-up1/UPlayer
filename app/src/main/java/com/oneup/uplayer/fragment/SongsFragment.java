@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+//FIXME: Activity title.
+
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
@@ -169,6 +171,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         Log.d(TAG, "Queried " + this.songs.size() + " songs");
+        getActivity().setTitle(getString(R.string.song_count, this.songs.size()));
 
         slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
         listAdapter = new ListAdapter(getContext(), this.songs);

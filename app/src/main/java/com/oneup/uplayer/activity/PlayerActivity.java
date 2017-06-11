@@ -18,6 +18,7 @@ import android.widget.MediaController;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.Util;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
@@ -121,6 +122,7 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
     public void onSongDeleted(Song song) {
         Log.d(TAG, "onSongDeleted(" + song + ")");
         mainService.deleteSong(song);
+        setTitle();
         songsAdapter.notifyDataSetChanged();
     }
 
@@ -185,6 +187,15 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
         return 0;
     }
 
+    private void setTitle() {
+        int totalDuration = 0;
+        for (Song song : mainService.getSongs()) {
+            totalDuration += song.getDuration();
+        }
+        setTitle(getString(R.string.song_count_duration, mainService.getSongs().size(),
+                Util.formatDuration(totalDuration)));
+    }
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -197,6 +208,7 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
             MainService.MainBinder binder = (MainService.MainBinder) service;
             mainService = binder.getService();
 
+            setTitle();
             songsAdapter = new ListAdapter(PlayerActivity.this, mainService.getSongs());
             slvSongs.setAdapter(songsAdapter);
         }

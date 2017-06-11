@@ -19,19 +19,19 @@
     <Button
         android:id="@+id/bMinDate"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:text="@string/min_date" />
 
     <Button
         android:id="@+id/bMaxDate"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:text="@string/max_date" />
 
     <Button
         android:id="@+id/bQuery"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:text="@string/query" />
 
 </LinearLayout>

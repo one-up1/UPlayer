@@ -53,7 +53,10 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
         objects = new ArrayList<>();
         for (int i = 0; i < artists.size(); i++) {
-            objects.add(artists.valueAt(i));
+            Artist artist = artists.valueAt(i);
+            if (joinedSortBy != SORT_BY_LAST_PLAYED || artist.getLastPlayed() > 0) {
+                objects.add(artists.valueAt(i));
+            }
         }
 
         Comparator<? super Artist> c;

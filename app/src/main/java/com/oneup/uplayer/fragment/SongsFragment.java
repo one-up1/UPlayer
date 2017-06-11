@@ -136,7 +136,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         if (songs != null) {
             for (int i = 0; i < songs.size(); i++) {
-                this.songs.add(songs.valueAt(i));
+                song = songs.valueAt(i);
+                if (joinedSortBy != SORT_BY_LAST_PLAYED || song.getLastPlayed() > 0) {
+                    this.songs.add(song);
+                }
             }
 
             Comparator<? super Song> c;

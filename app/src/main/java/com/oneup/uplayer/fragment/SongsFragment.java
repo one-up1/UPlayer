@@ -41,23 +41,12 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private String selection;
     private String dbOrderBy;
 
+    private DbOpenHelper dbOpenHelper;
     private ArrayList<Song> songs;
     private ListAdapter listAdapter;
     private SongsListView slvSongs;
 
     public SongsFragment() {
-    }
-
-    public static SongsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy,
-                                            String selection, String dbOrderBy) {
-        SongsFragment fragment = new SongsFragment();
-        Bundle args = new Bundle();
-        args.putSparseParcelableArray(ARG_ARTISTS, artists);
-        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
-        args.putString(ARG_SELECTION, selection);
-        args.putString(ARG_DB_ORDER_BY, dbOrderBy);
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
@@ -71,7 +60,6 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
 
         Log.d(TAG, "Querying songs");
-        songs = new ArrayList<>();
         SparseArray<Song> songs;
         Song song;
 
@@ -103,10 +91,11 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             songs = null;
         }
 
-        DbOpenHelper dbOpenHelper = new DbOpenHelper(getActivity());
+        dbOpenHelper = new DbOpenHelper(getActivity());
+        this.songs = new ArrayList<>();
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null : new String[]{
-                            Song._ID, Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.STARRED},
+                            Song._ID, Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED},
                     selection, null, null, null, dbOrderBy)) {
                 while (c.moveToNext()) {
                     int id = c.getInt(0);
@@ -118,7 +107,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         song.setYear(c.getInt(3));
                         song.setLastPlayed(c.getLong(4));
                         song.setTimesPlayed(c.getInt(5));
-                        song.setStarred(c.getLong(6));
+                        song.setBookmarked(c.getLong(6));
                         this.songs.add(song);
                     } else {
                         song = songs.get(id);
@@ -127,7 +116,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         } else {
                             song.setLastPlayed(c.getLong(1));
                             song.setTimesPlayed(c.getInt(2));
-                            song.setStarred(c.getLong(3));
+                            song.setBookmarked(c.getLong(3));
                         }
                     }
                 }
@@ -203,6 +192,15 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         return getUserVisibleHint() && slvSongs.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (dbOpenHelper != null) {
+            dbOpenHelper.close();
+        }
+
+        super.onDestroy();
     }
 
     @Override
@@ -283,5 +281,17 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     break;
             }
         }
+    }
+
+    public static SongsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy,
+                                            String selection, String dbOrderBy) {
+        SongsFragment fragment = new SongsFragment();
+        Bundle args = new Bundle();
+        args.putSparseParcelableArray(ARG_ARTISTS, artists);
+        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
+        args.putString(ARG_SELECTION, selection);
+        args.putString(ARG_DB_ORDER_BY, dbOrderBy);
+        fragment.setArguments(args);
+        return fragment;
     }
 }

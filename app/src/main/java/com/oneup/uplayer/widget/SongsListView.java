@@ -22,28 +22,31 @@ public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";
 
     private Context context;
+    private DbOpenHelper dbOpenHelper;
 
     private OnDataSetChangedListener onDataSetChangedListener;
     private OnSongDeletedListener onSongDeletedListener;
 
     public SongsListView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
         this.context = context;
+        dbOpenHelper = new DbOpenHelper(context);
     }
 
     public boolean onContextItemSelected(MenuItem item) {
         final Song song = (Song) getItemAtPosition(
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
         switch (item.getItemId()) {
-            case R.id.star_unstar:
-                if (song.getStarred() == 0) {
-                    song.setStarred(System.currentTimeMillis());
-                    Toast.makeText(context, R.string.song_starred, Toast.LENGTH_SHORT).show();
+            case R.id.bookmark:
+                if (song.getBookmarked() == 0) {
+                    song.setBookmarked(System.currentTimeMillis());
+                    Toast.makeText(context, R.string.bookmark_set, Toast.LENGTH_SHORT).show();
                 } else {
-                    song.setStarred(0);
-                    Toast.makeText(context, R.string.song_unstarred, Toast.LENGTH_SHORT).show();
+                    song.setBookmarked(0);
+                    Toast.makeText(context, R.string.bookmark_deleted, Toast.LENGTH_SHORT).show();
                 }
-                new DbOpenHelper(context).insertOrUpdateSong(song);
+                dbOpenHelper.insertOrUpdateSong(song);
 
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
@@ -72,7 +75,7 @@ public class SongsListView extends ListView {
 
                                 Log.d(TAG, contentResolver.delete(uri, null, null) +
                                         " songs deleted");
-                                new DbOpenHelper(context).deleteSong(song);
+                                dbOpenHelper.deleteSong(song);
                                 Toast.makeText(context, R.string.song_deleted,
                                         Toast.LENGTH_SHORT).show();
 

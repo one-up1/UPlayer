@@ -27,6 +27,8 @@
 
         <activity android:name=".activity.PlayerActivity" />
 
+        <activity android:name=".activity.DatePickerActivity" />
+
         <service android:name=".MainService" />
 
         <receiver android:name=".MainReceiver">

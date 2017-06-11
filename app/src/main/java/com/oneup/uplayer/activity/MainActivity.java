@@ -21,15 +21,16 @@ import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
+import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: ListViews implementation and item layouts.
 //TODO: Improve notifyDataSetChanged().
-//TODO: Statistics like total songs played.
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
+    private DbOpenHelper dbOpenHelper;
     private SparseArray<Artist> artists;
 
     private SectionsPagerAdapter sectionsPagerAdapter;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        dbOpenHelper = new DbOpenHelper(this);
         artists = new SparseArray<>();
 
         // Create the adapter that will return a fragment for each of the three
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         viewPager = (ViewPager) findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(1);
+        viewPager.setCurrentItem(2);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -67,6 +69,15 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (dbOpenHelper != null) {
+            dbOpenHelper.close();
+        }
+
+        super.onDestroy();
     }
 
     @Override
@@ -101,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        DbOpenHelper dbOpenHelper = new DbOpenHelper(this);
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             try (Cursor c = db.query(Artist.TABLE_NAME,
                     new String[]{Artist._ID, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
@@ -136,15 +146,17 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return SongsFragment.newInstance(artists, 0,
-                            Song.STARRED + " IS NOT NULL", Song.STARRED + " DESC");
+                    return QueryFragment.newInstance(artists);
                 case 1:
-                    return ArtistsFragment.newInstance(artists,
-                            ArtistsFragment.SORT_BY_NAME);
+                    return SongsFragment.newInstance(artists, 0,
+                            Song.BOOKMARKED + " IS NOT NULL", Song.BOOKMARKED + " DESC");
                 case 2:
                     return ArtistsFragment.newInstance(artists,
-                            ArtistsFragment.SORT_BY_LAST_PLAYED);
+                            ArtistsFragment.SORT_BY_NAME);
                 case 3:
+                    return ArtistsFragment.newInstance(artists,
+                            ArtistsFragment.SORT_BY_LAST_PLAYED);
+                case 4:
                     return ArtistsFragment.newInstance(artists,
                             ArtistsFragment.SORT_BY_TIMES_PLAYED);
             }
@@ -159,19 +171,21 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 4;
+            return 5;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return getString(R.string.starred);
+                    return getString(R.string.query);
                 case 1:
-                    return getString(R.string.artists);
+                    return getString(R.string.bookmarks);
                 case 2:
-                    return getString(R.string.last_played);
+                    return getString(R.string.artists);
                 case 3:
+                    return getString(R.string.last_played);
+                case 4:
                     return getString(R.string.most_played);
             }
             return null;

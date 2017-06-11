@@ -34,15 +34,6 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     public ArtistsFragment() {
     }
 
-    public static ArtistsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy) {
-        ArtistsFragment fragment = new ArtistsFragment();
-        Bundle args = new Bundle();
-        args.putSparseParcelableArray(ARG_ARTISTS, artists);
-        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -140,5 +131,14 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
             args.putString(ARG_SELECTION, Song.ARTIST_ID + "=" + objects.get(position).getId());
             startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));
         }
+    }
+
+    public static ArtistsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy) {
+        ArtistsFragment fragment = new ArtistsFragment();
+        Bundle args = new Bundle();
+        args.putSparseParcelableArray(ARG_ARTISTS, artists);
+        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
+        fragment.setArguments(args);
+        return fragment;
     }
 }

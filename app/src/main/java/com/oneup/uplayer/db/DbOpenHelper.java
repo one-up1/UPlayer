@@ -27,7 +27,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Song.YEAR + " INTEGER," +
                     Song.LAST_PLAYED + " INTEGER," +
                     Song.TIMES_PLAYED + " INTEGER," +
-                    Song.STARRED + " INTEGER)";
+                    Song.BOOKMARKED + " INTEGER)";
 
     public DbOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -110,10 +110,10 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             } else {
                 values.put(Song.TIMES_PLAYED, song.getTimesPlayed());
             }
-            if (song.getStarred() == 0) {
-                values.putNull(Song.STARRED);
+            if (song.getBookmarked() == 0) {
+                values.putNull(Song.BOOKMARKED);
             } else {
-                values.put(Song.STARRED, song.getStarred());
+                values.put(Song.BOOKMARKED, song.getBookmarked());
             }
 
             int rowsAffected = db.update(Song.TABLE_NAME, values,

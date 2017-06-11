@@ -1,9 +1,16 @@
 <resources>
     <string name="app_name">UPlayer</string>
-    <string name="starred">Starred</string>
+
+    <string name="query">Query</string>
+    <string name="bookmarks">Book marks</string>
     <string name="artists">Artists</string>
     <string name="last_played">Last played</string>
     <string name="most_played">Most played</string>
+
+    <string name="total_songs_played">%1$d songs played</string>
+    <string name="min_date">Min date&#8230;</string>
+    <string name="max_date">Max date&#8230;</string>
+    <string name="invalid_date_range">Invalid date range</string>
 
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>
@@ -14,9 +21,9 @@
     <string name="info_message">Last played: %1$s\nTimes played: %2$d</string>
     <string name="never">Never</string>
 
-    <string name="star_unstar">Star/unstar</string>
-    <string name="song_starred">Song starred</string>
-    <string name="song_unstarred">Song unstarred</string>
+    <string name="bookmark">Bookmark</string>
+    <string name="bookmark_set">Bookmark set</string>
+    <string name="bookmark_deleted">Bookmark deleted</string>
 
     <string name="delete">Delete</string>
     <string name="delete_song_confirm">Delete %1$s?</string>

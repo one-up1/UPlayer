@@ -1,12 +1,12 @@
 package com.oneup.uplayer.activity;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -18,15 +18,15 @@ import android.widget.MediaController;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
-import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
 //FIXME: Media controls. Controller not updated when going to next song, occurs when seeking is used?
 
-public class PlayerActivity extends Activity implements AdapterView.OnItemClickListener,
+public class PlayerActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         SongsListView.OnSongDeletedListener, MediaController.MediaPlayerControl {
     private static final String TAG = "UPlayer";
 

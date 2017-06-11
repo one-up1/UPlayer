@@ -9,7 +9,7 @@ import android.provider.MediaStore;
 public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelable {
     public static final String TABLE_NAME = "songs";
 
-    public static final String STARRED = "starred";
+    public static final String BOOKMARKED = "bookmarked";
 
     private int id;
     private String title;
@@ -19,7 +19,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     private long lastPlayed;
     private int timesPlayed;
 
-    private long starred;
+    private long bookmarked;
 
     private int duration;
 
@@ -44,7 +44,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         out.writeInt(year);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
-        out.writeLong(starred);
+        out.writeLong(bookmarked);
         out.writeInt(duration);
     }
 
@@ -96,12 +96,12 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.timesPlayed = timesPlayed;
     }
 
-    public long getStarred() {
-        return starred;
+    public long getBookmarked() {
+        return bookmarked;
     }
 
-    public void setStarred(long starred) {
-        this.starred = starred;
+    public void setBookmarked(long bookmarked) {
+        this.bookmarked = bookmarked;
     }
 
     public int getDuration() {
@@ -127,7 +127,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
             ret.year = in.readInt();
             ret.lastPlayed = in.readLong();
             ret.timesPlayed = in.readInt();
-            ret.starred = in.readLong();
+            ret.bookmarked = in.readLong();
             ret.duration = in.readInt();
             return ret;
         }

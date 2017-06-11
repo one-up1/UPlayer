@@ -1,8 +1,11 @@
 package com.oneup.uplayer;
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuItem;
@@ -52,10 +55,17 @@ public class SongsListView extends ListView {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.d(TAG, "Deleting song: " + song);
-                                Log.d(TAG, getContext().getContentResolver().delete(
-                                        song.getContentUri(), null, null) + " songs deleted");
+                                ContentResolver contentResolver = getContext().getContentResolver();
+                                Uri uri = song.getContentUri();
+
+                                // Change type to image, otherwise nothing will be deleted.
+                                ContentValues values = new ContentValues();
+                                values.put("media_type", 1);
+                                contentResolver.update(uri, values, null, null);
+
+                                Log.d(TAG, contentResolver.delete(uri, null, null) +
+                                        " songs deleted");
                                 new DbOpenHelper(getContext()).deleteSong(song);
-                                //FIXME: Delete doesn't delete from disk.
 
                                 if (onDataSetChangedListener != null) {
                                     onDataSetChangedListener.onDataSetChanged();

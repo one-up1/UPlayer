@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -12,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.Util;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.Song;
@@ -93,8 +96,36 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_list_item_1, objects));
         lvArtists.setOnItemClickListener(this);
+        registerForContextMenu(lvArtists);
 
         return ret;
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        if (v == lvArtists) {
+            getActivity().getMenuInflater().inflate(R.menu.list_item_artist, menu);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if (!getUserVisibleHint()) {
+            // Or the wrong fragment may receive the onContextItemSelected() call.
+            return false;
+        }
+
+        Artist artist = objects.get(((AdapterView.AdapterContextMenuInfo)
+                item.getMenuInfo()).position);
+        switch (item.getItemId()) {
+            case R.id.info:
+                Util.showInfoDialog(getContext(), artist.getArtist(),
+                        artist.getLastPlayed(), artist.getTimesPlayed());
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 
     @Override

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.oneup.uplayer.SongsListView
+    <com.oneup.uplayer.widget.SongsListView
         android:id="@+id/slvSongs"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

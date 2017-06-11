@@ -1,4 +1,4 @@
-package com.oneup.uplayer;
+package com.oneup.uplayer.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
@@ -55,14 +56,6 @@ public abstract class SongAdapter extends BaseAdapter {
 
         TextView tvYear = (TextView) convertView.findViewById(R.id.tvYear);
         tvYear.setText(Integer.toString(song.getYear()));
-
-        TextView tvTimesPlayed = (TextView) convertView.findViewById(R.id.tvTimesPlayed);
-        if (song.getTimesPlayed() == 0) {
-            tvTimesPlayed.setVisibility(View.GONE);
-        } else {
-            tvTimesPlayed.setVisibility(View.VISIBLE);
-            tvTimesPlayed.setText(Integer.toString(song.getTimesPlayed()));
-        }
 
         setButtons(convertView, song);
         return convertView;

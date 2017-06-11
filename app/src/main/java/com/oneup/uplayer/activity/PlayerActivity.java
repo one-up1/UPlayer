@@ -18,8 +18,8 @@ import android.widget.MediaController;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.SongAdapter;
-import com.oneup.uplayer.SongsListView;
+import com.oneup.uplayer.widget.SongAdapter;
+import com.oneup.uplayer.widget.SongsListView;
 import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
@@ -70,7 +70,9 @@ public class PlayerActivity extends Activity implements AdapterView.OnItemClickL
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        getMenuInflater().inflate(R.menu.list_item_song, menu);
+        if (v == slvSongs) {
+            getMenuInflater().inflate(R.menu.list_item_song, menu);
+        }
     }
 
     @Override
@@ -192,15 +194,11 @@ public class PlayerActivity extends Activity implements AdapterView.OnItemClickL
                 return;
             }
 
-            try {
-                MainService.MainBinder binder = (MainService.MainBinder) service;
-                mainService = binder.getService();
+            MainService.MainBinder binder = (MainService.MainBinder) service;
+            mainService = binder.getService();
 
-                songsAdapter = new ListAdapter(PlayerActivity.this, mainService.getSongs());
-                slvSongs.setAdapter(songsAdapter);
-            } catch (Exception ex) {
-                Log.e(TAG, "Err", ex);
-            }
+            songsAdapter = new ListAdapter(PlayerActivity.this, mainService.getSongs());
+            slvSongs.setAdapter(songsAdapter);
         }
 
         @Override

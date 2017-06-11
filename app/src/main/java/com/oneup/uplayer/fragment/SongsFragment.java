@@ -21,8 +21,8 @@ import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.SongAdapter;
-import com.oneup.uplayer.SongsListView;
+import com.oneup.uplayer.widget.SongAdapter;
+import com.oneup.uplayer.widget.SongsListView;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
@@ -192,12 +192,14 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
+        if (v == slvSongs) {
+            getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
+        }
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        return slvSongs.onContextItemSelected(item);
+        return getUserVisibleHint() && slvSongs.onContextItemSelected(item);
     }
 
     @Override

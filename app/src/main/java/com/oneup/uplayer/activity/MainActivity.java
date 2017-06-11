@@ -23,7 +23,8 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: getContext()/getActivity()/getApplicationContext()
+//TODO: ListViews implementation and item layouts.
+//TODO: Improve notifyDataSetChanged().
 //TODO: Statistics like total songs played.
 
 public class MainActivity extends AppCompatActivity {

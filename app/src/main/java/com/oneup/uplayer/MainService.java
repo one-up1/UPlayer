@@ -24,7 +24,7 @@ import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
-//TODO: MainActivity not updated after updating played song.
+//TODO: Context vs getApplicationContext().
 //FIXME: Song updated without being played, error -38 "You seem to try to start the playing before the preparation is complete", occurs when seeking is used?
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,

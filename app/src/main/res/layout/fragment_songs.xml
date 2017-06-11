@@ -9,7 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.oneup.uplayer.fragment.SongsFragment">
 
-    <com.oneup.uplayer.SongsListView
+    <com.oneup.uplayer.widget.SongsListView
         android:id="@+id/slvSongs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

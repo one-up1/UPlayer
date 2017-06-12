@@ -15,13 +15,12 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     private String title;
     private Artist artist;
     private int year;
+    private int duration;
 
     private long lastPlayed;
     private int timesPlayed;
 
     private long bookmarked;
-
-    private int duration;
 
     public Song() {
     }
@@ -42,10 +41,10 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         out.writeString(title);
         out.writeParcelable(artist, flags);
         out.writeInt(year);
+        out.writeInt(duration);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
         out.writeLong(bookmarked);
-        out.writeInt(duration);
     }
 
     public int getId() {
@@ -80,6 +79,14 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.year = year;
     }
 
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
     public long getLastPlayed() {
         return lastPlayed;
     }
@@ -104,14 +111,6 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.bookmarked = bookmarked;
     }
 
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
     public Uri getContentUri() {
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
     }
@@ -125,10 +124,10 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
             ret.title = in.readString();
             ret.artist = in.readParcelable(Artist.class.getClassLoader());
             ret.year = in.readInt();
+            ret.duration = in.readInt();
             ret.lastPlayed = in.readLong();
             ret.timesPlayed = in.readInt();
             ret.bookmarked = in.readLong();
-            ret.duration = in.readInt();
             return ret;
         }
 

@@ -68,7 +68,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (joinedSortBy > 0) {
             try (Cursor c = getContext().getContentResolver().query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{Song._ID, Song.TITLE, Song.ARTIST_ID, Song.YEAR},
+                    new String[]{Song._ID, Song.TITLE, Song.ARTIST_ID, Song.YEAR, Song.DURATION},
                     selection, null, null)) {
                 if (c == null) {
                     Log.wtf(TAG, "No cursor");
@@ -79,6 +79,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 int iTitle = c.getColumnIndex(Song.TITLE);
                 int iArtistId = c.getColumnIndex(Song.ARTIST_ID);
                 int iYear = c.getColumnIndex(Song.YEAR);
+                int iDuration = c.getColumnIndex(Song.DURATION);
                 songs = new SparseArray<>();
                 while (c.moveToNext()) {
                     song = new Song();
@@ -86,6 +87,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     song.setTitle(c.getString(iTitle));
                     song.setArtist(artists.get(c.getInt(iArtistId)));
                     song.setYear(c.getInt(iYear));
+                    song.setDuration(c.getInt(iDuration));
                     songs.put(song.getId(), song);
                 }
             }
@@ -107,9 +109,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         song.setTitle(c.getString(1));
                         song.setArtist(artists.get(c.getInt(2)));
                         song.setYear(c.getInt(3));
-                        song.setLastPlayed(c.getLong(4));
-                        song.setTimesPlayed(c.getInt(5));
-                        song.setBookmarked(c.getLong(6));
+                        song.setDuration(c.getInt(4));
+                        song.setLastPlayed(c.getLong(5));
+                        song.setTimesPlayed(c.getInt(6));
+                        song.setBookmarked(c.getLong(7));
                         this.songs.add(song);
                     } else {
                         song = songs.get(id);

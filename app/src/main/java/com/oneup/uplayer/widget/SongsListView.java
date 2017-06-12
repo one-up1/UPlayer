@@ -53,8 +53,8 @@ public class SongsListView extends ListView {
                 }
                 return true;
             case R.id.info:
-                Util.showInfoDialog(context, song.getTitle(), song.getLastPlayed(),
-                        song.getTimesPlayed());
+                Util.showInfoDialog(context, song.getTitle(),
+                        song.getDuration(), song.getLastPlayed(), song.getTimesPlayed());
                 return true;
             case R.id.delete:
                 new AlertDialog.Builder(context)

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
@@ -129,7 +128,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             case REQUEST_START:
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);
                 songIndex = intent.getIntExtra(ARG_SONG_INDEX, 0);
-                start();
+                play();
                 break;
             case REQUEST_PLAY_NEXT:
                 addSong((Song) intent.getParcelableExtra(ARG_SONG), true);
@@ -234,28 +233,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public void start() {
-        for (int i = 0; i < songs.size(); i++) {
-            Song song = songs.get(i);
-            if (!setSongDuration(song)) {
-                // Delete song from DB when it doesn't exist anymore.
-                dbOpenHelper.deleteSong(song);
-                songs.remove(i);
-                i--;
-            }
-        }
-
-        if (songs.size() == 0) {
-            Log.d(TAG, "No songs to play");
-            stopSelf();
-        } else {
-            play();
-        }
-    }
-
     public void addSong(Song song, boolean next) {
         Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
-        setSongDuration(song);
         if (songs == null) {
             songs = new ArrayList<>();
             songs.add(song);
@@ -332,20 +311,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
-    private boolean setSongDuration(Song song) {
-        try {
-            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-            mediaMetadataRetriever.setDataSource(getApplicationContext(), song.getContentUri());
-            song.setDuration(Integer.parseInt(mediaMetadataRetriever.extractMetadata(
-                    MediaMetadataRetriever.METADATA_KEY_DURATION)));
-            mediaMetadataRetriever.release();
-            return true;
-        } catch (Exception ex) {
-            Log.e(TAG, "Error getting duration of " + song, ex);
-            return false;
-        }
-    }
-
     private void play() {
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         Song song = songs.get(songIndex);
@@ -355,6 +320,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.prepareAsync();
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
+
+            // Delete song from DB when it doesn't exist anymore.
+            dbOpenHelper.deleteSong(song);
+            songs.remove(song);
+
+            if (songIndex < songs.size()) {
+                play();
+            } else {
+                Log.d(TAG, "No more songs to play");
+                stopSelf();
+            }
         }
     }
 

@@ -22,8 +22,9 @@ import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 
+//TODO: More query options, sort by year?
+
 public class QueryFragment extends Fragment implements BaseArgs, View.OnClickListener {
-    private static final String TAG = "UPlayer";
     private static final String SQL_QUERY_TOTAL_SONGS_PLAYED =
             "SELECT SUM(" + Artist.TIMES_PLAYED + ") FROM " + Artist.TABLE_NAME;
     private static final int REQUEST_SELECT_MIN_DATE = 1;

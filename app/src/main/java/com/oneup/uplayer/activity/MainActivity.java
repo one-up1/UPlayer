@@ -42,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         dbOpenHelper = new DbOpenHelper(this);
+        //dbOpenHelper.t(this);
+        //if (true) return;
+
         artists = new SparseArray<>();
 
         // Create the adapter that will return a fragment for each of the three
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
+        //if (true) return;
 
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {

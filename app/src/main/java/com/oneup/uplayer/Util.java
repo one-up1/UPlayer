@@ -35,10 +35,15 @@ public class Util {
     }
 
     public static void showInfoDialog(Context context, String title,
-                                      long lastPlayed, int timesPlayed) {
+                                      int duration, long lastPlayed, int timesPlayed) {
+        //TODO: Improve info dialog, show year, remove year from list_item?
+        String message = "";
+        if (duration > 0) {
+            message += formatDuration(duration) + "\n";
+        }
         new AlertDialog.Builder(context)
                 .setTitle(title)
-                .setMessage(context.getString(R.string.info_message,
+                .setMessage(message + context.getString(R.string.info_message,
                         lastPlayed == 0 ?
                                 context.getString(R.string.never) :
                                 DATE_TIME_FORMAT.format(lastPlayed),

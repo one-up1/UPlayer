@@ -115,7 +115,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         switch (item.getItemId()) {
             case R.id.info:
                 Util.showInfoDialog(getContext(), artist.getArtist(),
-                        artist.getLastPlayed(), artist.getTimesPlayed());
+                        0, artist.getLastPlayed(), artist.getTimesPlayed());
                 return true;
             default:
                 return super.onContextItemSelected(item);

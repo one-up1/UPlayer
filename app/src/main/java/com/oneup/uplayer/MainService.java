@@ -30,17 +30,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final String ARG_SONG_INDEX = "song_index";
     public static final String ARG_SONG = "song";
 
-    public static final int REQUEST_START = 1;
-    public static final int REQUEST_PLAY_NEXT = 2;
-    public static final int REQUEST_PLAY_LAST = 3;
-    public static final int REQUEST_PREVIOUS = 4;
-    public static final int REQUEST_PLAY_PAUSE = 5;
-    public static final int REQUEST_NEXT = 6;
-    public static final int REQUEST_STOP = 7;
-    public static final int REQUEST_VOLUME_DOWN = 8;
-    public static final int REQUEST_VOLUME_UP = 9;
-
     private static final String TAG = "UPlayer";
+
+    private static final int REQUEST_START = 1;
+    private static final int REQUEST_PLAY_NEXT = 2;
+    private static final int REQUEST_PLAY_LAST = 3;
+    private static final int REQUEST_PREVIOUS = 4;
+    private static final int REQUEST_PLAY_PAUSE = 5;
+    private static final int REQUEST_NEXT = 6;
+    private static final int REQUEST_STOP = 7;
+    private static final int REQUEST_VOLUME_DOWN = 8;
+    private static final int REQUEST_VOLUME_UP = 9;
 
     private static final String KEY_VOLUME = "volume";
     private static final int MAX_VOLUME = 100;

@@ -32,9 +32,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private static final String TAG = "UPlayer";
 
-    private static final int REQUEST_START = 1;
-    private static final int REQUEST_PLAY_NEXT = 2;
-    private static final int REQUEST_PLAY_LAST = 3;
+    public static final int REQUEST_START = 1;
+    public static final int REQUEST_PLAY_NEXT = 2;
+    public static final int REQUEST_PLAY_LAST = 3;
+
     private static final int REQUEST_PREVIOUS = 4;
     private static final int REQUEST_PLAY_PAUSE = 5;
     private static final int REQUEST_NEXT = 6;

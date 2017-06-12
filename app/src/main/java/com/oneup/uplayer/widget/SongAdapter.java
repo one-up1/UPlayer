@@ -54,9 +54,6 @@ public abstract class SongAdapter extends BaseAdapter {
         TextView tvArtist = (TextView) convertView.findViewById(R.id.tvArtist);
         tvArtist.setText(song.getArtist().getArtist());
 
-        TextView tvYear = (TextView) convertView.findViewById(R.id.tvYear);
-        tvYear.setText(Integer.toString(song.getYear()));
-
         setButtons(convertView, song);
         return convertView;
     }

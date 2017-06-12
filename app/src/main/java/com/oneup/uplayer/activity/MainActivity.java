@@ -24,9 +24,6 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: ListViews implementation and item layouts.
-//TODO: Improve notifyDataSetChanged().
-
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
@@ -44,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
         dbOpenHelper = new DbOpenHelper(this);
         //dbOpenHelper.t(this);
         //if (true) return;
-
         artists = new SparseArray<>();
 
         // Create the adapter that will return a fragment for each of the three

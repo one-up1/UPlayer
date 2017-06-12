@@ -17,14 +17,13 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.oneup.uplayer.activity.PlayerActivity;
+import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
 //TODO: Context vs getApplicationContext().
-//FIXME: Song updated without being played, error -38 "You seem to try to start the playing before the preparation is complete", occurs when seeking is used?
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
@@ -103,7 +102,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 .setCustomBigContentView(notificationViews)
                 .setOngoing(true)
                 .setContentIntent(PendingIntent.getActivity(this, 0,
-                        new Intent(this, PlayerActivity.class)
+                        new Intent(this, PlaylistActivity.class)
                                 .putExtra(ARG_SONGS, songs)
                                 .putExtra(ARG_SONG_INDEX, songIndex),
                         PendingIntent.FLAG_UPDATE_CURRENT))
@@ -191,7 +190,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Song song = songs.get(songIndex);
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist().getArtist());
-        updateSongTextView();
+        updatePlaylistPosition();
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_pause);
         startForeground(1, notification);
 
@@ -217,7 +216,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
         prepared = false;
 
-        if (player.getCurrentPosition() > 0) {
+        if (player.getCurrentPosition() == 0) {
+            Log.d(TAG, "Current position is 0");
+        } else {
             Song song = songs.get(songIndex);
             long lastPlayed = System.currentTimeMillis();
 
@@ -230,77 +231,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             dbOpenHelper.insertOrUpdateSong(song);
 
             next();
-        }
-    }
-
-    public void addSong(Song song, boolean next) {
-        Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
-        if (songs == null) {
-            songs = new ArrayList<>();
-            songs.add(song);
-
-            notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
-            notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist().getArtist());
-            notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
-        } else if (next) {
-            songs.add(songIndex + 1, song);
-        } else {
-            songs.add(song);
-        }
-
-        updateSongTextView();
-        startForeground(1, notification);
-    }
-
-    public void previous() {
-        Log.d(TAG, "MainService.previous()");
-        if (songIndex > 0) {
-            songIndex--;
-            play();
-        }
-    }
-
-    public void next() {
-        Log.d(TAG, "MainService.next()");
-        if (songIndex < songs.size() - 1) {
-            songIndex++;
-            play();
-        }
-    }
-
-    public MediaPlayer getPlayer() {
-        return player;
-    }
-
-    public ArrayList<Song> getSongs() {
-        return songs;
-    }
-
-    public void setSongIndex(int songIndex) {
-        Log.d(TAG, "MainService.setSongIndex(), songIndex=" + songIndex);
-        this.songIndex = songIndex;
-        play();
-    }
-
-    public void deleteSong(Song song) {
-        Log.d(TAG, "MainService.deleteSong(" + song + ")");
-        if (songs.size() > 1) {
-            int songIndex = songs.indexOf(song);
-            songs.remove(songIndex);
-
-            if (songIndex < this.songIndex) {
-                this.songIndex--;
-            } else if (songIndex == this.songIndex) {
-                if (songIndex == songs.size()) {
-                    this.songIndex--;
-                }
-                play();
-            }
-
-            updateSongTextView();
-            startForeground(1, notification);
-        } else {
-            stopSelf();
         }
     }
 
@@ -344,6 +274,39 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
     }
 
+    private void updatePlaylistPosition() {
+        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+                R.string.playlist_position, songIndex + 1, songs.size(),
+                Util.formatDuration(Song.getDuration(songs, songIndex + 1))));
+    }
+
+    private void addSong(Song song, boolean next) {
+        Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
+        if (songs == null) {
+            songs = new ArrayList<>();
+            songs.add(song);
+
+            notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
+            notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist().getArtist());
+            notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
+        } else if (next) {
+            songs.add(songIndex + 1, song);
+        } else {
+            songs.add(song);
+        }
+
+        updatePlaylistPosition();
+        startForeground(1, notification);
+    }
+
+    private void previous() {
+        Log.d(TAG, "MainService.previous()");
+        if (songIndex > 0) {
+            songIndex--;
+            play();
+        }
+    }
+
     private void playPause() {
         Log.d(TAG, "MainService.playPause()");
         int ibSrcId;
@@ -362,6 +325,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         notificationViews.setImageViewResource(R.id.ibPlayPause, ibSrcId);
         startForeground(1, notification);
+    }
+
+    private void next() {
+        Log.d(TAG, "MainService.next()");
+        if (songIndex < songs.size() - 1) {
+            songIndex++;
+            play();
+        }
     }
 
     private void volumeDown() {
@@ -385,14 +356,36 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         preferences.edit().putInt(KEY_VOLUME, volume).apply();
     }
 
-    private void updateSongTextView() {
-        int timeLeft = 0;
-        for (int i = songIndex + 1; i < songs.size(); i++) {
-            timeLeft += songs.get(i).getDuration();
-        }
+    public ArrayList<Song> getSongs() {
+        return songs;
+    }
 
-        notificationViews.setTextViewText(R.id.tvSong, getString(R.string.song,
-                songIndex + 1, songs.size(), Util.formatDuration(timeLeft)));
+    public void setSongIndex(int songIndex) {
+        Log.d(TAG, "MainService.setSongIndex(), songIndex=" + songIndex);
+        this.songIndex = songIndex;
+        play();
+    }
+
+    public void deleteSong(Song song) {
+        Log.d(TAG, "MainService.deleteSong(" + song + ")");
+        if (songs.size() > 1) {
+            int songIndex = songs.indexOf(song);
+            songs.remove(songIndex);
+
+            if (songIndex < this.songIndex) {
+                this.songIndex--;
+            } else if (songIndex == this.songIndex) {
+                if (songIndex == songs.size()) {
+                    this.songIndex--;
+                }
+                play();
+            }
+
+            updatePlaylistPosition();
+            startForeground(1, notification);
+        } else {
+            stopSelf();
+        }
     }
 
     public class MainBinder extends Binder {

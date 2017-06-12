@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.MediaController;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -25,47 +24,24 @@ import com.oneup.uplayer.widget.SongsListView;
 
 import java.util.ArrayList;
 
-//FIXME: Media controls. Controller not updated when going to next song, occurs when seeking is used?
-
-public class PlayerActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
-        SongsListView.OnSongDeletedListener, MediaController.MediaPlayerControl {
+public class PlaylistActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
+        SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
 
     private SongsListView slvSongs;
     private SongAdapter songsAdapter;
 
-    private MusicController controller;
     private MainService mainService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_player);
 
-        slvSongs = (SongsListView) findViewById(R.id.slvSongs);
+        slvSongs = new SongsListView(this);
         slvSongs.setOnItemClickListener(this);
         slvSongs.setOnSongDeletedListener(this);
+        setContentView(slvSongs);
         registerForContextMenu(slvSongs);
-
-        controller = new MusicController();
-        controller.setPrevNextListeners(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mainService != null) {
-                    mainService.next();
-                }
-            }
-        }, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mainService != null) {
-                    mainService.previous();
-                }
-            }
-        });
-        controller.setMediaPlayer(PlayerActivity.this);
-        controller.setAnchorView(slvSongs);
-        controller.setEnabled(true);
     }
 
     @Override
@@ -93,19 +69,11 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
     }
 
     @Override
-    public void onAttachedToWindow() {
-        Log.d(TAG, "onAttachedToWindow()");
-        super.onAttachedToWindow();
-        controller.show();
-    }
-
-    @Override
     protected void onStop() {
         Log.d(TAG, "Unbinding service");
-        controller.setEnabled(false);
-        //controller.hide();
         unbindService(serviceConnection);
         mainService = null;
+
         super.onStop();
     }
 
@@ -121,79 +89,16 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
     @Override
     public void onSongDeleted(Song song) {
         Log.d(TAG, "onSongDeleted(" + song + ")");
-        mainService.deleteSong(song);
-        setTitle();
-        songsAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void start() {
         if (mainService != null) {
-            mainService.getPlayer().start();
+            mainService.deleteSong(song);
+            setTitle();
+            songsAdapter.notifyDataSetChanged();
         }
-    }
-
-    @Override
-    public void pause() {
-        if (mainService != null) {
-            mainService.getPlayer().pause();
-        }
-    }
-
-    @Override
-    public int getDuration() {
-        return mainService == null ? 0 : mainService.getPlayer().getDuration();
-    }
-
-    @Override
-    public int getCurrentPosition() {
-        return mainService == null ? 0 : mainService.getPlayer().getCurrentPosition();
-    }
-
-    @Override
-    public void seekTo(int pos) {
-        if (mainService != null) {
-            mainService.getPlayer().seekTo(pos);
-        }
-    }
-
-    @Override
-    public boolean isPlaying() {
-        return mainService != null && mainService.getPlayer().isPlaying();
-    }
-
-    @Override
-    public int getBufferPercentage() {
-        return 0;
-    }
-
-    @Override
-    public boolean canPause() {
-        return true;
-    }
-
-    @Override
-    public boolean canSeekBackward() {
-        return true;
-    }
-
-    @Override
-    public boolean canSeekForward() {
-        return true;
-    }
-
-    @Override
-    public int getAudioSessionId() {
-        return 0;
     }
 
     private void setTitle() {
-        int totalDuration = 0;
-        for (Song song : mainService.getSongs()) {
-            totalDuration += song.getDuration();
-        }
         setTitle(getString(R.string.song_count_duration, mainService.getSongs().size(),
-                Util.formatDuration(totalDuration)));
+                Util.formatDuration(Song.getDuration(mainService.getSongs(), 0))));
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -209,15 +114,13 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
             mainService = binder.getService();
 
             setTitle();
-            songsAdapter = new ListAdapter(PlayerActivity.this, mainService.getSongs());
+            songsAdapter = new ListAdapter(PlaylistActivity.this, mainService.getSongs());
             slvSongs.setAdapter(songsAdapter);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "Service diconnected");
-            //controller.hide();
-            controller.setEnabled(false);
             mainService = null;
         }
     };
@@ -229,7 +132,7 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
 
         @Override
         public void addButtons(LinearLayout llButtons) {
-            ImageButton ibDelete = new ImageButton(PlayerActivity.this);
+            ImageButton ibDelete = new ImageButton(PlaylistActivity.this);
             ibDelete.setId(R.id.ibDelete);
             ibDelete.setImageResource(R.drawable.ic_delete);
             ibDelete.setContentDescription(getString(R.string.delete));
@@ -251,28 +154,6 @@ public class PlayerActivity extends AppCompatActivity implements AdapterView.OnI
                     onSongDeleted(song);
                     break;
             }
-        }
-    }
-
-    private class MusicController extends MediaController {
-        public MusicController() {
-            super(PlayerActivity.this);
-        }
-
-        @Override
-        public void show() {
-            super.show(0);
-        }
-
-        @Override
-        public void show(int timeout) {
-            super.show(0);
-        }
-
-        @Override
-        public void hide() {
-            super.hide();
-            finish();
         }
     }
 }

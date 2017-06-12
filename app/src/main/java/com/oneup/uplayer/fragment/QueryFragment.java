@@ -56,7 +56,7 @@ public class QueryFragment extends Fragment implements BaseArgs, View.OnClickLis
             try (Cursor c = db.rawQuery(SQL_QUERY_TOTAL_SONGS_PLAYED, null)) {
                 if (c.moveToFirst()) {
                     tvTotalSongsPlayed = (TextView) ret.findViewById(R.id.tvTotalSongsPlayed);
-                    tvTotalSongsPlayed.setText(getString(R.string.total_songs_played, c.getInt(0)));
+                    tvTotalSongsPlayed.setText(getString(R.string.songs_played, c.getInt(0)));
                 }
             }
         }

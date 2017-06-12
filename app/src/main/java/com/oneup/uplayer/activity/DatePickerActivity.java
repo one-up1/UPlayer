@@ -23,7 +23,6 @@ public class DatePickerActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_date_picker);
         setTitle(getIntent().getIntExtra(EXTRA_TITLE, 0));
 
         calendar = Calendar.getInstance();
@@ -32,8 +31,10 @@ public class DatePickerActivity extends AppCompatActivity implements
         calendar.set(java.util.Calendar.SECOND, 0);
         calendar.set(java.util.Calendar.MILLISECOND, 0);
 
-        calendarView = (CalendarView) findViewById(R.id.calendarView);
+        calendarView = new CalendarView(this);
+        calendarView.setFirstDayOfWeek(Calendar.MONDAY);
         calendarView.setOnDateChangeListener(this);
+        setContentView(calendarView);
 
         long date = getIntent().getLongExtra(EXTRA_DATE, 0);
         if (date > 0) {

@@ -25,7 +25,7 @@
 
         <activity android:name=".activity.SongsActivity" />
 
-        <activity android:name=".activity.PlayerActivity" />
+        <activity android:name=".activity.PlaylistActivity" />
 
         <activity android:name=".activity.DatePickerActivity" />
 

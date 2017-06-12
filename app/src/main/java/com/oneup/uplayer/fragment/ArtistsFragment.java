@@ -22,13 +22,12 @@ import com.oneup.uplayer.db.Song;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener {
     private SparseArray<Artist> artists;
     private int joinedSortBy;
 
-    private List<Artist> objects;
+    private ArrayList<Artist> objects;
     private ListView lvArtists;
 
     public ArtistsFragment() {
@@ -37,8 +36,6 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View ret = inflater.inflate(R.layout.fragment_artists, container, false);
-
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
 
@@ -86,13 +83,13 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         }
         Collections.sort(objects, c);
 
-        lvArtists = (ListView) ret.findViewById(R.id.lvArtists);
+        lvArtists = new ListView(getContext());
         lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_list_item_1, objects));
         lvArtists.setOnItemClickListener(this);
         registerForContextMenu(lvArtists);
 
-        return ret;
+        return lvArtists;
     }
 
     @Override
@@ -114,8 +111,12 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                 item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.info:
-                Util.showInfoDialog(getContext(), artist.getArtist(),
-                        0, artist.getLastPlayed(), artist.getTimesPlayed());
+                Util.showInfoDialog(getContext(), artist.getArtist(), getString(
+                        R.string.info_message_artist,
+                        artist.getLastPlayed() == 0 ?
+                                getString(R.string.never) :
+                                Util.formatDateTime(artist.getLastPlayed()),
+                        artist.getTimesPlayed()));
                 return true;
             default:
                 return super.onContextItemSelected(item);

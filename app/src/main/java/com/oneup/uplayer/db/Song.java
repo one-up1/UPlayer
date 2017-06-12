@@ -6,6 +6,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
+import java.util.ArrayList;
+
 public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelable {
     public static final String TABLE_NAME = "songs";
 
@@ -113,6 +115,14 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     public Uri getContentUri() {
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+    }
+
+    public static int getDuration(ArrayList<Song> songs, int i) {
+        int ret = 0;
+        for (; i < songs.size(); i++) {
+            ret += songs.get(i).getDuration();
+        }
+        return ret;
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

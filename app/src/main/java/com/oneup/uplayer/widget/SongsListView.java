@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.AdapterView;
@@ -27,8 +26,8 @@ public class SongsListView extends ListView {
     private OnDataSetChangedListener onDataSetChangedListener;
     private OnSongDeletedListener onSongDeletedListener;
 
-    public SongsListView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public SongsListView(Context context) {
+        super(context);
 
         this.context = context;
         dbOpenHelper = new DbOpenHelper(context);
@@ -53,13 +52,19 @@ public class SongsListView extends ListView {
                 }
                 return true;
             case R.id.info:
-                Util.showInfoDialog(context, song.getTitle(),
-                        song.getDuration(), song.getLastPlayed(), song.getTimesPlayed());
+                Util.showInfoDialog(getContext(), song.getTitle(), context.getString(
+                        R.string.info_message_song,
+                        song.getYear(),
+                        Util.formatDuration(song.getDuration()),
+                        song.getLastPlayed() == 0 ?
+                                context.getString(R.string.never) :
+                                Util.formatDateTime(song.getLastPlayed()),
+                        song.getTimesPlayed()));
                 return true;
             case R.id.delete:
                 new AlertDialog.Builder(context)
                         .setMessage(context.getString(
-                                R.string.delete_song_confirm, song.getTitle()))
+                                R.string.delete_confirm, song.getTitle()))
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 
                             @Override

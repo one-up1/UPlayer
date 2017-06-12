@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.Util;
 import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
 import com.oneup.uplayer.activity.MainActivity;
@@ -31,8 +32,6 @@ import com.oneup.uplayer.db.Song;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
-//FIXME: Activity title.
 
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
@@ -45,8 +44,8 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     private DbOpenHelper dbOpenHelper;
     private ArrayList<Song> songs;
-    private ListAdapter listAdapter;
     private SongsListView slvSongs;
+    private ListAdapter listAdapter;
 
     public SongsFragment() {
     }
@@ -54,8 +53,6 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View ret = inflater.inflate(R.layout.fragment_songs, container, false);
-
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
         selection = getArguments().getString(ARG_SELECTION);
@@ -72,7 +69,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     selection, null, null)) {
                 if (c == null) {
                     Log.wtf(TAG, "No cursor");
-                    return ret;
+                    return super.onCreateView(inflater, container, savedInstanceState);
                 }
 
                 int iId = c.getColumnIndex(Song._ID);
@@ -174,9 +171,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         Log.d(TAG, "Queried " + this.songs.size() + " songs");
-        getActivity().setTitle(getString(R.string.song_count, this.songs.size()));
+        getActivity().setTitle(getString(R.string.song_count_duration, this.songs.size(),
+                Util.formatDuration(Song.getDuration(this.songs, 0))));
 
-        slvSongs = (SongsListView) ret.findViewById(R.id.slvSongs);
+        slvSongs = new SongsListView(getContext());
         listAdapter = new ListAdapter(getContext(), this.songs);
         slvSongs.setAdapter(listAdapter);
         slvSongs.setOnItemClickListener(this);
@@ -184,7 +182,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         slvSongs.setOnSongDeletedListener(this);
         registerForContextMenu(slvSongs);
 
-        return ret;
+        return slvSongs;
     }
 
     @Override

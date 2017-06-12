@@ -22,7 +22,11 @@ public class Util {
     private Util() {
     }
 
-    public static final String formatDate(long millis) {
+    public static String formatDateTime(long millis) {
+        return DATE_TIME_FORMAT.format(millis);
+    }
+
+    public static String formatDate(long millis) {
         return DATE_FORMAT.format(millis);
     }
 
@@ -34,20 +38,10 @@ public class Util {
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
     }
 
-    public static void showInfoDialog(Context context, String title,
-                                      int duration, long lastPlayed, int timesPlayed) {
-        //TODO: Improve info dialog, show year, remove year from list_item?
-        String message = "";
-        if (duration > 0) {
-            message += formatDuration(duration) + "\n";
-        }
+    public static void showInfoDialog(Context context, String title, String message) {
         new AlertDialog.Builder(context)
                 .setTitle(title)
-                .setMessage(message + context.getString(R.string.info_message,
-                        lastPlayed == 0 ?
-                                context.getString(R.string.never) :
-                                DATE_TIME_FORMAT.format(lastPlayed),
-                        timesPlayed))
+                .setMessage(message)
                 .setPositiveButton(R.string.ok, null)
                 .show();
     }

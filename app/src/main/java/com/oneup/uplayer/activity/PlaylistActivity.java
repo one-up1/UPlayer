@@ -59,6 +59,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     protected void onStart() {
+        Log.d(TAG, "PlaylistActivity.onStart()");
         super.onStart();
 
         if (mainService == null) {
@@ -70,7 +71,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     protected void onStop() {
-        Log.d(TAG, "Unbinding service");
+        Log.d(TAG, "PlaylistActivity.onStop()");
         unbindService(serviceConnection);
         mainService = null;
 
@@ -88,7 +89,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public void onSongDeleted(Song song) {
-        Log.d(TAG, "onSongDeleted(" + song + ")");
+        Log.d(TAG, "PlaylistActivity.onSongDeleted(" + song + ")");
         if (mainService != null) {
             mainService.deleteSong(song);
             setTitle();
@@ -104,9 +105,9 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d(TAG, "Service connected");
+            Log.d(TAG, "PlaylistActivity.serviceConnection.onServiceConnected()");
             if (isFinishing()) {
-                Log.d(TAG, "finishing");
+                Log.d(TAG, "Finishing");
                 return;
             }
 
@@ -120,7 +121,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.d(TAG, "Service diconnected");
+            Log.d(TAG, "PlaylistActivity.serviceConnection.onServiceDisconnected()");
             mainService = null;
         }
     };

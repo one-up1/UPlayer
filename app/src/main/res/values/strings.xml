@@ -19,7 +19,7 @@
 
     <string name="info">Info</string>
     <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d</string>
-    <string name="info_message_song">Year: %1$d\nDuration: %2$s\nLast played: %3$s\nTimes played: %4$d</string>
+    <string name="info_message_song">Year: %1$d\nDuration: %2$s\n\nLast played: %3$s\nTimes played: %4$d\n\nBookmarked: %5$s</string>
     <string name="never">Never</string>
 
     <string name="bookmark">Bookmark</string>

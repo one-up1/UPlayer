@@ -2,6 +2,7 @@ package com.oneup.uplayer.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -100,6 +101,37 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             } finally {
                 db.endTransaction();
             }
+        }
+    }
+
+    public void querySong(Song song) {
+        Log.d(TAG, "DbOpenHelper.querySong(" + song + ")");
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(Artist.TABLE_NAME,
+                    new String[]{Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+                    Artist._ID + "=" + song.getArtist().getId(), null, null, null, null)) {
+                if (c.moveToFirst()) {
+                    song.getArtist().setLastPlayed(c.getLong(0));
+                    song.getArtist().setTimesPlayed(c.getInt(1));
+                } else {
+                    Log.d(TAG, "Artist not found");
+                }
+            }
+
+            try (Cursor c = db.query(Song.TABLE_NAME,
+                    new String[]{Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED},
+                    Song._ID + "=" + song.getId(), null, null, null, null)) {
+                if (c.moveToFirst()) {
+                    song.setLastPlayed(c.getLong(0));
+                    song.setTimesPlayed(c.getInt(1));
+                    song.setBookmarked(c.getLong(2));
+                } else {
+                    Log.d(TAG, "Song not found");
+                }
+            }
+
+            Log.d(TAG, "Times played: " + song.getArtist().getTimesPlayed() +
+                    ":" + song.getTimesPlayed());
         }
     }
 

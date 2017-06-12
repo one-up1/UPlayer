@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "MainActivity.onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -58,8 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        Log.d(TAG, "MainActivity.onResume()");
         super.onResume();
-        Log.d(TAG, "onResume()");
         //if (true) return;
 
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        Log.d(TAG, "MainActivity.onDestroy()");
         if (dbOpenHelper != null) {
             dbOpenHelper.close();
         }
@@ -83,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
+        Log.d(TAG, "MainActivity.onRequestPermissionsResult(" +
+                requestCode + ", " + permissions[0] + ", " + grantResults[0] + ")");
         if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "Permissions not granted");
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -91,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void notifyDataSetChanged() {
-        Log.d(TAG, "Querying artists");
+        Log.d(TAG, "MainActivity.notifyDataSetChanged()");
         artists.clear();
         Artist artist;
 

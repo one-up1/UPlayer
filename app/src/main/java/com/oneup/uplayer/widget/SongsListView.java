@@ -38,10 +38,13 @@ public class SongsListView extends ListView {
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.bookmark:
+                dbOpenHelper.querySong(song);
                 if (song.getBookmarked() == 0) {
+                    Log.d(TAG, "Setting bookmark: " + song);
                     song.setBookmarked(System.currentTimeMillis());
                     Toast.makeText(context, R.string.bookmark_set, Toast.LENGTH_SHORT).show();
                 } else {
+                    Log.d(TAG, "Deleting bookmark: " + song);
                     song.setBookmarked(0);
                     Toast.makeText(context, R.string.bookmark_deleted, Toast.LENGTH_SHORT).show();
                 }
@@ -52,6 +55,7 @@ public class SongsListView extends ListView {
                 }
                 return true;
             case R.id.info:
+                dbOpenHelper.querySong(song);
                 Util.showInfoDialog(getContext(), song.getTitle(), context.getString(
                         R.string.info_message_song,
                         song.getYear(),
@@ -59,7 +63,10 @@ public class SongsListView extends ListView {
                         song.getLastPlayed() == 0 ?
                                 context.getString(R.string.never) :
                                 Util.formatDateTime(song.getLastPlayed()),
-                        song.getTimesPlayed()));
+                        song.getTimesPlayed(),
+                        song.getBookmarked() == 0 ?
+                                context.getString(R.string.no) :
+                                Util.formatDateTime(song.getBookmarked())));
                 return true;
             case R.id.delete:
                 new AlertDialog.Builder(context)

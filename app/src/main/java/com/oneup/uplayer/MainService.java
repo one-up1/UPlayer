@@ -23,8 +23,6 @@ import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
-//TODO: Context vs getApplicationContext().
-
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     public static final String ARG_REQUEST_CODE = "request_code";
@@ -199,7 +197,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        Log.d(TAG, "MainService.onError(), what=" + what + ", extra=" + extra);
+        Log.d(TAG, "MainService.onError(" + what + ", " + extra + ")");
         player.reset();
 
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
@@ -220,6 +218,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             Log.d(TAG, "Current position is 0");
         } else {
             Song song = songs.get(songIndex);
+            dbOpenHelper.querySong(song);
             long lastPlayed = System.currentTimeMillis();
 
             song.getArtist().setLastPlayed(lastPlayed);
@@ -281,7 +280,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void addSong(Song song, boolean next) {
-        Log.d(TAG, "MainService.addSong(), song=" + song + ", next=" + next);
+        Log.d(TAG, "MainService.addSong(" + song + ", " + next + ")");
         if (songs == null) {
             songs = new ArrayList<>();
             songs.add(song);
@@ -361,7 +360,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void setSongIndex(int songIndex) {
-        Log.d(TAG, "MainService.setSongIndex(), songIndex=" + songIndex);
+        Log.d(TAG, "MainService.setSongIndex(" + songIndex + ")");
         this.songIndex = songIndex;
         play();
     }

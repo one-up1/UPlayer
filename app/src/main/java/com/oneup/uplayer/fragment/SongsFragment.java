@@ -1,6 +1,5 @@
 package com.oneup.uplayer.fragment;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -22,16 +21,18 @@ import android.widget.Toast;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
-import com.oneup.uplayer.widget.SongAdapter;
-import com.oneup.uplayer.widget.SongsListView;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.widget.SongAdapter;
+import com.oneup.uplayer.widget.SongsListView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+//TODO: Display whether or not song is played/bookmarked in ListView.
 
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
@@ -127,10 +128,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         if (songs != null) {
             for (int i = 0; i < songs.size(); i++) {
-                song = songs.valueAt(i);
-                if (joinedSortBy != SORT_BY_LAST_PLAYED || song.getLastPlayed() > 0) {
-                    this.songs.add(song);
-                }
+                this.songs.add(songs.valueAt(i));
             }
 
             Comparator<? super Song> c;
@@ -140,7 +138,9 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            return song1.getTitle().compareTo(song2.getTitle());
+                            return song1.getBookmarked() == song2.getBookmarked() ?
+                                    song1.getTitle().compareTo(song2.getTitle()) :
+                                    Long.compare(song2.getBookmarked(), song1.getBookmarked());
                         }
                     };
                     break;
@@ -149,8 +149,12 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            int i = Long.compare(song2.getLastPlayed(), song1.getLastPlayed());
-                            return i == 0 ? song1.getTitle().compareTo(song2.getTitle()) : i;
+                            return song1.getBookmarked() == song2.getBookmarked() ?
+                                    song1.getLastPlayed() == song2.getLastPlayed() ?
+                                            song1.getTitle().compareTo(song2.getTitle()) :
+                                            Long.compare(song2.getLastPlayed(),
+                                                    song1.getLastPlayed()) :
+                                    Long.compare(song2.getBookmarked(), song1.getBookmarked());
                         }
                     };
                     break;
@@ -159,8 +163,15 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            int i = Integer.compare(song2.getTimesPlayed(), song1.getTimesPlayed());
-                            return i == 0 ? song1.getTitle().compareTo(song2.getTitle()) : i;
+                            return song1.getBookmarked() == song2.getBookmarked() ?
+                                    song1.getTimesPlayed() == song2.getTimesPlayed() ?
+                                            song1.getLastPlayed() == song2.getLastPlayed() ?
+                                                    song1.getTitle().compareTo(song2.getTitle()) :
+                                                    Long.compare(song2.getLastPlayed(),
+                                                            song1.getLastPlayed()) :
+                                            Integer.compare(song2.getTimesPlayed(),
+                                                    song1.getTimesPlayed()) :
+                                    Long.compare(song2.getBookmarked(), song1.getBookmarked());
                         }
                     };
                     break;
@@ -175,7 +186,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 Util.formatDuration(Song.getDuration(this.songs, 0))));
 
         slvSongs = new SongsListView(getContext());
-        listAdapter = new ListAdapter(getContext(), this.songs);
+        listAdapter = new ListAdapter();
         slvSongs.setAdapter(listAdapter);
         slvSongs.setOnItemClickListener(this);
         slvSongs.setOnDataSetChangedListener(this);
@@ -210,8 +221,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == slvSongs) {
-            Log.d(TAG, "Playing " + songs.size() + " songs, songIndex=" + position +
-                    " (" + songs.get(position) + ")");
+            Log.d(TAG, "Playing " + songs.size() + " songs, songIndex=" + position);
             getContext().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
                     .putExtra(MainService.ARG_SONGS, songs)
@@ -221,6 +231,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onDataSetChanged() {
+        listAdapter.notifyDataSetChanged();
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).notifyDataSetChanged();
         }
@@ -233,8 +244,8 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {
-        private ListAdapter(Context context, ArrayList<Song> songs) {
-            super(context, songs);
+        private ListAdapter() {
+            super(getContext(), songs);
         }
 
         @Override

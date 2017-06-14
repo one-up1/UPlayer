@@ -1,7 +1,10 @@
 package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
 import android.view.ContextMenu;
@@ -12,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
@@ -41,10 +45,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
         objects = new ArrayList<>();
         for (int i = 0; i < artists.size(); i++) {
-            Artist artist = artists.valueAt(i);
-            if (joinedSortBy != SORT_BY_LAST_PLAYED || artist.getLastPlayed() > 0) {
-                objects.add(artists.valueAt(i));
-            }
+            objects.add(artists.valueAt(i));
         }
 
         Comparator<? super Artist> c;
@@ -63,8 +64,9 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
                     @Override
                     public int compare(Artist artist1, Artist artist2) {
-                        int i = Long.compare(artist2.getLastPlayed(), artist1.getLastPlayed());
-                        return i == 0 ? artist1.getArtist().compareTo(artist2.getArtist()) : i;
+                        return artist1.getLastPlayed() == artist2.getLastPlayed() ?
+                                artist1.getArtist().compareTo(artist2.getArtist()) :
+                                Long.compare(artist2.getLastPlayed(), artist1.getLastPlayed());
                     }
                 };
                 break;
@@ -73,8 +75,12 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
                     @Override
                     public int compare(Artist artist1, Artist artist2) {
-                        int i = Integer.compare(artist2.getTimesPlayed(), artist1.getTimesPlayed());
-                        return i == 0 ? artist1.getArtist().compareTo(artist2.getArtist()) : i;
+                        return artist1.getTimesPlayed() == artist2.getTimesPlayed() ?
+                                artist1.getLastPlayed() == artist2.getLastPlayed() ?
+                                        artist1.getArtist().compareTo(artist2.getArtist()) :
+                                        Long.compare(artist2.getLastPlayed(),
+                                                artist1.getLastPlayed()) :
+                                Integer.compare(artist2.getTimesPlayed(), artist1.getTimesPlayed());
                     }
                 };
                 break;
@@ -84,8 +90,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         Collections.sort(objects, c);
 
         lvArtists = new ListView(getContext());
-        lvArtists.setAdapter(new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_list_item_1, objects));
+        lvArtists.setAdapter(new ListAdapter());
         lvArtists.setOnItemClickListener(this);
         registerForContextMenu(lvArtists);
 
@@ -141,5 +146,20 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    private class ListAdapter extends ArrayAdapter<Artist> {
+        private ListAdapter() {
+            super(ArtistsFragment.this.getContext(), android.R.layout.simple_list_item_1, objects);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            TextView ret = (TextView) super.getView(position, convertView, parent);
+            ret.setTextColor(objects.get(position).getTimesPlayed() == 0 ? Color.BLUE :
+                    getResources().getColor(android.R.color.primary_text_light));
+            return ret;
+        }
     }
 }

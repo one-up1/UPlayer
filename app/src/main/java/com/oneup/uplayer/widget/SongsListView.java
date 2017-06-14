@@ -56,7 +56,7 @@ public class SongsListView extends ListView {
                 return true;
             case R.id.info:
                 dbOpenHelper.querySong(song);
-                Util.showInfoDialog(getContext(), song.getTitle(), context.getString(
+                Util.showInfoDialog(context, song.getTitle(), context.getString(
                         R.string.info_message_song,
                         song.getYear(),
                         Util.formatDuration(song.getDuration()),

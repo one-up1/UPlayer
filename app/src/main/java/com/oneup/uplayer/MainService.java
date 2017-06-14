@@ -30,8 +30,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final String ARG_SONG_INDEX = "song_index";
     public static final String ARG_SONG = "song";
 
-    private static final String TAG = "UPlayer";
-
     public static final int REQUEST_START = 1;
     public static final int REQUEST_PLAY_NEXT = 2;
     public static final int REQUEST_PLAY_LAST = 3;
@@ -42,6 +40,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final int REQUEST_STOP = 7;
     private static final int REQUEST_VOLUME_DOWN = 8;
     private static final int REQUEST_VOLUME_UP = 9;
+
+    private static final String TAG = "UPlayer";
 
     private static final String KEY_VOLUME = "volume";
     private static final int MAX_VOLUME = 100;
@@ -215,6 +215,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
         prepared = false;
 
+        //FIXME: onCompletion not always called or posittion 0?
         if (player.getCurrentPosition() == 0) {
             Log.d(TAG, "Current position is 0");
         } else {

@@ -22,8 +22,6 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
 
-import java.util.ArrayList;
-
 public class PlaylistActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
         SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
@@ -115,7 +113,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
             mainService = binder.getService();
 
             setTitle();
-            songsAdapter = new ListAdapter(PlaylistActivity.this, mainService.getSongs());
+            songsAdapter = new ListAdapter();
             slvSongs.setAdapter(songsAdapter);
         }
 
@@ -127,8 +125,8 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     };
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {
-        private ListAdapter(Context context, ArrayList<Song> songs) {
-            super(context, songs);
+        private ListAdapter() {
+            super(PlaylistActivity.this, mainService.getSongs());
         }
 
         @Override

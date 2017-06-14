@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //FIXME notifyDataSetChanged() causes fragment ListViews to lose scroll position.
     public void notifyDataSetChanged() {
         Log.d(TAG, "MainActivity.notifyDataSetChanged()");
         artists.clear();

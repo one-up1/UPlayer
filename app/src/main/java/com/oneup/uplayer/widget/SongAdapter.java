@@ -2,6 +2,7 @@ package com.oneup.uplayer.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +16,16 @@ import com.oneup.uplayer.db.Song;
 import java.util.ArrayList;
 
 public abstract class SongAdapter extends BaseAdapter {
-    private LayoutInflater layoutInflater;
+    private Context context;
     private ArrayList<Song> songs;
 
+    private LayoutInflater layoutInflater;
+
     public SongAdapter(Context context, ArrayList<Song> songs) {
-        this.layoutInflater = LayoutInflater.from(context);
+        this.context = context;
         this.songs = songs;
+
+        layoutInflater = LayoutInflater.from(context);
     }
 
     @Override
@@ -53,6 +58,11 @@ public abstract class SongAdapter extends BaseAdapter {
 
         TextView tvArtist = (TextView) convertView.findViewById(R.id.tvArtist);
         tvArtist.setText(song.getArtist().getArtist());
+
+        tvTitle.setTextColor(song.getTimesPlayed() == 0 ? Color.BLUE :
+                song.getBookmarked() == 0 ?
+                        context.getResources().getColor(android.R.color.primary_text_light) :
+                        Color.RED);
 
         setButtons(convertView, song);
         return convertView;

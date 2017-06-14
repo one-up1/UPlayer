@@ -23,6 +23,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.Artist;
+import com.oneup.uplayer.db.DbComparator;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.widget.SongAdapter;
@@ -31,8 +32,6 @@ import com.oneup.uplayer.widget.SongsListView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
-//TODO: Display whether or not song is played/bookmarked in ListView.
 
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
@@ -138,9 +137,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            return song1.getBookmarked() == song2.getBookmarked() ?
-                                    song1.getTitle().compareTo(song2.getTitle()) :
-                                    Long.compare(song2.getBookmarked(), song1.getBookmarked());
+                            return DbComparator.sortByName(song1.getTitle(), song2.getTitle());
                         }
                     };
                     break;
@@ -149,12 +146,9 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            return song1.getBookmarked() == song2.getBookmarked() ?
-                                    song1.getLastPlayed() == song2.getLastPlayed() ?
-                                            song1.getTitle().compareTo(song2.getTitle()) :
-                                            Long.compare(song2.getLastPlayed(),
-                                                    song1.getLastPlayed()) :
-                                    Long.compare(song2.getBookmarked(), song1.getBookmarked());
+                            return DbComparator.sortByLastPlayed(
+                                    song1.getLastPlayed(), song2.getLastPlayed(),
+                                    song1.getArtist().getArtist(), song2.getArtist().getArtist());
                         }
                     };
                     break;
@@ -163,15 +157,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                         @Override
                         public int compare(Song song1, Song song2) {
-                            return song1.getBookmarked() == song2.getBookmarked() ?
-                                    song1.getTimesPlayed() == song2.getTimesPlayed() ?
-                                            song1.getLastPlayed() == song2.getLastPlayed() ?
-                                                    song1.getTitle().compareTo(song2.getTitle()) :
-                                                    Long.compare(song2.getLastPlayed(),
-                                                            song1.getLastPlayed()) :
-                                            Integer.compare(song2.getTimesPlayed(),
-                                                    song1.getTimesPlayed()) :
-                                    Long.compare(song2.getBookmarked(), song1.getBookmarked());
+                            return DbComparator.sortByTimesPlayed(
+                                    song1.getTimesPlayed(), song2.getTimesPlayed(),
+                                    song1.getLastPlayed(), song2.getLastPlayed(),
+                                    song1.getArtist().getArtist(), song2.getArtist().getArtist());
                         }
                     };
                     break;
@@ -231,7 +220,6 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onDataSetChanged() {
-        listAdapter.notifyDataSetChanged();
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).notifyDataSetChanged();
         }

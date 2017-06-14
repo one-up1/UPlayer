@@ -25,8 +25,15 @@ import com.oneup.uplayer.db.Song;
 //TODO: More query options, sort by year?
 
 public class QueryFragment extends Fragment implements BaseArgs, View.OnClickListener {
+    private static final String SQL_QUERY_SONGS_PLAYED =
+            "SELECT COUNT(" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
+
+    private static final String SQL_QUERY_ARTISTS_PLAYED =
+            "SELECT COUNT(" + Artist.TIMES_PLAYED + ") FROM " + Artist.TABLE_NAME;
+
     private static final String SQL_QUERY_TOTAL_SONGS_PLAYED =
             "SELECT SUM(" + Artist.TIMES_PLAYED + ") FROM " + Artist.TABLE_NAME;
+
     private static final int REQUEST_SELECT_MIN_DATE = 1;
     private static final int REQUEST_SELECT_MAX_DATE = 2;
 
@@ -47,19 +54,27 @@ public class QueryFragment extends Fragment implements BaseArgs, View.OnClickLis
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View ret = inflater.inflate(R.layout.fragment_query, container, false);
-
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
 
         dbOpenHelper = new DbOpenHelper(getActivity());
+        int songsPlayed, artistsPlayed, totalPlayed;
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+            try (Cursor c = db.rawQuery(SQL_QUERY_SONGS_PLAYED, null)) {
+                songsPlayed = c.moveToFirst() ? c.getInt(0) : 0;
+            }
+            try (Cursor c = db.rawQuery(SQL_QUERY_ARTISTS_PLAYED, null)) {
+                artistsPlayed = c.moveToFirst() ? c.getInt(0) : 0;
+            }
             try (Cursor c = db.rawQuery(SQL_QUERY_TOTAL_SONGS_PLAYED, null)) {
-                if (c.moveToFirst()) {
-                    tvTotalSongsPlayed = (TextView) ret.findViewById(R.id.tvTotalSongsPlayed);
-                    tvTotalSongsPlayed.setText(getString(R.string.songs_played, c.getInt(0)));
-                }
+                totalPlayed = c.moveToFirst() ? c.getInt(0) : 0;
             }
         }
+
+        View ret = inflater.inflate(R.layout.fragment_query, container, false);
+
+        tvTotalSongsPlayed = (TextView) ret.findViewById(R.id.tvTotalSongsPlayed);
+        tvTotalSongsPlayed.setText(getString(R.string.songs_played,
+                songsPlayed, artistsPlayed, totalPlayed));
 
         bMinDate = (Button) ret.findViewById(R.id.bMinDate);
         if (minDate > 0) {

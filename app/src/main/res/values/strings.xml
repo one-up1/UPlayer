@@ -7,7 +7,7 @@
     <string name="last_played">Last played</string>
     <string name="most_played">Most played</string>
 
-    <string name="songs_played">%1$d songs played</string>
+    <string name="songs_played">%1$d songs played, %2$d artists, %3$d total</string>
     <string name="min_date">Min date&#8230;</string>
     <string name="max_date">Max date&#8230;</string>
     <string name="invalid_date_range">Invalid date range</string>

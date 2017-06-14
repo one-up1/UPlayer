@@ -21,6 +21,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
+import com.oneup.uplayer.db.DbComparator;
 import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
                     @Override
                     public int compare(Artist artist1, Artist artist2) {
-                        return artist1.getArtist().compareTo(artist2.getArtist());
+                        return DbComparator.sortByName(artist1.getArtist(), artist2.getArtist());
                     }
                 };
                 break;
@@ -64,9 +65,9 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
                     @Override
                     public int compare(Artist artist1, Artist artist2) {
-                        return artist1.getLastPlayed() == artist2.getLastPlayed() ?
-                                artist1.getArtist().compareTo(artist2.getArtist()) :
-                                Long.compare(artist2.getLastPlayed(), artist1.getLastPlayed());
+                        return DbComparator.sortByLastPlayed(
+                                artist1.getLastPlayed(), artist2.getLastPlayed(),
+                                artist1.getArtist(), artist2.getArtist());
                     }
                 };
                 break;
@@ -75,12 +76,10 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
                     @Override
                     public int compare(Artist artist1, Artist artist2) {
-                        return artist1.getTimesPlayed() == artist2.getTimesPlayed() ?
-                                artist1.getLastPlayed() == artist2.getLastPlayed() ?
-                                        artist1.getArtist().compareTo(artist2.getArtist()) :
-                                        Long.compare(artist2.getLastPlayed(),
-                                                artist1.getLastPlayed()) :
-                                Integer.compare(artist2.getTimesPlayed(), artist1.getTimesPlayed());
+                        return DbComparator.sortByTimesPlayed(
+                                artist1.getTimesPlayed(), artist2.getTimesPlayed(),
+                                artist1.getLastPlayed(), artist2.getLastPlayed(),
+                                artist1.getArtist(), artist2.getArtist());
                     }
                 };
                 break;
@@ -157,8 +156,8 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             TextView ret = (TextView) super.getView(position, convertView, parent);
-            ret.setTextColor(objects.get(position).getTimesPlayed() == 0 ? Color.BLUE :
-                    getResources().getColor(android.R.color.primary_text_light));
+            ret.setTextColor(objects.get(position).getTimesPlayed() == 0 ?
+                    Color.BLUE : Color.BLACK);
             return ret;
         }
     }

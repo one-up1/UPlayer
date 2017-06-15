@@ -6,7 +6,7 @@
     <item
         android:id="@+id/ok"
         android:title="@string/ok"
-        android:icon="@drawable/ic_ok"
+        android:icon="@drawable/ic_menu_ok"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction" />
 

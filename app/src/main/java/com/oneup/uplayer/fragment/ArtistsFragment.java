@@ -120,7 +120,8 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                         artist.getLastPlayed() == 0 ?
                                 getString(R.string.never) :
                                 Util.formatDateTime(artist.getLastPlayed()),
-                        artist.getTimesPlayed()));
+                        artist.getTimesPlayed())
+                );
                 return true;
             default:
                 return super.onContextItemSelected(item);

@@ -27,6 +27,7 @@
     <string name="bookmark_deleted">Bookmark deleted</string>
 
     <string name="delete">Delete</string>
+    <string name="delete_song">Delete song</string>
     <string name="delete_confirm">Delete %1$s?</string>
     <string name="song_deleted">Song deleted</string>
 

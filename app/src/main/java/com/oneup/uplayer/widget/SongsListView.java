@@ -56,22 +56,25 @@ public class SongsListView extends ListView {
                 return true;
             case R.id.info:
                 dbOpenHelper.querySong(song);
-                Util.showInfoDialog(context, song.getTitle(), context.getString(
-                        R.string.info_message_song,
-                        song.getYear(),
-                        Util.formatDuration(song.getDuration()),
-                        song.getLastPlayed() == 0 ?
-                                context.getString(R.string.never) :
-                                Util.formatDateTime(song.getLastPlayed()),
-                        song.getTimesPlayed(),
-                        song.getBookmarked() == 0 ?
-                                context.getString(R.string.no) :
-                                Util.formatDateTime(song.getBookmarked())));
+                Util.showInfoDialog(context, song.getArtist() + " - " + song.getTitle(),
+                        context.getString(
+                                R.string.info_message_song,
+                                song.getYear(),
+                                Util.formatDuration(song.getDuration()),
+                                song.getLastPlayed() == 0 ?
+                                        context.getString(R.string.never) :
+                                        Util.formatDateTime(song.getLastPlayed()),
+                                song.getTimesPlayed(),
+                                song.getBookmarked() == 0 ?
+                                        context.getString(R.string.no) :
+                                        Util.formatDateTime(song.getBookmarked()))
+                );
                 return true;
             case R.id.delete:
                 new AlertDialog.Builder(context)
-                        .setMessage(context.getString(
-                                R.string.delete_confirm, song.getTitle()))
+                        .setIcon(R.drawable.ic_dialog_warning)
+                        .setTitle(R.string.delete_song)
+                        .setMessage(context.getString(R.string.delete_confirm, song.getTitle()))
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 
                             @Override

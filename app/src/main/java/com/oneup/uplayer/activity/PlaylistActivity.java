@@ -43,6 +43,28 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     }
 
     @Override
+    protected void onStart() {
+        Log.d(TAG, "PlaylistActivity.onStart()");
+        super.onStart();
+
+        if (mainService == null) {
+            Log.d(TAG, "Binding service");
+            bindService(new Intent(this, MainService.class), serviceConnection,
+                    Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "PlaylistActivity.onResume()");
+        super.onResume();
+
+        if (songsAdapter != null) {
+            songsAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         if (v == slvSongs) {
@@ -53,18 +75,6 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         return slvSongs.onContextItemSelected(item);
-    }
-
-    @Override
-    protected void onStart() {
-        Log.d(TAG, "PlaylistActivity.onStart()");
-        super.onStart();
-
-        if (mainService == null) {
-            Log.d(TAG, "Binding service");
-            bindService(new Intent(this, MainService.class), serviceConnection,
-                    Context.BIND_AUTO_CREATE);
-        }
     }
 
     @Override

@@ -10,6 +10,14 @@
     <string name="songs_played">%1$d songs played, %2$d artists, %3$d total</string>
     <string name="min_date">Min date&#8230;</string>
     <string name="max_date">Max date&#8230;</string>
+    <string name="sort_by">Sort by</string>
+    <string-array name="sort_by_entries">
+        <item>Title</item>
+        <item>Year</item>
+        <item>Last played</item>
+        <item>Times played</item>
+    </string-array>
+    <string name="descending">Descending</string>
     <string name="invalid_date_range">Invalid date range</string>
 
     <string name="play_next">Play next</string>

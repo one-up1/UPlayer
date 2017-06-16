@@ -10,7 +10,10 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +46,8 @@ public class QueryFragment extends Fragment implements BaseArgs, View.OnClickLis
     private TextView tvTotalSongsPlayed;
     private Button bMinDate;
     private Button bMaxDate;
+    private Spinner sSortBy;
+    private CheckBox cbSortDescending;
     private Button bQuery;
 
     private long minDate;
@@ -87,6 +92,11 @@ public class QueryFragment extends Fragment implements BaseArgs, View.OnClickLis
             bMaxDate.setText(Util.formatDate(maxDate));
         }
         bMaxDate.setOnClickListener(this);
+
+        sSortBy = (Spinner) ret.findViewById(R.id.sSortBy);
+        sSortBy.setSelection(2);
+
+        cbSortDescending = (CheckBox) ret.findViewById(R.id.cbSortDescending);
 
         bQuery = (Button) ret.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
@@ -138,11 +148,32 @@ public class QueryFragment extends Fragment implements BaseArgs, View.OnClickLis
                 return;
             }
 
+            String dbOrderBy;
+            switch (sSortBy.getSelectedItemPosition()) {
+                case 0:
+                    dbOrderBy = Song.TITLE;
+                    break;
+                case 1:
+                    dbOrderBy = Song.YEAR;
+                    break;
+                case 2:
+                    dbOrderBy = Song.LAST_PLAYED;
+                    break;
+                case 3:
+                    dbOrderBy = Song.TIMES_PLAYED;
+                    break;
+                default:
+                    dbOrderBy = null;
+            }
+            if (cbSortDescending.isChecked()) {
+                dbOrderBy += " DESC";
+            }
+
             Bundle args = new Bundle();
             args.putSparseParcelableArray(ARG_ARTISTS, artists);
             args.putString(ARG_SELECTION, Song.LAST_PLAYED + ">=" + minDate + " AND " +
                     Song.LAST_PLAYED + "<" + (maxDate + 86400000));
-            args.putString(ARG_DB_ORDER_BY, Song.LAST_PLAYED);
+            args.putString(ARG_DB_ORDER_BY, dbOrderBy);
             startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));
         }
     }

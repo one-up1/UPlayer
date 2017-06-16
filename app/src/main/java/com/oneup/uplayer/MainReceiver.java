@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.oneup.uplayer.activity.PlaylistActivity;
+
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
 
@@ -25,6 +27,7 @@ public class MainReceiver extends BroadcastReceiver {
             case 0:
                 Log.d(TAG, "Headset unplugged");
                 if (context.getSharedPreferences(TAG, 0).getInt("headset_state", 0) == 1) {
+                    PlaylistActivity.finishIfRunning();
                     context.stopService(new Intent(context, MainService.class));
                 }
                 break;

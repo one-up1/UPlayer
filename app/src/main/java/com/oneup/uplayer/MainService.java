@@ -23,8 +23,6 @@ import com.oneup.uplayer.db.Song;
 
 import java.util.ArrayList;
 
-//FIXME: Service not stopped when bound to PlaylistActivity.
-
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     public static final String ARG_REQUEST_CODE = "request_code";
@@ -146,6 +144,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 next();
                 break;
             case REQUEST_STOP:
+                PlaylistActivity.finishIfRunning();
                 stopSelf();
                 break;
             case REQUEST_VOLUME_DOWN:

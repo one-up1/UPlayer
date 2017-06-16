@@ -25,7 +25,9 @@
 
         <activity android:name=".activity.SongsActivity" />
 
-        <activity android:name=".activity.PlaylistActivity" />
+        <activity
+            android:name=".activity.PlaylistActivity"
+            android:launchMode = "singleInstance" />
 
         <activity android:name=".activity.DatePickerActivity" />
 

@@ -26,6 +26,8 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
 
+    private static PlaylistActivity instance;
+
     private SongsListView slvSongs;
     private SongAdapter songsAdapter;
 
@@ -40,6 +42,8 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         slvSongs.setOnSongDeletedListener(this);
         setContentView(slvSongs);
         registerForContextMenu(slvSongs);
+
+        instance = this;
     }
 
     @Override
@@ -84,6 +88,13 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         mainService = null;
 
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "PlaylistActivity.onDestroy()");
+        instance = null;
+        super.onDestroy();
     }
 
     @Override
@@ -163,6 +174,13 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
                     onSongDeleted(song);
                     break;
             }
+        }
+    }
+
+    public static void finishIfRunning() {
+        if (instance != null) {
+            Log.d(TAG, "Finishing PlaylistActivity");
+            instance.finish();
         }
     }
 }

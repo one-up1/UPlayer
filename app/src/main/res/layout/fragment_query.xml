@@ -14,47 +14,132 @@
         android:layout_height="wrap_content"
         android:textAppearance="@android:style/TextAppearance.Medium" />
 
-    <Button
-        android:id="@+id/bMinDate"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:text="@string/min_date" />
-
-    <Button
-        android:id="@+id/bMaxDate"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:text="@string/max_date" />
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/sort_by"
+            android:text="@string/joined_sort_by"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <Spinner
-            android:id="@+id/sSortBy"
+            android:id="@+id/sJoinedSortBy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/joined_sort_by_entries" />
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/etTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/etMinYear"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:entries="@array/sort_by_entries" />
+            android:inputType="number"
+            android:hint="@string/min_year" />
 
-        <CheckBox
-            android:id="@+id/cbSortDescending"
+        <EditText
+            android:id="@+id/etMaxYear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/max_year"
+            android:inputType="number" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llLastPlayed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/bMinLastPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/min_last_played" />
+
+        <Button
+            android:id="@+id/bMaxLastPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/max_last_played" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llTimesPlayed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/etMinTimesPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/min_times_played"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/etMaxTimesPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/max_times_played"
+            android:inputType="number" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llDbOrderBy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/descending" />
+            android:text="@string/db_order_by"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <Spinner
+            android:id="@+id/sDbOrderBy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:entries="@array/db_order_by_entries" />
+
+        <CheckBox
+            android:id="@+id/cbDbOrderByDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/desc" />
 
     </LinearLayout>
 
     <Button
         android:id="@+id/bQuery"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="60dp"
         android:text="@string/query" />
 
 </LinearLayout>

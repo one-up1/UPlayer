@@ -206,6 +206,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    public static int queryInt(SQLiteDatabase db, String sql) {
+        try (Cursor c = db.rawQuery(sql, null)) {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+
     /*public void t(Context context) {
         Log.d(TAG, "Starting");
         try {

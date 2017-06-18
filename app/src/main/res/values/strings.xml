@@ -8,17 +8,29 @@
     <string name="most_played">Most played</string>
 
     <string name="songs_played">%1$d songs played, %2$d artists, %3$d total</string>
-    <string name="min_date">Min date&#8230;</string>
-    <string name="max_date">Max date&#8230;</string>
-    <string name="sort_by">Sort by</string>
-    <string-array name="sort_by_entries">
+    <string name="joined_sort_by">Joined sort by:</string>
+    <string-array name="joined_sort_by_entries">
+        <item />
+        <item>Name</item>
+        <item>Last played</item>
+        <item>Times played</item>
+    </string-array>
+    <string name="title">Title&#8230;</string>
+    <string name="min_year">Min year&#8230;</string>
+    <string name="max_year">Max year&#8230;</string>
+    <string name="min_last_played">Min last played&#8230;</string>
+    <string name="max_last_played">Max last played&#8230;</string>
+    <string name="min_times_played">Min times played&#8230;</string>
+    <string name="max_times_played">Max times played&#8230;</string>
+    <string name="db_order_by">DB order by</string>
+    <string-array name="db_order_by_entries">
+        <item />
         <item>Title</item>
         <item>Year</item>
         <item>Last played</item>
         <item>Times played</item>
     </string-array>
-    <string name="descending">Descending</string>
-    <string name="invalid_date_range">Invalid date range</string>
+    <string name="desc">Desc</string>
 
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>

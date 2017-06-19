@@ -148,7 +148,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         public int compare(Song song1, Song song2) {
                             return DbComparator.sortByLastPlayed(
                                     song1.getLastPlayed(), song2.getLastPlayed(),
-                                    song1.getArtist().getArtist(), song2.getArtist().getArtist());
+                                    song1.getTitle(), song2.getTitle());
                         }
                     };
                     break;
@@ -160,7 +160,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             return DbComparator.sortByTimesPlayed(
                                     song1.getTimesPlayed(), song2.getTimesPlayed(),
                                     song1.getLastPlayed(), song2.getLastPlayed(),
-                                    song1.getArtist().getArtist(), song2.getArtist().getArtist());
+                                    song1.getTitle(), song2.getTitle());
                         }
                     };
                     break;

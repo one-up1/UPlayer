@@ -7,7 +7,7 @@
     <string name="last_played">Last played</string>
     <string name="most_played">Most played</string>
 
-    <string name="songs_played">%1$d songs played, %2$d artists, %3$d total</string>
+    <string name="songs_played">%1$d songs played, %2$d artists, %3$d total, %4$s</string>
     <string name="joined_sort_by">Joined sort by:</string>
     <string-array name="joined_sort_by_entries">
         <item />

@@ -43,6 +43,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String SQL_QUERY_TOTAL_SONGS_PLAYED =
             "SELECT SUM(" + Artist.TIMES_PLAYED + ") FROM " + Artist.TABLE_NAME;
 
+    private static final String SQL_QUERY_TOTAL_DURATION =
+            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
+
     private static final String KEY_JOINED_SORT_BY = "joinedSortBy";
     private static final String KEY_TITLE = "title";
     private static final String KEY_MIN_YEAR = "minYear";
@@ -90,11 +93,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
 
         dbOpenHelper = new DbOpenHelper(getActivity());
-        int songsPlayed, artistsPlayed, totalPlayed;
+        int songsPlayed, artistsPlayed, totalPlayed, totalDuration;
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED);
             artistsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_ARTISTS_PLAYED);
             totalPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_SONGS_PLAYED);
+            totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION);
         }
 
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -103,7 +107,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         tvTotalSongsPlayed = (TextView) ret.findViewById(R.id.tvTotalSongsPlayed);
         tvTotalSongsPlayed.setText(getString(R.string.songs_played,
-                songsPlayed, artistsPlayed, totalPlayed));
+                songsPlayed, artistsPlayed, totalPlayed, Util.formatDuration(totalDuration)));
 
         sJoinedSortBy = (Spinner) ret.findViewById(R.id.sJoinedSortBy);
         sJoinedSortBy.setOnItemSelectedListener(this);

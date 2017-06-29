@@ -3,9 +3,11 @@ package com.oneup.uplayer.fragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -29,11 +31,15 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener {
+    private static final String TAG = "UPlayer";
+
     private SparseArray<Artist> artists;
     private int joinedSortBy;
 
     private ArrayList<Artist> objects;
-    private ListView lvArtists;
+    private ListView listView;
+    private ListAdapter listAdapter;
+    private Parcelable listViewState;
 
     public ArtistsFragment() {
     }
@@ -41,10 +47,15 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "ArtistsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
 
-        objects = new ArrayList<>();
+        if (objects == null) {
+            objects = new ArrayList<>();
+        } else {
+            objects.clear();
+        }
         for (int i = 0; i < artists.size(); i++) {
             objects.add(artists.valueAt(i));
         }
@@ -88,18 +99,32 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         }
         Collections.sort(objects, c);
 
-        lvArtists = new ListView(getContext());
-        lvArtists.setAdapter(new ListAdapter());
-        lvArtists.setOnItemClickListener(this);
-        registerForContextMenu(lvArtists);
+        if (listView == null) {
+            listView = new ListView(getContext());
+            listView.setOnItemClickListener(this);
+            registerForContextMenu(listView);
 
-        return lvArtists;
+            listAdapter = new ListAdapter();
+            listView.setAdapter(listAdapter);
+        } else {
+            listAdapter.notifyDataSetChanged();
+        }
+        return listView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "ArtistsFragment.onViewCreated()");
+        super.onViewCreated(view, savedInstanceState);
+        if (listViewState != null) {
+            listView.onRestoreInstanceState(listViewState);
+        }
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        if (v == lvArtists) {
+        if (v == listView) {
             getActivity().getMenuInflater().inflate(R.menu.list_item_artist, menu);
         }
     }
@@ -129,14 +154,25 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     }
 
     @Override
+    public void onPause() {
+        Log.d(TAG, "ArtistsFragment.onPause()");
+        listViewState = listView.onSaveInstanceState();
+        super.onPause();
+    }
+
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == lvArtists) {
+        if (parent == listView) {
             Bundle args = new Bundle();
             args.putSparseParcelableArray(ARG_ARTISTS, artists);
             args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
             args.putString(ARG_SELECTION, Song.ARTIST_ID + "=" + objects.get(position).getId());
             startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));
         }
+    }
+
+    public void setArtists(SparseArray<Artist> artists) {
+        this.artists = artists;
     }
 
     public static ArtistsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy) {

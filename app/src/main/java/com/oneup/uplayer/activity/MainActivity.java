@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
         dbOpenHelper = new DbOpenHelper(this);
         //dbOpenHelper.t(this);
         //if (true) return;
-        artists = new SparseArray<>();
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -94,10 +93,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //FIXME notifyDataSetChanged() causes fragment ListViews to lose scroll position.
     public void notifyDataSetChanged() {
         Log.d(TAG, "MainActivity.notifyDataSetChanged()");
-        artists.clear();
+        if (artists == null) {
+            artists = new SparseArray<>();
+        } else {
+            artists.clear();
+        }
         Artist artist;
 
         try (Cursor c = getContentResolver().query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
@@ -137,33 +139,69 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Queried " + artists.size() + " artists");
 
         if (sectionsPagerAdapter != null) {
+            if (sectionsPagerAdapter.queryFragment != null) {
+                sectionsPagerAdapter.queryFragment.setArtists(artists);
+            }
+            if (sectionsPagerAdapter.songsFragment != null) {
+                sectionsPagerAdapter.songsFragment.setArtists(artists);
+            }
+            if (sectionsPagerAdapter.artistsFragment != null) {
+                sectionsPagerAdapter.artistsFragment.setArtists(artists);
+            }
+            if (sectionsPagerAdapter.lastPlayedFragment != null) {
+                sectionsPagerAdapter.lastPlayedFragment.setArtists(artists);
+            }
+            if (sectionsPagerAdapter.mostPlayedFragment != null) {
+                sectionsPagerAdapter.mostPlayedFragment.setArtists(artists);
+            }
             sectionsPagerAdapter.notifyDataSetChanged();
         }
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
+        private QueryFragment queryFragment;
+        private SongsFragment songsFragment;
+        private ArtistsFragment artistsFragment;
+        private ArtistsFragment lastPlayedFragment;
+        private ArtistsFragment mostPlayedFragment;
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        private SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
         public Fragment getItem(int position) {
+            Log.d(TAG, "MainActivity.SectionsPagerAdapter.getItem(" + position + ")");
             switch (position) {
                 case 0:
-                    return QueryFragment.newInstance(artists);
+                    if (queryFragment == null) {
+                        queryFragment = QueryFragment.newInstance(artists);
+                    }
+                    return queryFragment;
                 case 1:
-                    return SongsFragment.newInstance(artists, 0,
-                            Song.BOOKMARKED + " IS NOT NULL", Song.BOOKMARKED + " DESC");
+                    if (songsFragment == null) {
+                        songsFragment = SongsFragment.newInstance(artists, 0,
+                                Song.BOOKMARKED + " IS NOT NULL", Song.BOOKMARKED + " DESC");
+                    }
+                    return songsFragment;
                 case 2:
-                    return ArtistsFragment.newInstance(artists,
-                            ArtistsFragment.SORT_BY_NAME);
+                    if (artistsFragment == null) {
+                        artistsFragment = ArtistsFragment.newInstance(artists,
+                                ArtistsFragment.SORT_BY_NAME);
+                    }
+                    return artistsFragment;
                 case 3:
-                    return ArtistsFragment.newInstance(artists,
-                            ArtistsFragment.SORT_BY_LAST_PLAYED);
+                    if (lastPlayedFragment == null) {
+                        lastPlayedFragment = ArtistsFragment.newInstance(artists,
+                                ArtistsFragment.SORT_BY_LAST_PLAYED);
+                    }
+                    return lastPlayedFragment;
                 case 4:
-                    return ArtistsFragment.newInstance(artists,
-                            ArtistsFragment.SORT_BY_TIMES_PLAYED);
+                    if (mostPlayedFragment == null) {
+                        mostPlayedFragment = ArtistsFragment.newInstance(artists,
+                                ArtistsFragment.SORT_BY_TIMES_PLAYED);
+                    }
+                    return mostPlayedFragment;
             }
             return null;
         }

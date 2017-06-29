@@ -28,7 +28,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
     private static PlaylistActivity instance;
 
-    private SongsListView slvSongs;
+    private SongsListView listView;
     private SongAdapter songsAdapter;
 
     private MainService mainService;
@@ -37,11 +37,11 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        slvSongs = new SongsListView(this);
-        slvSongs.setOnItemClickListener(this);
-        slvSongs.setOnSongDeletedListener(this);
-        setContentView(slvSongs);
-        registerForContextMenu(slvSongs);
+        listView = new SongsListView(this);
+        listView.setOnItemClickListener(this);
+        listView.setOnSongDeletedListener(this);
+        setContentView(listView);
+        registerForContextMenu(listView);
 
         instance = this;
     }
@@ -71,14 +71,14 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        if (v == slvSongs) {
+        if (v == listView) {
             getMenuInflater().inflate(R.menu.list_item_song, menu);
         }
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        return slvSongs.onContextItemSelected(item);
+        return listView.onContextItemSelected(item);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == slvSongs) {
+        if (parent == listView) {
             if (mainService != null) {
                 mainService.setSongIndex(position);
             }
@@ -135,7 +135,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
             setTitle();
             songsAdapter = new ListAdapter();
-            slvSongs.setAdapter(songsAdapter);
+            listView.setAdapter(songsAdapter);
         }
 
         @Override

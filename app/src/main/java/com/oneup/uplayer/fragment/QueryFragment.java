@@ -76,7 +76,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private LinearLayout llTimesPlayed;
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
-    private LinearLayout llDbOrderBy;;
+    private LinearLayout llDbOrderBy;
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
     private Button bQuery;
@@ -90,6 +90,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "QueryFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
 
         dbOpenHelper = new DbOpenHelper(getActivity());
@@ -182,6 +183,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "QueryFragment.onDestroy()");
         if (dbOpenHelper != null) {
             dbOpenHelper.close();
         }
@@ -292,6 +294,10 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc)
                     .apply();
         }
+    }
+
+    public void setArtists(SparseArray<Artist> artists) {
+        this.artists = artists;
     }
 
     private void setSpinnerSelection(String key, Spinner view) {

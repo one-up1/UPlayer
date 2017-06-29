@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.SparseArray;
@@ -43,9 +45,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private String dbOrderBy;
 
     private DbOpenHelper dbOpenHelper;
-    private ArrayList<Song> songs;
-    private SongsListView slvSongs;
+    private ArrayList<Song> objects;
+    private SongsListView listView;
     private ListAdapter listAdapter;
+    private Parcelable listViewState;
 
     public SongsFragment() {
     }
@@ -53,12 +56,12 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "SongsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
         selection = getArguments().getString(ARG_SELECTION);
         dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
 
-        Log.d(TAG, "Querying songs");
         SparseArray<Song> songs;
         Song song;
 
@@ -93,7 +96,11 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         dbOpenHelper = new DbOpenHelper(getActivity());
-        this.songs = new ArrayList<>();
+        if (objects == null) {
+            objects = new ArrayList<>();
+        } else {
+            objects.clear();
+        }
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null : new String[]{
                             Song._ID, Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED},
@@ -110,7 +117,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         song.setLastPlayed(c.getLong(5));
                         song.setTimesPlayed(c.getInt(6));
                         song.setBookmarked(c.getLong(7));
-                        this.songs.add(song);
+                        objects.add(song);
                     } else {
                         song = songs.get(id);
                         if (song == null) {
@@ -127,7 +134,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         if (songs != null) {
             for (int i = 0; i < songs.size(); i++) {
-                this.songs.add(songs.valueAt(i));
+                objects.add(songs.valueAt(i));
             }
 
             Comparator<? super Song> c;
@@ -167,39 +174,63 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 default:
                     throw new IllegalArgumentException("Invalid songs sort by");
             }
-            Collections.sort(this.songs, c);
+            Collections.sort(objects, c);
         }
 
-        Log.d(TAG, "Queried " + this.songs.size() + " songs");
-        getActivity().setTitle(getString(R.string.song_count_duration, this.songs.size(),
-                Util.formatDuration(Song.getDuration(this.songs, 0))));
+        Log.d(TAG, "Queried " + objects.size() + " songs");
+        getActivity().setTitle(getString(R.string.song_count_duration, objects.size(),
+                Util.formatDuration(Song.getDuration(objects, 0))));
 
-        slvSongs = new SongsListView(getContext());
-        listAdapter = new ListAdapter();
-        slvSongs.setAdapter(listAdapter);
-        slvSongs.setOnItemClickListener(this);
-        slvSongs.setOnDataSetChangedListener(this);
-        slvSongs.setOnSongDeletedListener(this);
-        registerForContextMenu(slvSongs);
+        if (listView == null) {
+            listView = new SongsListView(getContext());
+            listView.setOnItemClickListener(this);
+            if (getActivity() instanceof MainActivity) {
+                listView.setOnDataSetChangedListener(this);
+            } else {
+                listView.setOnSongDeletedListener(this);
+            }
+            registerForContextMenu(listView);
 
-        return slvSongs;
+            listAdapter = new ListAdapter();
+            listView.setAdapter(listAdapter);
+        } else {
+            listAdapter.notifyDataSetChanged();
+        }
+        return listView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "SongsFragment.onViewCreated()");
+        super.onViewCreated(view, savedInstanceState);
+        if (listViewState != null) {
+            listView.onRestoreInstanceState(listViewState);
+        }
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        if (v == slvSongs) {
+        if (v == listView) {
             getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
         }
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        return getUserVisibleHint() && slvSongs.onContextItemSelected(item);
+        return getUserVisibleHint() && listView.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "SongsFragment.onPause()");
+        listViewState = listView.onSaveInstanceState();
+        super.onPause();
     }
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "SongsFragment.onDestroy()");
         if (dbOpenHelper != null) {
             dbOpenHelper.close();
         }
@@ -209,31 +240,33 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == slvSongs) {
-            Log.d(TAG, "Playing " + songs.size() + " songs, songIndex=" + position);
+        if (parent == listView) {
+            Log.d(TAG, "Playing " + objects.size() + " songs, songIndex=" + position);
             getContext().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
-                    .putExtra(MainService.ARG_SONGS, songs)
+                    .putExtra(MainService.ARG_SONGS, objects)
                     .putExtra(MainService.ARG_SONG_INDEX, position));
         }
     }
 
     @Override
     public void onDataSetChanged() {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).notifyDataSetChanged();
-        }
+        ((MainActivity) getActivity()).notifyDataSetChanged();
     }
 
     @Override
     public void onSongDeleted(Song song) {
-        songs.remove(song);
+        objects.remove(song);
         listAdapter.notifyDataSetChanged();
+    }
+
+    public void setArtists(SparseArray<Artist> artists) {
+        this.artists = artists;
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {
         private ListAdapter() {
-            super(getContext(), songs);
+            super(getContext(), objects);
         }
 
         @Override

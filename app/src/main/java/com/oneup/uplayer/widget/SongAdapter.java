@@ -17,30 +17,30 @@ import java.util.ArrayList;
 
 public abstract class SongAdapter extends BaseAdapter {
     private Context context;
-    private ArrayList<Song> songs;
+    private ArrayList<Song> objects;
 
     private LayoutInflater layoutInflater;
 
-    public SongAdapter(Context context, ArrayList<Song> songs) {
+    public SongAdapter(Context context, ArrayList<Song> objects) {
         this.context = context;
-        this.songs = songs;
+        this.objects = objects;
 
         layoutInflater = LayoutInflater.from(context);
     }
 
     @Override
     public int getCount() {
-        return songs.size();
+        return objects.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return songs.get(position);
+        return objects.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return songs.get(position).getId();
+        return objects.get(position).getId();
     }
 
     @SuppressLint("SetTextI18n")
@@ -54,7 +54,7 @@ public abstract class SongAdapter extends BaseAdapter {
             ret = convertView;
         }
 
-        Song song = songs.get(position);
+        Song song = objects.get(position);
 
         TextView tvTitle = (TextView) ret.findViewById(R.id.tvTitle);
         tvTitle.setText(song.getTitle());

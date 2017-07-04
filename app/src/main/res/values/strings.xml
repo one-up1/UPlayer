@@ -16,6 +16,7 @@
         <item>Times played</item>
     </string-array>
     <string name="title">Title&#8230;</string>
+    <string name="artist">Artist&#8230;</string>
     <string name="min_year">Min year&#8230;</string>
     <string name="max_year">Max year&#8230;</string>
     <string name="min_last_played">Min last played&#8230;</string>

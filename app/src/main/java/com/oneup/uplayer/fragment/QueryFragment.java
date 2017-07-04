@@ -48,6 +48,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     private static final String KEY_JOINED_SORT_BY = "joinedSortBy";
     private static final String KEY_TITLE = "title";
+    private static final String KEY_ARTIST = "artist";
     private static final String KEY_MIN_YEAR = "minYear";
     private static final String KEY_MAX_YEAR = "maxYear";
     private static final String KEY_MIN_LAST_PLAYED = "minLastPlayed";
@@ -68,6 +69,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private TextView tvTotalSongsPlayed;
     private Spinner sJoinedSortBy;
     private EditText etTitle;
+    private EditText etArtist;
     private EditText etMinYear;
     private EditText etMaxYear;
     private LinearLayout llLastPlayed;
@@ -116,6 +118,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         etTitle = (EditText) ret.findViewById(R.id.etTitle);
         setEditTextText(KEY_TITLE, etTitle);
+
+        etArtist = (EditText) ret.findViewById(R.id.etArtist);
+        setEditTextText(KEY_ARTIST, etArtist);
 
         etMinYear = (EditText) ret.findViewById(R.id.etMinYear);
         setEditTextText(KEY_MIN_YEAR, etMinYear);
@@ -195,6 +200,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent == sJoinedSortBy) {
             int dbVisibility = position == 0 ? View.VISIBLE : View.GONE;
+            etArtist.setVisibility(dbVisibility);
             llLastPlayed.setVisibility(dbVisibility);
             llTimesPlayed.setVisibility(dbVisibility);
             llDbOrderBy.setVisibility(dbVisibility);
@@ -220,6 +226,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         } else if (v == bQuery) {
             int joinedSortBy = sJoinedSortBy.getSelectedItemPosition();
             String title = etTitle.getText().toString();
+            String artist = etArtist.getText().toString();
             String minYear = etMinYear.getText().toString();
             String maxYear = etMaxYear.getText().toString();
             String minTimesPlayed = etMinTimesPlayed.getText().toString();
@@ -240,6 +247,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
 
             if (joinedSortBy == 0) {
+                if (artist.length() > 0) {
+                    selection = appendSelection(selection, Song.ARTIST_ID +
+                            " IN(SELECT " + Artist._ID + " FROM " + Artist.TABLE_NAME +
+                            " WHERE " + Artist.ARTIST + " LIKE '%" + artist + "%')");
+                }
                 if (minLastPlayed > 0) {
                     selection = appendSelection(selection, Song.LAST_PLAYED + ">=" + minLastPlayed);
                 }
@@ -284,6 +296,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             preferences.edit()
                     .putInt(KEY_JOINED_SORT_BY, joinedSortBy)
                     .putString(KEY_TITLE, title)
+                    .putString(KEY_ARTIST, artist)
                     .putString(KEY_MIN_YEAR, minYear)
                     .putString(KEY_MAX_YEAR, maxYear)
                     .putLong(KEY_MIN_LAST_PLAYED, minLastPlayed)

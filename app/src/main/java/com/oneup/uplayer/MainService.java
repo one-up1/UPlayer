@@ -277,9 +277,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void updatePlaylistPosition() {
+        String left = Util.formatDuration(Song.getDuration(songs, songIndex));
+        if (songIndex < songs.size() - 1) {
+            left += " / " + Util.formatDuration(Song.getDuration(songs, songIndex + 1));
+        }
         notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
-                R.string.playlist_position, songIndex + 1, songs.size(),
-                Util.formatDuration(Song.getDuration(songs, songIndex + 1))));
+                R.string.playlist_position, songIndex + 1, songs.size(), left));
     }
 
     private void addSong(Song song, boolean next) {

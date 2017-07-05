@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         dbOpenHelper = new DbOpenHelper(this);
         //dbOpenHelper.t(this);
         //if (true) return;
+        //dbOpenHelper.backup();
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.

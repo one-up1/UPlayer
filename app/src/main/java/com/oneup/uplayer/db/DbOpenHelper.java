@@ -3,6 +3,7 @@ package com.oneup.uplayer.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -84,7 +85,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             }
         }
     }
-
 
     public void deleteArtist(int id) {
         Log.d(TAG, "DbOpenHelper.deleteArtist(" + id + ")");
@@ -209,6 +209,41 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     public static int queryInt(SQLiteDatabase db, String sql) {
         try (Cursor c = db.rawQuery(sql, null)) {
             return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+
+    public void backup() {
+        //Log.d(TAG, SQL_CREATE_ARTISTS + ";");
+        //Log.d(TAG, SQL_CREATE_SONGS + ";");
+
+        try {
+            try (SQLiteDatabase db = getReadableDatabase()) {
+                try (Cursor c = db.query(Artist.TABLE_NAME, null, null, null, null, null, null)) {
+                    while (c.moveToNext()) {
+                        Log.d(TAG, "INSERT INTO " + Artist.TABLE_NAME + " VALUES(" +
+                                c.getInt(0) + "," +
+                                DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
+                                c.getLong(2) + "," +
+                                c.getInt(3) + ");\n");
+                    }
+                }
+
+                try (Cursor c = db.query(Song.TABLE_NAME, null, null, null, null, null, null)) {
+                    while (c.moveToNext()) {
+                        Log.d(TAG, "INSERT INTO " + Song.TABLE_NAME + " VALUES(" +
+                                c.getInt(0) + "," +
+                                DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
+                                c.getInt(2) + "," +
+                                c.getInt(3) + "," +
+                                c.getInt(4) + "," +
+                                c.getLong(5) + "," +
+                                c.getInt(6) + "," +
+                                c.getLong(7) + ");\n");
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, "Error running backup", ex);
         }
     }
 

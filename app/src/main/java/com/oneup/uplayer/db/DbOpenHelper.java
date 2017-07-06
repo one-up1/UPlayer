@@ -6,7 +6,12 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 
 public class DbOpenHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -213,35 +218,49 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     public void backup() {
-        //Log.d(TAG, SQL_CREATE_ARTISTS + ";");
-        //Log.d(TAG, SQL_CREATE_SONGS + ";");
-
+        Log.d(TAG, "DbOpenHelper.backup()");
         try {
-            try (SQLiteDatabase db = getReadableDatabase()) {
-                try (Cursor c = db.query(Artist.TABLE_NAME, null, null, null, null, null, null)) {
-                    while (c.moveToNext()) {
-                        Log.d(TAG, "INSERT INTO " + Artist.TABLE_NAME + " VALUES(" +
-                                c.getInt(0) + "," +
-                                DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
-                                c.getLong(2) + "," +
-                                c.getInt(3) + ");\n");
-                    }
-                }
+            try (PrintStream printStream = new PrintStream(new FileOutputStream(new File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                    "UPlayer.sql"), false))) {
+                printStream.print(SQL_CREATE_ARTISTS);
+                printStream.println(";");
+                printStream.println();
+                printStream.print(SQL_CREATE_SONGS);
+                printStream.println(";");
+                printStream.println();
 
-                try (Cursor c = db.query(Song.TABLE_NAME, null, null, null, null, null, null)) {
-                    while (c.moveToNext()) {
-                        Log.d(TAG, "INSERT INTO " + Song.TABLE_NAME + " VALUES(" +
-                                c.getInt(0) + "," +
-                                DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
-                                c.getInt(2) + "," +
-                                c.getInt(3) + "," +
-                                c.getInt(4) + "," +
-                                c.getLong(5) + "," +
-                                c.getInt(6) + "," +
-                                c.getLong(7) + ");\n");
+                try (SQLiteDatabase db = getReadableDatabase()) {
+                    try (Cursor c = db.query(Artist.TABLE_NAME,
+                            null, null, null, null, null, null)) {
+                        while (c.moveToNext()) {
+                            printStream.println("INSERT INTO " + Artist.TABLE_NAME + " VALUES(" +
+                                    c.getInt(0) + "," +
+                                    DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
+                                    c.getLong(2) + "," +
+                                    c.getInt(3) + ");");
+                        }
                     }
+                    printStream.println();
+
+                    try (Cursor c = db.query(Song.TABLE_NAME,
+                            null, null, null, null, null, null)) {
+                        while (c.moveToNext()) {
+                            printStream.println("INSERT INTO " + Song.TABLE_NAME + " VALUES(" +
+                                    c.getInt(0) + "," +
+                                    DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
+                                    c.getInt(2) + "," +
+                                    c.getInt(3) + "," +
+                                    c.getInt(4) + "," +
+                                    c.getLong(5) + "," +
+                                    c.getInt(6) + "," +
+                                    c.getLong(7) + ");");
+                        }
+                    }
+                    printStream.println();
                 }
             }
+            Log.d(TAG, "Backup completed");
         } catch (Exception ex) {
             Log.e(TAG, "Error running backup", ex);
         }

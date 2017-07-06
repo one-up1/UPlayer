@@ -82,6 +82,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
     private Button bQuery;
+    private Button bBackup;
 
     private long minLastPlayed;
     private long maxLastPlayed;
@@ -166,6 +167,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         bQuery = (Button) ret.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
+
+        bBackup = (Button) ret.findViewById(R.id.bBackup);
+        bBackup.setOnClickListener(this);
 
         return ret;
     }
@@ -260,10 +264,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             maxLastPlayed + 86400000);
                 }
                 if (minTimesPlayed.length() > 0) {
-                    selection = appendSelection(selection, Song.TIMES_PLAYED + ">=" + minTimesPlayed);
+                    selection = appendSelection(selection,
+                            Song.TIMES_PLAYED + ">=" + minTimesPlayed);
                 }
                 if (maxTimesPlayed.length() > 0) {
-                    selection = appendSelection(selection, Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
+                    selection = appendSelection(selection,
+                            Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
                 }
                 switch (dbOrderByColumn) {
                     case 1:
@@ -306,6 +312,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .putInt(KEY_DB_ORDER_BY, dbOrderByColumn)
                     .putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc)
                     .apply();
+        } else if (v == bBackup) {
+            dbOpenHelper.backup();
         }
     }
 

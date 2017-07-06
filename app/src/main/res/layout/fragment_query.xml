@@ -148,4 +148,10 @@
         android:layout_height="60dp"
         android:text="@string/query" />
 
+    <Button
+        android:id="@+id/bBackup"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/backup" />
+
 </LinearLayout>

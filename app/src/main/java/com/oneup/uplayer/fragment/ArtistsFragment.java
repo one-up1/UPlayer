@@ -175,6 +175,11 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         this.artists = artists;
     }
 
+    public void reverseSortOrder() {
+        Collections.reverse(objects);
+        listAdapter.notifyDataSetChanged();
+    }
+
     public static ArtistsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy) {
         ArtistsFragment fragment = new ArtistsFragment();
         Bundle args = new Bundle();

@@ -24,6 +24,7 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
 import com.oneup.uplayer.activity.MainActivity;
+import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbComparator;
 import com.oneup.uplayer.db.DbOpenHelper;
@@ -178,8 +179,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         Log.d(TAG, "Queried " + objects.size() + " songs");
-        getActivity().setTitle(getString(R.string.song_count_duration, objects.size(),
-                Util.formatDuration(Song.getDuration(objects, 0))));
+        if (getActivity() instanceof SongsActivity) {
+            getActivity().setTitle(getString(R.string.song_count_duration, objects.size(),
+                    Util.formatDuration(Song.getDuration(objects, 0))));
+        }
 
         if (listView == null) {
             listView = new SongsListView(getContext());
@@ -262,6 +265,11 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     public void setArtists(SparseArray<Artist> artists) {
         this.artists = artists;
+    }
+
+    public void reverseSortOrder() {
+        Collections.reverse(objects);
+        listAdapter.notifyDataSetChanged();
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {

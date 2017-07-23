@@ -3,6 +3,8 @@ package com.oneup.uplayer.activity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import com.oneup.uplayer.R;
@@ -11,6 +13,8 @@ import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 public class SongsActivity extends AppCompatActivity implements BaseArgs {
+    private SongsFragment songsFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,13 +26,30 @@ public class SongsActivity extends AppCompatActivity implements BaseArgs {
         if (savedInstanceState == null) {
             Bundle args = getIntent().getExtras();
             SparseArray<Artist> artists = args.getSparseParcelableArray(ARG_ARTISTS);
-            getSupportFragmentManager().beginTransaction().add(R.id.container,
-                    SongsFragment.newInstance(
-                            artists,
-                            args.getInt(ARG_JOINED_SORT_BY),
-                            args.getString(ARG_SELECTION),
-                            args.getString(ARG_DB_ORDER_BY)))
+            songsFragment = SongsFragment.newInstance(
+                    artists,
+                    args.getInt(ARG_JOINED_SORT_BY),
+                    args.getString(ARG_SELECTION),
+                    args.getString(ARG_DB_ORDER_BY));
+            getSupportFragmentManager().beginTransaction().add(R.id.container, songsFragment)
                     .commit();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.reverseSortOrder:
+                songsFragment.reverseSortOrder();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }

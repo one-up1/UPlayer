@@ -27,6 +27,10 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
+//TODO: Improve reversing of sort order.
+//TODO: Song/artist count in MainActivity.
+//TODO: Remove empty artist directory after deleting song.
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 

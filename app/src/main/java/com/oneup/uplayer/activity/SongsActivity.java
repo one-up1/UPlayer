@@ -38,7 +38,7 @@ public class SongsActivity extends AppCompatActivity implements BaseArgs {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
+        getMenuInflater().inflate(R.menu.activity_songs, menu);
         return true;
     }
 

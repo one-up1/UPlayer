@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         dbOpenHelper = new DbOpenHelper(this);
+        //dbOpenHelper.restoreBackup(this);
         //dbOpenHelper.t(this);
         //if (true) return;
 

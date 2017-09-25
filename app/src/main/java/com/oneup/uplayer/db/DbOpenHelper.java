@@ -266,6 +266,108 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    /*public void restoreBackup(Context context) {
+        Log.d(TAG, "DbOpenHelper.restoreBackup()");
+        try {
+            File dir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS);
+            File artistsFile = new File(dir, "artists.sql");
+            if (!artistsFile.exists()) {
+                Log.e(TAG, "artists.sql not found");
+                return;
+            }
+            File songsFile = new File(dir, "songs.sql");
+            if (!songsFile.exists()) {
+                Log.e(TAG, "songs.sql nog found");
+                return;
+            }
+
+            Log.d(TAG, "Processing artists");
+            SparseArray<Artist> artists = new SparseArray<>();
+            Artist artist;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(artistsFile)))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.isEmpty()) {
+                        continue;
+                    }
+                    String[] split = line.split(",");
+
+                    String name = split[1].substring(1, split[1].length() - 1);
+                    name = name.replace("''", "'");
+                    try (Cursor c = context.getContentResolver().query(
+                            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+                            new String[]{Artist._ID},
+                            Artist.ARTIST + "=?", new String[]{name}, null)) {
+                        if (c == null || !c.moveToFirst()) {
+                            Log.e(TAG, "Artist '" + name + "' not found");
+                            continue;
+                        }
+
+                        artist = new Artist();
+                        artist.setId(c.getInt(c.getColumnIndex(Artist._ID)));
+                        artist.setArtist(name);
+
+                        artist.setLastPlayed(Long.parseLong(split[2]));
+                        artist.setTimesPlayed(Integer.parseInt(
+                                split[3].substring(0, split[3].length() - 2)));
+
+                        insertOrUpdateArtist(artist);
+                        artists.put(artist.getId(), artist);
+                    }
+                }
+            }
+
+            Log.d(TAG, "Processing songs");
+            Song song;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(songsFile)))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.isEmpty()) {
+                        continue;
+                    }
+                    String[] split = line.split(",");
+
+                    String title = split[1].substring(1, split[1].length() - 1);
+                    title = title.replace("''", "'");
+                    try (Cursor c = context.getContentResolver().query(
+                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                            new String[]{Song._ID, Song.ARTIST_ID, Song.YEAR, Song.DURATION},
+                            Song.TITLE + "=?", new String[]{title}, null)) {
+                        if (c == null || !c.moveToFirst()) {
+                            Log.e(TAG, "Song '" + title + "' not found");
+                            continue;
+                        }
+
+                        song = new Song();
+                        song.setId(c.getInt(c.getColumnIndex(Song._ID)));
+                        song.setTitle(title);
+                        song.setArtist(artists.get(c.getInt(c.getColumnIndex(Song.ARTIST_ID))));
+                        if (song.getArtist() == null) {
+                            Log.e(TAG, "Artist for song '" + title + "' not found");
+                            continue;
+                        }
+                        song.setYear(c.getInt(c.getColumnIndex(Song.YEAR)));
+                        song.setDuration(c.getInt(c.getColumnIndex(Song.DURATION)));
+
+                        song.setLastPlayed(Long.parseLong(split[5]));
+                        song.setTimesPlayed(Integer.parseInt(split[6]));
+                        song.setBookmarked(Long.parseLong(
+                                split[7].substring(0, split[7].length() - 2)));
+
+                        insertOrUpdateSong(song);
+                    }
+                }
+            }
+
+            Log.d(TAG, "Backup restored");
+        } catch (Exception ex) {
+            Log.e(TAG, "Error restoring backup", ex);
+        }
+    }*/
+
     /*public void t(Context context) {
         Log.d(TAG, "Starting");
         try {

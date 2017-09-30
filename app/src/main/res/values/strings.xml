@@ -54,6 +54,9 @@
     <string name="delete_confirm">Delete %1$s?</string>
     <string name="song_deleted">Song deleted</string>
 
+    <string name="mark_played">Mark played</string>
+    <string name="updated">Updated</string>
+
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
     <string name="previous">Previous</string>
     <string name="play_pause">Play/Pause</string>

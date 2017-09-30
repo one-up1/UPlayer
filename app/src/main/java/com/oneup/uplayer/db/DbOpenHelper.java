@@ -191,6 +191,19 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void updateSongPlayed(Song song) {
+        querySong(song);
+        long lastPlayed = System.currentTimeMillis();
+
+        song.getArtist().setLastPlayed(lastPlayed);
+        song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
+        insertOrUpdateArtist(song.getArtist());
+
+        song.setLastPlayed(lastPlayed);
+        song.setTimesPlayed(song.getTimesPlayed() + 1);
+        insertOrUpdateSong(song);
+    }
+
     public void deleteSong(Song song) {
         Log.d(TAG, "DbOpenHelper.deleteSong(" + song + ")");
         deleteSong(song.getId());

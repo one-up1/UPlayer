@@ -13,4 +13,8 @@
         android:id="@+id/delete"
         android:title="@string/delete" />
 
+    <item
+        android:id="@+id/mark_played"
+        android:title="@string/mark_played" />
+
 </menu>

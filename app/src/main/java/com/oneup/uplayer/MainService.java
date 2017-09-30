@@ -220,18 +220,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player.getCurrentPosition() == 0) {
             Log.d(TAG, "Current position is 0");
         } else {
-            Song song = songs.get(songIndex);
-            dbOpenHelper.querySong(song);
-            long lastPlayed = System.currentTimeMillis();
-
-            song.getArtist().setLastPlayed(lastPlayed);
-            song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
-            dbOpenHelper.insertOrUpdateArtist(song.getArtist());
-
-            song.setLastPlayed(lastPlayed);
-            song.setTimesPlayed(song.getTimesPlayed() + 1);
-            dbOpenHelper.insertOrUpdateSong(song);
-
+            dbOpenHelper.updateSongPlayed(songs.get(songIndex));
             next();
         }
     }

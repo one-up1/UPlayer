@@ -105,6 +105,10 @@ public class SongsListView extends ListView {
                         .setNegativeButton(R.string.no, null)
                         .show();
                 return true;
+            case R.id.mark_played:
+                dbOpenHelper.updateSongPlayed(song);
+                Toast.makeText(context, R.string.updated, Toast.LENGTH_SHORT).show();
+                return true;
         }
         return true;
     }

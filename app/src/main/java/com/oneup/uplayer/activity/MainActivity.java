@@ -13,11 +13,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Artist;
@@ -31,7 +28,7 @@ import com.oneup.uplayer.fragment.SongsFragment;
 //TODO: Song/artist count in MainActivity.
 //TODO: Remove empty artist directory after deleting song.
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
 
     private DbOpenHelper dbOpenHelper;
@@ -51,8 +48,9 @@ public class MainActivity extends AppCompatActivity {
         //dbOpenHelper.t(this);
         //if (true) return;
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);*/
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -64,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+        tabLayout.addOnTabSelectedListener(this);
     }
 
     @Override
@@ -79,34 +78,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.reverseSortOrder:
-                switch (viewPager.getCurrentItem()) {
-                    case 1:
-                        ((SongsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
-                                .reverseSortOrder();
-                        break;
-                    case 2:
-                    case 3:
-                    case 4:
-                        ((ArtistsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
-                                .reverseSortOrder();
-                        break;
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     @Override
@@ -128,6 +101,30 @@ public class MainActivity extends AppCompatActivity {
             Log.w(TAG, "Permissions not granted");
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             finish();
+        }
+    }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
+        switch (tab.getPosition()) {
+            case 1:
+                ((SongsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
+                        .reverseSortOrder();
+                break;
+            case 2:
+            case 3:
+            case 4:
+                ((ArtistsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
+                        .reverseSortOrder();
+                break;
         }
     }
 

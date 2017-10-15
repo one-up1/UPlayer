@@ -34,6 +34,7 @@
     </string-array>
     <string name="desc">Desc</string>
     <string name="backup">Backup</string>
+    <string name="backup_completed">Backup completed</string>
 
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>

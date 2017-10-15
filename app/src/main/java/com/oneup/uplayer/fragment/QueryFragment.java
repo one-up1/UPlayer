@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
@@ -314,6 +315,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .apply();
         } else if (v == bBackup) {
             dbOpenHelper.backup();
+            Toast.makeText(getActivity(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
         }
     }
 

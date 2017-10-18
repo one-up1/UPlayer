@@ -108,6 +108,10 @@ public class SongsListView extends ListView {
             case R.id.mark_played:
                 dbOpenHelper.updateSongPlayed(song);
                 Toast.makeText(context, R.string.updated, Toast.LENGTH_SHORT).show();
+
+                if (onDataSetChangedListener != null) {
+                    onDataSetChangedListener.onDataSetChanged();
+                }
                 return true;
         }
         return true;

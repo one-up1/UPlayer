@@ -236,13 +236,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             try (PrintStream printStream = new PrintStream(new FileOutputStream(new File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
                     "UPlayer.sql"), false))) {
-                printStream.print(SQL_CREATE_ARTISTS);
-                printStream.println(";");
-                printStream.println();
-                printStream.print(SQL_CREATE_SONGS);
-                printStream.println(";");
-                printStream.println();
-
                 try (SQLiteDatabase db = getReadableDatabase()) {
                     try (Cursor c = db.query(Artist.TABLE_NAME,
                             null, null, null, null, null, null)) {

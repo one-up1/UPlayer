@@ -24,6 +24,7 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
+//FIXME: Crash when running for the first time, because SectionsPagerAdapter is created before permissions are granted.
 //TODO: Improve reversing of sort order.
 //TODO: Song/artist count in MainActivity.
 //TODO: Remove empty artist directory after deleting song.
@@ -44,9 +45,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setContentView(R.layout.activity_main);
 
         dbOpenHelper = new DbOpenHelper(this);
-        //dbOpenHelper.restoreBackup(this);
-        //dbOpenHelper.t(this);
-        //if (true) return;
+        /*dbOpenHelper.t(this);
+        if (true) return;*/
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
@@ -74,12 +74,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             notifyDataSetChanged();
+
+            //dbOpenHelper.restoreBackup(this);
         } else {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
-
-
     }
 
     @Override

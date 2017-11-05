@@ -3,11 +3,11 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 26
     defaultConfig {
-        applicationId "com.oneup.sandbox"
+        applicationId "com.oneup.uplayer"
         minSdkVersion 23
         targetSdkVersion 26
-        versionCode 79
-        versionName "3.13.79"
+        versionCode 80
+        versionName "3.13.80"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

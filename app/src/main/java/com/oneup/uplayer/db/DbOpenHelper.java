@@ -300,6 +300,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     }
                     String[] split = line.split(",");
 
+                    int id = Integer.parseInt(split[0].substring(27, split[0].length()));
                     String name = split[1].substring(1, split[1].length() - 1);
                     name = name.replace("''", "'");
                     try (Cursor c = context.getContentResolver().query(
@@ -320,7 +321,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                                 split[3].substring(0, split[3].length() - 2)));
 
                         insertOrUpdateArtist(artist);
-                        artists.put(artist.getId(), artist);
+                        artists.put(id, artist);
                     }
                 }
             }
@@ -338,10 +339,16 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
                     String title = split[1].substring(1, split[1].length() - 1);
                     title = title.replace("''", "'");
+                    artist = artists.get(Integer.parseInt(split[2]));
+                    if (artist == null) {
+                        Log.e(TAG, "Artist for song '" + title + "' not found");
+                        continue;
+                    }
                     try (Cursor c = context.getContentResolver().query(
                             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                            new String[]{Song._ID, Song.ARTIST_ID, Song.YEAR, Song.DURATION},
-                            Song.TITLE + "=?", new String[]{title}, null)) {
+                            new String[]{Song._ID, Song.YEAR, Song.DURATION},
+                            Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
+                            new String[]{title, Integer.toString(artist.getId())}, null)) {
                         if (c == null || !c.moveToFirst()) {
                             Log.e(TAG, "Song '" + title + "' not found");
                             continue;
@@ -350,11 +357,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                         song = new Song();
                         song.setId(c.getInt(c.getColumnIndex(Song._ID)));
                         song.setTitle(title);
-                        song.setArtist(artists.get(c.getInt(c.getColumnIndex(Song.ARTIST_ID))));
-                        if (song.getArtist() == null) {
-                            Log.e(TAG, "Artist for song '" + title + "' not found");
-                            continue;
-                        }
+                        song.setArtist(artist);
                         song.setYear(c.getInt(c.getColumnIndex(Song.YEAR)));
                         song.setDuration(c.getInt(c.getColumnIndex(Song.DURATION)));
 

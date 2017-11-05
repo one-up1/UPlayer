@@ -45,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setContentView(R.layout.activity_main);
 
         dbOpenHelper = new DbOpenHelper(this);
-        /*dbOpenHelper.t(this);
-        if (true) return;*/
+        //dbOpenHelper.restoreBackup(this);
+        //dbOpenHelper.t(this);
+        //if (true) return;
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
@@ -56,11 +57,11 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        viewPager = (ViewPager) findViewById(R.id.container);
+        viewPager = findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
         viewPager.setCurrentItem(2);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.addOnTabSelectedListener(this);
     }
@@ -74,8 +75,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             notifyDataSetChanged();
-
-            //dbOpenHelper.restoreBackup(this);
         } else {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);

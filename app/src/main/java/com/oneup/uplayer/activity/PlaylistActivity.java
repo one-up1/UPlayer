@@ -162,7 +162,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
         @Override
         public void setButtons(View view, Song song) {
-            ImageButton ibDelete = (ImageButton) view.findViewById(R.id.ibDelete);
+            ImageButton ibDelete = view.findViewById(R.id.ibDelete);
             ibDelete.setTag(song);
         }
 

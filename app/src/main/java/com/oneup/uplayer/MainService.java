@@ -13,7 +13,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -95,7 +95,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(notificationViews, R.id.ibVolumeDown, REQUEST_VOLUME_DOWN);
         setOnClickPendingIntent(notificationViews, R.id.ibVolumeUp, REQUEST_VOLUME_UP);
 
-        notification = new NotificationCompat.Builder(this)
+        notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setCustomContentView(notificationViews)
                 .setCustomBigContentView(notificationViews)

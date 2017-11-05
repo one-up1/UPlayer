@@ -296,10 +296,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         @Override
         public void setButtons(View view, Song song) {
-            ImageButton ibPlayNext = (ImageButton) view.findViewById(R.id.ibPlayNext);
+            ImageButton ibPlayNext = view.findViewById(R.id.ibPlayNext);
             ibPlayNext.setTag(song);
 
-            ImageButton ibPlayLast = (ImageButton) view.findViewById(R.id.ibPlayLast);
+            ImageButton ibPlayLast = view.findViewById(R.id.ibPlayLast);
             ibPlayLast.setTag(song);
         }
 

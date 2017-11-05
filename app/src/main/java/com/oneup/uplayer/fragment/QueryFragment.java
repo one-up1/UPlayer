@@ -110,29 +110,29 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         View ret = inflater.inflate(R.layout.fragment_query, container, false);
 
-        tvTotalSongsPlayed = (TextView) ret.findViewById(R.id.tvTotalSongsPlayed);
+        tvTotalSongsPlayed = ret.findViewById(R.id.tvTotalSongsPlayed);
         tvTotalSongsPlayed.setText(getString(R.string.songs_played,
                 songsPlayed, artistsPlayed, totalPlayed, Util.formatDuration(totalDuration)));
 
-        sJoinedSortBy = (Spinner) ret.findViewById(R.id.sJoinedSortBy);
+        sJoinedSortBy = ret.findViewById(R.id.sJoinedSortBy);
         sJoinedSortBy.setOnItemSelectedListener(this);
         setSpinnerSelection(KEY_JOINED_SORT_BY, sJoinedSortBy);
 
-        etTitle = (EditText) ret.findViewById(R.id.etTitle);
+        etTitle = ret.findViewById(R.id.etTitle);
         setEditTextText(KEY_TITLE, etTitle);
 
-        etArtist = (EditText) ret.findViewById(R.id.etArtist);
+        etArtist = ret.findViewById(R.id.etArtist);
         setEditTextText(KEY_ARTIST, etArtist);
 
-        etMinYear = (EditText) ret.findViewById(R.id.etMinYear);
+        etMinYear = ret.findViewById(R.id.etMinYear);
         setEditTextText(KEY_MIN_YEAR, etMinYear);
 
-        etMaxYear = (EditText) ret.findViewById(R.id.etMaxYear);
+        etMaxYear = ret.findViewById(R.id.etMaxYear);
         setEditTextText(KEY_MAX_YEAR, etMaxYear);
 
-        llLastPlayed = (LinearLayout) ret.findViewById(R.id.llLastPlayed);
+        llLastPlayed = ret.findViewById(R.id.llLastPlayed);
 
-        bMinLastPlayed = (Button) ret.findViewById(R.id.bMinLastPlayed);
+        bMinLastPlayed = ret.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         if (minLastPlayed == 0) {
             minLastPlayed = preferences.getLong(KEY_MIN_LAST_PLAYED, 0);
@@ -141,7 +141,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             bMinLastPlayed.setText(Util.formatDate(minLastPlayed));
         }
 
-        bMaxLastPlayed = (Button) ret.findViewById(R.id.bMaxLastPlayed);
+        bMaxLastPlayed = ret.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
         if (maxLastPlayed == 0) {
             maxLastPlayed = preferences.getLong(KEY_MAX_LAST_PLAYED, 0);
@@ -150,26 +150,26 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             bMaxLastPlayed.setText(Util.formatDate(maxLastPlayed));
         }
 
-        llTimesPlayed = (LinearLayout) ret.findViewById(R.id.llTimesPlayed);
+        llTimesPlayed = ret.findViewById(R.id.llTimesPlayed);
 
-        etMinTimesPlayed = (EditText) ret.findViewById(R.id.etMinTimesPlayed);
+        etMinTimesPlayed = ret.findViewById(R.id.etMinTimesPlayed);
         setEditTextText(KEY_MIN_TIMES_PLAYED, etMinTimesPlayed);
 
-        etMaxTimesPlayed = (EditText) ret.findViewById(R.id.etMaxTimesPlayed);
+        etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
         setEditTextText(KEY_MAX_TIMES_PLAYED, etMaxTimesPlayed);
 
-        llDbOrderBy = (LinearLayout) ret.findViewById(R.id.llDbOrderBy);
+        llDbOrderBy = ret.findViewById(R.id.llDbOrderBy);
 
-        sDbOrderBy = (Spinner) ret.findViewById(R.id.sDbOrderBy);
+        sDbOrderBy = ret.findViewById(R.id.sDbOrderBy);
         setSpinnerSelection(KEY_DB_ORDER_BY, sDbOrderBy);
 
-        cbDbOrderByDesc = (CheckBox) ret.findViewById(R.id.cbDbOrderByDesc);
+        cbDbOrderByDesc = ret.findViewById(R.id.cbDbOrderByDesc);
         setCheckBoxChecked(KEY_DB_ORDER_BY_DESC, cbDbOrderByDesc);
 
-        bQuery = (Button) ret.findViewById(R.id.bQuery);
+        bQuery = ret.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
 
-        bBackup = (Button) ret.findViewById(R.id.bBackup);
+        bBackup = ret.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
 
         return ret;

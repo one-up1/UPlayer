@@ -136,6 +136,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
             setTitle();
             songsAdapter = new ListAdapter();
             listView.setAdapter(songsAdapter);
+            listView.setSelection(mainService.getSongIndex());
         }
 
         @Override

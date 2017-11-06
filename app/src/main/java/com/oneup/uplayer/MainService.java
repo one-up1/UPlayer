@@ -101,9 +101,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 .setCustomBigContentView(notificationViews)
                 .setOngoing(true)
                 .setContentIntent(PendingIntent.getActivity(this, 0,
-                        new Intent(this, PlaylistActivity.class)
-                                .putExtra(ARG_SONGS, songs)
-                                .putExtra(ARG_SONG_INDEX, songIndex),
+                        new Intent(this, PlaylistActivity.class),
                         PendingIntent.FLAG_UPDATE_CURRENT))
                 .build();
 
@@ -352,6 +350,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     public ArrayList<Song> getSongs() {
         return songs;
+    }
+
+    public int getSongIndex() {
+        return songIndex;
     }
 
     public void setSongIndex(int songIndex) {

@@ -12,6 +12,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     public static final String TABLE_NAME = "songs";
 
     public static final String BOOKMARKED = "bookmarked";
+    public static final String TAG = "tag";
 
     private int id;
     private String title;
@@ -23,6 +24,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     private int timesPlayed;
 
     private long bookmarked;
+    private String tag;
 
     public Song() {
     }
@@ -47,6 +49,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
         out.writeLong(bookmarked);
+        out.writeString(tag);
     }
 
     public int getId() {
@@ -113,6 +116,14 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.bookmarked = bookmarked;
     }
 
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
     public Uri getContentUri() {
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
     }
@@ -138,6 +149,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
             ret.lastPlayed = in.readLong();
             ret.timesPlayed = in.readInt();
             ret.bookmarked = in.readLong();
+            ret.tag = in.readString();
             return ret;
         }
 

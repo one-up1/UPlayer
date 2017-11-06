@@ -145,13 +145,19 @@
     <Button
         android:id="@+id/bQuery"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:text="@string/query" />
+
+    <Button
+        android:id="@+id/bTags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tags" />
 
     <Button
         android:id="@+id/bBackup"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:text="@string/backup" />
 
 </LinearLayout>

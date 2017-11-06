@@ -33,6 +33,7 @@
         <item>Times played</item>
     </string-array>
     <string name="desc">Desc</string>
+    <string name="tags">Tags&#8230;</string>
     <string name="backup">Backup</string>
     <string name="backup_completed">Backup completed</string>
 
@@ -41,22 +42,26 @@
     <string name="play_last">Play last</string>
     <string name="playing_last">Playing last: %1$s</string>
 
-    <string name="info">Info</string>
-    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d</string>
-    <string name="info_message_song">Year: %1$d\nDuration: %2$s\n\nLast played: %3$s\nTimes played: %4$d\n\nBookmarked: %5$s</string>
-    <string name="never">Never</string>
-
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_deleted">Bookmark deleted</string>
+
+    <string name="set_tag">Set tag</string>
+    <string name="tag_set">Tag set</string>
+    <string name="tag_cleared">Tag cleared</string>
+
+    <string name="mark_played">Mark played</string>
+    <string name="updated">Updated</string>
+
+    <string name="info">Info</string>
+    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d</string>
+    <string name="info_message_song">Year: %1$d\nDuration: %2$s\n\nLast played: %3$s\nTimes played: %4$d\n\nBookmarked: %5$s\nTag: %6$s</string>
+    <string name="never">Never</string>
 
     <string name="delete">Delete</string>
     <string name="delete_song">Delete song</string>
     <string name="delete_confirm">Delete %1$s?</string>
     <string name="song_deleted">Song deleted</string>
-
-    <string name="mark_played">Mark played</string>
-    <string name="updated">Updated</string>
 
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
     <string name="previous">Previous</string>

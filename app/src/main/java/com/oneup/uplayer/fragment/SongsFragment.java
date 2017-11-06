@@ -103,8 +103,8 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             objects.clear();
         }
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null : new String[]{
-                            Song._ID, Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED},
+            try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null : new String[]{Song._ID,
+                            Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
                     selection, null, null, null, dbOrderBy)) {
                 while (c.moveToNext()) {
                     int id = c.getInt(0);
@@ -118,6 +118,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         song.setLastPlayed(c.getLong(5));
                         song.setTimesPlayed(c.getInt(6));
                         song.setBookmarked(c.getLong(7));
+                        song.setTag(c.getString(8));
                         objects.add(song);
                     } else {
                         song = songs.get(id);
@@ -127,6 +128,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             song.setLastPlayed(c.getLong(1));
                             song.setTimesPlayed(c.getInt(2));
                             song.setBookmarked(c.getLong(3));
+                            song.setTag(c.getString(4));
                         }
                     }
                 }

@@ -12,6 +12,8 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DbOpenHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -35,7 +37,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Song.DURATION + " INTEGER," +
                     Song.LAST_PLAYED + " INTEGER," +
                     Song.TIMES_PLAYED + " INTEGER," +
-                    Song.BOOKMARKED + " INTEGER)";
+                    Song.BOOKMARKED + " INTEGER," +
+                    Song.TAG + " TEXT)";
 
     public DbOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -124,12 +127,13 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             }
 
             try (Cursor c = db.query(Song.TABLE_NAME,
-                    new String[]{Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED},
+                    new String[]{Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
                     Song._ID + "=" + song.getId(), null, null, null, null)) {
                 if (c.moveToFirst()) {
                     song.setLastPlayed(c.getLong(0));
                     song.setTimesPlayed(c.getInt(1));
                     song.setBookmarked(c.getLong(2));
+                    song.setTag(c.getString(3));
                 } else {
                     Log.d(TAG, "Song not found");
                 }
@@ -137,6 +141,21 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
             Log.d(TAG, "Times played: " + song.getArtist().getTimesPlayed() +
                     ":" + song.getTimesPlayed());
+        }
+    }
+
+    public  String[] querySongTags() {
+        Log.d(TAG, "DbOpenHelper.querySongTags()");
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(true, Song.TABLE_NAME, new String[]{Song.TAG},
+                    Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
+                List<String> ret = new ArrayList<>();
+                while (c.moveToNext()) {
+                    ret.add(c.getString(0));
+                }
+                Log.d(TAG, "Queried " + ret.size() + " song tags");
+                return ret.toArray(new String[0]);
+            }
         }
     }
 
@@ -173,6 +192,11 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     values.putNull(Song.BOOKMARKED);
                 } else {
                     values.put(Song.BOOKMARKED, song.getBookmarked());
+                }
+                if (song.getTag() == null) {
+                    values.putNull(Song.TAG);
+                } else {
+                    values.put(Song.TAG, song.getTag());
                 }
 
                 int rowsAffected = db.update(Song.TABLE_NAME, values,
@@ -260,7 +284,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                                     c.getInt(4) + "," +
                                     c.getLong(5) + "," +
                                     c.getInt(6) + "," +
-                                    c.getLong(7) + ");");
+                                    c.getLong(7) + "," +
+                                    c.getString(8) + ");");
                         }
                     }
                     printStream.println();
@@ -365,6 +390,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                         song.setTimesPlayed(Integer.parseInt(split[6]));
                         song.setBookmarked(Long.parseLong(
                                 split[7].substring(0, split[7].length() - 2)));
+                        song.setTag(split[8].substring(1, split[8].length - 1));
+                        //TODO: Is set tag set correctly when restoring backup?
 
                         insertOrUpdateSong(song);
                     }
@@ -374,6 +401,18 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             Log.d(TAG, "Backup restored");
         } catch (Exception ex) {
             Log.e(TAG, "Error restoring backup", ex);
+        }
+    }*/
+
+    /*public void t(Context context) {
+        Log.d(TAG, "Starting");
+        try {
+            try (SQLiteDatabase db = getWritableDatabase()) {
+                db.execSQL("ALTER TABLE " + Song.TABLE_NAME + " ADD " + Song.TAG + " TEXT");
+            }
+            Log.d(TAG, "Done!");
+        } catch (Exception ex) {
+            Log.e(TAG, "Ughh", ex);
         }
     }*/
 
@@ -399,7 +438,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                             Song.YEAR + "," +
                             Song.LAST_PLAYED + "," +
                             Song.TIMES_PLAYED + "," +
-                            Song.BOOKMARKED + ")" +
+                            Song.BOOKMARKED + "," +
+                            Song.TAG + ")" +
                             "SELECT " +
                             Song._ID + "," +
                             Song.TITLE + "," +
@@ -407,7 +447,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                             Song.YEAR + "," +
                             Song.LAST_PLAYED + "," +
                             Song.TIMES_PLAYED + "," +
-                            Song.BOOKMARKED + " " +
+                            Song.BOOKMARKED + "," +
+                            Song.TAG + " " +
                             "FROM tmp_" + Song.TABLE_NAME);
 
                     Log.d(TAG, "Dropping old table");

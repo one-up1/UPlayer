@@ -8,7 +8,10 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -54,6 +57,54 @@ public class SongsListView extends ListView {
                     onDataSetChangedListener.onDataSetChanged();
                 }
                 return true;
+            case R.id.set_tag:
+                dbOpenHelper.querySong(song);
+                final EditText etTag = new EditText(context);
+                if (song.getTag() != null) {
+                    etTag.setText(song.getTag());
+                }
+                AlertDialog dialog = new AlertDialog.Builder(context)
+                        .setTitle(R.string.set_tag)
+                        .setView(etTag)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String tag = etTag.getText().toString().trim();
+                                if (tag.length() == 0) {
+                                    Log.d(TAG, "Clearing tag from: " + song);
+                                    song.setTag(null);
+                                    Toast.makeText(context, R.string.tag_cleared,
+                                            Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Log.d(TAG, "Setting tag '" + tag + "' to: " + song);
+                                    song.setTag(tag);
+                                    Toast.makeText(context, R.string.tag_set,
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                                dbOpenHelper.insertOrUpdateSong(song);
+
+                                if (onDataSetChangedListener != null) {
+                                    onDataSetChangedListener.onDataSetChanged();
+                                }
+                            }
+                        })
+                        .create();
+                Window window = dialog.getWindow();
+                if (window != null) {
+                    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                }
+                dialog.show();
+                etTag.selectAll();
+                return true;
+            case R.id.mark_played:
+                dbOpenHelper.updateSongPlayed(song);
+                Toast.makeText(context, R.string.updated, Toast.LENGTH_SHORT).show();
+
+                if (onDataSetChangedListener != null) {
+                    onDataSetChangedListener.onDataSetChanged();
+                }
+                return true;
             case R.id.info:
                 dbOpenHelper.querySong(song);
                 Util.showInfoDialog(context, song.getArtist() + " - " + song.getTitle(),
@@ -67,7 +118,8 @@ public class SongsListView extends ListView {
                                 song.getTimesPlayed(),
                                 song.getBookmarked() == 0 ?
                                         context.getString(R.string.no) :
-                                        Util.formatDateTime(song.getBookmarked()))
+                                        Util.formatDateTime(song.getBookmarked()),
+                                song.getTag() == null ? "" : song.getTag())
                 );
                 return true;
             case R.id.delete:
@@ -104,14 +156,6 @@ public class SongsListView extends ListView {
                         })
                         .setNegativeButton(R.string.no, null)
                         .show();
-                return true;
-            case R.id.mark_played:
-                dbOpenHelper.updateSongPlayed(song);
-                Toast.makeText(context, R.string.updated, Toast.LENGTH_SHORT).show();
-
-                if (onDataSetChangedListener != null) {
-                    onDataSetChangedListener.onDataSetChanged();
-                }
                 return true;
         }
         return true;

@@ -1,5 +1,7 @@
 package com.oneup.uplayer.fragment;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
@@ -28,8 +30,6 @@ import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
-
-//TODO: getPrefs or SharedPreferences?
 
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
         View.OnClickListener {
@@ -83,6 +83,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
     private Button bQuery;
+    private Button bTags;
     private Button bBackup;
 
     private long minLastPlayed;
@@ -168,6 +169,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         bQuery = ret.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
+
+        bTags = ret.findViewById(R.id.bTags);
+        bTags.setOnClickListener(this);
 
         bBackup = ret.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
@@ -313,6 +317,21 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .putInt(KEY_DB_ORDER_BY, dbOrderByColumn)
                     .putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc)
                     .apply();
+        } else if (v == bTags) {
+            final String[] tags = dbOpenHelper.querySongTags();
+            new AlertDialog.Builder(getActivity())
+                    .setItems(tags, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Bundle args = new Bundle();
+                            args.putSparseParcelableArray(ARG_ARTISTS, artists);
+                            args.putString(ARG_SELECTION, Song.TAG + "='" + tags[which] + "'");
+                            args.putString(ARG_DB_ORDER_BY, Song.LAST_PLAYED + " DESC");
+                            startActivity(new Intent(getContext(), SongsActivity.class)
+                                    .putExtras(args));
+                        }
+                    })
+                    .show();
         } else if (v == bBackup) {
             dbOpenHelper.backup();
             Toast.makeText(getActivity(), R.string.backup_completed, Toast.LENGTH_SHORT).show();

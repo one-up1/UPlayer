@@ -50,6 +50,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private SongsListView listView;
     private ListAdapter listAdapter;
     private Parcelable listViewState;
+    private boolean sortOrderReversed;
 
     public SongsFragment() {
     }
@@ -179,6 +180,9 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
             Collections.sort(objects, c);
         }
+        if (sortOrderReversed) {
+            Collections.reverse(objects);
+        }
 
         Log.d(TAG, "Queried " + objects.size() + " songs");
         if (getActivity() instanceof SongsActivity) {
@@ -272,6 +276,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     public void reverseSortOrder() {
         Collections.reverse(objects);
         listAdapter.notifyDataSetChanged();
+        sortOrderReversed = !sortOrderReversed;
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {

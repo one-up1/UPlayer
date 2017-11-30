@@ -40,6 +40,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     private ListView listView;
     private ListAdapter listAdapter;
     private Parcelable listViewState;
+    private boolean sortOrderReversed;
 
     public ArtistsFragment() {
     }
@@ -98,6 +99,9 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                 throw new IllegalArgumentException("Invalid songs sort by");
         }
         Collections.sort(objects, c);
+        if (sortOrderReversed) {
+            Collections.reverse(objects);
+        }
 
         if (listView == null) {
             listView = new ListView(getContext());
@@ -178,6 +182,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     public void reverseSortOrder() {
         Collections.reverse(objects);
         listAdapter.notifyDataSetChanged();
+        sortOrderReversed = !sortOrderReversed;
     }
 
     public static ArtistsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy) {

@@ -85,12 +85,13 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 songs = new SparseArray<>();
                 while (c.moveToNext()) {
                     song = new Song();
-                    song.setId(c.getInt(iId));
                     song.setTitle(c.getString(iTitle));
-                    song.setArtist(artists.get(c.getInt(iArtistId)));
-                    song.setYear(c.getInt(iYear));
-                    song.setDuration(c.getInt(iDuration));
-                    songs.put(song.getId(), song);
+                    if (setArtist(song, c.getInt(iArtistId))) {
+                        song.setId(c.getInt(iId));
+                        song.setYear(c.getInt(iYear));
+                        song.setDuration(c.getInt(iDuration));
+                        songs.put(song.getId(), song);
+                    }
                 }
             }
         } else {
@@ -111,16 +112,17 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     int id = c.getInt(0);
                     if (songs == null) {
                         song = new Song();
-                        song.setId(id);
                         song.setTitle(c.getString(1));
-                        song.setArtist(artists.get(c.getInt(2)));
-                        song.setYear(c.getInt(3));
-                        song.setDuration(c.getInt(4));
-                        song.setLastPlayed(c.getLong(5));
-                        song.setTimesPlayed(c.getInt(6));
-                        song.setBookmarked(c.getLong(7));
-                        song.setTag(c.getString(8));
-                        objects.add(song);
+                        if (setArtist(song, c.getInt(2))) {
+                            song.setId(id);
+                            song.setYear(c.getInt(3));
+                            song.setDuration(c.getInt(4));
+                            song.setLastPlayed(c.getLong(5));
+                            song.setTimesPlayed(c.getInt(6));
+                            song.setBookmarked(c.getLong(7));
+                            song.setTag(c.getString(8));
+                            objects.add(song);
+                        }
                     } else {
                         song = songs.get(id);
                         if (song == null) {
@@ -277,6 +279,17 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         Collections.reverse(objects);
         listAdapter.notifyDataSetChanged();
         sortOrderReversed = !sortOrderReversed;
+    }
+
+    private boolean setArtist(Song song, int id) {
+        Artist artist = artists.get(id);
+        if (artist == null) {
+            Log.w(TAG, "Artist for song '" + song + "' not found");
+            return false;
+        }
+
+        song.setArtist(artist);
+        return true;
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {

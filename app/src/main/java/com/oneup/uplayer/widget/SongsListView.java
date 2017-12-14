@@ -101,6 +101,7 @@ public class SongsListView extends ListView {
                 dbOpenHelper.updateSongPlayed(song);
                 Toast.makeText(context, R.string.updated, Toast.LENGTH_SHORT).show();
 
+                ((SongAdapter) getAdapter()).notifyDataSetChanged();
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }

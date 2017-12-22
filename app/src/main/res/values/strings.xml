@@ -8,7 +8,7 @@
     <string name="most_played">Most played</string>
     <string name="reverse_sort_order">Reverse sort order</string>
 
-    <string name="songs_played">%1$d songs played, %2$d artists, %3$d total, %4$s</string>
+    <string name="totals">%1$d songs played (%2$d tagged), %3$d artists, %4$d total, %5$s</string>
     <string name="joined_sort_by">Joined sort by:</string>
     <string-array name="joined_sort_by_entries">
         <item />

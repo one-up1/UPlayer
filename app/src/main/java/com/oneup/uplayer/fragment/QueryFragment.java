@@ -38,6 +38,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String SQL_QUERY_SONGS_PLAYED =
             "SELECT COUNT(" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
 
+    private static final String SQL_QUERY_TAGGED_SONG_COUNT =
+            "SELECT COUNT(" + Song.TAG + ") FROM " + Song.TABLE_NAME;
+
     private static final String SQL_QUERY_ARTISTS_PLAYED =
             "SELECT COUNT(" + Artist.TIMES_PLAYED + ") FROM " + Artist.TABLE_NAME;
 
@@ -67,7 +70,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private DbOpenHelper dbOpenHelper;
     private SharedPreferences preferences;
 
-    private TextView tvTotalSongsPlayed;
+    private TextView tvTotals;
     private Spinner sJoinedSortBy;
     private EditText etTitle;
     private EditText etArtist;
@@ -99,9 +102,10 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
 
         dbOpenHelper = new DbOpenHelper(getActivity());
-        int songsPlayed, artistsPlayed, totalPlayed, totalDuration;
+        int songsPlayed, taggedSongCount, artistsPlayed, totalPlayed, totalDuration;
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED);
+            taggedSongCount = DbOpenHelper.queryInt(db, SQL_QUERY_TAGGED_SONG_COUNT);
             artistsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_ARTISTS_PLAYED);
             totalPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_SONGS_PLAYED);
             totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION);
@@ -111,9 +115,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         View ret = inflater.inflate(R.layout.fragment_query, container, false);
 
-        tvTotalSongsPlayed = ret.findViewById(R.id.tvTotalSongsPlayed);
-        tvTotalSongsPlayed.setText(getString(R.string.songs_played,
-                songsPlayed, artistsPlayed, totalPlayed, Util.formatDuration(totalDuration)));
+        tvTotals = ret.findViewById(R.id.tvTotals);
+        tvTotals.setText(getString(R.string.totals, songsPlayed, taggedSongCount, artistsPlayed,
+                totalPlayed, Util.formatDuration(totalDuration)));
 
         sJoinedSortBy = ret.findViewById(R.id.sJoinedSortBy);
         sJoinedSortBy.setOnItemSelectedListener(this);

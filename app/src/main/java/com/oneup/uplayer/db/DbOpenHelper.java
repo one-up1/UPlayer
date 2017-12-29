@@ -3,15 +3,10 @@ package com.oneup.uplayer.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Environment;
 import android.util.Log;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -253,156 +248,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             return c.moveToFirst() ? c.getInt(0) : 0;
         }
     }
-
-    public void backup() {
-        Log.d(TAG, "DbOpenHelper.backup()");
-        try {
-            try (PrintStream printStream = new PrintStream(new FileOutputStream(new File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                    "UPlayer.sql"), false))) {
-                try (SQLiteDatabase db = getReadableDatabase()) {
-                    try (Cursor c = db.query(Artist.TABLE_NAME,
-                            null, null, null, null, null, null)) {
-                        while (c.moveToNext()) {
-                            printStream.println("INSERT INTO " + Artist.TABLE_NAME + " VALUES(" +
-                                    c.getInt(0) + "," +
-                                    DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
-                                    c.getLong(2) + "," +
-                                    c.getInt(3) + ");");
-                        }
-                    }
-                    printStream.println();
-
-                    try (Cursor c = db.query(Song.TABLE_NAME,
-                            null, null, null, null, null, null)) {
-                        while (c.moveToNext()) {
-                            printStream.println("INSERT INTO " + Song.TABLE_NAME + " VALUES(" +
-                                    c.getInt(0) + "," +
-                                    DatabaseUtils.sqlEscapeString(c.getString(1)) + "," +
-                                    c.getInt(2) + "," +
-                                    c.getInt(3) + "," +
-                                    c.getInt(4) + "," +
-                                    c.getLong(5) + "," +
-                                    c.getInt(6) + "," +
-                                    c.getLong(7) + "," +
-                                    c.getString(8) + ");");
-                        }
-                    }
-                    printStream.println();
-                }
-            }
-            Log.d(TAG, "Backup completed");
-        } catch (Exception ex) {
-            Log.e(TAG, "Error running backup", ex);
-        }
-    }
-
-    /*public void restoreBackup(Context context) {
-        Log.d(TAG, "DbOpenHelper.restoreBackup()");
-        try {
-            File dir = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS);
-            File artistsFile = new File(dir, "artists.sql");
-            if (!artistsFile.exists()) {
-                Log.e(TAG, "artists.sql not found");
-                return;
-            }
-            File songsFile = new File(dir, "songs.sql");
-            if (!songsFile.exists()) {
-                Log.e(TAG, "songs.sql nog found");
-                return;
-            }
-
-            Log.d(TAG, "Processing artists");
-            SparseArray<Artist> artists = new SparseArray<>();
-            Artist artist;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(artistsFile)))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (line.isEmpty()) {
-                        continue;
-                    }
-                    String[] split = line.split(",");
-
-                    int id = Integer.parseInt(split[0].substring(27, split[0].length()));
-                    String name = split[1].substring(1, split[1].length() - 1);
-                    name = name.replace("''", "'");
-                    try (Cursor c = context.getContentResolver().query(
-                            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                            new String[]{Artist._ID},
-                            Artist.ARTIST + "=?", new String[]{name}, null)) {
-                        if (c == null || !c.moveToFirst()) {
-                            Log.e(TAG, "Artist '" + name + "' not found");
-                            continue;
-                        }
-
-                        artist = new Artist();
-                        artist.setId(c.getInt(c.getColumnIndex(Artist._ID)));
-                        artist.setArtist(name);
-
-                        artist.setLastPlayed(Long.parseLong(split[2]));
-                        artist.setTimesPlayed(Integer.parseInt(
-                                split[3].substring(0, split[3].length() - 2)));
-
-                        insertOrUpdateArtist(artist);
-                        artists.put(id, artist);
-                    }
-                }
-            }
-
-            Log.d(TAG, "Processing songs");
-            Song song;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(songsFile)))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (line.isEmpty()) {
-                        continue;
-                    }
-                    String[] split = line.split(",");
-
-                    String title = split[1].substring(1, split[1].length() - 1);
-                    title = title.replace("''", "'");
-                    artist = artists.get(Integer.parseInt(split[2]));
-                    if (artist == null) {
-                        Log.e(TAG, "Artist for song '" + title + "' not found");
-                        continue;
-                    }
-                    try (Cursor c = context.getContentResolver().query(
-                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                            new String[]{Song._ID, Song.YEAR, Song.DURATION},
-                            Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
-                            new String[]{title, Integer.toString(artist.getId())}, null)) {
-                        if (c == null || !c.moveToFirst()) {
-                            Log.e(TAG, "Song '" + title + "' not found");
-                            continue;
-                        }
-
-                        song = new Song();
-                        song.setId(c.getInt(c.getColumnIndex(Song._ID)));
-                        song.setTitle(title);
-                        song.setArtist(artist);
-                        song.setYear(c.getInt(c.getColumnIndex(Song.YEAR)));
-                        song.setDuration(c.getInt(c.getColumnIndex(Song.DURATION)));
-
-                        song.setLastPlayed(Long.parseLong(split[5]));
-                        song.setTimesPlayed(Integer.parseInt(split[6]));
-                        song.setBookmarked(Long.parseLong(
-                                split[7].substring(0, split[7].length() - 2)));
-                        song.setTag(split[8].substring(1, split[8].length - 1));
-                        //TODO: Is set tag set correctly when restoring backup?
-
-                        insertOrUpdateSong(song);
-                    }
-                }
-            }
-
-            Log.d(TAG, "Backup restored");
-        } catch (Exception ex) {
-            Log.e(TAG, "Error restoring backup", ex);
-        }
-    }*/
 
     /*public void t(Context context) {
         Log.d(TAG, "Starting");

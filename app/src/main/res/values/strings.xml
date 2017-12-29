@@ -35,7 +35,12 @@
     <string name="desc">Desc</string>
     <string name="tags">Tags&#8230;</string>
     <string name="backup">Backup</string>
+    <string name="restore_backup">Restore backup</string>
     <string name="backup_completed">Backup completed</string>
+    <string name="restore_backup_confirm">Restore backup?</string>
+    <string name="restoring_backup">Restoring backup&#8230;</string>
+    <string name="backup_restored">Backup restored</string>
+    <string name="error">Error: %1$s</string>
 
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>

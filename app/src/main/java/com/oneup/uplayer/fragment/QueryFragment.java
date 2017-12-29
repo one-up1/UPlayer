@@ -1,12 +1,16 @@
 package com.oneup.uplayer.fragment;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -26,10 +30,24 @@ import android.widget.Toast;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
 import com.oneup.uplayer.activity.DatePickerActivity;
+import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
         View.OnClickListener {
@@ -88,6 +106,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private Button bQuery;
     private Button bTags;
     private Button bBackup;
+    private Button bRestoreBackup;
 
     private long minLastPlayed;
     private long maxLastPlayed;
@@ -179,6 +198,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         bBackup = ret.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
+
+        bRestoreBackup = ret.findViewById(R.id.bRestoreBackup);
+        bRestoreBackup.setOnClickListener(this);
 
         return ret;
     }
@@ -337,12 +359,71 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     })
                     .show();
         } else if (v == bBackup) {
-            dbOpenHelper.backup();
-            Toast.makeText(getActivity(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Running backup");
+            try {
+                backup();
+                Log.d(TAG, "Backup completed");
+                Toast.makeText(getContext(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
+            } catch (Exception ex) {
+                Log.e(TAG, "Error running backup", ex);
+                Toast.makeText(getContext(),
+                        getString(R.string.error, ex.getMessage()), Toast.LENGTH_LONG).show();
+            }
+        } else if (v == bRestoreBackup) {
+            new AlertDialog.Builder(getContext())
+                    .setIcon(R.drawable.ic_dialog_warning)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.restore_backup_confirm)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d(TAG, "Restoring backup");
+                            final ProgressDialog progressDialog = ProgressDialog.show(getContext(),
+                                    getString(R.string.app_name),
+                                    getString(R.string.restoring_backup), true);
+                            new Thread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    try {
+                                        restoreBackup();
+                                        Log.d(TAG, "Backup restored");
+                                        getActivity().runOnUiThread(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                ((MainActivity) getActivity())
+                                                        .notifyDataSetChanged();
+                                                Toast.makeText(getContext(),
+                                                        R.string.backup_restored,
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } catch (final Exception ex) {
+                                        Log.e(TAG, "Error restoring backup", ex);
+                                        getActivity().runOnUiThread(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getContext(),
+                                                        getString(R.string.error, ex.getMessage()),
+                                                        Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    } finally {
+                                        progressDialog.dismiss();
+                                    }
+                                }
+                            }).start();
+                        }
+                    })
+                    .setNegativeButton(R.string.no, null)
+                    .show();
         }
     }
 
     public void setArtists(SparseArray<Artist> artists) {
+        getArguments().putSparseParcelableArray(ARG_ARTISTS, artists);
         this.artists = artists;
     }
 
@@ -362,6 +443,131 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (preferences.contains(key)) {
             view.setChecked(preferences.getBoolean(key, false));
         }
+    }
+
+    private void backup() throws JSONException, IOException {
+        JSONObject backup = new JSONObject();
+
+        try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+            JSONArray artists = new JSONArray();
+            try (Cursor c = db.query(Artist.TABLE_NAME,
+                    null, null, null, null, null, null)) {
+                while (c.moveToNext()) {
+                    JSONObject artist = new JSONObject();
+                    artist.put(Artist._ID, c.getInt(0));
+                    artist.put(Artist.ARTIST, c.getString(1));
+                    artist.put(Artist.LAST_PLAYED, c.getLong(2));
+                    artist.put(Artist.TIMES_PLAYED, c.getInt(3));
+                    artists.put(artist);
+                }
+            }
+            backup.put(Artist.TABLE_NAME, artists);
+
+            JSONArray songs = new JSONArray();
+            try (Cursor c = db.query(Song.TABLE_NAME,
+                    new String[]{Song.TITLE, Song.ARTIST_ID, Song.LAST_PLAYED, Song.TIMES_PLAYED,
+                            Song.BOOKMARKED, Song.TAG},
+                    null, null, null, null, null)) {
+                while (c.moveToNext()) {
+                    JSONObject song = new JSONObject();
+                    song.put(Song.TITLE, c.getString(0));
+                    song.put(Song.ARTIST_ID, c.getInt(1));
+                    song.put(Song.LAST_PLAYED, c.getLong(2));
+                    song.put(Song.TIMES_PLAYED, c.getInt(3));
+                    song.put(Song.BOOKMARKED, c.getLong(4));
+                    song.put(Song.TAG, c.getString(5));
+                    songs.put(song);
+                }
+            }
+            backup.put(Song.TABLE_NAME, songs);
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
+                getBackupFile(), false)))) {
+            writer.write(backup.toString());
+        }
+    }
+
+    private void restoreBackup() throws IOException, JSONException {
+        JSONObject backup;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+                getBackupFile())))) {
+            backup = new JSONObject(reader.readLine());
+        }
+
+        SparseArray<Artist> artists = new SparseArray<>();
+
+        Log.d(TAG, "Processing artists");
+        JSONArray jsaArtists = backup.getJSONArray(Artist.TABLE_NAME);
+        for (int i = 0; i < jsaArtists.length(); i++) {
+            JSONObject jsoArtist = jsaArtists.getJSONObject(i);
+            String name = jsoArtist.getString(Artist.ARTIST);
+
+            try (Cursor c = getContext().getContentResolver().query(
+                    MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+                    new String[]{Artist._ID, Artist.ARTIST},
+                    Artist.ARTIST + "=?", new String[]{name}, null)) {
+                if (c == null || !c.moveToFirst()) {
+                    Log.e(TAG, "Artist '" + name + "' not found");
+                    continue;
+                }
+
+                Artist artist = new Artist();
+                artist.setId(c.getInt(c.getColumnIndex(Artist._ID)));
+                artist.setArtist(c.getString(c.getColumnIndex(Artist.ARTIST)));
+
+                artist.setLastPlayed(jsoArtist.getLong(Artist.LAST_PLAYED));
+                artist.setTimesPlayed(jsoArtist.getInt(Artist.TIMES_PLAYED));
+
+                dbOpenHelper.insertOrUpdateArtist(artist);
+                artists.put(jsoArtist.getInt(Artist._ID), artist);
+            }
+        }
+
+        Log.d(TAG, "Processing songs");
+        JSONArray jsoSongs = backup.getJSONArray(Song.TABLE_NAME);
+        for (int i = 0; i < jsoSongs.length(); i++) {
+            JSONObject jsoSong = jsoSongs.getJSONObject(i);
+            String title = jsoSong.getString(Song.TITLE);
+
+            Artist artist = artists.get(jsoSong.getInt(Song.ARTIST_ID));
+            if (artist == null) {
+                Log.e(TAG, "Artist for song '" + title + "' not found");
+                continue;
+            }
+
+            try (Cursor c = getContext().getContentResolver().query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    new String[]{Song._ID, Song.TITLE, Song.YEAR, Song.DURATION},
+                    Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
+                    new String[]{title, Integer.toString(artist.getId())}, null)) {
+                if (c == null || !c.moveToFirst()) {
+                    Log.e(TAG, "Song '" + title + "' not found");
+                    continue;
+                }
+
+                Song song = new Song();
+                song.setId(c.getInt(c.getColumnIndex(Song._ID)));
+                song.setTitle(c.getString(c.getColumnIndex(Song.TITLE)));
+                song.setArtist(artist);
+                song.setYear(c.getInt(c.getColumnIndex(Song.YEAR)));
+                song.setDuration(c.getInt(c.getColumnIndex(Song.DURATION)));
+
+                song.setLastPlayed(jsoSong.getLong(Song.LAST_PLAYED));
+                song.setTimesPlayed(jsoSong.getInt(Song.TIMES_PLAYED));
+                song.setBookmarked(jsoSong.getLong(Song.BOOKMARKED));
+                if (jsoSong.has(Song.TAG)) {
+                    song.setTag(jsoSong.getString(Song.TAG));
+                }
+
+                dbOpenHelper.insertOrUpdateSong(song);
+            }
+        }
+    }
+
+    private File getBackupFile() {
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                "UPlayer.json");
     }
 
     public static QueryFragment newInstance(SparseArray<Artist> artists) {

@@ -176,6 +176,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     }
 
     public void setArtists(SparseArray<Artist> artists) {
+        getArguments().putSparseParcelableArray(ARG_ARTISTS, artists);
         this.artists = artists;
     }
 

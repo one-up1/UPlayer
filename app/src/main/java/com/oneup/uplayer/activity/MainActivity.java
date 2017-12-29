@@ -40,25 +40,11 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setContentView(R.layout.activity_main);
 
         dbOpenHelper = new DbOpenHelper(this);
-        //dbOpenHelper.restoreBackup(this);
         //dbOpenHelper.t(this);
         //if (true) return;
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        viewPager = findViewById(R.id.container);
-        viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(2);
-
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.addOnTabSelectedListener(this);
     }
 
     @Override
@@ -69,6 +55,20 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
+            if (sectionsPagerAdapter == null) {
+                // Create the adapter that will return a fragment for each of the three
+                // primary sections of the activity.
+                sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+                // Set up the ViewPager with the sections adapter.
+                viewPager = findViewById(R.id.container);
+                viewPager.setAdapter(sectionsPagerAdapter);
+                viewPager.setCurrentItem(2);
+
+                TabLayout tabLayout = findViewById(R.id.tabs);
+                tabLayout.setupWithViewPager(viewPager);
+                tabLayout.addOnTabSelectedListener(this);
+            }
             notifyDataSetChanged();
         } else {
             Log.d(TAG, "Requesting permissions");
@@ -167,24 +167,22 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         Log.d(TAG, "Queried " + artists.size() + " artists");
 
-        if (sectionsPagerAdapter != null) {
-            if (sectionsPagerAdapter.queryFragment != null) {
-                sectionsPagerAdapter.queryFragment.setArtists(artists);
-            }
-            if (sectionsPagerAdapter.songsFragment != null) {
-                sectionsPagerAdapter.songsFragment.setArtists(artists);
-            }
-            if (sectionsPagerAdapter.artistsFragment != null) {
-                sectionsPagerAdapter.artistsFragment.setArtists(artists);
-            }
-            if (sectionsPagerAdapter.lastPlayedFragment != null) {
-                sectionsPagerAdapter.lastPlayedFragment.setArtists(artists);
-            }
-            if (sectionsPagerAdapter.mostPlayedFragment != null) {
-                sectionsPagerAdapter.mostPlayedFragment.setArtists(artists);
-            }
-            sectionsPagerAdapter.notifyDataSetChanged();
+        if (sectionsPagerAdapter.queryFragment != null) {
+            sectionsPagerAdapter.queryFragment.setArtists(artists);
         }
+        if (sectionsPagerAdapter.songsFragment != null) {
+            sectionsPagerAdapter.songsFragment.setArtists(artists);
+        }
+        if (sectionsPagerAdapter.artistsFragment != null) {
+            sectionsPagerAdapter.artistsFragment.setArtists(artists);
+        }
+        if (sectionsPagerAdapter.lastPlayedFragment != null) {
+            sectionsPagerAdapter.lastPlayedFragment.setArtists(artists);
+        }
+        if (sectionsPagerAdapter.mostPlayedFragment != null) {
+            sectionsPagerAdapter.mostPlayedFragment.setArtists(artists);
+        }
+        sectionsPagerAdapter.notifyDataSetChanged();
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {

@@ -272,6 +272,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     }
 
     public void setArtists(SparseArray<Artist> artists) {
+        getArguments().putSparseParcelableArray(ARG_ARTISTS, artists);
         this.artists = artists;
     }
 

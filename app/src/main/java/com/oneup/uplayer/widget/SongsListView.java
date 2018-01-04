@@ -8,17 +8,24 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.Util;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";
@@ -59,17 +66,14 @@ public class SongsListView extends ListView {
                 return true;
             case R.id.set_tag:
                 dbOpenHelper.querySong(song);
-                final EditText etTag = new EditText(context);
-                if (song.getTag() != null) {
-                    etTag.setText(song.getTag());
-                }
                 AlertDialog dialog = new AlertDialog.Builder(context)
                         .setTitle(R.string.set_tag)
-                        .setView(etTag)
+                        .setView(R.layout.dialog_set_tag)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                EditText etTag = ((AlertDialog) dialog).findViewById(R.id.etTag);
                                 String tag = etTag.getText().toString().trim();
                                 if (tag.length() == 0) {
                                     Log.d(TAG, "Clearing tag from: " + song);
@@ -95,7 +99,35 @@ public class SongsListView extends ListView {
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                 }
                 dialog.show();
-                etTag.selectAll();
+
+                Spinner sTag = dialog.findViewById(R.id.sTag);
+                final List<String> tags = new ArrayList<>();
+                tags.add("");
+                tags.addAll(Arrays.asList(dbOpenHelper.querySongTags()));
+                sTag.setAdapter(new ArrayAdapter<>(context,
+                        android.R.layout.simple_spinner_dropdown_item, tags));
+
+                final EditText etTag = dialog.findViewById(R.id.etTag);
+                if (song.getTag() != null) {
+                    etTag.setText(song.getTag());
+                    etTag.selectAll();
+                }
+
+                sTag.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view,
+                                               int position, long id) {
+                        String tag = tags.get(position);
+                        if (!tag.isEmpty()) {
+                            etTag.setText(tag);
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                });
                 return true;
             case R.id.mark_played:
                 dbOpenHelper.updateSongPlayed(song);

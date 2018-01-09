@@ -456,8 +456,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     JSONObject artist = new JSONObject();
                     artist.put(Artist._ID, c.getInt(0));
                     artist.put(Artist.ARTIST, c.getString(1));
-                    artist.put(Artist.LAST_PLAYED, c.getLong(2));
-                    artist.put(Artist.TIMES_PLAYED, c.getInt(3));
+                    if (!c.isNull(2)) {
+                        artist.put(Artist.LAST_PLAYED, c.getLong(2));
+                    }
+                    if (!c.isNull(3)) {
+                        artist.put(Artist.TIMES_PLAYED, c.getInt(3));
+                    }
                     artists.put(artist);
                 }
             }
@@ -472,8 +476,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     JSONObject song = new JSONObject();
                     song.put(Song.TITLE, c.getString(0));
                     song.put(Song.ARTIST_ID, c.getInt(1));
-                    song.put(Song.LAST_PLAYED, c.getLong(2));
-                    song.put(Song.TIMES_PLAYED, c.getInt(3));
+                    if (!c.isNull(2)) {
+                        song.put(Song.LAST_PLAYED, c.getLong(2));
+                    }
+                    if (!c.isNull(3)) {
+                        song.put(Song.TIMES_PLAYED, c.getInt(3));
+                    }
                     if (!c.isNull(4)) {
                         song.put(Song.BOOKMARKED, c.getLong(4));
                     }
@@ -520,8 +528,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 artist.setId(c.getInt(c.getColumnIndex(Artist._ID)));
                 artist.setArtist(c.getString(c.getColumnIndex(Artist.ARTIST)));
 
-                artist.setLastPlayed(jsoArtist.getLong(Artist.LAST_PLAYED));
-                artist.setTimesPlayed(jsoArtist.getInt(Artist.TIMES_PLAYED));
+                if (jsoArtist.has(Artist.LAST_PLAYED)) {
+                    artist.setLastPlayed(jsoArtist.getLong(Artist.LAST_PLAYED));
+                }
+                if (jsoArtist.has(Artist.TIMES_PLAYED)) {
+                    artist.setTimesPlayed(jsoArtist.getInt(Artist.TIMES_PLAYED));
+                }
 
                 dbOpenHelper.insertOrUpdateArtist(artist);
                 artists.put(jsoArtist.getInt(Artist._ID), artist);
@@ -557,8 +569,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 song.setYear(c.getInt(c.getColumnIndex(Song.YEAR)));
                 song.setDuration(c.getInt(c.getColumnIndex(Song.DURATION)));
 
-                song.setLastPlayed(jsoSong.getLong(Song.LAST_PLAYED));
-                song.setTimesPlayed(jsoSong.getInt(Song.TIMES_PLAYED));
+                if (jsoSong.has(Song.LAST_PLAYED)) {
+                    song.setLastPlayed(jsoSong.getLong(Song.LAST_PLAYED));
+                }
+                if (jsoSong.has(Song.TIMES_PLAYED)) {
+                    song.setTimesPlayed(jsoSong.getInt(Song.TIMES_PLAYED));
+                }
                 if (jsoSong.has(Song.BOOKMARKED)) {
                     song.setBookmarked(jsoSong.getLong(Song.BOOKMARKED));
                 }

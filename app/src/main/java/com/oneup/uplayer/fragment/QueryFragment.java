@@ -474,8 +474,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     song.put(Song.ARTIST_ID, c.getInt(1));
                     song.put(Song.LAST_PLAYED, c.getLong(2));
                     song.put(Song.TIMES_PLAYED, c.getInt(3));
-                    song.put(Song.BOOKMARKED, c.getLong(4));
-                    song.put(Song.TAG, c.getString(5));
+                    if (!c.isNull(4)) {
+                        song.put(Song.BOOKMARKED, c.getLong(4));
+                    }
+                    if (!c.isNull(5)) {
+                        song.put(Song.TAG, c.getString(5));
+                    }
                     songs.put(song);
                 }
             }
@@ -555,7 +559,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                 song.setLastPlayed(jsoSong.getLong(Song.LAST_PLAYED));
                 song.setTimesPlayed(jsoSong.getInt(Song.TIMES_PLAYED));
-                song.setBookmarked(jsoSong.getLong(Song.BOOKMARKED));
+                if (jsoSong.has(Song.BOOKMARKED)) {
+                    song.setBookmarked(jsoSong.getLong(Song.BOOKMARKED));
+                }
                 if (jsoSong.has(Song.TAG)) {
                     song.setTag(jsoSong.getString(Song.TAG));
                 }

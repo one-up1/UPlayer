@@ -77,6 +77,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
     private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
     private static final String KEY_MAX_TIMES_PLAYED = "maxTimesPlayed";
+    private static final String KEY_UNTAGGED = "untagged";
     private static final String KEY_DB_ORDER_BY = "dbOrderBy";
     private static final String KEY_DB_ORDER_BY_DESC = "dbOrderByDesc";
 
@@ -100,6 +101,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private LinearLayout llTimesPlayed;
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
+    private CheckBox cbUntagged;
     private LinearLayout llDbOrderBy;
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
@@ -182,6 +184,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
         setEditTextText(KEY_MAX_TIMES_PLAYED, etMaxTimesPlayed);
 
+        cbUntagged = ret.findViewById(R.id.cbUntagged);
+        setCheckBoxChecked(KEY_UNTAGGED, cbUntagged);
+
         llDbOrderBy = ret.findViewById(R.id.llDbOrderBy);
 
         sDbOrderBy = ret.findViewById(R.id.sDbOrderBy);
@@ -238,6 +243,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             etArtist.setVisibility(dbVisibility);
             llLastPlayed.setVisibility(dbVisibility);
             llTimesPlayed.setVisibility(dbVisibility);
+            cbUntagged.setVisibility(dbVisibility);
             llDbOrderBy.setVisibility(dbVisibility);
         }
     }
@@ -266,6 +272,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             String maxYear = etMaxYear.getText().toString();
             String minTimesPlayed = etMinTimesPlayed.getText().toString();
             String maxTimesPlayed = etMaxTimesPlayed.getText().toString();
+            boolean untagged = cbUntagged.isChecked();
             int dbOrderByColumn = sDbOrderBy.getSelectedItemPosition();
             boolean dbOrderByDesc = cbDbOrderByDesc.isChecked();
 
@@ -301,6 +308,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 if (maxTimesPlayed.length() > 0) {
                     selection = appendSelection(selection,
                             Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
+                }
+                if (untagged) {
+                    selection = appendSelection(selection, Song.TAG + " IS NULL");
                 }
                 switch (dbOrderByColumn) {
                     case 1:
@@ -340,6 +350,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed)
                     .putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed)
                     .putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed)
+                    .putBoolean(KEY_UNTAGGED, untagged)
                     .putInt(KEY_DB_ORDER_BY, dbOrderByColumn)
                     .putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc)
                     .apply();

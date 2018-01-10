@@ -24,6 +24,7 @@
     <string name="max_last_played">Max last played&#8230;</string>
     <string name="min_times_played">Min times played&#8230;</string>
     <string name="max_times_played">Max times played&#8230;</string>
+    <string name="untagged">Untagged</string>
     <string name="db_order_by">DB order by</string>
     <string-array name="db_order_by_entries">
         <item />

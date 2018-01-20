@@ -52,7 +52,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
-        View.OnClickListener {
+        View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
 
     private static final String SQL_QUERY_SONGS_PLAYED =
@@ -165,6 +165,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         bMinLastPlayed = ret.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
+        bMinLastPlayed.setOnLongClickListener(this);
         if (minLastPlayed == 0) {
             minLastPlayed = preferences.getLong(KEY_MIN_LAST_PLAYED, 0);
         }
@@ -174,6 +175,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         bMaxLastPlayed = ret.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
+        bMaxLastPlayed.setOnLongClickListener(this);
         if (maxLastPlayed == 0) {
             maxLastPlayed = preferences.getLong(KEY_MAX_LAST_PLAYED, 0);
         }
@@ -270,112 +272,15 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             .putExtra(DatePickerActivity.EXTRA_DATE, maxLastPlayed),
                     REQUEST_SELECT_MAX_LAST_PLAYED);
         } else if (v == bQuery) {
-            int joinedSortBy = sJoinedSortBy.getSelectedItemPosition();
-            String title = etTitle.getText().toString();
-            String artist = etArtist.getText().toString();
-            String minYear = etMinYear.getText().toString();
-            String maxYear = etMaxYear.getText().toString();
-            String minTimesPlayed = etMinTimesPlayed.getText().toString();
-            String maxTimesPlayed = etMaxTimesPlayed.getText().toString();
-            int tagSelection = getRadioGroupCheckedRadioButton(rgTagSelection);
-            int dbOrderByColumn = sDbOrderBy.getSelectedItemPosition();
-            boolean dbOrderByDesc = cbDbOrderByDesc.isChecked();
-
-            String selection = null, dbOrderBy = null;
-
-            if (title.length() > 0) {
-                selection = Song.TITLE + " LIKE '%" + title + "%'";
-            }
-            if (minYear.length() > 0) {
-                selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
-            }
-            if (maxYear.length() > 0) {
-                selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
-            }
-
-            if (joinedSortBy == 0) {
-                if (artist.length() > 0) {
-                    selection = appendSelection(selection, Song.ARTIST_ID +
-                            " IN(SELECT " + Artist._ID + " FROM " + Artist.TABLE_NAME +
-                            " WHERE " + Artist.ARTIST + " LIKE '%" + artist + "%')");
-                }
-                if (minLastPlayed > 0) {
-                    selection = appendSelection(selection, Song.LAST_PLAYED + ">=" + minLastPlayed);
-                }
-                if (maxLastPlayed > 0) {
-                    selection = appendSelection(selection, Song.LAST_PLAYED + "<=" +
-                            maxLastPlayed + 86400000);
-                }
-                if (minTimesPlayed.length() > 0) {
-                    selection = appendSelection(selection,
-                            Song.TIMES_PLAYED + ">=" + minTimesPlayed);
-                }
-                if (maxTimesPlayed.length() > 0) {
-                    selection = appendSelection(selection,
-                            Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
-                }
-                switch (tagSelection) {
-                    case TAG_SELECTION_TAGGED:
-                        selection = appendSelection(selection, Song.TAG + " IS NOT NULL");
-                        break;
-                    case TAG_SELECTION_UNTAGGED:
-                        selection = appendSelection(selection, Song.TAG + " IS NULL");
-                        break;
-                }
-                switch (dbOrderByColumn) {
-                    case 1:
-                        dbOrderBy = Song.TITLE;
-                        break;
-                    case 2:
-                        dbOrderBy = Song.YEAR;
-                        break;
-                    case 3:
-                        dbOrderBy = Song.LAST_PLAYED;
-                        break;
-                    case 4:
-                        dbOrderBy = Song.TIMES_PLAYED;
-                        break;
-                }
-                if (dbOrderBy != null && dbOrderByDesc) {
-                    dbOrderBy += " DESC";
-                }
-            }
-
-            Log.d(TAG, "joinedSortBy=" + joinedSortBy +
-                    ", selection=" + selection + ", dbOrderBy=" + dbOrderBy);
-            Bundle args = new Bundle();
-            args.putSparseParcelableArray(ARG_ARTISTS, artists);
-            args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
-            args.putString(ARG_SELECTION, selection);
-            args.putString(ARG_DB_ORDER_BY, dbOrderBy);
-            startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));
-
-            preferences.edit()
-                    .putInt(KEY_JOINED_SORT_BY, joinedSortBy)
-                    .putString(KEY_TITLE, title)
-                    .putString(KEY_ARTIST, artist)
-                    .putString(KEY_MIN_YEAR, minYear)
-                    .putString(KEY_MAX_YEAR, maxYear)
-                    .putLong(KEY_MIN_LAST_PLAYED, minLastPlayed)
-                    .putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed)
-                    .putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed)
-                    .putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed)
-                    .putInt(KEY_TAG_SELECTION, tagSelection)
-                    .putInt(KEY_DB_ORDER_BY, dbOrderByColumn)
-                    .putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc)
-                    .apply();
+            query(null);
         } else if (v == bTags) {
             final String[] tags = dbOpenHelper.querySongTags();
             new AlertDialog.Builder(getActivity())
                     .setItems(tags, new DialogInterface.OnClickListener() {
+
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Bundle args = new Bundle();
-                            args.putSparseParcelableArray(ARG_ARTISTS, artists);
-                            args.putString(ARG_SELECTION, Song.TAG + "='" + tags[which] + "'");
-                            args.putString(ARG_DB_ORDER_BY, Song.LAST_PLAYED + " DESC");
-                            startActivity(new Intent(getContext(), SongsActivity.class)
-                                    .putExtras(args));
+                            query(tags[which] );
                         }
                     })
                     .show();
@@ -443,6 +348,21 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
     }
 
+    @Override
+    public boolean onLongClick(View v) {
+        if (v == bMinLastPlayed) {
+            minLastPlayed = 0;
+            bMinLastPlayed.setText(R.string.min_last_played);
+            return true;
+        } else if (v == bMaxLastPlayed) {
+            maxLastPlayed = 0;
+            bMaxLastPlayed.setText(R.string.max_last_played);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void setArtists(SparseArray<Artist> artists) {
         getArguments().putSparseParcelableArray(ARG_ARTISTS, artists);
         this.artists = artists;
@@ -477,6 +397,119 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (preferences.contains(key)) {
             view.setChecked(preferences.getBoolean(key, false));
         }
+    }
+
+    private void query(String tag) {
+        String selection = null, dbOrderBy = null;
+        SharedPreferences.Editor preferences = this.preferences.edit();
+
+        String title = etTitle.getText().toString();
+        if (title.length() > 0) {
+            selection = Song.TITLE + " LIKE '%" + title + "%'";
+        }
+        preferences.putString(KEY_TITLE, title);
+
+        String minYear = etMinYear.getText().toString();
+        if (minYear.length() > 0) {
+            selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
+        }
+        preferences.putString(KEY_MIN_YEAR, minYear);
+
+        String maxYear = etMaxYear.getText().toString();
+        if (maxYear.length() > 0) {
+            selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
+        }
+        preferences.putString(KEY_MAX_YEAR, maxYear);
+
+        int joinedSortBy = sJoinedSortBy.getSelectedItemPosition();
+        if (joinedSortBy == 0) {
+            String artist = etArtist.getText().toString();
+            if (artist.length() > 0) {
+                selection = appendSelection(selection, Song.ARTIST_ID +
+                        " IN(SELECT " + Artist._ID + " FROM " + Artist.TABLE_NAME +
+                        " WHERE " + Artist.ARTIST + " LIKE '%" + artist + "%')");
+            }
+            preferences.putString(KEY_ARTIST, artist);
+
+            if (minLastPlayed > 0) {
+                selection = appendSelection(selection,
+                        Song.LAST_PLAYED + ">=" + minLastPlayed);
+            }
+            preferences.putLong(KEY_MIN_LAST_PLAYED, minLastPlayed);
+
+            if (maxLastPlayed > 0) {
+                selection = appendSelection(selection,
+                        Song.LAST_PLAYED + "<=" + maxLastPlayed + 86400000);
+            }
+            preferences.putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed);
+
+            String minTimesPlayed = etMinTimesPlayed.getText().toString();
+            if (minTimesPlayed.length() > 0) {
+                selection = appendSelection(selection,
+                        Song.TIMES_PLAYED + ">=" + minTimesPlayed);
+            }
+            preferences.putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed);
+
+            String maxTimesPlayed = etMaxTimesPlayed.getText().toString();
+            if (maxTimesPlayed.length() > 0) {
+                selection = appendSelection(selection,
+                        Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
+            }
+            preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
+
+            if (tag == null) {
+                int tagSelection = getRadioGroupCheckedRadioButton(rgTagSelection);
+                switch (tagSelection) {
+                    case TAG_SELECTION_TAGGED:
+                        selection = appendSelection(selection, Song.TAG + " IS NOT NULL");
+                        break;
+                    case TAG_SELECTION_UNTAGGED:
+                        selection = appendSelection(selection, Song.TAG + " IS NULL");
+                        break;
+                }
+                preferences.putInt(KEY_TAG_SELECTION, tagSelection);
+            } else {
+                selection = appendSelection(selection, Song.TAG + "='" + tag + "'");
+            }
+
+            int dbOrderByColumn = sDbOrderBy.getSelectedItemPosition();
+            switch (dbOrderByColumn) {
+                case 1:
+                    dbOrderBy = Song.TITLE;
+                    break;
+                case 2:
+                    dbOrderBy = Song.DATE_ADDED;
+                    break;
+                case 3:
+                    dbOrderBy = Song.YEAR;
+                    break;
+                case 4:
+                    dbOrderBy = Song.LAST_PLAYED;
+                    break;
+                case 5:
+                    dbOrderBy = Song.TIMES_PLAYED;
+                    break;
+            }
+            preferences.putInt(KEY_DB_ORDER_BY, dbOrderByColumn);
+
+            boolean dbOrderByDesc = cbDbOrderByDesc.isChecked();
+            if (dbOrderBy != null && dbOrderByDesc) {
+                dbOrderBy += " DESC";
+            }
+            preferences.putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc);
+        }
+        preferences.putInt(KEY_JOINED_SORT_BY, joinedSortBy);
+
+        Log.d(TAG, "joinedSortBy=" + joinedSortBy +
+                ", selection=" + selection + ", dbOrderBy=" + dbOrderBy);
+        preferences.apply();
+
+        Bundle args = new Bundle();
+        args.putSparseParcelableArray(ARG_ARTISTS, artists);
+        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
+        args.putString(ARG_SELECTION, selection);
+        args.putString(ARG_DB_ORDER_BY, dbOrderBy);
+        startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));
     }
 
     private void backup() throws JSONException, IOException {
@@ -588,7 +621,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
             try (Cursor c = getContext().getContentResolver().query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{Song._ID, Song.TITLE, Song.YEAR, Song.DURATION},
+                    new String[]{Song._ID, Song.TITLE, Song.DATE_ADDED, Song.YEAR, Song.DURATION},
                     Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
                     new String[]{title, Integer.toString(artist.getId())}, null)) {
                 if (c == null || !c.moveToFirst()) {
@@ -600,6 +633,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 song.setId(c.getInt(c.getColumnIndex(Song._ID)));
                 song.setTitle(c.getString(c.getColumnIndex(Song.TITLE)));
                 song.setArtist(artist);
+                song.setDateAdded(c.getLong(c.getColumnIndex(Song.DATE_ADDED)));
                 song.setYear(c.getInt(c.getColumnIndex(Song.YEAR)));
                 song.setDuration(c.getInt(c.getColumnIndex(Song.DURATION)));
 

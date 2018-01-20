@@ -143,6 +143,7 @@ public class SongsListView extends ListView {
                 Util.showInfoDialog(context, song.getArtist() + " - " + song.getTitle(),
                         context.getString(
                                 R.string.info_message_song,
+                                Util.formatDateTime(song.getDateAdded() * 1000),
                                 song.getYear(),
                                 Util.formatDuration(song.getDuration()),
                                 song.getLastPlayed() == 0 ?

@@ -17,6 +17,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     private int id;
     private String title;
     private Artist artist;
+    private long dateAdded;
     private int year;
     private int duration;
 
@@ -44,6 +45,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         out.writeInt(id);
         out.writeString(title);
         out.writeParcelable(artist, flags);
+        out.writeLong(dateAdded);
         out.writeInt(year);
         out.writeInt(duration);
         out.writeLong(lastPlayed);
@@ -74,6 +76,14 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     public void setArtist(Artist artist) {
         this.artist = artist;
+    }
+
+    public long getDateAdded() {
+        return dateAdded;
+    }
+
+    public void setDateAdded(long dateAdded) {
+        this.dateAdded = dateAdded;
     }
 
     public int getYear() {
@@ -144,6 +154,7 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
             ret.id = in.readInt();
             ret.title = in.readString();
             ret.artist = in.readParcelable(Artist.class.getClassLoader());
+            ret.dateAdded = in.readLong();
             ret.year = in.readInt();
             ret.duration = in.readInt();
             ret.lastPlayed = in.readLong();

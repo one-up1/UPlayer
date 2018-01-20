@@ -28,6 +28,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Song._ID + " INTEGER PRIMARY KEY," +
                     Song.TITLE + " TEXT," +
                     Song.ARTIST_ID + " INTEGER," +
+                    Song.DATE_ADDED + " INTEGER," +
                     Song.YEAR + " INTEGER," +
                     Song.DURATION + " INTEGER," +
                     Song.LAST_PLAYED + " INTEGER," +
@@ -163,15 +164,20 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 values.put(Song._ID, song.getId());
                 values.put(Song.TITLE, song.getTitle());
                 values.put(Song.ARTIST_ID, song.getArtist().getId());
-                if (song.getDuration() == 0) {
-                    values.putNull(Song.DURATION);
+                if (song.getDateAdded() == 0) {
+                    values.putNull(Song.DATE_ADDED);
                 } else {
-                    values.put(Song.DURATION, song.getDuration());
+                    values.put(Song.DATE_ADDED, song.getDateAdded());
                 }
                 if (song.getYear() == 0) {
                     values.putNull(Song.YEAR);
                 } else {
                     values.put(Song.YEAR, song.getYear());
+                }
+                if (song.getDuration() == 0) {
+                    values.putNull(Song.DURATION);
+                } else {
+                    values.put(Song.DURATION, song.getDuration());
                 }
                 if (song.getLastPlayed() == 0) {
                     values.putNull(Song.LAST_PLAYED);
@@ -281,6 +287,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                             Song.TITLE + "," +
                             Song.ARTIST_ID + "," +
                             Song.YEAR + "," +
+                            Song.DURATION + "," +
                             Song.LAST_PLAYED + "," +
                             Song.TIMES_PLAYED + "," +
                             Song.BOOKMARKED + "," +
@@ -290,6 +297,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                             Song.TITLE + "," +
                             Song.ARTIST_ID + "," +
                             Song.YEAR + "," +
+                            Song.DURATION + "," +
                             Song.LAST_PLAYED + "," +
                             Song.TIMES_PLAYED + "," +
                             Song.BOOKMARKED + "," +
@@ -305,7 +313,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     db.endTransaction();
                 }
 
-                Log.d(TAG, "Setting durations");
+                Log.d(TAG, "Setting dates added");
                 db.beginTransaction();
                 try {
                     try (android.database.Cursor c = db.query(Song.TABLE_NAME,
@@ -314,16 +322,22 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                             Song song = new Song();
                             song.setId(c.getInt(0));
 
-                            if (!setSongDuration(context, song)) {
-                                continue;
+                            try (Cursor c2 = context.getContentResolver().query(
+                                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                                    new String[]{Song.DATE_ADDED},
+                                    Song._ID + "=?", new String[]{Integer.toString(song.getId())},
+                                    null)) {
+                                if (c2 != null && c2.moveToFirst()) {
+                                    song.setDateAdded(c2.getLong(
+                                            c2.getColumnIndex(Song.DATE_ADDED)));
+                                }
+                                Log.d(TAG, "Setting date added of " + song + ":" + song.getId() +
+                                        " to " + Util.formatDateTime(song.getDateAdded() * 1000));
+                                ContentValues values = new ContentValues();
+                                values.put(Song.DATE_ADDED, song.getDateAdded());
+                                Log.d(TAG, db.update(Song.TABLE_NAME, values,
+                                        Song._ID + "=" + song.getId(), null) + " rows affected");
                             }
-
-                            Log.d(TAG, "Setting duration of " + song.getId() +
-                                    " to " + song.getDuration());
-                            ContentValues values = new ContentValues();
-                            values.put(Song.DURATION, song.getDuration());
-                            Log.d(TAG, db.update(Song.TABLE_NAME, values,
-                                    Song._ID + "=" + song.getId(), null) + " rows affected");
                         }
                     }
 
@@ -336,21 +350,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             Log.d(TAG, "Done!");
         } catch (Exception ex) {
             Log.e(TAG, "Ughh", ex);
-        }
-    }
-
-    private boolean setSongDuration(Context context, Song song) {
-        try {
-            android.media.MediaMetadataRetriever mediaMetadataRetriever =
-                    new android.media.MediaMetadataRetriever();
-            mediaMetadataRetriever.setDataSource(context, song.getContentUri());
-            song.setDuration(Integer.parseInt(mediaMetadataRetriever.extractMetadata(
-                    android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)));
-            mediaMetadataRetriever.release();
-            return true;
-        } catch (Exception ex) {
-            Log.e(TAG, "Error getting duration of " + song, ex);
-            return false;
         }
     }*/
 }

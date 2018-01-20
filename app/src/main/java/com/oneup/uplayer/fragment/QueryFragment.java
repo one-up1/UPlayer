@@ -23,6 +23,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -77,12 +79,15 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
     private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
     private static final String KEY_MAX_TIMES_PLAYED = "maxTimesPlayed";
-    private static final String KEY_UNTAGGED = "untagged";
+    private static final String KEY_TAG_SELECTION = "tag_selection";
     private static final String KEY_DB_ORDER_BY = "dbOrderBy";
     private static final String KEY_DB_ORDER_BY_DESC = "dbOrderByDesc";
 
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 1;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 2;
+
+    private static final int TAG_SELECTION_TAGGED = 1;
+    private static final int TAG_SELECTION_UNTAGGED = 2;
 
     private SparseArray<Artist> artists;
 
@@ -101,7 +106,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private LinearLayout llTimesPlayed;
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
-    private CheckBox cbUntagged;
+    private RadioGroup rgTagSelection;
     private LinearLayout llDbOrderBy;
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
@@ -184,8 +189,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
         setEditTextText(KEY_MAX_TIMES_PLAYED, etMaxTimesPlayed);
 
-        cbUntagged = ret.findViewById(R.id.cbUntagged);
-        setCheckBoxChecked(KEY_UNTAGGED, cbUntagged);
+        rgTagSelection = ret.findViewById(R.id.rgTagSelection);
+        setRadioGroupCheckedRadioButton(KEY_TAG_SELECTION, rgTagSelection);
 
         llDbOrderBy = ret.findViewById(R.id.llDbOrderBy);
 
@@ -243,7 +248,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             etArtist.setVisibility(dbVisibility);
             llLastPlayed.setVisibility(dbVisibility);
             llTimesPlayed.setVisibility(dbVisibility);
-            cbUntagged.setVisibility(dbVisibility);
+            rgTagSelection.setVisibility(dbVisibility);
             llDbOrderBy.setVisibility(dbVisibility);
         }
     }
@@ -272,7 +277,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             String maxYear = etMaxYear.getText().toString();
             String minTimesPlayed = etMinTimesPlayed.getText().toString();
             String maxTimesPlayed = etMaxTimesPlayed.getText().toString();
-            boolean untagged = cbUntagged.isChecked();
+            int tagSelection = getRadioGroupCheckedRadioButton(rgTagSelection);
             int dbOrderByColumn = sDbOrderBy.getSelectedItemPosition();
             boolean dbOrderByDesc = cbDbOrderByDesc.isChecked();
 
@@ -309,8 +314,13 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     selection = appendSelection(selection,
                             Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
                 }
-                if (untagged) {
-                    selection = appendSelection(selection, Song.TAG + " IS NULL");
+                switch (tagSelection) {
+                    case TAG_SELECTION_TAGGED:
+                        selection = appendSelection(selection, Song.TAG + " IS NOT NULL");
+                        break;
+                    case TAG_SELECTION_UNTAGGED:
+                        selection = appendSelection(selection, Song.TAG + " IS NULL");
+                        break;
                 }
                 switch (dbOrderByColumn) {
                     case 1:
@@ -350,7 +360,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed)
                     .putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed)
                     .putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed)
-                    .putBoolean(KEY_UNTAGGED, untagged)
+                    .putInt(KEY_TAG_SELECTION, tagSelection)
                     .putInt(KEY_DB_ORDER_BY, dbOrderByColumn)
                     .putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc)
                     .apply();
@@ -448,6 +458,19 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (preferences.contains(key)) {
             view.setText(preferences.getString(key, null));
         }
+    }
+
+    private int getRadioGroupCheckedRadioButton(RadioGroup view) {
+        for (int i = 0; i < view.getChildCount(); i++) {
+            if (((RadioButton) view.getChildAt(i)).isChecked()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void setRadioGroupCheckedRadioButton(String key, RadioGroup view) {
+        ((RadioButton) view.getChildAt(preferences.getInt(key, 0))).setChecked(true);
     }
 
     private void setCheckBoxChecked(String key, CheckBox view) {

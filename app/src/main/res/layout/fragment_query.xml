@@ -118,11 +118,28 @@
 
     </LinearLayout>
 
-    <CheckBox
-        android:id="@+id/cbUntagged"
-        android:layout_width="wrap_content"
+    <RadioGroup
+        android:id="@+id/rgTagSelection"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/untagged" />
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/all" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tagged" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/untagged" />
+
+    </RadioGroup>
 
     <LinearLayout
         android:id="@+id/llDbOrderBy"

@@ -500,16 +500,14 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
         preferences.putInt(KEY_JOINED_SORT_BY, joinedSortBy);
 
-        Log.d(TAG, "joinedSortBy=" + joinedSortBy +
-                ", selection=" + selection + ", dbOrderBy=" + dbOrderBy);
-        preferences.apply();
-
         Bundle args = new Bundle();
         args.putSparseParcelableArray(ARG_ARTISTS, artists);
         args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
         args.putString(ARG_SELECTION, selection);
         args.putString(ARG_DB_ORDER_BY, dbOrderBy);
         startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));
+
+        preferences.apply();
     }
 
     private void backup() throws JSONException, IOException {

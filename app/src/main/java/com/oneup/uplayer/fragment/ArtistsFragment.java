@@ -51,6 +51,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         Log.d(TAG, "ArtistsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
+        Log.d(TAG, artists.size() + " artists, joinedSortBy=" + joinedSortBy);
 
         if (objects == null) {
             objects = new ArrayList<>();

@@ -63,6 +63,8 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
         selection = getArguments().getString(ARG_SELECTION);
         dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
+        Log.d(TAG, artists.size() + " artists, joinedSortBy=" + joinedSortBy +
+                ", selection=" + selection + ", dbOrderBy=" + dbOrderBy);
 
         SparseArray<Song> songs;
         Song song;

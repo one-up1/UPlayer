@@ -514,9 +514,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         JSONObject backup = new JSONObject();
 
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+            // Process artists.
             JSONArray artists = new JSONArray();
-            try (Cursor c = db.query(Artist.TABLE_NAME,
-                    null, null, null, null, null, null)) {
+            try (Cursor c = db.query(Artist.TABLE_NAME, null, null, null, null, null, null)) {
                 while (c.moveToNext()) {
                     JSONObject artist = new JSONObject();
                     artist.put(Artist._ID, c.getInt(0));
@@ -532,26 +532,33 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
             backup.put(Artist.TABLE_NAME, artists);
 
+            // Process songs.
             JSONArray songs = new JSONArray();
-            try (Cursor c = db.query(Song.TABLE_NAME,
-                    new String[]{Song.TITLE, Song.ARTIST_ID, Song.LAST_PLAYED, Song.TIMES_PLAYED,
-                            Song.BOOKMARKED, Song.TAG},
-                    null, null, null, null, null)) {
+            try (Cursor c = db.query(Song.TABLE_NAME, null, null, null, null, null, null)) {
                 while (c.moveToNext()) {
                     JSONObject song = new JSONObject();
-                    song.put(Song.TITLE, c.getString(0));
-                    song.put(Song.ARTIST_ID, c.getInt(1));
-                    if (!c.isNull(2)) {
-                        song.put(Song.LAST_PLAYED, c.getLong(2));
-                    }
+                    song.put(Song.TITLE, c.getString(1));
+                    song.put(Song.ARTIST_ID, c.getInt(2));
                     if (!c.isNull(3)) {
-                        song.put(Song.TIMES_PLAYED, c.getInt(3));
+                        song.put(Song.DATE_ADDED, c.getLong(3));
                     }
                     if (!c.isNull(4)) {
-                        song.put(Song.BOOKMARKED, c.getLong(4));
+                        song.put(Song.YEAR, c.getInt(4));
                     }
                     if (!c.isNull(5)) {
-                        song.put(Song.TAG, c.getString(5));
+                        song.put(Song.DURATION, c.getInt(5));
+                    }
+                    if (!c.isNull(6)) {
+                        song.put(Song.LAST_PLAYED, c.getLong(6));
+                    }
+                    if (!c.isNull(7)) {
+                        song.put(Song.TIMES_PLAYED, c.getInt(7));
+                    }
+                    if (!c.isNull(8)) {
+                        song.put(Song.BOOKMARKED, c.getLong(8));
+                    }
+                    if (!c.isNull(9)) {
+                        song.put(Song.TAG, c.getString(9));
                     }
                     songs.put(song);
                 }
@@ -581,8 +588,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             String name = jsoArtist.getString(Artist.ARTIST);
 
             try (Cursor c = getContext().getContentResolver().query(
-                    MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                    new String[]{Artist._ID, Artist.ARTIST},
+                    MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI, new String[]{Artist._ID},
                     Artist.ARTIST + "=?", new String[]{name}, null)) {
                 if (c == null || !c.moveToFirst()) {
                     Log.e(TAG, "Artist '" + name + "' not found");
@@ -591,7 +597,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                 Artist artist = new Artist();
                 artist.setId(c.getInt(c.getColumnIndex(Artist._ID)));
-                artist.setArtist(c.getString(c.getColumnIndex(Artist.ARTIST)));
+
+                artist.setArtist(name);
 
                 if (jsoArtist.has(Artist.LAST_PLAYED)) {
                     artist.setLastPlayed(jsoArtist.getLong(Artist.LAST_PLAYED));
@@ -618,8 +625,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
 
             try (Cursor c = getContext().getContentResolver().query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{Song._ID, Song.TITLE, Song.DATE_ADDED, Song.YEAR, Song.DURATION},
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{Song._ID},
                     Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
                     new String[]{title, Integer.toString(artist.getId())}, null)) {
                 if (c == null || !c.moveToFirst()) {
@@ -629,12 +635,19 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                 Song song = new Song();
                 song.setId(c.getInt(c.getColumnIndex(Song._ID)));
-                song.setTitle(c.getString(c.getColumnIndex(Song.TITLE)));
-                song.setArtist(artist);
-                song.setDateAdded(c.getLong(c.getColumnIndex(Song.DATE_ADDED)));
-                song.setYear(c.getInt(c.getColumnIndex(Song.YEAR)));
-                song.setDuration(c.getInt(c.getColumnIndex(Song.DURATION)));
 
+                song.setTitle(title);
+                song.setArtist(artist);
+
+                if (jsoSong.has(Song.DATE_ADDED)) {
+                    song.setDateAdded(jsoSong.getLong(Song.DATE_ADDED));
+                }
+                if (jsoSong.has(Song.YEAR)) {
+                    song.setYear(jsoSong.getInt(Song.YEAR));
+                }
+                if (jsoSong.has(Song.DURATION)) {
+                    song.setDuration(jsoSong.getInt(Song.DURATION));
+                }
                 if (jsoSong.has(Song.LAST_PLAYED)) {
                     song.setLastPlayed(jsoSong.getLong(Song.LAST_PLAYED));
                 }

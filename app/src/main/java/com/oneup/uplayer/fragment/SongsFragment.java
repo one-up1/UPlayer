@@ -109,8 +109,9 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             objects.clear();
         }
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null : new String[]{Song._ID,
-                            Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
+            try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null :
+                            new String[]{Song._ID, Song.DATE_ADDED,
+                                    Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
                     selection, null, null, null, dbOrderBy)) {
                 while (c.moveToNext()) {
                     int id = c.getInt(0);
@@ -133,10 +134,15 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         if (song == null) {
                             dbOpenHelper.deleteSong(id);
                         } else {
-                            song.setLastPlayed(c.getLong(1));
-                            song.setTimesPlayed(c.getInt(2));
-                            song.setBookmarked(c.getLong(3));
-                            song.setTag(c.getString(4));
+                            // Overwrite the DATE_ADDED value from the MediaStore,
+                            // as this value may be lost after restoring a backup.
+                            song.setDateAdded(c.getLong(1));
+
+                            // Set the other values not present in the MediaStore.
+                            song.setLastPlayed(c.getLong(2));
+                            song.setTimesPlayed(c.getInt(3));
+                            song.setBookmarked(c.getLong(4));
+                            song.setTag(c.getString(5));
                         }
                     }
                 }

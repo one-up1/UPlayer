@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.oneup.uplayer.util.Calendar;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -218,7 +220,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     public void updateSongPlayed(Song song) {
         querySong(song);
-        long lastPlayed = System.currentTimeMillis();
+        long lastPlayed = Calendar.currentTime();
 
         song.getArtist().setLastPlayed(lastPlayed);
         song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
@@ -255,17 +257,18 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    /*public void t(Context context) {
+    public void t(Context context) {
         Log.d(TAG, "Starting");
         try {
             try (SQLiteDatabase db = getWritableDatabase()) {
-                db.execSQL("UPDATE " + Song.TABLE_NAME + " SET " + Song.DATE_ADDED + " = NULL");
+                db.execSQL("UPDATE " + Artist.TABLE_NAME + " SET " + Song.LAST_PLAYED + "=" + Song.LAST_PLAYED + " / 1000");
+                db.execSQL("UPDATE " + Song.TABLE_NAME + " SET " + Song.LAST_PLAYED + "=" + Song.LAST_PLAYED + " / 1000");
             }
             Log.d(TAG, "Done!");
         } catch (Exception ex) {
             Log.e(TAG, "Ughh", ex);
         }
-    }*/
+    }
 
     /*public void t(Context context) {
         Log.d(TAG, "Starting");
@@ -332,7 +335,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                                             c2.getColumnIndex(Song.DATE_ADDED)));
                                 }
                                 Log.d(TAG, "Setting date added of " + song + ":" + song.getId() +
-                                        " to " + Util.formatDateTime(song.getDateAdded() * 1000));
+                                        " to " + Util.formatDateTime(song.getDateAdded()));
                                 ContentValues values = new ContentValues();
                                 values.put(Song.DATE_ADDED, song.getDateAdded());
                                 Log.d(TAG, db.update(Song.TABLE_NAME, values,

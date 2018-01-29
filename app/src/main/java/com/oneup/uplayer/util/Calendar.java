@@ -34,4 +34,8 @@ public class Calendar {
         calendar.set(java.util.Calendar.MINUTE, 0);
         calendar.set(java.util.Calendar.SECOND, (int) seconds);
     }
+
+    public static long currentTime() {
+        return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+    }
 }

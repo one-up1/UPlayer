@@ -174,7 +174,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             minDateAdded = preferences.getLong(KEY_MIN_DATE_ADDED, 0);
         }
         if (minDateAdded > 0) {
-            bMinDateAdded.setText(Util.formatDate(minDateAdded));
+            bMinDateAdded.setText(Util.formatDateTime(minDateAdded));
         }
 
         bMaxDateAdded = ret.findViewById(R.id.bMaxDateAdded);
@@ -184,7 +184,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             maxDateAdded = preferences.getLong(KEY_MAX_DATE_ADDED, 0);
         }
         if (maxDateAdded > 0) {
-            bMaxDateAdded.setText(Util.formatDate(maxDateAdded));
+            bMaxDateAdded.setText(Util.formatDateTime(maxDateAdded));
         }
 
         etMinYear = ret.findViewById(R.id.etMinYear);
@@ -202,7 +202,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             minLastPlayed = preferences.getLong(KEY_MIN_LAST_PLAYED, 0);
         }
         if (minLastPlayed > 0) {
-            bMinLastPlayed.setText(Util.formatDate(minLastPlayed));
+            bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
         }
 
         bMaxLastPlayed = ret.findViewById(R.id.bMaxLastPlayed);
@@ -212,7 +212,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             maxLastPlayed = preferences.getLong(KEY_MAX_LAST_PLAYED, 0);
         }
         if (maxLastPlayed > 0) {
-            bMaxLastPlayed.setText(Util.formatDate(maxLastPlayed));
+            bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
         }
 
         llTimesPlayed = ret.findViewById(R.id.llTimesPlayed);
@@ -255,21 +255,19 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             switch (requestCode) {
                 case REQUEST_SELECT_MIN_DATE_ADDED:
                     minDateAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMinDateAdded.setText(Util.formatDate(minDateAdded));
+                    bMinDateAdded.setText(Util.formatDateTime(minDateAdded));
                     break;
                 case REQUEST_SELECT_MAX_DATE_ADDED:
                     maxDateAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMaxDateAdded.setText(Util.formatDate(maxDateAdded));
+                    bMaxDateAdded.setText(Util.formatDateTime(maxDateAdded));
                     break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
-                    minLastPlayed = TimeUnit.SECONDS.toMillis(
-                            data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bMinLastPlayed.setText(Util.formatDate(minLastPlayed));
+                    minLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
                     break;
                 case REQUEST_SELECT_MAX_LAST_PLAYED:
-                    maxLastPlayed = TimeUnit.SECONDS.toMillis(
-                            data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bMaxLastPlayed.setText(Util.formatDate(maxLastPlayed));
+                    maxLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
                     break;
             }
         }
@@ -308,32 +306,28 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_date_added);
             if (minDateAdded > 0) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME,
-                        TimeUnit.MILLISECONDS.toSeconds(minDateAdded));
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, minDateAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_DATE_ADDED);
         } else if (v == bMaxDateAdded) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_date_added);
             if (maxDateAdded > 0) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME,
-                        TimeUnit.MILLISECONDS.toSeconds(maxDateAdded));
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, maxDateAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_DATE_ADDED);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_last_played);
             if (minLastPlayed > 0) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME,
-                        TimeUnit.MILLISECONDS.toSeconds(minLastPlayed));
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, minLastPlayed);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
         } else if (v == bMaxLastPlayed) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_last_played);
             if (maxLastPlayed > 0) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME,
-                        TimeUnit.MILLISECONDS.toSeconds(maxLastPlayed));
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, maxLastPlayed);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
         } else if (v == bQuery) {

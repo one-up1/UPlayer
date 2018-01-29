@@ -25,6 +25,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class SongsListView extends ListView {
                 dbOpenHelper.querySong(song);
                 if (song.getBookmarked() == 0) {
                     Log.d(TAG, "Setting bookmark: " + song);
-                    song.setBookmarked(System.currentTimeMillis());
+                    song.setBookmarked(Calendar.currentTime());
                     Toast.makeText(context, R.string.bookmark_set, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.d(TAG, "Deleting bookmark: " + song);
@@ -161,7 +162,7 @@ public class SongsListView extends ListView {
                                 R.string.info_message_song,
                                 song.getDateAdded() == 0 ?
                                         context.getString(R.string.na) :
-                                        Util.formatDateTime(song.getDateAdded() * 1000),
+                                        Util.formatDateTime(song.getDateAdded()),
                                 song.getYear(),
                                 Util.formatDuration(song.getDuration()),
                                 song.getLastPlayed() == 0 ?

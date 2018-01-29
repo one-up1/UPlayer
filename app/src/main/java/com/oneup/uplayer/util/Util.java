@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 @SuppressLint("SimpleDateFormat")
 public class Util {
     private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
     private static final NumberFormat TIME_NUMBER_FORMAT = NumberFormat.getInstance();
 
     static {
@@ -26,12 +25,8 @@ public class Util {
     private Util() {
     }
 
-    public static String formatDateTime(long millis) {
-        return DATE_TIME_FORMAT.format(millis);
-    }
-
-    public static String formatDate(long millis) {
-        return DATE_FORMAT.format(millis);
+    public static String formatDateTime(long seconds) {
+        return DATE_TIME_FORMAT.format(TimeUnit.SECONDS.toMillis(seconds));
     }
 
     public static String formatDuration(long millis) {

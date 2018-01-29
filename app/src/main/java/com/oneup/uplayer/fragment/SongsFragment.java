@@ -22,7 +22,7 @@ import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.Util;
+import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
@@ -204,7 +204,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         if (listView == null) {
-            listView = new SongsListView(getContext());
+            listView = new SongsListView(getActivity());
             listView.setOnItemClickListener(this);
             if (getActivity() instanceof MainActivity) {
                 listView.setOnDataSetChangedListener(this);
@@ -241,6 +241,11 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         return getUserVisibleHint() && listView.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        listView.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

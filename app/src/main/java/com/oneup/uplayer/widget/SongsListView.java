@@ -1,11 +1,14 @@
 package com.oneup.uplayer.widget;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
+import android.content
+        .DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,9 +22,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.Util;
+import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,13 +34,16 @@ import java.util.List;
 public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";
 
-    private Context context;
+    private static final int REQUEST_SELECT_DATE_ADDED = 1;
+
+    private Activity context;
     private DbOpenHelper dbOpenHelper;
+    private Song editSong;
 
     private OnDataSetChangedListener onDataSetChangedListener;
     private OnSongDeletedListener onSongDeletedListener;
 
-    public SongsListView(Context context) {
+    public SongsListView(Activity context) {
         super(context);
 
         this.context = context;
@@ -129,6 +136,15 @@ public class SongsListView extends ListView {
                     }
                 });
                 return true;
+            case R.id.set_date_added:
+                editSong = song;
+                Intent intent = new Intent(getContext(), DateTimeActivity.class);
+                intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.set_date_added);
+                if (song.getDateAdded() > 0) {
+                    intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getDateAdded());
+                }
+                context.startActivityForResult(intent, REQUEST_SELECT_DATE_ADDED);
+                return true;
             case R.id.mark_played:
                 dbOpenHelper.updateSongPlayed(song);
                 Toast.makeText(context, R.string.updated, Toast.LENGTH_SHORT).show();
@@ -143,7 +159,9 @@ public class SongsListView extends ListView {
                 Util.showInfoDialog(context, song.getArtist() + " - " + song.getTitle(),
                         context.getString(
                                 R.string.info_message_song,
-                                Util.formatDateTime(song.getDateAdded() * 1000),
+                                song.getDateAdded() == 0 ?
+                                        context.getString(R.string.na) :
+                                        Util.formatDateTime(song.getDateAdded() * 1000),
                                 song.getYear(),
                                 Util.formatDuration(song.getDuration()),
                                 song.getLastPlayed() == 0 ?
@@ -193,6 +211,20 @@ public class SongsListView extends ListView {
                 return true;
         }
         return true;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult(" + requestCode + ", " + resultCode + ")");
+        if (resultCode == AppCompatActivity.RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_SELECT_DATE_ADDED:
+                    editSong.setDateAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
+                    Log.d(TAG, "Set to " +Util.formatDateTime(editSong.getDateAdded()));
+                    dbOpenHelper.insertOrUpdateSong(editSong);
+                    editSong = null;
+                    break;
+            }
+        }
     }
 
     public void setOnDataSetChangedListener(OnDataSetChangedListener onDataSetChangedListener) {

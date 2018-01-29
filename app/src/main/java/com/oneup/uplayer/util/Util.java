@@ -1,8 +1,12 @@
-package com.oneup.uplayer;
+package com.oneup.uplayer.util;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+
+import com.oneup.uplayer.R;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -44,5 +48,13 @@ public class Util {
                 .setMessage(message)
                 .setPositiveButton(R.string.ok, null)
                 .show();
+    }
+
+    public static void hideSoftInput(Context context, View view) {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

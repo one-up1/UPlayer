@@ -20,7 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.Util;
+import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbComparator;

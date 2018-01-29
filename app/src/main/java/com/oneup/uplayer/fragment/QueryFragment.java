@@ -30,13 +30,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.Util;
-import com.oneup.uplayer.activity.DatePickerActivity;
+import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,6 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.concurrent.TimeUnit;
 
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
@@ -73,6 +74,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_JOINED_SORT_BY = "joinedSortBy";
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
+    private static final String KEY_MIN_DATE_ADDED = "minDateAdded";
+    private static final String KEY_MAX_DATE_ADDED = "maxDateAdded";
     private static final String KEY_MIN_YEAR = "minYear";
     private static final String KEY_MAX_YEAR = "maxYear";
     private static final String KEY_MIN_LAST_PLAYED = "minLastPlayed";
@@ -83,8 +86,10 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_DB_ORDER_BY = "dbOrderBy";
     private static final String KEY_DB_ORDER_BY_DESC = "dbOrderByDesc";
 
-    private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 1;
-    private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 2;
+    private static final int REQUEST_SELECT_MIN_DATE_ADDED = 1;
+    private static final int REQUEST_SELECT_MAX_DATE_ADDED = 2;
+    private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
+    private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
 
     private static final int TAG_SELECTION_TAGGED = 1;
     private static final int TAG_SELECTION_UNTAGGED = 2;
@@ -98,6 +103,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private Spinner sJoinedSortBy;
     private EditText etTitle;
     private EditText etArtist;
+    private LinearLayout llDateAdded;
+    private Button bMinDateAdded;
+    private Button bMaxDateAdded;
     private EditText etMinYear;
     private EditText etMaxYear;
     private LinearLayout llLastPlayed;
@@ -115,6 +123,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private Button bBackup;
     private Button bRestoreBackup;
 
+    private long minDateAdded;
+    private long maxDateAdded;
     private long minLastPlayed;
     private long maxLastPlayed;
 
@@ -147,19 +157,41 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         sJoinedSortBy = ret.findViewById(R.id.sJoinedSortBy);
         sJoinedSortBy.setOnItemSelectedListener(this);
-        setSpinnerSelection(KEY_JOINED_SORT_BY, sJoinedSortBy);
+        setSpinnerSelection(sJoinedSortBy, KEY_JOINED_SORT_BY);
 
         etTitle = ret.findViewById(R.id.etTitle);
-        setEditTextText(KEY_TITLE, etTitle);
+        setEditTextText(etTitle, KEY_TITLE);
 
         etArtist = ret.findViewById(R.id.etArtist);
-        setEditTextText(KEY_ARTIST, etArtist);
+        setEditTextText(etArtist, KEY_ARTIST);
+
+        llDateAdded = ret.findViewById(R.id.llDateAdded);
+
+        bMinDateAdded = ret.findViewById(R.id.bMinDateAdded);
+        bMinDateAdded.setOnClickListener(this);
+        bMinDateAdded.setOnLongClickListener(this);
+        if (minDateAdded == 0) {
+            minDateAdded = preferences.getLong(KEY_MIN_DATE_ADDED, 0);
+        }
+        if (minDateAdded > 0) {
+            bMinDateAdded.setText(Util.formatDate(minDateAdded));
+        }
+
+        bMaxDateAdded = ret.findViewById(R.id.bMaxDateAdded);
+        bMaxDateAdded.setOnClickListener(this);
+        bMaxDateAdded.setOnLongClickListener(this);
+        if (maxDateAdded == 0) {
+            maxDateAdded = preferences.getLong(KEY_MAX_DATE_ADDED, 0);
+        }
+        if (maxDateAdded > 0) {
+            bMaxDateAdded.setText(Util.formatDate(maxDateAdded));
+        }
 
         etMinYear = ret.findViewById(R.id.etMinYear);
-        setEditTextText(KEY_MIN_YEAR, etMinYear);
+        setEditTextText(etMinYear, KEY_MIN_YEAR);
 
         etMaxYear = ret.findViewById(R.id.etMaxYear);
-        setEditTextText(KEY_MAX_YEAR, etMaxYear);
+        setEditTextText(etMaxYear, KEY_MAX_YEAR);
 
         llLastPlayed = ret.findViewById(R.id.llLastPlayed);
 
@@ -186,21 +218,21 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         llTimesPlayed = ret.findViewById(R.id.llTimesPlayed);
 
         etMinTimesPlayed = ret.findViewById(R.id.etMinTimesPlayed);
-        setEditTextText(KEY_MIN_TIMES_PLAYED, etMinTimesPlayed);
+        setEditTextText(etMinTimesPlayed, KEY_MIN_TIMES_PLAYED);
 
         etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
-        setEditTextText(KEY_MAX_TIMES_PLAYED, etMaxTimesPlayed);
+        setEditTextText(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
 
         rgTagSelection = ret.findViewById(R.id.rgTagSelection);
-        setRadioGroupCheckedRadioButton(KEY_TAG_SELECTION, rgTagSelection);
+        setRadioGroupCheckedRadioButton(rgTagSelection, KEY_TAG_SELECTION);
 
         llDbOrderBy = ret.findViewById(R.id.llDbOrderBy);
 
         sDbOrderBy = ret.findViewById(R.id.sDbOrderBy);
-        setSpinnerSelection(KEY_DB_ORDER_BY, sDbOrderBy);
+        setSpinnerSelection(sDbOrderBy, KEY_DB_ORDER_BY);
 
         cbDbOrderByDesc = ret.findViewById(R.id.cbDbOrderByDesc);
-        setCheckBoxChecked(KEY_DB_ORDER_BY_DESC, cbDbOrderByDesc);
+        setCheckBoxChecked(cbDbOrderByDesc, KEY_DB_ORDER_BY_DESC);
 
         bQuery = ret.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
@@ -221,12 +253,22 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
+                case REQUEST_SELECT_MIN_DATE_ADDED:
+                    minDateAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMinDateAdded.setText(Util.formatDate(minDateAdded));
+                    break;
+                case REQUEST_SELECT_MAX_DATE_ADDED:
+                    maxDateAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMaxDateAdded.setText(Util.formatDate(maxDateAdded));
+                    break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
-                    minLastPlayed = data.getLongExtra(DatePickerActivity.EXTRA_DATE, 0);
+                    minLastPlayed = TimeUnit.SECONDS.toMillis(
+                            data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
                     bMinLastPlayed.setText(Util.formatDate(minLastPlayed));
                     break;
                 case REQUEST_SELECT_MAX_LAST_PLAYED:
-                    maxLastPlayed = data.getLongExtra(DatePickerActivity.EXTRA_DATE, 0);
+                    maxLastPlayed = TimeUnit.SECONDS.toMillis(
+                            data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
                     bMaxLastPlayed.setText(Util.formatDate(maxLastPlayed));
                     break;
             }
@@ -248,6 +290,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (parent == sJoinedSortBy) {
             int dbVisibility = position == 0 ? View.VISIBLE : View.GONE;
             etArtist.setVisibility(dbVisibility);
+            llDateAdded.setVisibility(dbVisibility);
             llLastPlayed.setVisibility(dbVisibility);
             llTimesPlayed.setVisibility(dbVisibility);
             rgTagSelection.setVisibility(dbVisibility);
@@ -261,16 +304,38 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onClick(View v) {
-        if (v == bMinLastPlayed) {
-            startActivityForResult(new Intent(getContext(), DatePickerActivity.class)
-                            .putExtra(DatePickerActivity.EXTRA_TITLE, R.string.min_last_played)
-                            .putExtra(DatePickerActivity.EXTRA_DATE, minLastPlayed),
-                    REQUEST_SELECT_MIN_LAST_PLAYED);
+        if (v == bMinDateAdded) {
+            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_date_added);
+            if (minDateAdded > 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME,
+                        TimeUnit.MILLISECONDS.toSeconds(minDateAdded));
+            }
+            startActivityForResult(intent, REQUEST_SELECT_MIN_DATE_ADDED);
+        } else if (v == bMaxDateAdded) {
+            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_date_added);
+            if (maxDateAdded > 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME,
+                        TimeUnit.MILLISECONDS.toSeconds(maxDateAdded));
+            }
+            startActivityForResult(intent, REQUEST_SELECT_MAX_DATE_ADDED);
+        } else if (v == bMinLastPlayed) {
+            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_last_played);
+            if (minLastPlayed > 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME,
+                        TimeUnit.MILLISECONDS.toSeconds(minLastPlayed));
+            }
+            startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
         } else if (v == bMaxLastPlayed) {
-            startActivityForResult(new Intent(getContext(), DatePickerActivity.class)
-                            .putExtra(DatePickerActivity.EXTRA_TITLE, R.string.max_last_played)
-                            .putExtra(DatePickerActivity.EXTRA_DATE, maxLastPlayed),
-                    REQUEST_SELECT_MAX_LAST_PLAYED);
+            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_last_played);
+            if (maxLastPlayed > 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME,
+                        TimeUnit.MILLISECONDS.toSeconds(maxLastPlayed));
+            }
+            startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
         } else if (v == bQuery) {
             query(null);
         } else if (v == bTags) {
@@ -350,7 +415,15 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public boolean onLongClick(View v) {
-        if (v == bMinLastPlayed) {
+        if (v == bMinDateAdded) {
+            minDateAdded = 0;
+            bMinDateAdded.setText(R.string.min_date_added);
+            return true;
+        } else if (v == bMaxDateAdded) {
+            maxDateAdded = 0;
+            bMaxDateAdded.setText(R.string.max_date_added);
+            return true;
+        } else if (v == bMinLastPlayed) {
             minLastPlayed = 0;
             bMinLastPlayed.setText(R.string.min_last_played);
             return true;
@@ -368,15 +441,15 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         this.artists = artists;
     }
 
-    private void setSpinnerSelection(String key, Spinner view) {
-        if (preferences.contains(key)) {
-            view.setSelection(preferences.getInt(key, 0));
+    private void setSpinnerSelection(Spinner view, String preferencesKey) {
+        if (preferences.contains(preferencesKey)) {
+            view.setSelection(preferences.getInt(preferencesKey, 0));
         }
     }
 
-    private void setEditTextText(String key, EditText view) {
-        if (preferences.contains(key)) {
-            view.setText(preferences.getString(key, null));
+    private void setEditTextText(EditText view, String preferencesKey) {
+        if (preferences.contains(preferencesKey)) {
+            view.setText(preferences.getString(preferencesKey, null));
         }
     }
 
@@ -389,13 +462,13 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         return -1;
     }
 
-    private void setRadioGroupCheckedRadioButton(String key, RadioGroup view) {
-        ((RadioButton) view.getChildAt(preferences.getInt(key, 0))).setChecked(true);
+    private void setRadioGroupCheckedRadioButton(RadioGroup view, String preferencesKey) {
+        ((RadioButton) view.getChildAt(preferences.getInt(preferencesKey, 0))).setChecked(true);
     }
 
-    private void setCheckBoxChecked(String key, CheckBox view) {
-        if (preferences.contains(key)) {
-            view.setChecked(preferences.getBoolean(key, false));
+    private void setCheckBoxChecked(CheckBox view, String preferencesKey) {
+        if (preferences.contains(preferencesKey)) {
+            view.setChecked(preferences.getBoolean(preferencesKey, false));
         }
     }
 
@@ -430,6 +503,18 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         " WHERE " + Artist.ARTIST + " LIKE '%" + artist + "%')");
             }
             preferences.putString(KEY_ARTIST, artist);
+
+            if (minDateAdded > 0) {
+                selection = appendSelection(selection,
+                        Song.DATE_ADDED + ">=" + minDateAdded);
+            }
+            preferences.putLong(KEY_MIN_DATE_ADDED, minDateAdded);
+
+            if (maxDateAdded > 0) {
+                selection = appendSelection(selection,
+                        Song.DATE_ADDED + "<=" + maxDateAdded);
+            }
+            preferences.putLong(KEY_MAX_DATE_ADDED, maxDateAdded);
 
             if (minLastPlayed > 0) {
                 selection = appendSelection(selection,
@@ -597,6 +682,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
                 Artist artist = new Artist();
                 artist.setId(c.getInt(c.getColumnIndex(Artist._ID)));
+                //TODO: Just use 0 and not use getColumnIndex() when specifying columns?
 
                 artist.setArtist(name);
 

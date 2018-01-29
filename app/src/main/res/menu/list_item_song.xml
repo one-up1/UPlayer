@@ -10,6 +10,10 @@
         android:title="@string/set_tag" />
 
     <item
+        android:id="@+id/set_date_added"
+        android:title="@string/set_date_added" />
+
+    <item
         android:id="@+id/mark_played"
         android:title="@string/mark_played" />
 

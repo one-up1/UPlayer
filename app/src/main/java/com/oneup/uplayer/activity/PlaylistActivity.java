@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.Util;
+import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
@@ -79,6 +79,11 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         return listView.onContextItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        listView.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

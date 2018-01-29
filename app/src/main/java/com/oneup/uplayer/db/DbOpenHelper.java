@@ -259,7 +259,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         Log.d(TAG, "Starting");
         try {
             try (SQLiteDatabase db = getWritableDatabase()) {
-                db.execSQL("ALTER TABLE " + Song.TABLE_NAME + " ADD " + Song.TAG + " TEXT");
+                db.execSQL("UPDATE " + Song.TABLE_NAME + " SET " + Song.DATE_ADDED + " = NULL");
             }
             Log.d(TAG, "Done!");
         } catch (Exception ex) {

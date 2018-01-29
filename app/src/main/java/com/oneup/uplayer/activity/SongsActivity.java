@@ -1,5 +1,6 @@
 package com.oneup.uplayer.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
@@ -51,5 +52,10 @@ public class SongsActivity extends AppCompatActivity implements BaseArgs {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        songsFragment.onActivityResult(requestCode, resultCode, data);
     }
 }

@@ -24,6 +24,8 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
+//TODO: All time seconds?
+
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
 
@@ -56,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             if (sectionsPagerAdapter == null) {
+                queryArtists();
+
                 // Create the adapter that will return a fragment for each of the three
                 // primary sections of the activity.
                 sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -68,8 +72,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 TabLayout tabLayout = findViewById(R.id.tabs);
                 tabLayout.setupWithViewPager(viewPager);
                 tabLayout.addOnTabSelectedListener(this);
+            } else {
+                notifyDataSetChanged();
             }
-            notifyDataSetChanged();
         } else {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
@@ -124,6 +129,27 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     public void notifyDataSetChanged() {
         Log.d(TAG, "MainActivity.notifyDataSetChanged()");
+        queryArtists();
+
+        if (sectionsPagerAdapter.queryFragment != null) {
+            sectionsPagerAdapter.queryFragment.setArtists(artists);
+        }
+        if (sectionsPagerAdapter.bookmarksFragment != null) {
+            sectionsPagerAdapter.bookmarksFragment.setArtists(artists);
+        }
+        if (sectionsPagerAdapter.artistsFragment != null) {
+            sectionsPagerAdapter.artistsFragment.setArtists(artists);
+        }
+        if (sectionsPagerAdapter.lastPlayedFragment != null) {
+            sectionsPagerAdapter.lastPlayedFragment.setArtists(artists);
+        }
+        if (sectionsPagerAdapter.mostPlayedFragment != null) {
+            sectionsPagerAdapter.mostPlayedFragment.setArtists(artists);
+        }
+        sectionsPagerAdapter.notifyDataSetChanged();
+    }
+
+    private void queryArtists() {
         if (artists == null) {
             artists = new SparseArray<>();
         } else {
@@ -166,28 +192,11 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         }
 
         Log.d(TAG, "Queried " + artists.size() + " artists");
-
-        if (sectionsPagerAdapter.queryFragment != null) {
-            sectionsPagerAdapter.queryFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.songsFragment != null) {
-            sectionsPagerAdapter.songsFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.artistsFragment != null) {
-            sectionsPagerAdapter.artistsFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.lastPlayedFragment != null) {
-            sectionsPagerAdapter.lastPlayedFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.mostPlayedFragment != null) {
-            sectionsPagerAdapter.mostPlayedFragment.setArtists(artists);
-        }
-        sectionsPagerAdapter.notifyDataSetChanged();
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
         private QueryFragment queryFragment;
-        private SongsFragment songsFragment;
+        private SongsFragment bookmarksFragment;
         private ArtistsFragment artistsFragment;
         private ArtistsFragment lastPlayedFragment;
         private ArtistsFragment mostPlayedFragment;
@@ -206,11 +215,11 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     }
                     return queryFragment;
                 case 1:
-                    if (songsFragment == null) {
-                        songsFragment = SongsFragment.newInstance(artists, 0,
+                    if (bookmarksFragment == null) {
+                        bookmarksFragment = SongsFragment.newInstance(artists, 0,
                                 Song.BOOKMARKED + " IS NOT NULL", Song.BOOKMARKED + " DESC");
                     }
-                    return songsFragment;
+                    return bookmarksFragment;
                 case 2:
                     if (artistsFragment == null) {
                         artistsFragment = ArtistsFragment.newInstance(artists,

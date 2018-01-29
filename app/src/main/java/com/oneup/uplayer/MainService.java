@@ -20,6 +20,7 @@ import android.widget.RemoteViews;
 import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 

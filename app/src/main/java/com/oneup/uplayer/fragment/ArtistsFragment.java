@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener {
+    public static final int SORT_BY_DATE_MODIFIED = 4;
+
     private static final String TAG = "UPlayer";
 
     private SparseArray<Artist> artists;
@@ -96,8 +98,19 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                     }
                 };
                 break;
+            case SORT_BY_DATE_MODIFIED:
+                c = new Comparator<Artist>() {
+
+                    @Override
+                    public int compare(Artist artist1, Artist artist2) {
+                        return DbComparator.sortByDateModified(
+                                artist1.getDateModified(), artist2.getDateModified(),
+                                artist1.getArtist(), artist2.getArtist());
+                    }
+                };
+                break;
             default:
-                throw new IllegalArgumentException("Invalid songs sort by");
+                throw new IllegalArgumentException("Invalid artists sort by");
         }
         Collections.sort(objects, c);
         if (sortOrderReversed) {
@@ -150,7 +163,10 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                         artist.getLastPlayed() == 0 ?
                                 getString(R.string.never) :
                                 Util.formatDateTime(artist.getLastPlayed()),
-                        artist.getTimesPlayed())
+                        artist.getTimesPlayed(),
+                        artist.getDateModified() == 0 ?
+                                getString(R.string.na) :
+                                Util.formatDateTime(artist.getDateModified()))
                 );
                 return true;
             default:

@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         dbOpenHelper = new DbOpenHelper(this);
         //dbOpenHelper.t(this);
-        //if (true) return;
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
@@ -58,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             if (sectionsPagerAdapter == null) {
                 queryArtists();
 
+                //Toolbar toolbar = findViewById(R.id.toolbar);
+                //setSupportActionBar(toolbar);
+
                 // Create the adapter that will return a fragment for each of the three
                 // primary sections of the activity.
                 sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 // Set up the ViewPager with the sections adapter.
                 viewPager = findViewById(R.id.container);
                 viewPager.setAdapter(sectionsPagerAdapter);
-                viewPager.setCurrentItem(2);
+                viewPager.setCurrentItem(3);
 
                 TabLayout tabLayout = findViewById(R.id.tabs);
                 tabLayout.setupWithViewPager(viewPager);
@@ -135,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (sectionsPagerAdapter.bookmarksFragment != null) {
             sectionsPagerAdapter.bookmarksFragment.setArtists(artists);
         }
+        if (sectionsPagerAdapter.lastAddedFragment != null) {
+            sectionsPagerAdapter.lastAddedFragment.setArtists(artists);
+        }
         if (sectionsPagerAdapter.artistsFragment != null) {
             sectionsPagerAdapter.artistsFragment.setArtists(artists);
         }
@@ -174,7 +179,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             try (Cursor c = db.query(Artist.TABLE_NAME,
-                    new String[]{Artist._ID, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+                    new String[]{Artist._ID, Artist.LAST_PLAYED, Artist.TIMES_PLAYED,
+                            Artist.DATE_MODIFIED},
                     null, null, null, null, null)) {
                 while (c.moveToNext()) {
                     int id = c.getInt(0);
@@ -184,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     } else {
                         artist.setLastPlayed(c.getLong(1));
                         artist.setTimesPlayed(c.getInt(2));
+                        artist.setDateModified(c.getLong(3));
                     }
                 }
             }
@@ -195,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
         private QueryFragment queryFragment;
         private SongsFragment bookmarksFragment;
+        private ArtistsFragment lastAddedFragment;
         private ArtistsFragment artistsFragment;
         private ArtistsFragment lastPlayedFragment;
         private ArtistsFragment mostPlayedFragment;
@@ -219,18 +227,24 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     }
                     return bookmarksFragment;
                 case 2:
+                    if (lastAddedFragment == null) {
+                        lastAddedFragment = ArtistsFragment.newInstance(artists,
+                                ArtistsFragment.SORT_BY_DATE_MODIFIED);
+                    }
+                    return lastAddedFragment;
+                case 3:
                     if (artistsFragment == null) {
                         artistsFragment = ArtistsFragment.newInstance(artists,
                                 ArtistsFragment.SORT_BY_NAME);
                     }
                     return artistsFragment;
-                case 3:
+                case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(artists,
                                 ArtistsFragment.SORT_BY_LAST_PLAYED);
                     }
                     return lastPlayedFragment;
-                case 4:
+                case 5:
                     if (mostPlayedFragment == null) {
                         mostPlayedFragment = ArtistsFragment.newInstance(artists,
                                 ArtistsFragment.SORT_BY_TIMES_PLAYED);
@@ -248,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         @Override
         public int getCount() {
-            return 5;
+            return 6;
         }
 
         @Override
@@ -259,10 +273,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 1:
                     return getString(R.string.bookmarks);
                 case 2:
-                    return getString(R.string.artists);
+                    return getString(R.string.last_added);
                 case 3:
-                    return getString(R.string.last_played);
+                    return getString(R.string.artists);
                 case 4:
+                    return getString(R.string.last_played);
+                case 5:
                     return getString(R.string.most_played);
             }
             return null;

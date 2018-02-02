@@ -22,4 +22,18 @@ public class DbComparator {
                 sortByLastPlayed(lastPlayed1, lastPlayed2, name1, name2) :
                 Integer.compare(timesPlayed2, timesPlayed1);
     }
+
+    public static int sortByDateModified(long dateModified1, long dateModified2,
+                                         String name1, String name2) {
+        return dateModified1 == dateModified2 ?
+                sortByName(name1, name2) :
+                Long.compare(dateModified2, dateModified1);
+    }
+
+    public static int sortByDateAdded(long dateAdded1, long dateAdded2,
+                                         String name1, String name2) {
+        return dateAdded1 == dateAdded2 ?
+                sortByName(name1, name2) :
+                Long.compare(dateAdded2, dateAdded1);
+    }
 }

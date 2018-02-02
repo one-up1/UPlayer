@@ -38,6 +38,8 @@ import java.util.Comparator;
 
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
+    public static final int SORT_BY_DATE_ADDED = 4;
+
     private static final String TAG = "UPlayer";
 
     private SparseArray<Artist> artists;
@@ -184,6 +186,17 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             return DbComparator.sortByTimesPlayed(
                                     song1.getTimesPlayed(), song2.getTimesPlayed(),
                                     song1.getLastPlayed(), song2.getLastPlayed(),
+                                    song1.getTitle(), song2.getTitle());
+                        }
+                    };
+                    break;
+                case SORT_BY_DATE_ADDED:
+                    c = new Comparator<Song>() {
+
+                        @Override
+                        public int compare(Song song1, Song song2) {
+                            return DbComparator.sortByDateAdded(
+                                    song1.getDateAdded(), song2.getDateAdded(),
                                     song1.getTitle(), song2.getTitle());
                         }
                     };

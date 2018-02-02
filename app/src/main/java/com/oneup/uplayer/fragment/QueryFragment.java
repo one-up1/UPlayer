@@ -50,7 +50,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.concurrent.TimeUnit;
 
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
@@ -606,6 +605,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     if (!c.isNull(3)) {
                         artist.put(Artist.TIMES_PLAYED, c.getInt(3));
                     }
+                    if (!c.isNull(4)) {
+                        artist.put(Artist.DATE_MODIFIED, c.getLong(4));
+                    }
                     artists.put(artist);
                 }
             }
@@ -685,6 +687,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 }
                 if (jsoArtist.has(Artist.TIMES_PLAYED)) {
                     artist.setTimesPlayed(jsoArtist.getInt(Artist.TIMES_PLAYED));
+                }
+                if (jsoArtist.has(Artist.DATE_MODIFIED)) {
+                    artist.setDateModified(jsoArtist.getLong(Artist.DATE_MODIFIED));
                 }
 
                 dbOpenHelper.insertOrUpdateArtist(artist);

@@ -23,7 +23,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Artist._ID + " INTEGER PRIMARY KEY," +
                     Artist.ARTIST + " TEXT," +
                     Artist.LAST_PLAYED + " INTEGER," +
-                    Artist.TIMES_PLAYED + " INTEGER)";
+                    Artist.TIMES_PLAYED + " INTEGER," +
+                    Artist.DATE_MODIFIED + " INTEGER)";
 
     private static final String SQL_CREATE_SONGS =
             "CREATE TABLE " + Song.TABLE_NAME + "(" +
@@ -74,6 +75,11 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     values.putNull(Artist.TIMES_PLAYED);
                 } else {
                     values.put(Artist.TIMES_PLAYED, artist.getTimesPlayed());
+                }
+                if (artist.getDateModified() == 0) {
+                    values.putNull(Artist.DATE_MODIFIED);
+                } else {
+                    values.put(Artist.DATE_MODIFIED, artist.getDateModified());
                 }
 
                 int rowsAffected = db.update(Artist.TABLE_NAME, values,
@@ -224,6 +230,10 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
         song.getArtist().setLastPlayed(lastPlayed);
         song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
+        if (song.getDateAdded() > song.getArtist().getDateModified()) {
+            Log.d(TAG, "Updating date modified of artist " + song.getArtist());
+            song.getArtist().setDateModified(song.getDateAdded());
+        }
         insertOrUpdateArtist(song.getArtist());
 
         song.setLastPlayed(lastPlayed);
@@ -257,18 +267,21 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void t(Context context) {
+    /*public void t(Context context) {
         Log.d(TAG, "Starting");
         try {
             try (SQLiteDatabase db = getWritableDatabase()) {
-                db.execSQL("UPDATE " + Artist.TABLE_NAME + " SET " + Song.LAST_PLAYED + "=" + Song.LAST_PLAYED + " / 1000");
-                db.execSQL("UPDATE " + Song.TABLE_NAME + " SET " + Song.LAST_PLAYED + "=" + Song.LAST_PLAYED + " / 1000");
+                db.execSQL("UPDATE artists SET date_modified=(SELECT MAX(date_added) FROM songs WHERE songs.artist_id=artists._id)");
+
+                SQLiteStatement statement = db.compileStatement("SELECT changes()");
+                long l = statement.simpleQueryForLong();
+                Log.d(TAG, l + " rows affected");
             }
             Log.d(TAG, "Done!");
         } catch (Exception ex) {
             Log.e(TAG, "Ughh", ex);
         }
-    }
+    }*/
 
     /*public void t(Context context) {
         Log.d(TAG, "Starting");

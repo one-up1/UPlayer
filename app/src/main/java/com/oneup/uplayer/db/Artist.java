@@ -8,11 +8,15 @@ import android.provider.MediaStore;
 public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbColumns, Parcelable {
     public static final String TABLE_NAME = "artists";
 
+    public static final String DATE_MODIFIED = "date_modified";
+
     private int id;
     private String artist;
 
     private long lastPlayed;
     private int timesPlayed;
+
+    private long dateModified;
 
     public Artist() {
     }
@@ -33,6 +37,7 @@ public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbCo
         out.writeString(artist);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
+        out.writeLong(dateModified);
     }
 
     public int getId() {
@@ -67,6 +72,14 @@ public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbCo
         this.timesPlayed = timesPlayed;
     }
 
+    public long getDateModified() {
+        return dateModified;
+    }
+
+    public void setDateModified(long dateModified) {
+        this.dateModified = dateModified;
+    }
+
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
 
         @Override
@@ -76,6 +89,7 @@ public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbCo
             ret.artist = in.readString();
             ret.lastPlayed = in.readLong();
             ret.timesPlayed = in.readInt();
+            ret.dateModified = in.readLong();
             return ret;
         }
 

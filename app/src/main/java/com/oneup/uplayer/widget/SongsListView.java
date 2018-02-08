@@ -220,9 +220,13 @@ public class SongsListView extends ListView {
             switch (requestCode) {
                 case REQUEST_SELECT_DATE_ADDED:
                     editSong.setDateAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    Log.d(TAG, "Set to " +Util.formatDateTime(editSong.getDateAdded()));
                     dbOpenHelper.insertOrUpdateSong(editSong);
                     editSong = null;
+
+                    ((SongAdapter) getAdapter()).notifyDataSetChanged();
+                    if (onDataSetChangedListener != null) {
+                        onDataSetChangedListener.onDataSetChanged();
+                    }
                     break;
             }
         }

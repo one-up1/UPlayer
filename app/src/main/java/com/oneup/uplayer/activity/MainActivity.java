@@ -23,6 +23,7 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
+import com.oneup.uplayer.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
@@ -121,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             case 2:
             case 3:
             case 4:
+            case 5:
                 ((ArtistsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
                         .reverseSortOrder();
                 break;
@@ -173,6 +175,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 artist = new Artist();
                 artist.setId(c.getInt(iId));
                 artist.setArtist(c.getString(iArtist));
+                // Initially set date modified to the current time, so that artists that have not
+                // been added to the DB yet will raise to the top of the "Last added" fragment.
+                // When the DB does contain the artist this value will be overwritten below.
+                artist.setDateModified(Calendar.currentTime());
                 artists.put(artist.getId(), artist);
             }
         }

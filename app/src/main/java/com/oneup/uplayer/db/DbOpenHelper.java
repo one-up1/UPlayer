@@ -222,6 +222,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 db.endTransaction();
             }
         }
+
+        if (song.getDateAdded() > song.getArtist().getDateModified()) {
+            Log.d(TAG, "Updating date modified of artist " + song.getArtist());
+            song.getArtist().setDateModified(song.getDateAdded());
+            insertOrUpdateArtist(song.getArtist());
+        }
     }
 
     public void updateSongPlayed(Song song) {
@@ -230,10 +236,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
         song.getArtist().setLastPlayed(lastPlayed);
         song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
-        if (song.getDateAdded() > song.getArtist().getDateModified()) {
-            Log.d(TAG, "Updating date modified of artist " + song.getArtist());
-            song.getArtist().setDateModified(song.getDateAdded());
-        }
         insertOrUpdateArtist(song.getArtist());
 
         song.setLastPlayed(lastPlayed);

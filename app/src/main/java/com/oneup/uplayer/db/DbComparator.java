@@ -31,7 +31,7 @@ public class DbComparator {
     }
 
     public static int sortByDateAdded(long dateAdded1, long dateAdded2,
-                                         String name1, String name2) {
+                                      String name1, String name2) {
         return dateAdded1 == dateAdded2 ?
                 sortByName(name1, name2) :
                 Long.compare(dateAdded2, dateAdded1);

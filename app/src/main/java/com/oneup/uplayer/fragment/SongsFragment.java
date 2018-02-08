@@ -137,7 +137,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             dbOpenHelper.deleteSong(id);
                         } else {
                             // Overwrite the DATE_ADDED value from the MediaStore,
-                            // as this value may be lost after restoring a backup.
+                            // as it can be set manually and may be lost after restoring a backup.
                             song.setDateAdded(c.getLong(1));
 
                             // Set the other values not present in the MediaStore.

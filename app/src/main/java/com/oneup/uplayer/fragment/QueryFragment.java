@@ -310,7 +310,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             startActivityForResult(intent, REQUEST_SELECT_MIN_DATE_ADDED);
         } else if (v == bMaxDateAdded) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
-            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_date_added);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.max_date_added);
             if (maxDateAdded > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, maxDateAdded);
             }
@@ -324,11 +324,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
         } else if (v == bMaxLastPlayed) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
-            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_last_played);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.max_last_played);
             if (maxLastPlayed > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, maxLastPlayed);
             }
-            startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
+            startActivityForResult(intent, REQUEST_SELECT_MAX_LAST_PLAYED);
         } else if (v == bQuery) {
             query(null);
         } else if (v == bTags) {

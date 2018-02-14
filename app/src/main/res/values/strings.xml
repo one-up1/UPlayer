@@ -16,6 +16,7 @@
         <item>Name</item>
         <item>Last played</item>
         <item>Times played</item>
+        <item>Date added</item>
     </string-array>
     <string name="title">Title&#8230;</string>
     <string name="artist">Artist&#8230;</string>

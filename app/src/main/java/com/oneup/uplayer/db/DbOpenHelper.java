@@ -120,24 +120,27 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbOpenHelper.querySong(" + song + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(Artist.TABLE_NAME,
-                    new String[]{Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+                    new String[]{Artist.LAST_PLAYED, Artist.TIMES_PLAYED, Artist.DATE_MODIFIED},
                     Artist._ID + "=" + song.getArtist().getId(), null, null, null, null)) {
                 if (c.moveToFirst()) {
                     song.getArtist().setLastPlayed(c.getLong(0));
                     song.getArtist().setTimesPlayed(c.getInt(1));
+                    song.getArtist().setDateModified(c.getLong(2));
                 } else {
                     Log.d(TAG, "Artist not found");
                 }
             }
 
             try (Cursor c = db.query(Song.TABLE_NAME,
-                    new String[]{Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
+                    new String[]{Song.DATE_ADDED,
+                            Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
                     Song._ID + "=" + song.getId(), null, null, null, null)) {
                 if (c.moveToFirst()) {
-                    song.setLastPlayed(c.getLong(0));
-                    song.setTimesPlayed(c.getInt(1));
-                    song.setBookmarked(c.getLong(2));
-                    song.setTag(c.getString(3));
+                    song.setDateAdded(c.getLong(0));
+                    song.setLastPlayed(c.getLong(1));
+                    song.setTimesPlayed(c.getInt(2));
+                    song.setBookmarked(c.getLong(3));
+                    song.setTag(c.getString(4));
                 } else {
                     Log.d(TAG, "Song not found");
                 }
@@ -273,15 +276,88 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         Log.d(TAG, "Starting");
         try {
             try (SQLiteDatabase db = getWritableDatabase()) {
-                db.execSQL("UPDATE artists SET date_modified=(SELECT MAX(date_added) FROM songs WHERE songs.artist_id=artists._id)");
+                Artist artist;
+                try (Cursor c = db.query(Artist.TABLE_NAME, null, Artist.ARTIST + "=?",
+                        new String[]{"P!nk"}, null, null, null)) {
+                    if (c.moveToNext()) {
+                        artist = new Artist();
+                        artist.setId(c.getInt(0));
+                        artist.setArtist(c.getString(1));
+                        artist.setLastPlayed(c.getLong(2));
+                        artist.setTimesPlayed(75);
+                        artist.setDateModified(1518503574);
+                    } else {
+                        throw new RuntimeException("Artist not found");
+                    }
+                }
 
-                SQLiteStatement statement = db.compileStatement("SELECT changes()");
-                long l = statement.simpleQueryForLong();
-                Log.d(TAG, l + " rows affected");
+                Log.d(TAG, "Got artist: " + artist.getId());
+                insertOrUpdateArtist(artist);
+
+                Song song;
+
+                song = getSong(context, artist, "So What");
+                song.setYear(2008);
+                song.setDuration(216900);
+                song.setLastPlayed(1508008597);
+                song.setTimesPlayed(6);
+                insertOrUpdateSong(song);
+
+                song = getSong(context, artist, "Sober");
+                song.setDuration(253623);
+                song.setLastPlayed(1498851145);
+                song.setTimesPlayed(1);
+                insertOrUpdateSong(song);
+
+                song = getSong(context, artist, "U & Ur Hand");
+                song.setYear(2006);
+                song.setDuration(214439);
+                song.setLastPlayed(1518627129);
+                song.setTimesPlayed(20);
+                insertOrUpdateSong(song);
+
+                song = getSong(context, artist, "Blow Me (One Last Kiss)");
+                song.setDuration(227587);
+                song.setLastPlayed(1498850891);
+                song.setTimesPlayed(1);
+                insertOrUpdateSong(song);
+
+                song = getSong(context, artist, "Try");
+                song.setYear(2012);
+                song.setDuration(247954);
+                song.setLastPlayed(1518626914);
+                song.setTimesPlayed(4);
+                insertOrUpdateSong(song);
             }
             Log.d(TAG, "Done!");
         } catch (Exception ex) {
             Log.e(TAG, "Ughh", ex);
+        }
+    }
+
+    private Song getSong(Context context, Artist artist, String title) {
+        try (Cursor c = context.getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{Song._ID, Song.TITLE,
+                        Song.ARTIST_ID, Song.DATE_ADDED, Song.YEAR, Song.DURATION},
+                Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
+                new String[]{title, Integer.toString(artist.getId())}, null)) {
+            int iId = c.getColumnIndex(Song._ID);
+            int iTitle = c.getColumnIndex(Song.TITLE);
+            int iDateAdded = c.getColumnIndex(Song.DATE_ADDED);
+            int iYear = c.getColumnIndex(Song.YEAR);
+            int iDuration = c.getColumnIndex(Song.DURATION);
+            if (c.moveToNext()) {
+                Song song = new Song();
+                song.setTitle(c.getString(iTitle));
+                song.setArtist(artist);
+                song.setId(c.getInt(iId));
+                //song.setDateAdded(c.getLong(iDateAdded));
+                song.setYear(c.getInt(iYear));
+                song.setDuration(c.getInt(iDuration));
+                return song;
+            } else {
+                throw new RuntimeException("Not found: " + title);
+            }
         }
     }*/
 

@@ -2,5 +2,6 @@
 <resources>
     <item name="ibPlayNext" type="id" />
     <item name="ibPlayLast" type="id" />
+    <item name="ibMove" type="id" />
     <item name="ibDelete" type="id" />
 </resources>

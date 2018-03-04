@@ -363,6 +363,33 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         play();
     }
 
+    public boolean moveSong(Song song, int i) {
+        Log.d(TAG, "MainService.moveSong(" + song + "," + i + ")");
+        int songIndex = songs.indexOf(song);
+        int newIndex = songIndex + i;
+        Log.d(TAG, "songIndex=" + songIndex + ", newIndex=" + newIndex +
+                ", current=" + this.songIndex);
+        if (newIndex >= 0 && newIndex < songs.size()) {
+            songs.add(newIndex, songs.remove(songIndex));
+            if (songIndex == this.songIndex) {
+                songIndexChanged(newIndex);
+            } else if (newIndex == this.songIndex) {
+                songIndexChanged(songIndex);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void songIndexChanged(int newIndex) {
+        Log.d(TAG, "onSongIndexChanged(" + newIndex + ")");
+        songIndex = newIndex;
+
+        updatePlaylistPosition();
+        startForeground(1, notification);
+    }
+
     public void deleteSong(Song song) {
         Log.d(TAG, "MainService.deleteSong(" + song + ")");
         if (songs.size() > 1) {

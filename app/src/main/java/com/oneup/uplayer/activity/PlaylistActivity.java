@@ -1,5 +1,6 @@
 package com.oneup.uplayer.activity;
 
+import android.app.ActionBar;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -151,13 +152,22 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         }
     };
 
-    private class ListAdapter extends SongAdapter implements View.OnClickListener {
+    private class ListAdapter extends SongAdapter implements View.OnClickListener,
+            View.OnLongClickListener {
         private ListAdapter() {
             super(PlaylistActivity.this, mainService.getSongs());
         }
 
         @Override
         public void addButtons(LinearLayout llButtons) {
+            ImageButton ibMove = new ImageButton(PlaylistActivity.this);
+            ibMove.setId(R.id.ibMove);
+            ibMove.setImageResource(R.drawable.ic_move);
+            ibMove.setContentDescription(getString(R.string.move_up_down));
+            ibMove.setOnClickListener(this);
+            ibMove.setOnLongClickListener(this);
+            llButtons.addView(ibMove);
+
             ImageButton ibDelete = new ImageButton(PlaylistActivity.this);
             ibDelete.setId(R.id.ibDelete);
             ibDelete.setImageResource(R.drawable.ic_delete);
@@ -168,6 +178,9 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
         @Override
         public void setButtons(View view, Song song) {
+            ImageButton ibMove = view.findViewById(R.id.ibMove);
+            ibMove.setTag(song);
+
             ImageButton ibDelete = view.findViewById(R.id.ibDelete);
             ibDelete.setTag(song);
         }
@@ -176,9 +189,30 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         public void onClick(View v) {
             Song song = (Song) v.getTag();
             switch (v.getId()) {
+                case R.id.ibMove:
+                    moveSong(song, 1);
+                    break;
                 case R.id.ibDelete:
                     onSongDeleted(song);
                     break;
+            }
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            Song song = (Song) v.getTag();
+            switch (v.getId()) {
+                case R.id.ibMove:
+                    moveSong(song, -1);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private void moveSong(Song song, int i) {
+            if (mainService.moveSong(song, i)) {
+                songsAdapter.notifyDataSetChanged();
             }
         }
     }

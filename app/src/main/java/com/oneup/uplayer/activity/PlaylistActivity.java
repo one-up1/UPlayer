@@ -1,6 +1,5 @@
 package com.oneup.uplayer.activity;
 
-import android.app.ActionBar;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,8 +17,8 @@ import android.widget.LinearLayout;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
 

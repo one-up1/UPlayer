@@ -81,6 +81,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
     private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
     private static final String KEY_MAX_TIMES_PLAYED = "maxTimesPlayed";
+    private static final String KEY_BOOKMARKS = "bookmarks";
     private static final String KEY_TAG_SELECTION = "tag_selection";
     private static final String KEY_DB_ORDER_BY = "dbOrderBy";
     private static final String KEY_DB_ORDER_BY_DESC = "dbOrderByDesc";
@@ -113,6 +114,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private LinearLayout llTimesPlayed;
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
+    private LinearLayout llBookmarkedTagSelection;
+    private CheckBox cbBookmarks;
     private RadioGroup rgTagSelection;
     private LinearLayout llDbOrderBy;
     private Spinner sDbOrderBy;
@@ -222,6 +225,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
         setEditTextText(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
 
+        llBookmarkedTagSelection = ret.findViewById(R.id.llBookmarkedTagSelection);
+
+        cbBookmarks = ret.findViewById(R.id.cbBookmarks);
+        setCheckBoxChecked(cbBookmarks, KEY_BOOKMARKS);
+
         rgTagSelection = ret.findViewById(R.id.rgTagSelection);
         setRadioGroupCheckedRadioButton(rgTagSelection, KEY_TAG_SELECTION);
 
@@ -290,7 +298,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             llDateAdded.setVisibility(dbVisibility);
             llLastPlayed.setVisibility(dbVisibility);
             llTimesPlayed.setVisibility(dbVisibility);
-            rgTagSelection.setVisibility(dbVisibility);
+            llBookmarkedTagSelection.setVisibility(dbVisibility);
             llDbOrderBy.setVisibility(dbVisibility);
         }
     }
@@ -534,6 +542,12 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
             }
             preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
+
+            boolean bookmarked = cbBookmarks.isChecked();
+            if (bookmarked) {
+                selection = appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
+            }
+            preferences.putBoolean(KEY_BOOKMARKS, bookmarked);
 
             if (tag == null) {
                 int tagSelection = getRadioGroupCheckedRadioButton(rgTagSelection);

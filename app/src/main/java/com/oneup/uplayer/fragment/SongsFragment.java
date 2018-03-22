@@ -17,18 +17,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbComparator;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
 
@@ -328,20 +328,27 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         @Override
-        public void addButtons(LinearLayout llButtons) {
+        public void addButtons(RelativeLayout rlButtons) {
+            RelativeLayout.LayoutParams params;
+
             ImageButton ibPlayNext = new ImageButton(getContext());
             ibPlayNext.setId(R.id.ibPlayNext);
             ibPlayNext.setImageResource(R.drawable.ic_play_next);
             ibPlayNext.setContentDescription(getString(R.string.play_next));
             ibPlayNext.setOnClickListener(this);
-            llButtons.addView(ibPlayNext);
+            rlButtons.addView(ibPlayNext);
 
             ImageButton ibPlayLast = new ImageButton(getContext());
             ibPlayLast.setId(R.id.ibPlayLast);
+            params = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.END_OF, R.id.ibPlayNext);
+            ibPlayLast.setLayoutParams(params);
             ibPlayLast.setImageResource(R.drawable.ic_play_last);
             ibPlayLast.setContentDescription(getString(R.string.play_last));
             ibPlayLast.setOnClickListener(this);
-            llButtons.addView(ibPlayLast);
+            rlButtons.addView(ibPlayLast);
         }
 
         @Override

@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
@@ -49,7 +49,7 @@ public abstract class SongAdapter extends BaseAdapter {
         View ret;
         if (convertView == null) {
             ret = layoutInflater.inflate(R.layout.list_item_song, parent, false);
-            addButtons((LinearLayout) ret.findViewById(R.id.llButtons));
+            addButtons((RelativeLayout) ret.findViewById(R.id.rlButtons));
         } else {
             ret = convertView;
         }
@@ -67,7 +67,7 @@ public abstract class SongAdapter extends BaseAdapter {
         return ret;
     }
 
-    public abstract void addButtons(LinearLayout llButtons);
+    public abstract void addButtons(RelativeLayout rlButtons);
 
     public abstract void setButtons(View view, Song song);
 }

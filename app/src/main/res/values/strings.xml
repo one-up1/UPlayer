@@ -56,7 +56,8 @@
     <string name="play_last">Play last</string>
     <string name="playing_last">Playing last: %1$s</string>
 
-    <string name="move_up_down">Move up/down</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
 
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>

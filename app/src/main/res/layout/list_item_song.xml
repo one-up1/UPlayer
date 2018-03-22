@@ -30,8 +30,8 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/llButtons"
+    <RelativeLayout
+        android:id="@+id/rlButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal" />

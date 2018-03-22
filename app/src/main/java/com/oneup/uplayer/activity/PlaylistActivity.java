@@ -9,11 +9,12 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.DragEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -42,6 +43,24 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         listView.setOnSongDeletedListener(this);
         setContentView(listView);
         registerForContextMenu(listView);
+
+        listView.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View view, DragEvent dragEvent) {
+                switch (dragEvent.getAction()) {
+                    case DragEvent.ACTION_DRAG_STARTED:
+                        Log.d(TAG, "Drag started");
+                        break;
+                    case DragEvent.ACTION_DROP:
+                        Log.d(TAG, "Drop");
+                        break;
+                    case DragEvent.ACTION_DRAG_ENDED:
+                        Log.d(TAG, "Drag ended");
+                        break;
+                }
+                return false;
+            }
+        });
 
         instance = this;
     }
@@ -151,34 +170,55 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         }
     };
 
-    private class ListAdapter extends SongAdapter implements View.OnClickListener,
-            View.OnLongClickListener {
+    private class ListAdapter extends SongAdapter implements View.OnClickListener {
         private ListAdapter() {
             super(PlaylistActivity.this, mainService.getSongs());
         }
 
         @Override
-        public void addButtons(LinearLayout llButtons) {
-            ImageButton ibMove = new ImageButton(PlaylistActivity.this);
-            ibMove.setId(R.id.ibMove);
-            ibMove.setImageResource(R.drawable.ic_move);
-            ibMove.setContentDescription(getString(R.string.move_up_down));
-            ibMove.setOnClickListener(this);
-            ibMove.setOnLongClickListener(this);
-            llButtons.addView(ibMove);
+        public void addButtons(RelativeLayout rlButtons) {
+            RelativeLayout.LayoutParams params;
+
+            ImageButton ibMoveUp = new ImageButton(PlaylistActivity.this);
+            ibMoveUp.setId(R.id.ibMoveUp);
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 60);
+            params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            ibMoveUp.setLayoutParams(params);
+            ibMoveUp.setImageResource(R.drawable.ic_move_up);
+            ibMoveUp.setContentDescription(getString(R.string.move_up));
+            ibMoveUp.setOnClickListener(this);
+            rlButtons.addView(ibMoveUp);
+
+            ImageButton ibMoveDown = new ImageButton(PlaylistActivity.this);
+            ibMoveDown.setId(R.id.ibMoveDown);
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 60);
+            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            ibMoveDown.setLayoutParams(params);
+            ibMoveDown.setImageResource(R.drawable.ic_move_down);
+            ibMoveDown.setContentDescription(getString(R.string.move_down));
+            ibMoveDown.setOnClickListener(this);
+            rlButtons.addView(ibMoveDown);
 
             ImageButton ibDelete = new ImageButton(PlaylistActivity.this);
             ibDelete.setId(R.id.ibDelete);
+            params = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.END_OF, R.id.ibMoveUp);
+            ibDelete.setLayoutParams(params);
             ibDelete.setImageResource(R.drawable.ic_delete);
             ibDelete.setContentDescription(getString(R.string.delete));
             ibDelete.setOnClickListener(this);
-            llButtons.addView(ibDelete);
+            rlButtons.addView(ibDelete);
         }
 
         @Override
         public void setButtons(View view, Song song) {
-            ImageButton ibMove = view.findViewById(R.id.ibMove);
-            ibMove.setTag(song);
+            ImageButton ibMoveUp = view.findViewById(R.id.ibMoveUp);
+            ibMoveUp.setTag(song);
+
+            ImageButton ibMoveDown = view.findViewById(R.id.ibMoveDown);
+            ibMoveDown.setTag(song);
 
             ImageButton ibDelete = view.findViewById(R.id.ibDelete);
             ibDelete.setTag(song);
@@ -188,24 +228,15 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         public void onClick(View v) {
             Song song = (Song) v.getTag();
             switch (v.getId()) {
-                case R.id.ibMove:
+                case R.id.ibMoveUp:
+                    moveSong(song, -1);
+                    break;
+                case R.id.ibMoveDown:
                     moveSong(song, 1);
                     break;
                 case R.id.ibDelete:
                     onSongDeleted(song);
                     break;
-            }
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            Song song = (Song) v.getTag();
-            switch (v.getId()) {
-                case R.id.ibMove:
-                    moveSong(song, -1);
-                    return true;
-                default:
-                    return false;
             }
         }
 

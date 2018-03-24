@@ -30,6 +30,10 @@
             android:launchMode = "singleInstance" />
 
         <activity
+            android:name=".activity.EditSongActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activity.DateTimeActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />

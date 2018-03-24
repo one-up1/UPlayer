@@ -10,7 +10,6 @@ import android.util.Log;
 import com.oneup.uplayer.util.Calendar;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DbOpenHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -151,17 +150,17 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    public  String[] querySongTags() {
+    public ArrayList<String> querySongTags() {
         Log.d(TAG, "DbOpenHelper.querySongTags()");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, Song.TABLE_NAME, new String[]{Song.TAG},
                     Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
-                List<String> ret = new ArrayList<>();
+                ArrayList<String> ret = new ArrayList<>();
                 while (c.moveToNext()) {
                     ret.add(c.getString(0));
                 }
                 Log.d(TAG, "Queried " + ret.size() + " song tags");
-                return ret.toArray(new String[0]);
+                return ret;
             }
         }
     }

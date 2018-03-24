@@ -1,6 +1,7 @@
 package com.oneup.uplayer.activity;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -101,6 +102,17 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             Log.w(TAG, "Permissions not granted");
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             finish();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "MainActivity.onActivityResult(" + requestCode + "," + resultCode + ")");
+        Fragment currentItem = sectionsPagerAdapter.getItem(viewPager.getCurrentItem());
+        Log.d(TAG, "Current item: " + viewPager.getCurrentItem() + ":" +
+                currentItem.getClass().getSimpleName());
+        if (currentItem instanceof SongsFragment) {
+            currentItem.onActivityResult(requestCode, resultCode, data);
         }
     }
 

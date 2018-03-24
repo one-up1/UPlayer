@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -37,6 +36,7 @@ import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
+import com.oneup.uplayer.widget.EditText;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -162,10 +162,10 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         setSpinnerSelection(sJoinedSortBy, KEY_JOINED_SORT_BY);
 
         etTitle = ret.findViewById(R.id.etTitle);
-        setEditTextText(etTitle, KEY_TITLE);
+        setEditTextString(etTitle, KEY_TITLE);
 
         etArtist = ret.findViewById(R.id.etArtist);
-        setEditTextText(etArtist, KEY_ARTIST);
+        setEditTextString(etArtist, KEY_ARTIST);
 
         llDateAdded = ret.findViewById(R.id.llDateAdded);
 
@@ -190,10 +190,10 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         etMinYear = ret.findViewById(R.id.etMinYear);
-        setEditTextText(etMinYear, KEY_MIN_YEAR);
+        setEditTextString(etMinYear, KEY_MIN_YEAR);
 
         etMaxYear = ret.findViewById(R.id.etMaxYear);
-        setEditTextText(etMaxYear, KEY_MAX_YEAR);
+        setEditTextString(etMaxYear, KEY_MAX_YEAR);
 
         llLastPlayed = ret.findViewById(R.id.llLastPlayed);
 
@@ -220,10 +220,10 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         llTimesPlayed = ret.findViewById(R.id.llTimesPlayed);
 
         etMinTimesPlayed = ret.findViewById(R.id.etMinTimesPlayed);
-        setEditTextText(etMinTimesPlayed, KEY_MIN_TIMES_PLAYED);
+        setEditTextString(etMinTimesPlayed, KEY_MIN_TIMES_PLAYED);
 
         etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
-        setEditTextText(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
+        setEditTextString(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
 
         llBookmarkedTagSelection = ret.findViewById(R.id.llBookmarkedTagSelection);
 
@@ -340,7 +340,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         } else if (v == bQuery) {
             query(null);
         } else if (v == bTags) {
-            final String[] tags = dbOpenHelper.querySongTags();
+            final String[] tags = dbOpenHelper.querySongTags().toArray(new String[0]);
             new AlertDialog.Builder(getActivity())
                     .setItems(tags, new DialogInterface.OnClickListener() {
 
@@ -448,9 +448,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
     }
 
-    private void setEditTextText(EditText view, String preferencesKey) {
+    private void setEditTextString(EditText view, String preferencesKey) {
         if (preferences.contains(preferencesKey)) {
-            view.setText(preferences.getString(preferencesKey, null));
+            view.setString(preferences.getString(preferencesKey, null));
         }
     }
 
@@ -477,19 +477,19 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         String selection = null, dbOrderBy = null;
         SharedPreferences.Editor preferences = this.preferences.edit();
 
-        String title = etTitle.getText().toString();
+        String title = etTitle.getString();
         if (title.length() > 0) {
             selection = Song.TITLE + " LIKE '%" + title + "%'";
         }
         preferences.putString(KEY_TITLE, title);
 
-        String minYear = etMinYear.getText().toString();
+        String minYear = etMinYear.getString();
         if (minYear.length() > 0) {
             selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
         }
         preferences.putString(KEY_MIN_YEAR, minYear);
 
-        String maxYear = etMaxYear.getText().toString();
+        String maxYear = etMaxYear.getString();
         if (maxYear.length() > 0) {
             selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
         }
@@ -497,7 +497,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         int joinedSortBy = sJoinedSortBy.getSelectedItemPosition();
         if (joinedSortBy == 0) {
-            String artist = etArtist.getText().toString();
+            String artist = etArtist.getString();
             if (artist.length() > 0) {
                 selection = appendSelection(selection, Song.ARTIST_ID +
                         " IN(SELECT " + Artist._ID + " FROM " + Artist.TABLE_NAME +
@@ -529,14 +529,14 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
             preferences.putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed);
 
-            String minTimesPlayed = etMinTimesPlayed.getText().toString();
+            String minTimesPlayed = etMinTimesPlayed.getString();
             if (minTimesPlayed.length() > 0) {
                 selection = appendSelection(selection,
                         Song.TIMES_PLAYED + ">=" + minTimesPlayed);
             }
             preferences.putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed);
 
-            String maxTimesPlayed = etMaxTimesPlayed.getText().toString();
+            String maxTimesPlayed = etMaxTimesPlayed.getString();
             if (maxTimesPlayed.length() > 0) {
                 selection = appendSelection(selection,
                         Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
@@ -686,8 +686,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI, new String[]{Artist._ID},
                     Artist.ARTIST + "=?", new String[]{name}, null)) {
                 if (c == null || !c.moveToFirst()) {
-                    Log.e(TAG, "Artist '" + name + "' not found");
-                    continue;
+                    throw new RuntimeException("Artist '" + name + "' not found");
                 }
 
                 Artist artist = new Artist();
@@ -719,8 +718,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
             Artist artist = artists.get(jsoSong.getInt(Song.ARTIST_ID));
             if (artist == null) {
-                Log.e(TAG, "Artist for song '" + title + "' not found");
-                continue;
+                throw new RuntimeException("Artist for song '" + title + "' not found");
             }
 
             try (Cursor c = getContext().getContentResolver().query(
@@ -728,8 +726,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
                     new String[]{title, Integer.toString(artist.getId())}, null)) {
                 if (c == null || !c.moveToFirst()) {
-                    Log.e(TAG, "Song '" + title + "' not found");
-                    continue;
+                    throw new RuntimeException("Song '" + title + "' not found");
                 }
 
                 Song song = new Song();

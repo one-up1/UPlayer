@@ -40,13 +40,13 @@
 
         </LinearLayout>
 
-        <EditText
+        <com.oneup.uplayer.widget.EditText
             android:id="@+id/etTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/title" />
 
-        <EditText
+        <com.oneup.uplayer.widget.EditText
             android:id="@+id/etArtist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <EditText
+            <com.oneup.uplayer.widget.EditText
                 android:id="@+id/etMinYear"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -89,7 +89,7 @@
                 android:inputType="number"
                 android:hint="@string/min_year" />
 
-            <EditText
+            <com.oneup.uplayer.widget.EditText
                 android:id="@+id/etMaxYear"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -129,7 +129,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <EditText
+            <com.oneup.uplayer.widget.EditText
                 android:id="@+id/etMinTimesPlayed"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -137,7 +137,7 @@
                 android:hint="@string/min_times_played"
                 android:inputType="number" />
 
-            <EditText
+            <com.oneup.uplayer.widget.EditText
                 android:id="@+id/etMaxTimesPlayed"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

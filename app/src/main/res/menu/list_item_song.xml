@@ -6,20 +6,12 @@
         android:title="@string/bookmark" />
 
     <item
-        android:id="@+id/set_tag"
-        android:title="@string/set_tag" />
-
-    <item
-        android:id="@+id/set_date_added"
-        android:title="@string/set_date_added" />
-
-    <item
         android:id="@+id/mark_played"
         android:title="@string/mark_played" />
 
     <item
-        android:id="@+id/info"
-        android:title="@string/info" />
+        android:id="@+id/edit"
+        android:title="@string/edit" />
 
     <item
         android:id="@+id/delete"

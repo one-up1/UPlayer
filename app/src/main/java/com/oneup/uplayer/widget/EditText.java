@@ -39,6 +39,16 @@ public class EditText extends AppCompatEditText {
         addTextChangedListener(textWatcher);
     }
 
+    public String getString() {
+        return getText().toString();
+    }
+
+    public void setString(String s) {
+        removeTextChangedListener(textWatcher);
+        setText(s);
+        addTextChangedListener(textWatcher);
+    }
+
     public int getInt() {
         return length() == 0 ? 0 : Integer.parseInt(getString());
     }
@@ -61,16 +71,6 @@ public class EditText extends AppCompatEditText {
 
     public void setOnTextChangeListener(OnTextChangeListener l) {
         onTextChangeListener = l;
-    }
-
-    private String getString() {
-        return getText().toString();
-    }
-
-    private void setString(String s) {
-        removeTextChangedListener(textWatcher);
-        setText(s);
-        addTextChangedListener(textWatcher);
     }
 
     public interface OnTextChangeListener {

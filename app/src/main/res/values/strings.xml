@@ -51,6 +51,11 @@
     <string name="backup_restored">Backup restored</string>
     <string name="error">Error: %1$s</string>
 
+    <string name="info">Info</string>
+    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d\nDate modified: %3$s</string>
+    <string name="never">Never</string>
+    <string name="na">N/A</string>
+
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>
     <string name="play_last">Play last</string>
@@ -63,19 +68,21 @@
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_deleted">Bookmark deleted</string>
 
-    <string name="set_tag">Set tag</string>
-    <string name="tag_set">Tag set</string>
-    <string name="tag_cleared">Tag cleared</string>
-
-    <string name="set_date_added">Set date added</string>
     <string name="mark_played">Mark played</string>
     <string name="updated">Updated</string>
 
-    <string name="info">Info</string>
-    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d\nDate modified: %3$s</string>
-    <string name="info_message_song">Date added: %1$s\nYear: %2$d\nDuration: %3$s\n\nLast played: %4$s\nTimes played: %5$d\n\nBookmarked: %6$s\nTag: %7$s</string>
-    <string name="na">N/A</string>
-    <string name="never">Never</string>
+    <string name="edit">Edit</string>
+    <string name="edit_song">Edit song</string>
+    <string name="edit_title">Title:</string>
+    <string name="edit_artist">Artist:</string>
+    <string name="edit_date_added">Date added:</string>
+    <string name="edit_year">Year:</string>
+    <string name="edit_duration">Duration:</string>
+    <string name="edit_last_played">Last played:</string>
+    <string name="edit_times_played">Times played:</string>
+    <string name="edit_bookmkared">Bookmarked:</string>
+    <string name="edit_tag">Tag:</string>
+    <string name="date_added">Date added&#8230;</string>
 
     <string name="delete">Delete</string>
     <string name="delete_song">Delete song</string>

@@ -112,7 +112,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null :
-                            new String[]{Song._ID, Song.DATE_ADDED,
+                            new String[]{Song._ID, Song.DATE_ADDED, Song.YEAR,
                                     Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
                     selection, null, null, null, dbOrderBy)) {
                 while (c.moveToNext()) {
@@ -136,15 +136,16 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         if (song == null) {
                             dbOpenHelper.deleteSong(id);
                         } else {
-                            // Overwrite the DATE_ADDED value from the MediaStore,
-                            // as it can be set manually and may be lost after restoring a backup.
+                            // Overwrite values from the MediaStore that can be set manually
+                            // or that may be lost after restoring a backup.
                             song.setDateAdded(c.getLong(1));
+                            song.setYear(c.getInt(2));
 
                             // Set the other values not present in the MediaStore.
-                            song.setLastPlayed(c.getLong(2));
-                            song.setTimesPlayed(c.getInt(3));
-                            song.setBookmarked(c.getLong(4));
-                            song.setTag(c.getString(5));
+                            song.setLastPlayed(c.getLong(3));
+                            song.setTimesPlayed(c.getInt(4));
+                            song.setBookmarked(c.getLong(5));
+                            song.setTag(c.getString(6));
                         }
                     }
                 }

@@ -715,10 +715,13 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         for (int i = 0; i < jsoSongs.length(); i++) {
             JSONObject jsoSong = jsoSongs.getJSONObject(i);
             String title = jsoSong.getString(Song.TITLE);
+            int artistId = jsoSong.getInt(Song.ARTIST_ID);
 
-            Artist artist = artists.get(jsoSong.getInt(Song.ARTIST_ID));
+            Artist artist = artists.get(artistId);
             if (artist == null) {
-                throw new RuntimeException("Artist for song '" + title + "' not found");
+                Log.w(TAG, "Artist for song '" + title + "' not found");
+                artist = new Artist();
+                artist.setId(artistId);
             }
 
             try (Cursor c = getContext().getContentResolver().query(

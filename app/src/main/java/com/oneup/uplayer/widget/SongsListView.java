@@ -62,7 +62,11 @@ public class SongsListView extends ListView {
                 return true;
             case R.id.mark_played:
                 dbOpenHelper.updateSongPlayed(song);
-                Toast.makeText(context, R.string.updated, Toast.LENGTH_SHORT).show();
+                song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
+                song.setTimesPlayed(song.getTimesPlayed() + 1);
+                Toast.makeText(context, context.getString(R.string.times_played,
+                        song.getArtist().getTimesPlayed(), song.getTimesPlayed()),
+                        Toast.LENGTH_SHORT).show();
 
                 ((SongAdapter) getAdapter()).notifyDataSetChanged();
                 if (onDataSetChangedListener != null) {
@@ -126,6 +130,8 @@ public class SongsListView extends ListView {
                     editSong.setYear(song.getYear());
                     editSong.setTag(song.getTag());
                     dbOpenHelper.insertOrUpdateSong(editSong);
+
+                    Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
                     editSong = null;
 
                     ((SongAdapter) getAdapter()).notifyDataSetChanged();

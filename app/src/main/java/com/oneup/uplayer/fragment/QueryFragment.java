@@ -258,6 +258,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "QueryFragment.onActivityResult(" + requestCode + ", " + resultCode + ")");
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_SELECT_MIN_DATE_ADDED:

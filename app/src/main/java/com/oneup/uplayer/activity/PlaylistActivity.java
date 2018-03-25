@@ -102,6 +102,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "PlaylistActivity.onActivityResult(" + requestCode + ", " + resultCode + ")");
         listView.onActivityResult(requestCode, resultCode, data);
     }
 

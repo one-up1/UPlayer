@@ -120,7 +120,7 @@ public class SongsListView extends ListView {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult(" + requestCode + ", " + resultCode + ")");
+        Log.d(TAG, "SongsListView.onActivityResult(" + requestCode + ", " + resultCode + ")");
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:

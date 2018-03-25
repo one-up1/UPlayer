@@ -3,6 +3,7 @@ package com.oneup.uplayer.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +15,8 @@ import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 public class SongsActivity extends AppCompatActivity implements BaseArgs {
+    private static final String TAG = "UPlayer";
+
     private SongsFragment songsFragment;
 
     @Override
@@ -56,6 +59,7 @@ public class SongsActivity extends AppCompatActivity implements BaseArgs {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "SongsActivity.onActivityResult(" + requestCode + ", " + resultCode + ")");
         songsFragment.onActivityResult(requestCode, resultCode, data);
     }
 }

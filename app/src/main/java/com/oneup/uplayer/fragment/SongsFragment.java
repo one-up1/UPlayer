@@ -259,6 +259,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "SongsFragment.onActivityResult(" + requestCode + ", " + resultCode + ")");
         listView.onActivityResult(requestCode, resultCode, data);
     }
 

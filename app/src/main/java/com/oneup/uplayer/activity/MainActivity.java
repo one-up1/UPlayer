@@ -113,6 +113,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 currentItem.getClass().getSimpleName());
         if (currentItem instanceof SongsFragment) {
             currentItem.onActivityResult(requestCode, resultCode, data);
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -187,10 +189,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 artist = new Artist();
                 artist.setId(c.getInt(iId));
                 artist.setArtist(c.getString(iArtist));
-                /* Initially set date modified to the current time, so that artists that have not
-                // been added to the DB yet will raise to the top of the "Last added" fragment.
-                // When the DB does contain the artist this value will be overwritten below.
-                artist.setDateModified(Calendar.currentTime());*/
                 artists.put(artist.getId(), artist);
             }
         }

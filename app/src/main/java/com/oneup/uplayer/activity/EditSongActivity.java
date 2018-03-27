@@ -77,7 +77,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         }
 
         etTimesPlayed = findViewById(R.id.etTimesPlayed);
-        etTimesPlayed.setInt(song.getTimesPlayed());
+        etTimesPlayed.setString(song.getArtist().getTimesPlayed() + ":" + song.getTimesPlayed());
 
         etBookmarked = findViewById(R.id.etBookmarked);
         if (song.getBookmarked() > 0) {

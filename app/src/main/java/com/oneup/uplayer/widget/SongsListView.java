@@ -62,8 +62,6 @@ public class SongsListView extends ListView {
                 return true;
             case R.id.mark_played:
                 dbOpenHelper.updateSongPlayed(song);
-                song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
-                song.setTimesPlayed(song.getTimesPlayed() + 1);
                 Toast.makeText(context, context.getString(R.string.times_played,
                         song.getArtist().getTimesPlayed(), song.getTimesPlayed()),
                         Toast.LENGTH_SHORT).show();

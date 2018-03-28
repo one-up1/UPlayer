@@ -131,15 +131,16 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             }
 
             try (Cursor c = db.query(Song.TABLE_NAME,
-                    new String[]{Song.DATE_ADDED,
+                    new String[]{Song.DATE_ADDED, Song.YEAR,
                             Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
                     Song._ID + "=" + song.getId(), null, null, null, null)) {
                 if (c.moveToFirst()) {
                     song.setDateAdded(c.getLong(0));
-                    song.setLastPlayed(c.getLong(1));
-                    song.setTimesPlayed(c.getInt(2));
-                    song.setBookmarked(c.getLong(3));
-                    song.setTag(c.getString(4));
+                    song.setYear(c.getInt(1));
+                    song.setLastPlayed(c.getLong(2));
+                    song.setTimesPlayed(c.getInt(3));
+                    song.setBookmarked(c.getLong(4));
+                    song.setTag(c.getString(5));
                 } else {
                     Log.d(TAG, "Song not found");
                 }

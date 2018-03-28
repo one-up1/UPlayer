@@ -22,8 +22,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,6 +68,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String SQL_QUERY_TOTAL_DURATION =
             "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
 
+    private static final String SQL_IS_NOT_NULL = " IS NOT NULL";
+    private static final String SQL_IS_NULL = " IS NULL";
+
     private static final String KEY_JOINED_SORT_BY = "joinedSortBy";
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
@@ -81,8 +82,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
     private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
     private static final String KEY_MAX_TIMES_PLAYED = "maxTimesPlayed";
-    private static final String KEY_BOOKMARKS = "bookmarks";
-    private static final String KEY_TAG_SELECTION = "tag_selection";
+    private static final String KEY_BOOKMARKED_SELECTION = "bookmarkedSelection";
+    private static final String KEY_TAG_SELECTION = "tagSelection";
     private static final String KEY_DB_ORDER_BY = "dbOrderBy";
     private static final String KEY_DB_ORDER_BY_DESC = "dbOrderByDesc";
 
@@ -91,8 +92,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
 
-    private static final int TAG_SELECTION_TAGGED = 1;
-    private static final int TAG_SELECTION_UNTAGGED = 2;
+    private static final int SELECTION_SET = 1;
+    private static final int SELECTION_NOT_SET = 2;
 
     private SparseArray<Artist> artists;
 
@@ -115,8 +116,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
     private LinearLayout llBookmarkedTagSelection;
-    private CheckBox cbBookmarks;
-    private RadioGroup rgTagSelection;
+    private Spinner sBookmarkedSelection;
+    private Spinner sTagSelection;
     private LinearLayout llDbOrderBy;
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
@@ -227,11 +228,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         llBookmarkedTagSelection = ret.findViewById(R.id.llBookmarkedTagSelection);
 
-        cbBookmarks = ret.findViewById(R.id.cbBookmarks);
-        setCheckBoxChecked(cbBookmarks, KEY_BOOKMARKS);
+        sBookmarkedSelection = ret.findViewById(R.id.sBookmarkedSelection);
+        setSpinnerSelection(sBookmarkedSelection, KEY_BOOKMARKED_SELECTION);
 
-        rgTagSelection = ret.findViewById(R.id.rgTagSelection);
-        setRadioGroupCheckedRadioButton(rgTagSelection, KEY_TAG_SELECTION);
+        sTagSelection = ret.findViewById(R.id.sTagSelection);
+        setSpinnerSelection(sTagSelection, KEY_TAG_SELECTION);
 
         llDbOrderBy = ret.findViewById(R.id.llDbOrderBy);
 
@@ -455,19 +456,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
     }
 
-    private int getRadioGroupCheckedRadioButton(RadioGroup view) {
-        for (int i = 0; i < view.getChildCount(); i++) {
-            if (((RadioButton) view.getChildAt(i)).isChecked()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private void setRadioGroupCheckedRadioButton(RadioGroup view, String preferencesKey) {
-        ((RadioButton) view.getChildAt(preferences.getInt(preferencesKey, 0))).setChecked(true);
-    }
-
     private void setCheckBoxChecked(CheckBox view, String preferencesKey) {
         if (preferences.contains(preferencesKey)) {
             view.setChecked(preferences.getBoolean(preferencesKey, false));
@@ -544,22 +532,13 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
             preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
 
-            boolean bookmarked = cbBookmarks.isChecked();
-            if (bookmarked) {
-                selection = appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
-            }
-            preferences.putBoolean(KEY_BOOKMARKS, bookmarked);
+            int bookmarkedSelection = sBookmarkedSelection.getSelectedItemPosition();
+            selection = appendSetSelection(selection, Song.BOOKMARKED, bookmarkedSelection);
+            preferences.putInt(KEY_BOOKMARKED_SELECTION, bookmarkedSelection);
 
             if (tag == null) {
-                int tagSelection = getRadioGroupCheckedRadioButton(rgTagSelection);
-                switch (tagSelection) {
-                    case TAG_SELECTION_TAGGED:
-                        selection = appendSelection(selection, Song.TAG + " IS NOT NULL");
-                        break;
-                    case TAG_SELECTION_UNTAGGED:
-                        selection = appendSelection(selection, Song.TAG + " IS NULL");
-                        break;
-                }
+                int tagSelection = sTagSelection.getSelectedItemPosition();
+                selection = appendSetSelection(selection, Song.TAG, tagSelection);
                 preferences.putInt(KEY_TAG_SELECTION, tagSelection);
             } else {
                 selection = appendSelection(selection, Song.TAG + "='" + tag + "'");
@@ -781,5 +760,17 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     private static String appendSelection(String selection, String s) {
         return selection == null ? s : selection + " AND " + s;
+    }
+
+    private static String appendSetSelection(String selection, String column,
+                                             int selectedItemPosition) {
+        switch (selectedItemPosition) {
+            case SELECTION_SET:
+                return appendSelection(selection, column + SQL_IS_NOT_NULL);
+            case SELECTION_NOT_SET:
+                return appendSelection(selection, column + SQL_IS_NULL);
+            default:
+                return selection;
+        }
     }
 }

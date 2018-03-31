@@ -24,7 +24,6 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
-import com.oneup.uplayer.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";

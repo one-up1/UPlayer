@@ -288,8 +288,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             songs.add(song);
         }
 
-        updatePlaylistPosition();
-        startForeground(1, notification);
+        // If we are playing or paused (prepared) just update the notification, start playing the
+        // last song if we are not. This will cause the added song to be played immediately, if it
+        // is the first song or is being added to a playlist of which the last song has completed.
+        if (prepared) {
+            updatePlaylistPosition();
+            startForeground(1, notification);
+        } else {
+            songIndex = songs.size() - 1;
+            play();
+        }
     }
 
     private void previous() {

@@ -24,7 +24,7 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-//FIXME: When notification is updated and how many times the ListView in PlaylistActivity gets updated.
+//FIXME: When notification is updated and when/how many times the ListView in PlaylistActivity gets updated.
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {

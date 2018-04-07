@@ -82,16 +82,6 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     }
 
     @Override
-    protected void onResume() {
-        Log.d(TAG, "PlaylistActivity.onResume()");
-        super.onResume();
-
-        if (songsAdapter != null) {
-            songsAdapter.notifyDataSetChanged();
-        }
-    }
-
-    @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         if (v == listView) {
@@ -113,9 +103,9 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     @Override
     protected void onStop() {
         Log.d(TAG, "PlaylistActivity.onStop()");
+        mainService.setOnSongIndexChangedListener(null);
         unbindService(serviceConnection);
         mainService = null;
-
         super.onStop();
     }
 
@@ -177,6 +167,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "PlaylistActivity.serviceConnection.onServiceDisconnected()");
+            mainService.setOnSongIndexChangedListener(null);
             mainService = null;
         }
     };

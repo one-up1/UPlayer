@@ -3,11 +3,13 @@ package com.oneup.uplayer.util;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.os.Environment;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import com.oneup.uplayer.R;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -23,6 +25,11 @@ public class Util {
     }
 
     private Util() {
+    }
+
+    public static File getMusicFile(String name) {
+        return new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_MUSIC), name);
     }
 
     public static String formatDateTime(long seconds) {

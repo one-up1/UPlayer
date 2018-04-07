@@ -16,6 +16,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseArray;
+import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Artist;
@@ -24,11 +25,21 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
+import com.oneup.uplayer.util.Util;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
+    private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
 
     private DbOpenHelper dbOpenHelper;
+    private List<String> artistIgnore;
     private SparseArray<Artist> artists;
 
     private SectionsPagerAdapter sectionsPagerAdapter;
@@ -42,6 +53,27 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         dbOpenHelper = new DbOpenHelper(this);
         //dbOpenHelper.t(this);
+
+        if (ARTIST_IGNORE_FILE.exists()) {
+            try {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        new FileInputStream(ARTIST_IGNORE_FILE)))) {
+                    String line;
+                    artistIgnore = new ArrayList<>();
+                    while ((line = reader.readLine()) != null) {
+                        artistIgnore.add(line.toLowerCase());
+                    }
+                }
+                Log.d(TAG, artistIgnore.size() + " artists on ignore list");
+            } catch (Exception ex) {
+                Log.e(TAG, "Error reading artist ignore file", ex);
+                Toast.makeText(this, R.string.artist_ignore_file_read_error,
+                        Toast.LENGTH_LONG).show();
+                artistIgnore = null;
+            }
+        } else {
+            Log.d(TAG, "No artist ignore file");
+        }
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
@@ -183,9 +215,15 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             }
 
             while (c.moveToNext()) {
+                String name = c.getString(1);
+                if (artistIgnore != null && artistIgnore.contains(name.toLowerCase())) {
+                    Log.d(TAG, "Ignoring artist " + name);
+                    continue;
+                }
+
                 artist = new Artist();
                 artist.setId(c.getInt(0));
-                artist.setArtist(c.getString(1));
+                artist.setArtist(name);
                 artists.put(artist.getId(), artist);
             }
         }

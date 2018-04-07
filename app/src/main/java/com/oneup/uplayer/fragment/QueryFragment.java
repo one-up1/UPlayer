@@ -95,6 +95,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final int SELECTION_SET = 1;
     private static final int SELECTION_NOT_SET = 2;
 
+    private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
+
     private SparseArray<Artist> artists;
 
     private DbOpenHelper dbOpenHelper;
@@ -641,16 +643,16 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             backup.put(Song.TABLE_NAME, songs);
         }
 
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
-                getBackupFile(), false)))) {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(BACKUP_FILE, false)))) {
             writer.write(backup.toString());
         }
     }
 
     private void restoreBackup() throws IOException, JSONException {
         JSONObject backup;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
-                getBackupFile())))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(BACKUP_FILE)))) {
             backup = new JSONObject(reader.readLine());
         }
 
@@ -740,11 +742,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 dbOpenHelper.insertOrUpdateSong(song);
             }
         }
-    }
-
-    private File getBackupFile() {
-        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                "UPlayer.json");
     }
 
     public static QueryFragment newInstance(SparseArray<Artist> artists) {

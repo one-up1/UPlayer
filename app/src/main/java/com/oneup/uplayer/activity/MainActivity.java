@@ -182,12 +182,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 return;
             }
 
-            int iId = c.getColumnIndex(Artist._ID);
-            int iArtist = c.getColumnIndex(Artist.ARTIST);
             while (c.moveToNext()) {
                 artist = new Artist();
-                artist.setId(c.getInt(iId));
-                artist.setArtist(c.getString(iArtist));
+                artist.setId(c.getInt(0));
+                artist.setArtist(c.getString(1));
                 artists.put(artist.getId(), artist);
             }
         }

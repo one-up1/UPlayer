@@ -664,14 +664,13 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
             try (Cursor c = getContext().getContentResolver().query(
                     MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI, new String[]{Artist._ID},
-                    Artist.ARTIST + "=?", new String[]{name}, null)) {
+                    Artist.ARTIST + " LIKE ?", new String[]{name}, null)) {
                 if (c == null || !c.moveToFirst()) {
                     throw new RuntimeException("Artist '" + name + "' not found");
                 }
 
                 Artist artist = new Artist();
-                artist.setId(c.getInt(c.getColumnIndex(Artist._ID)));
-                //TODO: Just use 0 and not use getColumnIndex() when specifying columns?
+                artist.setId(c.getInt(0));
 
                 artist.setArtist(name);
 
@@ -699,21 +698,19 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
             Artist artist = artists.get(artistId);
             if (artist == null) {
-                Log.w(TAG, "Artist for song '" + title + "' not found");
-                artist = new Artist();
-                artist.setId(artistId);
+                throw new RuntimeException("Artist for song '" + title + "' not found");
             }
 
             try (Cursor c = getContext().getContentResolver().query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{Song._ID},
-                    Song.TITLE + "=? AND " + Song.ARTIST_ID + "=?",
+                    Song.TITLE + " LIKE ? AND " + Song.ARTIST_ID + "=?",
                     new String[]{title, Integer.toString(artist.getId())}, null)) {
                 if (c == null || !c.moveToFirst()) {
                     throw new RuntimeException("Song '" + title + "' not found");
                 }
 
                 Song song = new Song();
-                song.setId(c.getInt(c.getColumnIndex(Song._ID)));
+                song.setId(c.getInt(0));
 
                 song.setTitle(title);
                 song.setArtist(artist);

@@ -248,16 +248,25 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     public void deleteSong(Song song) {
         Log.d(TAG, "DbOpenHelper.deleteSong(" + song + ")");
-        deleteSong(song.getId());
+        deleteSong(song.getId(), song.getArtist().getId());
     }
 
-    public void deleteSong(int id) {
-        Log.d(TAG, "DbOpenHelper.deleteSong(" + id + ")");
+    public void deleteSong(int id, int artistId) {
+        Log.d(TAG, "DbOpenHelper.deleteSong(" + id + ", " + artistId + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
                 Log.d(TAG, db.delete(Song.TABLE_NAME, Song._ID + "=" + id, null) +
                         " songs deleted");
+
+                db.execSQL("UPDATE " + Artist.TABLE_NAME + " SET " +
+                        Artist.LAST_PLAYED + "=(SELECT MAX(" + Song.LAST_PLAYED + ") FROM " +
+                        Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=" + artistId + ")," +
+                        Artist.TIMES_PLAYED + "=(SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " +
+                        Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=" + artistId + ")," +
+                        Artist.DATE_MODIFIED + "=(SELECT MAX(" + Song.DATE_ADDED + ") FROM " +
+                        Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=" + artistId + ") " +
+                        "WHERE " + Artist._ID + "=" + artistId);
 
                 db.setTransactionSuccessful();
             } finally {

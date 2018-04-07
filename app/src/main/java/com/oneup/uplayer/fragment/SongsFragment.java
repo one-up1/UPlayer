@@ -81,21 +81,15 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     return super.onCreateView(inflater, container, savedInstanceState);
                 }
 
-                int iId = c.getColumnIndex(Song._ID);
-                int iTitle = c.getColumnIndex(Song.TITLE);
-                int iArtistId = c.getColumnIndex(Song.ARTIST_ID);
-                int iDateAdded = c.getColumnIndex(Song.DATE_ADDED);
-                int iYear = c.getColumnIndex(Song.YEAR);
-                int iDuration = c.getColumnIndex(Song.DURATION);
                 songs = new SparseArray<>();
                 while (c.moveToNext()) {
                     song = new Song();
-                    song.setTitle(c.getString(iTitle));
-                    if (setArtist(song, c.getInt(iArtistId))) {
-                        song.setId(c.getInt(iId));
-                        song.setDateAdded(c.getLong(iDateAdded));
-                        song.setYear(c.getInt(iYear));
-                        song.setDuration(c.getInt(iDuration));
+                    song.setTitle(c.getString(1));
+                    if (setArtist(song, c.getInt(2))) {
+                        song.setId(c.getInt(0));
+                        song.setDateAdded(c.getLong(3));
+                        song.setYear(c.getInt(4));
+                        song.setDuration(c.getInt(5));
                         songs.put(song.getId(), song);
                     }
                 }
@@ -112,7 +106,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
             try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null :
-                            new String[]{Song._ID, Song.DATE_ADDED, Song.YEAR,
+                            new String[]{Song._ID, Song.ARTIST_ID, Song.DATE_ADDED, Song.YEAR,
                                     Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
                     selection, null, null, null, dbOrderBy)) {
                 while (c.moveToNext()) {
@@ -134,18 +128,18 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     } else {
                         song = songs.get(id);
                         if (song == null) {
-                            dbOpenHelper.deleteSong(id);
+                            dbOpenHelper.deleteSong(id, c.getInt(1));
                         } else {
                             // Overwrite values from the MediaStore that can be set manually
                             // or that may be lost after restoring a backup.
-                            song.setDateAdded(c.getLong(1));
-                            song.setYear(c.getInt(2));
+                            song.setDateAdded(c.getLong(2));
+                            song.setYear(c.getInt(3));
 
                             // Set the other values not present in the MediaStore.
-                            song.setLastPlayed(c.getLong(3));
-                            song.setTimesPlayed(c.getInt(4));
-                            song.setBookmarked(c.getLong(5));
-                            song.setTag(c.getString(6));
+                            song.setLastPlayed(c.getLong(4));
+                            song.setTimesPlayed(c.getInt(5));
+                            song.setBookmarked(c.getLong(6));
+                            song.setTag(c.getString(7));
                         }
                     }
                 }

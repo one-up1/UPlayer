@@ -207,8 +207,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         Log.d(TAG, "Queried " + objects.size() + " songs");
         if (getActivity() instanceof SongsActivity) {
-            getActivity().setTitle(getString(R.string.song_count_duration, objects.size(),
-                    Util.formatDuration(Song.getDuration(objects, 0))));
+            setTitle();
         }
 
         if (listView == null) {
@@ -293,6 +292,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public void onSongDeleted(Song song) {
         objects.remove(song);
+        setTitle();
         listAdapter.notifyDataSetChanged();
     }
 
@@ -316,6 +316,11 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         song.setArtist(artist);
         return true;
+    }
+
+    private void setTitle() {
+        getActivity().setTitle(getString(R.string.song_count_duration, objects.size(),
+                Util.formatDuration(Song.getDuration(objects, 0))));
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {

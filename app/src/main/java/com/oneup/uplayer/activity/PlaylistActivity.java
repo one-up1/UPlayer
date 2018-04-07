@@ -7,14 +7,18 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.DragEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -24,7 +28,7 @@ import com.oneup.uplayer.widget.SongAdapter;
 import com.oneup.uplayer.widget.SongsListView;
 
 public class PlaylistActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
-        SongsListView.OnSongDeletedListener {
+        SongsListView.OnSongDeletedListener, MainService.OnSongIndexChangedListener {
     private static final String TAG = "UPlayer";
 
     private static PlaylistActivity instance;
@@ -141,6 +145,11 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    @Override
+    public void onSongIndexChanged() {
+        songsAdapter.notifyDataSetChanged();
+    }
+
     private void setTitle() {
         setTitle(getString(R.string.song_count_duration, mainService.getSongs().size(),
                 Util.formatDuration(Song.getDuration(mainService.getSongs(), 0))));
@@ -157,6 +166,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
             MainService.MainBinder binder = (MainService.MainBinder) service;
             mainService = binder.getService();
+            mainService.setOnSongIndexChangedListener(PlaylistActivity.this);
 
             setTitle();
             songsAdapter = new ListAdapter();
@@ -174,6 +184,20 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     private class ListAdapter extends SongAdapter implements View.OnClickListener {
         private ListAdapter() {
             super(PlaylistActivity.this, mainService.getSongs());
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View ret = super.getView(position, convertView, parent);
+
+            if (position == mainService.getSongIndex()) {
+                TextView tvSongTitle = ret.findViewById(R.id.tvTitle);
+                SpannableString underlinedText = new SpannableString(tvSongTitle.getText());
+                underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
+                tvSongTitle.setText(underlinedText);
+            }
+
+            return ret;
         }
 
         @Override

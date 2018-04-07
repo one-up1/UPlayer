@@ -24,6 +24,8 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
+//FIXME: When notification is updated and how many times the ListView in PlaylistActivity gets updated.
+
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     public static final String ARG_REQUEST_CODE = "request_code";
@@ -63,6 +65,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private boolean prepared;
 
     private MainReceiver mainReceiver;
+    private OnSongIndexChangedListener onSongIndexChangedListener;
 
     @Nullable
     @Override
@@ -205,7 +208,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
 
         prepared = false;
-        return false;
+        return true;
     }
 
     @Override
@@ -271,6 +274,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
                 R.string.playlist_position, songIndex + 1, songs.size(), left));
+
+        if (onSongIndexChangedListener != null) {
+            onSongIndexChangedListener.onSongIndexChanged();
+        }
     }
 
     private void addSong(Song song, boolean next) {
@@ -278,10 +285,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (songs == null) {
             songs = new ArrayList<>();
             songs.add(song);
-
-            notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
-            notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist().getArtist());
-            notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
         } else if (next) {
             songs.add(songIndex + 1, song);
         } else {
@@ -357,6 +360,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         preferences.edit().putInt(KEY_VOLUME, volume).apply();
     }
 
+    public void setOnSongIndexChangedListener(
+            OnSongIndexChangedListener onSongIndexChangedListener) {
+        this.onSongIndexChangedListener = onSongIndexChangedListener;
+    }
+
     public ArrayList<Song> getSongs() {
         return songs;
     }
@@ -424,5 +432,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         public MainService getService() {
             return MainService.this;
         }
+    }
+
+    public interface OnSongIndexChangedListener {
+        void onSongIndexChanged();
     }
 }

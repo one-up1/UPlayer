@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         }
 
         @Override
-        public int getItemPosition(Object object) {
+        public int getItemPosition(@NonNull Object object) {
             // POSITION_NONE makes it possible to reload the PagerAdapter.
             return POSITION_NONE;
         }

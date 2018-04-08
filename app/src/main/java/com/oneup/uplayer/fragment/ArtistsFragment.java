@@ -48,7 +48,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "ArtistsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
@@ -131,7 +131,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "ArtistsFragment.onViewCreated()");
         super.onViewCreated(view, savedInstanceState);
         if (listViewState != null) {

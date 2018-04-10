@@ -18,9 +18,13 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
+import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -36,13 +40,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final int REQUEST_START = 1;
     public static final int REQUEST_PLAY_NEXT = 2;
     public static final int REQUEST_PLAY_LAST = 3;
+    public static final int REQUEST_RESTORE_PLAYLIST = 4;
 
-    private static final int REQUEST_PREVIOUS = 4;
-    private static final int REQUEST_PLAY_PAUSE = 5;
-    private static final int REQUEST_NEXT = 6;
-    private static final int REQUEST_STOP = 7;
-    private static final int REQUEST_VOLUME_DOWN = 8;
-    private static final int REQUEST_VOLUME_UP = 9;
+    private static final int REQUEST_PREVIOUS = 5;
+    private static final int REQUEST_PLAY_PAUSE = 6;
+    private static final int REQUEST_NEXT = 7;
+    private static final int REQUEST_STOP = 8;
+    private static final int REQUEST_VOLUME_DOWN = 9;
+    private static final int REQUEST_VOLUME_UP = 10;
 
     private static final String TAG = "UPlayer";
 
@@ -63,6 +68,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private ArrayList<Song> songs;
     private int songIndex;
     private boolean prepared;
+    private boolean playlistSaved;
 
     private MainReceiver mainReceiver;
     private OnSongIndexChangedListener onSongIndexChangedListener;
@@ -128,6 +134,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             case REQUEST_START:
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);
                 songIndex = intent.getIntExtra(ARG_SONG_INDEX, 0);
+                playlistSaved = false;
                 play();
                 break;
             case REQUEST_PLAY_NEXT:
@@ -135,6 +142,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 break;
             case REQUEST_PLAY_LAST:
                 addSong((Song) intent.getParcelableExtra(ARG_SONG), false);
+                break;
+            case REQUEST_RESTORE_PLAYLIST:
+                restorePlaylist();
                 break;
             case REQUEST_PREVIOUS:
                 previous();
@@ -146,8 +156,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 next();
                 break;
             case REQUEST_STOP:
-                PlaylistActivity.finishIfRunning();
-                stopSelf();
+                stop();
                 break;
             case REQUEST_VOLUME_DOWN:
                 volumeDown();
@@ -181,6 +190,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (dbOpenHelper != null) {
             dbOpenHelper.close();
         }
+
+        PlaylistActivity.finishIfRunning();
     }
 
     @Override
@@ -252,7 +263,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 play();
             } else {
                 Log.d(TAG, "No more songs to play");
-                stopSelf();
+                stop();
             }
         }
     }
@@ -278,6 +289,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (onSongIndexChangedListener != null) {
             onSongIndexChangedListener.onSongIndexChanged();
         }
+
+        if (playlistSaved) {
+            preferences.edit()
+                    .putInt(ARG_SONG_INDEX, songIndex)
+                    .apply();
+            Log.d(TAG, "Saved song index: " + songIndex);
+        }
     }
 
     private void addSong(Song song, boolean next) {
@@ -300,6 +318,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else {
             songIndex = songs.size() - 1;
             play();
+        }
+
+        if (songs.size() > 1) {
+            savePlaylist();
         }
     }
 
@@ -358,6 +380,79 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void changeVolume() {
         setVolume();
         preferences.edit().putInt(KEY_VOLUME, volume).apply();
+    }
+
+    private void savePlaylist() {
+        try {
+            JSONArray jsaSongs = new JSONArray();
+            for (Song song : songs) {
+                JSONObject jsoSong = new JSONObject();
+                jsoSong.put(Song._ID, song.getId());
+                jsoSong.put(Song.TITLE, song.getTitle());
+                JSONObject jsoArtist = new JSONObject();
+                jsoArtist.put(Artist._ID, song.getArtist().getId());
+                jsoArtist.put(Artist.ARTIST, song.getArtist().getArtist());
+                jsoSong.put(Song.ARTIST, jsoArtist);
+                jsoSong.put(Song.DURATION, song.getDuration());
+                jsaSongs.put(jsoSong);
+            }
+
+            preferences.edit()
+                    .putString(ARG_SONGS, jsaSongs.toString())
+                    .putInt(ARG_SONG_INDEX, songIndex)
+                    .apply();
+            playlistSaved = true;
+            Log.d(TAG, "Saved playlist with " + jsaSongs.length() +
+                    " songs, songIndex=" + songIndex);
+            //TODO: Also save position in song for restoring playlist?
+        } catch (Exception ex) {
+            Log.e(TAG, "Error saving playlist", ex);
+        }
+    }
+
+    private void restorePlaylist() {
+        try {
+            String sSongs = preferences.getString(ARG_SONGS, null);
+            if (sSongs == null) {
+                throw new Exception("No saved playlist found");
+            }
+
+            JSONArray jsaSongs = new JSONArray(sSongs);
+            songs = new ArrayList<>();
+            for (int i = 0; i < jsaSongs.length(); i++) {
+                JSONObject jsoSong = jsaSongs.getJSONObject(i);
+                Song song = new Song();
+                song.setId(jsoSong.getInt(Song._ID));
+                song.setTitle(jsoSong.getString(Song.TITLE));
+                JSONObject jsoArtist = jsoSong.getJSONObject(Song.ARTIST);
+                Artist artist = new Artist();
+                artist.setId(jsoArtist.getInt(Artist._ID));
+                artist.setArtist(jsoArtist.getString(Artist.ARTIST));
+                song.setArtist(artist);
+                song.setDuration(jsoSong.getInt(Song.DURATION));
+                dbOpenHelper.querySong(song);
+                songs.add(song);
+            }
+
+            songIndex = preferences.getInt(ARG_SONG_INDEX, 0);
+            Log.d(TAG, "Restored playlist with " + songs.size() +
+                    " songs, songIndex=" + songIndex);
+            if (songIndex >= songs.size()) {
+                Log.w(TAG, "Invalid song index");
+                songIndex = 0;
+            }
+            play();
+        } catch (Exception ex) {
+            Log.e(TAG, "Error restoring playlist", ex);
+            if (songs == null) {
+                stop();
+            }
+        }
+    }
+
+    private void stop() {
+        PlaylistActivity.finishIfRunning();
+        stopSelf();
     }
 
     public void setOnSongIndexChangedListener(
@@ -424,7 +519,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             updatePlaylistPosition();
             startForeground(1, notification);
         } else {
-            stopSelf();
+            stop();
         }
     }
 

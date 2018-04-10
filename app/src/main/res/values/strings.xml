@@ -58,6 +58,7 @@
     <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
     <string name="error">Error: %1$s</string>
+    <string name="restore_playlist">Restore playlist</string>
 
     <string name="info">Info</string>
     <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d\nDate modified: %3$s</string>

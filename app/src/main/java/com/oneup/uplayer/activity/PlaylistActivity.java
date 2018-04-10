@@ -11,7 +11,6 @@ import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.DragEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,24 +46,6 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         listView.setOnSongDeletedListener(this);
         setContentView(listView);
         registerForContextMenu(listView);
-
-        listView.setOnDragListener(new View.OnDragListener() {
-            @Override
-            public boolean onDrag(View view, DragEvent dragEvent) {
-                switch (dragEvent.getAction()) {
-                    case DragEvent.ACTION_DRAG_STARTED:
-                        Log.d(TAG, "Drag started");
-                        break;
-                    case DragEvent.ACTION_DROP:
-                        Log.d(TAG, "Drop");
-                        break;
-                    case DragEvent.ACTION_DRAG_ENDED:
-                        Log.d(TAG, "Drag ended");
-                        break;
-                }
-                return false;
-            }
-        });
 
         instance = this;
     }
@@ -103,9 +84,11 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     @Override
     protected void onStop() {
         Log.d(TAG, "PlaylistActivity.onStop()");
-        mainService.setOnSongIndexChangedListener(null);
-        unbindService(serviceConnection);
-        mainService = null;
+        if (mainService != null) {
+            mainService.setOnSongIndexChangedListener(null);
+            unbindService(serviceConnection);
+            mainService = null;
+        }
         super.onStop();
     }
 
@@ -167,8 +150,10 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "PlaylistActivity.serviceConnection.onServiceDisconnected()");
-            mainService.setOnSongIndexChangedListener(null);
-            mainService = null;
+            if (mainService != null) {
+                mainService.setOnSongIndexChangedListener(null);
+                mainService = null;
+            }
         }
     };
 
@@ -181,7 +166,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         public View getView(int position, View convertView, ViewGroup parent) {
             View ret = super.getView(position, convertView, parent);
 
-            if (position == mainService.getSongIndex()) {
+            if (mainService != null && position == mainService.getSongIndex()) {
                 TextView tvSongTitle = ret.findViewById(R.id.tvTitle);
                 SpannableString underlinedText = new SpannableString(tvSongTitle.getText());
                 underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
@@ -257,7 +242,7 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         }
 
         private void moveSong(Song song, int i) {
-            if (mainService.moveSong(song, i)) {
+            if (mainService != null && mainService.moveSong(song, i)) {
                 songsAdapter.notifyDataSetChanged();
             }
         }

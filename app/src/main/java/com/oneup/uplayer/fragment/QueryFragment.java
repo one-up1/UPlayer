@@ -26,6 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.MainActivity;
@@ -127,6 +128,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private Button bTags;
     private Button bBackup;
     private Button bRestoreBackup;
+    private Button bRestorePlaylist;
 
     private long minDateAdded;
     private long maxDateAdded;
@@ -152,6 +154,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION);
         }
 
+        //TODO: getPreferences(), getSharedPreferences() or PreferenceManager?
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         View ret = inflater.inflate(R.layout.fragment_query, container, false);
@@ -255,6 +258,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         bRestoreBackup = ret.findViewById(R.id.bRestoreBackup);
         bRestoreBackup.setOnClickListener(this);
+
+        bRestorePlaylist = ret.findViewById(R.id.bRestorePlaylist);
+        bRestorePlaylist.setOnClickListener(this);
 
         return ret;
     }
@@ -415,6 +421,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     })
                     .setNegativeButton(R.string.no, null)
                     .show();
+        } else if (v == bRestorePlaylist) {
+            getActivity().startService(new Intent(getContext(), MainService.class)
+                    .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
         }
     }
 
@@ -692,9 +701,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         Log.d(TAG, "Processing songs");
-        JSONArray jsoSongs = backup.getJSONArray(Song.TABLE_NAME);
-        for (int i = 0; i < jsoSongs.length(); i++) {
-            JSONObject jsoSong = jsoSongs.getJSONObject(i);
+        JSONArray jsaSongs = backup.getJSONArray(Song.TABLE_NAME);
+        for (int i = 0; i < jsaSongs.length(); i++) {
+            JSONObject jsoSong = jsaSongs.getJSONObject(i);
             String title = jsoSong.getString(Song.TITLE);
             int artistId = jsoSong.getInt(Song.ARTIST_ID);
 

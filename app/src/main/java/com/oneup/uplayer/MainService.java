@@ -435,6 +435,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             }
 
             songIndex = preferences.getInt(ARG_SONG_INDEX, 0);
+            playlistSaved = true;
             Log.d(TAG, "Restored playlist with " + songs.size() +
                     " songs, songIndex=" + songIndex);
             if (songIndex >= songs.size()) {

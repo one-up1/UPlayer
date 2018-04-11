@@ -487,6 +487,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             } else if (newIndex == this.songIndex) {
                 songIndexChanged(songIndex);
             }
+            savePlaylist();
             return true;
         } else {
             return false;
@@ -518,6 +519,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
             updatePlaylistPosition();
             startForeground(1, notification);
+
+            savePlaylist();
         } else {
             stop();
         }

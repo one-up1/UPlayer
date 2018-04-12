@@ -52,8 +52,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final String TAG = "UPlayer";
 
     private static final String KEY_VOLUME = "volume";
-    private static final String KEY_POSITION = "position";
     private static final int MAX_VOLUME = 100;
+
+    private static final String KEY_POSITION = "position";
+    private static final int POSITION_OFFSET = 8000;
 
     private final IBinder mainBinder = new MainBinder();
 
@@ -200,9 +202,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "MainService.onPrepared()");
         setVolume();
-        if (position > 0) {
-            Log.d(TAG, "Seeking to " + position);
-            player.seekTo(position);
+        if (position > POSITION_OFFSET * 2) {
+            Log.d(TAG, "Seeking to saved position:" + position);
+            player.seekTo(position - POSITION_OFFSET);
             position = 0;
         }
         player.start();
@@ -398,14 +400,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 jsaSongs.put(jsoSong);
             }
 
-            int position = player.getCurrentPosition();
             preferences.edit()
                     .putString(ARG_SONGS, jsaSongs.toString())
                     .putInt(ARG_SONG_INDEX, songIndex)
-                    .putInt(KEY_POSITION, position)
+                    .putInt(KEY_POSITION, player.getCurrentPosition())
                     .apply();
-            Log.d(TAG, "Saved playlist with " + jsaSongs.length() +
-                    " songs, songIndex=" + songIndex + ", position=" + position);
+            Log.d(TAG, "Playlist saved");
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
         }

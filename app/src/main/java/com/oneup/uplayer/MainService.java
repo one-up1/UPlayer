@@ -52,6 +52,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final String TAG = "UPlayer";
 
     private static final String KEY_VOLUME = "volume";
+    private static final String KEY_POSITION = "position";
     private static final int MAX_VOLUME = 100;
 
     private final IBinder mainBinder = new MainBinder();
@@ -61,6 +62,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private MediaPlayer player;
     private int volume;
+    private int position;
 
     private RemoteViews notificationViews;
     private Notification notification;
@@ -68,7 +70,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private ArrayList<Song> songs;
     private int songIndex;
     private boolean prepared;
-    private boolean playlistSaved;
 
     private MainReceiver mainReceiver;
     private OnSongIndexChangedListener onSongIndexChangedListener;
@@ -132,9 +133,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         switch (requestCode) {
             case REQUEST_START:
+                savePlaylist();
                 songs = intent.getParcelableArrayListExtra(ARG_SONGS);
                 songIndex = intent.getIntExtra(ARG_SONG_INDEX, 0);
-                playlistSaved = false;
                 play();
                 break;
             case REQUEST_PLAY_NEXT:
@@ -175,7 +176,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     @Override
     public void onDestroy() {
         Log.d(TAG, "MainService.onDestroy()");
-        super.onDestroy();
+        savePlaylist();
 
         if (player != null) {
             player.stop();
@@ -192,12 +193,18 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         PlaylistActivity.finishIfRunning();
+        super.onDestroy();
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "MainService.onPrepared()");
         setVolume();
+        if (position > 0) {
+            Log.d(TAG, "Seeking to " + position);
+            player.seekTo(position);
+            position = 0;
+        }
         player.start();
 
         Song song = songs.get(songIndex);
@@ -289,13 +296,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (onSongIndexChangedListener != null) {
             onSongIndexChangedListener.onSongIndexChanged();
         }
-
-        if (playlistSaved) {
-            preferences.edit()
-                    .putInt(ARG_SONG_INDEX, songIndex)
-                    .apply();
-            Log.d(TAG, "Saved song index: " + songIndex);
-        }
     }
 
     private void addSong(Song song, boolean next) {
@@ -318,10 +318,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else {
             songIndex = songs.size() - 1;
             play();
-        }
-
-        if (songs.size() > 1) {
-            savePlaylist();
         }
     }
 
@@ -383,6 +379,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void savePlaylist() {
+        if (songs == null || songs.size() == 0) {
+            Log.d(TAG, "No playlist to save");
+            return;
+        }
+
         try {
             JSONArray jsaSongs = new JSONArray();
             for (Song song : songs) {
@@ -397,14 +398,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 jsaSongs.put(jsoSong);
             }
 
+            int position = player.getCurrentPosition();
             preferences.edit()
                     .putString(ARG_SONGS, jsaSongs.toString())
                     .putInt(ARG_SONG_INDEX, songIndex)
+                    .putInt(KEY_POSITION, position)
                     .apply();
-            playlistSaved = true;
             Log.d(TAG, "Saved playlist with " + jsaSongs.length() +
-                    " songs, songIndex=" + songIndex);
-            //TODO: Also save position in song for restoring playlist?
+                    " songs, songIndex=" + songIndex + ", position=" + position);
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
         }
@@ -435,9 +436,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             }
 
             songIndex = preferences.getInt(ARG_SONG_INDEX, 0);
-            playlistSaved = true;
+            position = preferences.getInt(KEY_POSITION, 0);
             Log.d(TAG, "Restored playlist with " + songs.size() +
-                    " songs, songIndex=" + songIndex);
+                    " songs, songIndex=" + songIndex + ", position=" + position);
             if (songIndex >= songs.size()) {
                 Log.w(TAG, "Invalid song index");
                 songIndex = 0;
@@ -488,7 +489,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             } else if (newIndex == this.songIndex) {
                 songIndexChanged(songIndex);
             }
-            savePlaylist();
             return true;
         } else {
             return false;
@@ -520,8 +520,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
             updatePlaylistPosition();
             startForeground(1, notification);
-
-            savePlaylist();
         } else {
             stop();
         }

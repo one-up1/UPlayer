@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressLint("SimpleDateFormat")
 public class Util {
-    private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("E dd-MM-yyyy HH:mm");
     private static final NumberFormat TIME_NUMBER_FORMAT = NumberFormat.getInstance();
 
     static {

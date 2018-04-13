@@ -162,11 +162,11 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                         R.string.info_message_artist,
                         artist.getLastPlayed() == 0 ?
                                 getString(R.string.never) :
-                                Util.formatDateTime(artist.getLastPlayed()),
+                                Util.formatDateTimeAgo(artist.getLastPlayed()),
                         artist.getTimesPlayed(),
                         artist.getDateModified() == 0 ?
                                 getString(R.string.na) :
-                                Util.formatDateTime(artist.getDateModified()))
+                                Util.formatDateTimeAgo(artist.getDateModified()))
                 );
                 return true;
             default:

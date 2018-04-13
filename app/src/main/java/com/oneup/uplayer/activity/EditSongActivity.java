@@ -35,9 +35,9 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private Button bDateAdded;
     private EditText etYear;
     private EditText etDuration;
-    private EditText etLastPlayed;
+    private Button bLastPlayed;
     private EditText etTimesPlayed;
-    private EditText etBookmarked;
+    private Button bBookmarked;
     private Spinner sTag;
     private EditText etTag;
 
@@ -59,7 +59,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
         bDateAdded = findViewById(R.id.bDateAdded);
         if (song.getDateAdded() > 0) {
-            bDateAdded.setText(Util.formatDateTime(song.getDateAdded()));
+            bDateAdded.setText(Util.formatDateTimeAgo(song.getDateAdded()));
         }
         bDateAdded.setOnClickListener(this);
 
@@ -71,17 +71,17 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         etDuration = findViewById(R.id.etDuration);
         etDuration.setString(Util.formatDuration(song.getDuration()));
 
-        etLastPlayed = findViewById(R.id.etLastPlayed);
+        bLastPlayed = findViewById(R.id.bLastPlayed);
         if (song.getLastPlayed() > 0) {
-            etLastPlayed.setString(Util.formatDateTime(song.getLastPlayed()));
+            bLastPlayed.setText(Util.formatDateTimeAgo(song.getLastPlayed()));
         }
 
         etTimesPlayed = findViewById(R.id.etTimesPlayed);
         etTimesPlayed.setString(song.getArtist().getTimesPlayed() + ":" + song.getTimesPlayed());
 
-        etBookmarked = findViewById(R.id.etBookmarked);
+        bBookmarked = findViewById(R.id.bBookmarked);
         if (song.getBookmarked() > 0) {
-            etBookmarked.setString(Util.formatDateTime(song.getBookmarked()));
+            bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
         }
 
         etTag = findViewById(R.id.etTag);
@@ -125,7 +125,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             switch (requestCode) {
                 case REQUEST_SELECT_DATE_ADDED:
                     song.setDateAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bDateAdded.setText(Util.formatDateTime(song.getDateAdded()));
+                    bDateAdded.setText(Util.formatDateTimeAgo(song.getDateAdded()));
                     break;
             }
         }

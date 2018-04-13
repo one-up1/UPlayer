@@ -81,12 +81,11 @@
         android:labelFor="@+id/etLastPlayed"
         android:text="@string/edit_last_played" />
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etLastPlayed"
+    <Button
+        android:id="@+id/bLastPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:inputType="text"
         app:layout_columnWeight="1" />
 
     <TextView
@@ -109,12 +108,11 @@
         android:labelFor="@+id/etBookmarked"
         android:text="@string/edit_bookmkared" />
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etBookmarked"
+    <Button
+        android:id="@+id/bBookmarked"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:inputType="text"
         app:layout_columnWeight="1" />
 
     <TextView

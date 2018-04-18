@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+//TODO: Display songs/artists in db, num tagged and num played.
+
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";

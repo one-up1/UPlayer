@@ -15,7 +15,6 @@ public class EditTime extends LinearLayout implements EditText.OnTextChangeListe
 
     private EditText etHour;
     private EditText etMinute;
-    private EditText etSecond;
 
     public EditTime(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -31,11 +30,6 @@ public class EditTime extends LinearLayout implements EditText.OnTextChangeListe
         etMinute.setFilters(NumberFilter.getFilters(60));
         etMinute.setMinimumIntegerDigits(2);
         etMinute.setOnTextChangeListener(this);
-
-        etSecond = findViewById(R.id.etSecond);
-        etSecond.setFilters(NumberFilter.getFilters(60));
-        etSecond.setMinimumIntegerDigits(2);
-        etSecond.setOnTextChangeListener(this);
     }
 
     @Override
@@ -44,7 +38,6 @@ public class EditTime extends LinearLayout implements EditText.OnTextChangeListe
             int i = editText.getInt();
             if (i == 24) {
                 etMinute.setInt(0);
-                etSecond.setInt(0);
                 onInputComplete();
             } else if (s.length() > 1) {
                 etMinute.requestFocus();
@@ -54,21 +47,11 @@ public class EditTime extends LinearLayout implements EditText.OnTextChangeListe
             }
         } else if (editText == etMinute) {
             if (s.length() > 1) {
-                etSecond.requestFocus();
-            } else {
-                int i = editText.getInt();
-                if (i > 5) {
-                    etMinute.setInt(i);
-                    etSecond.requestFocus();
-                }
-            }
-        } else if (editText == etSecond) {
-            if (s.length() > 1) {
                 onInputComplete();
             } else {
                 int i = editText.getInt();
                 if (i > 5) {
-                    etSecond.setInt(i);
+                    etMinute.setInt(i);
                     onInputComplete();
                 }
             }
@@ -77,8 +60,7 @@ public class EditTime extends LinearLayout implements EditText.OnTextChangeListe
 
     public long getTime() {
         return TimeUnit.HOURS.toSeconds(etHour.getLong()) +
-                TimeUnit.MINUTES.toSeconds(etMinute.getLong()) +
-                etSecond.getLong();
+                TimeUnit.MINUTES.toSeconds(etMinute.getLong());
     }
 
     public void setTime(long seconds) {
@@ -89,11 +71,9 @@ public class EditTime extends LinearLayout implements EditText.OnTextChangeListe
         etHour.setLong(TimeUnit.SECONDS.toHours(seconds));
         etMinute.setLong(TimeUnit.SECONDS.toMinutes(seconds) -
                 TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(seconds)));
-        etSecond.setLong(seconds -
-                TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(seconds)));
     }
 
     private void onInputComplete() {
-        Util.hideSoftInput(context, etSecond);
+        Util.hideSoftInput(context, etMinute);
     }
 }

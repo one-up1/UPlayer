@@ -50,12 +50,10 @@ public class Util {
             timeAgo -= TimeUnit.DAYS.toSeconds(days);
         }
 
-        // Append HH:mm:ss.
+        // Append HH:mm.
         return ret + TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toHours(timeAgo)) + ":" +
                 TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toMinutes(timeAgo) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(timeAgo))) + ":" +
-                TIME_NUMBER_FORMAT.format(timeAgo -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(timeAgo)));
+                        TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(timeAgo)));
     }
 
     public static String formatDateTime(long seconds) {

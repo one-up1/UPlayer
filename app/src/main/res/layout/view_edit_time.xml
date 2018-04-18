@@ -28,19 +28,4 @@
         android:selectAllOnFocus="true"
         tools:ignore="LabelFor" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=":"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        tools:ignore="HardcodedText" />
-
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etSecond"
-        android:layout_width="@dimen/edit_time_number_width"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:selectAllOnFocus="true"
-        tools:ignore="LabelFor" />
-
 </LinearLayout>

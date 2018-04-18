@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return queryFragment;
                 case 1:
                     if (bookmarksFragment == null) {
-                        bookmarksFragment = SongsFragment.newInstance(artists, 0,
+                        bookmarksFragment = SongsFragment.newInstance(artists, null, 0,
                                 Song.BOOKMARKED + " IS NOT NULL", Song.BOOKMARKED + " DESC");
                     }
                     return bookmarksFragment;

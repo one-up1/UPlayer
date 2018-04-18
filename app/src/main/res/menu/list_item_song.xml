@@ -2,16 +2,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/view_artist"
+        android:title="@string/view_artist" />
+
+    <item
+        android:id="@+id/edit"
+        android:title="@string/edit" />
+
+    <item
         android:id="@+id/bookmark"
         android:title="@string/bookmark" />
 
     <item
         android:id="@+id/mark_played"
         android:title="@string/mark_played" />
-
-    <item
-        android:id="@+id/edit"
-        android:title="@string/edit" />
 
     <item
         android:id="@+id/delete"

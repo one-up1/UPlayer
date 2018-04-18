@@ -20,11 +20,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbComparator;
-import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -184,11 +183,9 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == listView) {
-            Bundle args = new Bundle();
-            args.putSparseParcelableArray(ARG_ARTISTS, artists);
-            args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
-            args.putString(ARG_SELECTION, Song.ARTIST_ID + "=" + objects.get(position).getId());
-            startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));
+            startActivity(new Intent(getContext(), SongsActivity.class)
+                    .putExtra(ARG_ARTIST, objects.get(position))
+                    .putExtra(ARG_JOINED_SORT_BY, joinedSortBy));
         }
     }
 

@@ -16,8 +16,10 @@ import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
+import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.util.Calendar;
 
 public class SongsListView extends ListView {
@@ -42,7 +44,21 @@ public class SongsListView extends ListView {
     public boolean onContextItemSelected(MenuItem item) {
         final Song song = (Song) getItemAtPosition(
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
+        // TODO: Only display "View artist" when not already doing so?
+        // TODO: Pass sorting args to SongsActivity when "View artist" is selected?
         switch (item.getItemId()) {
+            case R.id.view_artist:
+                context.startActivity(new Intent(getContext(), SongsActivity.class)
+                        .putExtra(SongsActivity.ARG_ARTIST, song.getArtist())
+                        .putExtra(SongsActivity.ARG_JOINED_SORT_BY, BaseArgs.SORT_BY_NAME));
+                return true;
+            case R.id.edit:
+                dbOpenHelper.querySong(song);
+                context.startActivityForResult(new Intent(getContext(), EditSongActivity.class)
+                                .putExtra(EditSongActivity.EXTRA_SONG, editSong = song)
+                                .putExtra(EditSongActivity.EXTRA_TAGS, dbOpenHelper.querySongTags()),
+                        REQUEST_EDIT_SONG);
+                return true;
             case R.id.bookmark:
                 dbOpenHelper.querySong(song);
                 if (song.getBookmarked() == 0) {
@@ -70,13 +86,6 @@ public class SongsListView extends ListView {
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
-                return true;
-            case R.id.edit:
-                dbOpenHelper.querySong(song);
-                context.startActivityForResult(new Intent(getContext(), EditSongActivity.class)
-                        .putExtra(EditSongActivity.EXTRA_SONG, editSong = song)
-                        .putExtra(EditSongActivity.EXTRA_TAGS, dbOpenHelper.querySongTags()),
-                        REQUEST_EDIT_SONG);
                 return true;
             case R.id.delete:
                 new AlertDialog.Builder(context)

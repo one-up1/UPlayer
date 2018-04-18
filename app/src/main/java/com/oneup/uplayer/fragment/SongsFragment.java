@@ -44,6 +44,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String TAG = "UPlayer";
 
     private SparseArray<Artist> artists;
+    private Artist artist;
     private int joinedSortBy;
     private String selection;
     private String dbOrderBy;
@@ -64,10 +65,15 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         Log.d(TAG, "SongsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
-        selection = getArguments().getString(ARG_SELECTION);
         dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
-        Log.d(TAG, artists.size() + " artists, joinedSortBy=" + joinedSortBy +
-                ", selection=" + selection + ", dbOrderBy=" + dbOrderBy);
+        if (artists == null) {
+            artist = getArguments().getParcelable(ARG_ARTIST);
+            selection = Song.ARTIST_ID + "=" + artist.getId();
+        } else {
+            selection = getArguments().getString(ARG_SELECTION);
+        }
+        Log.d(TAG, "joinedSortBy=" + joinedSortBy + ", selection=" + selection +
+                ", dbOrderBy=" + dbOrderBy);
 
         SparseArray<Song> songs;
         Song song;
@@ -309,13 +315,16 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     }
 
     private boolean setArtist(Song song, int id) {
-        Artist artist = artists.get(id);
-        if (artist == null) {
-            Log.w(TAG, "Artist for song '" + song + "' not found");
-            return false;
+        if (artists == null) {
+            song.setArtist(artist);
+        } else {
+            Artist artist = artists.get(id);
+            if (artist.getId() != id) {
+                Log.w(TAG, "Artist for song '" + song + "' not found");
+                return false;
+            }
+            song.setArtist(artist);
         }
-
-        song.setArtist(artist);
         return true;
     }
 
@@ -386,11 +395,12 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
     }
 
-    public static SongsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy,
-                                            String selection, String dbOrderBy) {
+    public static SongsFragment newInstance(SparseArray<Artist> artists, Artist artist,
+                                            int joinedSortBy, String selection, String dbOrderBy) {
         SongsFragment fragment = new SongsFragment();
         Bundle args = new Bundle();
         args.putSparseParcelableArray(ARG_ARTISTS, artists);
+        args.putParcelable(ARG_ARTIST, artist);
         args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
         args.putString(ARG_SELECTION, selection);
         args.putString(ARG_DB_ORDER_BY, dbOrderBy);

@@ -74,12 +74,7 @@
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
 
-    <string name="bookmark">Bookmark</string>
-    <string name="bookmark_set">Bookmark set</string>
-    <string name="bookmark_deleted">Bookmark deleted</string>
-
-    <string name="mark_played">Mark played</string>
-    <string name="times_played">Times played: %1$d:%2$d</string>
+    <string name="view_artist">Artist&#8230;</string>
 
     <string name="edit">Edit</string>
     <string name="edit_song">Edit song</string>
@@ -94,6 +89,13 @@
     <string name="edit_tag">Tag:</string>
     <string name="date_added">Date added&#8230;</string>
     <string name="song_updated">Song updated</string>
+
+    <string name="bookmark">Bookmark</string>
+    <string name="bookmark_set">Bookmark set</string>
+    <string name="bookmark_deleted">Bookmark deleted</string>
+
+    <string name="mark_played">Mark played</string>
+    <string name="times_played">Times played: %1$d:%2$d</string>
 
     <string name="delete">Delete</string>
     <string name="delete_song">Delete song</string>

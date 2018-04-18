@@ -44,6 +44,7 @@
     <string-array name="db_order_by_entries">
         <item />
         <item>Title</item>
+        <item>Artist</item>
         <item>Date added</item>
         <item>Year</item>
         <item>Last played</item>

@@ -561,15 +561,18 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     dbOrderBy = Song.TITLE;
                     break;
                 case 2:
-                    dbOrderBy = Song.DATE_ADDED;
+                    dbOrderBy = Song.ARTIST_ID;
                     break;
                 case 3:
-                    dbOrderBy = Song.YEAR;
+                    dbOrderBy = Song.DATE_ADDED;
                     break;
                 case 4:
-                    dbOrderBy = Song.LAST_PLAYED;
+                    dbOrderBy = Song.YEAR;
                     break;
                 case 5:
+                    dbOrderBy = Song.LAST_PLAYED;
+                    break;
+                case 6:
                     dbOrderBy = Song.TIMES_PLAYED;
                     break;
             }

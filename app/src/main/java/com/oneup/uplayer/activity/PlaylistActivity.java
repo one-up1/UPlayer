@@ -47,19 +47,10 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
         setContentView(listView);
         registerForContextMenu(listView);
 
+        bindService(new Intent(this, MainService.class), serviceConnection,
+                Context.BIND_AUTO_CREATE);
+
         instance = this;
-    }
-
-    @Override
-    protected void onStart() {
-        Log.d(TAG, "PlaylistActivity.onStart()");
-        super.onStart();
-
-        if (mainService == null) {
-            Log.d(TAG, "Binding service");
-            bindService(new Intent(this, MainService.class), serviceConnection,
-                    Context.BIND_AUTO_CREATE);
-        }
     }
 
     @Override
@@ -82,19 +73,16 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
     }
 
     @Override
-    protected void onStop() {
-        Log.d(TAG, "PlaylistActivity.onStop()");
+    protected void onDestroy() {
+        Log.d(TAG, "PlaylistActivity.onDestroy()");
+
         if (mainService != null) {
+            Log.d(TAG, "Unbinding service");
             mainService.setOnSongIndexChangedListener(null);
             unbindService(serviceConnection);
             mainService = null;
         }
-        super.onStop();
-    }
 
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "PlaylistActivity.onDestroy()");
         instance = null;
         super.onDestroy();
     }

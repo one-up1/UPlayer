@@ -14,7 +14,6 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     public static final String BOOKMARKED = "bookmarked";
     public static final String TAG = "tag";
 
-    // TODO: Long for ID's?
     private int id;
     private String title;
     private Artist artist;

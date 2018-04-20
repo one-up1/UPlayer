@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-//TODO: Display songs/artists in db, num tagged and num played, stats activity?. Remove ScrollView.
+//TODO: Display songs/artists in db, num tagged and num played, stats activity? Remove ScrollView.
 
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
@@ -156,7 +156,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION);
         }
 
-        //TODO: getPreferences(), getSharedPreferences() or PreferenceManager?
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         View ret = inflater.inflate(R.layout.fragment_query, container, false);

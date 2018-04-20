@@ -28,7 +28,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-//FIXME: When notification is updated and when/how many times the ListView in PlaylistActivity gets updated.
+//TODO: Improve MainService impl, songIndex, time left calc, when notification is updated and when/how many times the ListView in PlaylistActivity gets updated.
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {

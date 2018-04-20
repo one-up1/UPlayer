@@ -31,6 +31,8 @@ public class SongsListView extends ListView {
     private DbOpenHelper dbOpenHelper;
     private Song editSong;
 
+    private int viewArtistSortBy;
+
     private OnDataSetChangedListener onDataSetChangedListener;
     private OnSongDeletedListener onSongDeletedListener;
 
@@ -44,13 +46,12 @@ public class SongsListView extends ListView {
     public boolean onContextItemSelected(MenuItem item) {
         final Song song = (Song) getItemAtPosition(
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
-        // TODO: Only display "View artist" when not already doing so?
-        // TODO: Pass sorting args to SongsActivity when "View artist" is selected?
         switch (item.getItemId()) {
             case R.id.view_artist:
                 context.startActivity(new Intent(getContext(), SongsActivity.class)
                         .putExtra(SongsActivity.ARG_ARTIST, song.getArtist())
-                        .putExtra(SongsActivity.ARG_JOINED_SORT_BY, BaseArgs.SORT_BY_NAME));
+                        .putExtra(SongsActivity.ARG_JOINED_SORT_BY,
+                                viewArtistSortBy == 0 ? BaseArgs.SORT_BY_NAME : viewArtistSortBy));
                 return true;
             case R.id.edit:
                 dbOpenHelper.querySong(song);
@@ -148,6 +149,10 @@ public class SongsListView extends ListView {
                     break;
             }
         }
+    }
+
+    public void setViewArtistSortBy(int viewArtistSortBy) {
+        this.viewArtistSortBy = viewArtistSortBy;
     }
 
     public void setOnDataSetChangedListener(OnDataSetChangedListener onDataSetChangedListener) {

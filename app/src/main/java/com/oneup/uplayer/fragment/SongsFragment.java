@@ -65,15 +65,17 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         Log.d(TAG, "SongsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
-        dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
         if (artists == null) {
             artist = getArguments().getParcelable(ARG_ARTIST);
             selection = Song.ARTIST_ID + "=" + artist.getId();
+            Log.d(TAG, "artist=" + artist + ", joinedSortBy=" + joinedSortBy +
+                    ", selection=" + selection);
         } else {
             selection = getArguments().getString(ARG_SELECTION);
+            dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
+            Log.d(TAG, artists.size() + " artists, joinedSortBy=" + joinedSortBy +
+                    ", selection=" + selection + ", dbOrderBy=" + dbOrderBy);
         }
-        Log.d(TAG, "joinedSortBy=" + joinedSortBy + ", selection=" + selection +
-                ", dbOrderBy=" + dbOrderBy);
 
         SparseArray<Song> songs;
         Song song;
@@ -219,6 +221,9 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         if (listView == null) {
             listView = new SongsListView(getActivity());
+            if (artist == null) {
+                listView.setViewArtistSortBy(joinedSortBy);
+            }
             listView.setOnItemClickListener(this);
             if (getActivity() instanceof MainActivity) {
                 listView.setOnDataSetChangedListener(this);
@@ -249,9 +254,9 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                                     ContextMenu.ContextMenuInfo menuInfo) {
         if (v == listView) {
             getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
+            menu.getItem(0).setVisible(artist == null);
         }
     }
-
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         return getUserVisibleHint() && listView.onContextItemSelected(item);

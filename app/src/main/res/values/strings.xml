@@ -11,7 +11,6 @@
 
     <string name="artist_ignore_file_read_error">Could not read artist ignore file</string>
 
-    <string name="totals">%1$d songs played (%2$d tagged), %3$d artists, %4$d total, %5$s</string>
     <string name="joined_sort_by">Joined sort by:</string>
     <string-array name="joined_sort_by_entries">
         <item />
@@ -30,8 +29,7 @@
     <string name="max_last_played">Max last played&#8230;</string>
     <string name="min_times_played">Min times played&#8230;</string>
     <string name="max_times_played">Max times played&#8230;</string>
-    <string name="db_order_by">DB order by</string>
-    <string-array name="db_order_by_entries">
+    <string-array name="db_order_by">
         <item />
         <item>Title</item>
         <item>Artist</item>
@@ -42,17 +40,19 @@
     </string-array>
     <string name="desc">Desc</string>
     <string name="tags">Tags&#8230;</string>
+    <string name="statistics">Statistics&#8230;</string>
+    <string name="statistics_message">%1$d songs played (%2$d tagged), %3$d artists, %4$d total, %5$s</string>
+    <string name="restore_playlist">Restore playlist</string>
     <string name="backup">Backup</string>
-    <string name="restore_backup">Restore backup</string>
     <string name="backup_completed">Backup completed</string>
+    <string name="restore_backup">Restore backup</string>
     <string name="restore_backup_confirm">Restore backup?</string>
     <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
     <string name="error">Error: %1$s</string>
-    <string name="restore_playlist">Restore playlist</string>
 
     <string name="info">Info</string>
-    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d (%3$s)\nDate modified: %4$s</string>
+    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d (%3$s)\nModified: %4$s</string>
     <string name="never">Never</string>
     <string name="na">N/A</string>
 

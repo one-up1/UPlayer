@@ -36,15 +36,15 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
     private static final String TAG = "UPlayer";
 
-    private static final String SQL_QUERY_PLAYED_DURATION =
-            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME +
-                    " WHERE " + Song.ARTIST_ID + "=?";
+    private static final String SQL_QUERY_PLAYED_DURATION = "SELECT SUM(" + Song.DURATION + "*" +
+            Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";
 
     private SparseArray<Artist> artists;
     private int joinedSortBy;
 
     private DbOpenHelper dbOpenHelper;
     private ArrayList<Artist> objects;
+
     private ListView listView;
     private ListAdapter listAdapter;
     private Parcelable listViewState;

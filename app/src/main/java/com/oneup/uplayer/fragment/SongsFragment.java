@@ -51,6 +51,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     private DbOpenHelper dbOpenHelper;
     private ArrayList<Song> objects;
+
     private SongsListView listView;
     private ListAdapter listAdapter;
     private Parcelable listViewState;

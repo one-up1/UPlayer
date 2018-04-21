@@ -22,9 +22,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
@@ -82,9 +80,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
     private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
     private static final String KEY_MAX_TIMES_PLAYED = "maxTimesPlayed";
-    private static final String KEY_TAGS = "tags";
     private static final String KEY_DB_ORDER_BY = "dbOrderBy";
     private static final String KEY_DB_ORDER_BY_DESC = "dbOrderByDesc";
+    private static final String KEY_TAGS = "tags";
 
     private static final int REQUEST_SELECT_MIN_DATE_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_DATE_ADDED = 2;
@@ -98,29 +96,25 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private DbOpenHelper dbOpenHelper;
     private SharedPreferences preferences;
 
-    private TextView tvTotals;
     private Spinner sJoinedSortBy;
     private EditText etTitle;
     private EditText etArtist;
-    private LinearLayout llDateAdded;
     private Button bMinDateAdded;
     private Button bMaxDateAdded;
     private EditText etMinYear;
     private EditText etMaxYear;
-    private LinearLayout llLastPlayed;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
-    private LinearLayout llTimesPlayed;
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
-    private LinearLayout llDbOrderBy;
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
     private Button bQuery;
     private Button bTags;
+    private Button bStatistics;
+    private Button bRestorePlaylist;
     private Button bBackup;
     private Button bRestoreBackup;
-    private Button bRestorePlaylist;
 
     private long minDateAdded;
     private long maxDateAdded;
@@ -137,22 +131,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
 
         dbOpenHelper = new DbOpenHelper(getActivity());
-        int songsPlayed, taggedSongCount, artistsPlayed, totalPlayed, totalDuration;
-        try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
-            taggedSongCount = DbOpenHelper.queryInt(db, SQL_QUERY_TAGGED_SONG_COUNT, null);
-            artistsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_ARTISTS_PLAYED, null);
-            totalPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_SONGS_PLAYED, null);
-            totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION, null);
-        }
-
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         View ret = inflater.inflate(R.layout.fragment_query, container, false);
-
-        tvTotals = ret.findViewById(R.id.tvTotals);
-        tvTotals.setText(getString(R.string.totals, songsPlayed, taggedSongCount, artistsPlayed,
-                totalPlayed, Util.formatDuration(totalDuration)));
 
         sJoinedSortBy = ret.findViewById(R.id.sJoinedSortBy);
         sJoinedSortBy.setOnItemSelectedListener(this);
@@ -163,8 +144,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
         etArtist = ret.findViewById(R.id.etArtist);
         setEditTextString(etArtist, KEY_ARTIST);
-
-        llDateAdded = ret.findViewById(R.id.llDateAdded);
 
         bMinDateAdded = ret.findViewById(R.id.bMinDateAdded);
         bMinDateAdded.setOnClickListener(this);
@@ -192,8 +171,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         etMaxYear = ret.findViewById(R.id.etMaxYear);
         setEditTextString(etMaxYear, KEY_MAX_YEAR);
 
-        llLastPlayed = ret.findViewById(R.id.llLastPlayed);
-
         bMinLastPlayed = ret.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         bMinLastPlayed.setOnLongClickListener(this);
@@ -214,15 +191,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
         }
 
-        llTimesPlayed = ret.findViewById(R.id.llTimesPlayed);
-
         etMinTimesPlayed = ret.findViewById(R.id.etMinTimesPlayed);
         setEditTextString(etMinTimesPlayed, KEY_MIN_TIMES_PLAYED);
 
         etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
         setEditTextString(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
-
-        llDbOrderBy = ret.findViewById(R.id.llDbOrderBy);
 
         sDbOrderBy = ret.findViewById(R.id.sDbOrderBy);
         setSpinnerSelection(sDbOrderBy, KEY_DB_ORDER_BY);
@@ -236,14 +209,17 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         bTags = ret.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
 
+        bStatistics = ret.findViewById(R.id.bStatistics);
+        bStatistics.setOnClickListener(this);
+
+        bRestorePlaylist = ret.findViewById(R.id.bRestorePlaylist);
+        bRestorePlaylist.setOnClickListener(this);
+
         bBackup = ret.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
 
         bRestoreBackup = ret.findViewById(R.id.bRestoreBackup);
         bRestoreBackup.setOnClickListener(this);
-
-        bRestorePlaylist = ret.findViewById(R.id.bRestorePlaylist);
-        bRestorePlaylist.setOnClickListener(this);
 
         return ret;
     }
@@ -288,10 +264,14 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (parent == sJoinedSortBy) {
             int dbVisibility = position == 0 ? View.VISIBLE : View.GONE;
             etArtist.setVisibility(dbVisibility);
-            llDateAdded.setVisibility(dbVisibility);
-            llLastPlayed.setVisibility(dbVisibility);
-            llTimesPlayed.setVisibility(dbVisibility);
-            llDbOrderBy.setVisibility(dbVisibility);
+            bMinDateAdded.setVisibility(dbVisibility);
+            bMaxDateAdded.setVisibility(dbVisibility);
+            bMinLastPlayed.setVisibility(dbVisibility);
+            bMaxLastPlayed.setVisibility(dbVisibility);
+            etMinTimesPlayed.setVisibility(dbVisibility);
+            etMaxTimesPlayed.setVisibility(dbVisibility);
+            sDbOrderBy.setVisibility(dbVisibility);
+            cbDbOrderByDesc.setVisibility(dbVisibility);
         }
     }
 
@@ -343,15 +323,15 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .setMultiChoiceItems(tags, checkedItems,
                             new DialogInterface.OnMultiChoiceClickListener() {
 
-                        @Override
-                        public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                            if (isChecked) {
-                                checkedTags.add(tags[which]);
-                            } else {
-                                checkedTags.remove(tags[which]);
-                            }
-                        }
-                    })
+                                @Override
+                                public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                                    if (isChecked) {
+                                        checkedTags.add(tags[which]);
+                                    } else {
+                                        checkedTags.remove(tags[which]);
+                                    }
+                                }
+                            })
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 
                         @Override
@@ -360,6 +340,21 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                         }
                     })
                     .show();
+        } else if (v == bStatistics) {
+            int songsPlayed, taggedSongCount, artistsPlayed, totalPlayed, totalDuration;
+            try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+                songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
+                taggedSongCount = DbOpenHelper.queryInt(db, SQL_QUERY_TAGGED_SONG_COUNT, null);
+                artistsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_ARTISTS_PLAYED, null);
+                totalPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_SONGS_PLAYED, null);
+                totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION, null);
+            }
+            Util.showInfoDialog(getContext(), getString(R.string.statistics), getString(
+                    R.string.statistics_message, songsPlayed, taggedSongCount,
+                    artistsPlayed, totalPlayed, Util.formatDuration(totalDuration)));
+        } else if (v == bRestorePlaylist) {
+            getActivity().startService(new Intent(getContext(), MainService.class)
+                    .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
         } else if (v == bBackup) {
             Log.d(TAG, "Running backup");
             try {
@@ -421,9 +416,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     })
                     .setNegativeButton(R.string.no, null)
                     .show();
-        } else if (v == bRestorePlaylist) {
-            getActivity().startService(new Intent(getContext(), MainService.class)
-                    .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
         }
     }
 

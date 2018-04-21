@@ -23,6 +23,8 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbComparator;
+import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
@@ -34,9 +36,14 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
     private static final String TAG = "UPlayer";
 
+    private static final String SQL_QUERY_PLAYED_DURATION =
+            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME +
+                    " WHERE " + Song.ARTIST_ID + "=?";
+
     private SparseArray<Artist> artists;
     private int joinedSortBy;
 
+    private DbOpenHelper dbOpenHelper;
     private ArrayList<Artist> objects;
     private ListView listView;
     private ListAdapter listAdapter;
@@ -54,6 +61,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
         Log.d(TAG, artists.size() + " artists, joinedSortBy=" + joinedSortBy);
 
+        dbOpenHelper = new DbOpenHelper(getActivity());
         if (objects == null) {
             objects = new ArrayList<>();
         } else {
@@ -163,6 +171,8 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                                 getString(R.string.never) :
                                 Util.formatDateTimeAgo(artist.getLastPlayed()),
                         artist.getTimesPlayed(),
+                        Util.formatDuration(dbOpenHelper.queryInt(SQL_QUERY_PLAYED_DURATION,
+                                new String[]{Integer.toString(artist.getId())})),
                         artist.getDateModified() == 0 ?
                                 getString(R.string.na) :
                                 Util.formatDateTimeAgo(artist.getDateModified()))
@@ -178,6 +188,16 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         Log.d(TAG, "ArtistsFragment.onPause()");
         listViewState = listView.onSaveInstanceState();
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "ArtistsFragment.onDestroy()");
+        if (dbOpenHelper != null) {
+            dbOpenHelper.close();
+        }
+
+        super.onDestroy();
     }
 
     @Override

@@ -22,6 +22,8 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.util.Calendar;
 
+//TODO: No SongsListView, PlaylistActivity should also use SongsFragment.
+
 public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";
 
@@ -79,9 +81,7 @@ public class SongsListView extends ListView {
                 return true;
             case R.id.mark_played:
                 dbOpenHelper.updateSongPlayed(song);
-                Toast.makeText(context, context.getString(R.string.times_played,
-                        song.getArtist().getTimesPlayed(), song.getTimesPlayed()),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
 
                 ((SongAdapter) getAdapter()).notifyDataSetChanged();
                 if (onDataSetChangedListener != null) {

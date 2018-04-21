@@ -324,7 +324,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             song.setArtist(artist);
         } else {
             Artist artist = artists.get(id);
-            if (artist.getId() != id) {
+            if (artist == null) {
                 Log.w(TAG, "Artist for song '" + song + "' not found");
                 return false;
             }

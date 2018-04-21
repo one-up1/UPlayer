@@ -52,7 +52,7 @@
     <string name="restore_playlist">Restore playlist</string>
 
     <string name="info">Info</string>
-    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d\nDate modified: %3$s</string>
+    <string name="info_message_artist">Last played: %1$s\nTimes played: %2$d (%3$s)\nDate modified: %4$s</string>
     <string name="never">Never</string>
     <string name="na">N/A</string>
 
@@ -78,14 +78,13 @@
     <string name="edit_bookmkared">Bookmarked:</string>
     <string name="edit_tag">Tag:</string>
     <string name="date_added">Date added&#8230;</string>
-    <string name="song_updated">Song updated</string>
 
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_deleted">Bookmark deleted</string>
 
     <string name="mark_played">Mark played</string>
-    <string name="times_played">Times played: %1$d:%2$d</string>
+    <string name="song_updated">Song updated</string>
 
     <string name="delete">Delete</string>
     <string name="delete_song">Delete song</string>

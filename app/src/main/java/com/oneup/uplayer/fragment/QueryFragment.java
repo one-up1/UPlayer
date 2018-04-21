@@ -52,8 +52,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Set;
 
-//TODO: Display songs/artists in db, num tagged and num played, stats activity? Remove ScrollView.
-
 public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
@@ -141,11 +139,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         dbOpenHelper = new DbOpenHelper(getActivity());
         int songsPlayed, taggedSongCount, artistsPlayed, totalPlayed, totalDuration;
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED);
-            taggedSongCount = DbOpenHelper.queryInt(db, SQL_QUERY_TAGGED_SONG_COUNT);
-            artistsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_ARTISTS_PLAYED);
-            totalPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_SONGS_PLAYED);
-            totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION);
+            songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
+            taggedSongCount = DbOpenHelper.queryInt(db, SQL_QUERY_TAGGED_SONG_COUNT, null);
+            artistsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_ARTISTS_PLAYED, null);
+            totalPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_SONGS_PLAYED, null);
+            totalDuration = DbOpenHelper.queryInt(db, SQL_QUERY_TOTAL_DURATION, null);
         }
 
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());

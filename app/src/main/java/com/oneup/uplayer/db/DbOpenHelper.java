@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.oneup.uplayer.util.Calendar;
 
+import java.sql.SQLInput;
 import java.util.ArrayList;
 
 public class DbOpenHelper extends SQLiteOpenHelper {
@@ -275,8 +276,14 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    public static int queryInt(SQLiteDatabase db, String sql) {
-        try (Cursor c = db.rawQuery(sql, null)) {
+    public int queryInt(String sql, String[] selectionArgs) {
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            return queryInt(db, sql, selectionArgs);
+        }
+    }
+
+    public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
+        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
             return c.moveToFirst() ? c.getInt(0) : 0;
         }
     }

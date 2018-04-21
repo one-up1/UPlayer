@@ -353,13 +353,26 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         } else if (v == bTags) {
             final String[] tags = dbOpenHelper.querySongTags().toArray(new String[0]);
             new AlertDialog.Builder(getActivity())
-                    .setItems(tags, new DialogInterface.OnClickListener() {
+                    .setMultiChoiceItems(tags, new boolean[tags.length],
+                            new DialogInterface.OnMultiChoiceClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                            Log.d(TAG, "onClick(" + which + "," + isChecked + ")");
+                        }
+                    })
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    /*.setItems(tags, new DialogInterface.OnClickListener() {
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             query(tags[which] );
                         }
-                    })
+                    })*/
                     .show();
         } else if (v == bBackup) {
             Log.d(TAG, "Running backup");

@@ -148,27 +148,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/llBookmarkedTagSelection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Spinner
-                android:id="@+id/sBookmarkedSelection"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:entries="@array/bookmarked_selection_entries" />
-
-            <Spinner
-                android:id="@+id/sTagSelection"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:entries="@array/tag_selection_entries" />
-
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/llDbOrderBy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

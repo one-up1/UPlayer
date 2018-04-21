@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -49,6 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Set;
 
 //TODO: Display songs/artists in db, num tagged and num played, stats activity? Remove ScrollView.
 
@@ -71,9 +73,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String SQL_QUERY_TOTAL_DURATION =
             "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
 
-    private static final String SQL_IS_NOT_NULL = " IS NOT NULL";
-    private static final String SQL_IS_NULL = " IS NULL";
-
     private static final String KEY_JOINED_SORT_BY = "joinedSortBy";
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
@@ -85,8 +84,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
     private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
     private static final String KEY_MAX_TIMES_PLAYED = "maxTimesPlayed";
-    private static final String KEY_BOOKMARKED_SELECTION = "bookmarkedSelection";
-    private static final String KEY_TAG_SELECTION = "tagSelection";
+    private static final String KEY_TAGS = "tags";
     private static final String KEY_DB_ORDER_BY = "dbOrderBy";
     private static final String KEY_DB_ORDER_BY_DESC = "dbOrderByDesc";
 
@@ -94,9 +92,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final int REQUEST_SELECT_MAX_DATE_ADDED = 2;
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
-
-    private static final int SELECTION_SET = 1;
-    private static final int SELECTION_NOT_SET = 2;
 
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
@@ -120,9 +115,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private LinearLayout llTimesPlayed;
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
-    private LinearLayout llBookmarkedTagSelection;
-    private Spinner sBookmarkedSelection;
-    private Spinner sTagSelection;
     private LinearLayout llDbOrderBy;
     private Spinner sDbOrderBy;
     private CheckBox cbDbOrderByDesc;
@@ -232,14 +224,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
         setEditTextString(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
 
-        llBookmarkedTagSelection = ret.findViewById(R.id.llBookmarkedTagSelection);
-
-        sBookmarkedSelection = ret.findViewById(R.id.sBookmarkedSelection);
-        setSpinnerSelection(sBookmarkedSelection, KEY_BOOKMARKED_SELECTION);
-
-        sTagSelection = ret.findViewById(R.id.sTagSelection);
-        setSpinnerSelection(sTagSelection, KEY_TAG_SELECTION);
-
         llDbOrderBy = ret.findViewById(R.id.llDbOrderBy);
 
         sDbOrderBy = ret.findViewById(R.id.sDbOrderBy);
@@ -309,7 +293,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             llDateAdded.setVisibility(dbVisibility);
             llLastPlayed.setVisibility(dbVisibility);
             llTimesPlayed.setVisibility(dbVisibility);
-            llBookmarkedTagSelection.setVisibility(dbVisibility);
             llDbOrderBy.setVisibility(dbVisibility);
         }
     }
@@ -352,27 +335,32 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             query(null);
         } else if (v == bTags) {
             final String[] tags = dbOpenHelper.querySongTags().toArray(new String[0]);
+            final Set<String> checkedTags = preferences.getStringSet(KEY_TAGS,
+                    new ArraySet<String>());
+            boolean[] checkedItems = new boolean[tags.length];
+            for (int i = 0; i < tags.length; i++) {
+                checkedItems[i] = checkedTags.contains(tags[i]);
+            }
             new AlertDialog.Builder(getActivity())
-                    .setMultiChoiceItems(tags, new boolean[tags.length],
+                    .setMultiChoiceItems(tags, checkedItems,
                             new DialogInterface.OnMultiChoiceClickListener() {
 
                         @Override
                         public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                            Log.d(TAG, "onClick(" + which + "," + isChecked + ")");
+                            if (isChecked) {
+                                checkedTags.add(tags[which]);
+                            } else {
+                                checkedTags.remove(tags[which]);
+                            }
                         }
                     })
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
-                    })
-                    /*.setItems(tags, new DialogInterface.OnClickListener() {
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            query(tags[which] );
+                            query(checkedTags);
                         }
-                    })*/
+                    })
                     .show();
         } else if (v == bBackup) {
             Log.d(TAG, "Running backup");
@@ -487,7 +475,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
     }
 
-    private void query(String tag) {
+    private void query(Set<String> tags) {
         String selection = null, dbOrderBy = null;
         SharedPreferences.Editor preferences = this.preferences.edit();
 
@@ -557,16 +545,24 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             }
             preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
 
-            int bookmarkedSelection = sBookmarkedSelection.getSelectedItemPosition();
-            selection = appendSetSelection(selection, Song.BOOKMARKED, bookmarkedSelection);
-            preferences.putInt(KEY_BOOKMARKED_SELECTION, bookmarkedSelection);
-
-            if (tag == null) {
-                int tagSelection = sTagSelection.getSelectedItemPosition();
-                selection = appendSetSelection(selection, Song.TAG, tagSelection);
-                preferences.putInt(KEY_TAG_SELECTION, tagSelection);
-            } else {
-                selection = appendSelection(selection, Song.TAG + "='" + tag + "'");
+            if (tags != null) {
+                String tagSelection;
+                if (tags.size() == 0) {
+                    tagSelection = "IS NULL";
+                } else {
+                    StringBuilder sbTags = new StringBuilder();
+                    for (String tag : tags) {
+                        sbTags.append(sbTags.length() == 0 ? '(' : ',');
+                        sbTags.append('\'');
+                        sbTags.append(tag);
+                        sbTags.append('\'');
+                    }
+                    sbTags.append(')');
+                    tagSelection = "IN" + sbTags;
+                }
+                selection = appendSelection(selection,
+                        Song.TAG + " " + tagSelection);
+                preferences.putStringSet(KEY_TAGS, tags);
             }
 
             int dbOrderByColumn = sDbOrderBy.getSelectedItemPosition();
@@ -780,17 +776,5 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     private static String appendSelection(String selection, String s) {
         return selection == null ? s : selection + " AND " + s;
-    }
-
-    private static String appendSetSelection(String selection, String column,
-                                             int selectedItemPosition) {
-        switch (selectedItemPosition) {
-            case SELECTION_SET:
-                return appendSelection(selection, column + SQL_IS_NOT_NULL);
-            case SELECTION_NOT_SET:
-                return appendSelection(selection, column + SQL_IS_NULL);
-            default:
-                return selection;
-        }
     }
 }

@@ -17,7 +17,9 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressLint("SimpleDateFormat")
 public class Util {
-    private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("E dd-MM-yyyy HH:mm");
+    private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+    private static final DateFormat DATE_TIME_FORMAT_WEEKDAY =
+            new SimpleDateFormat("E dd-MM-yyyy HH:mm");
     private static final NumberFormat TIME_NUMBER_FORMAT = NumberFormat.getInstance();
 
     static {
@@ -32,8 +34,12 @@ public class Util {
                 Environment.DIRECTORY_MUSIC), name);
     }
 
+    public static String formatDateTime(long seconds) {
+        return formatDateTime(DATE_TIME_FORMAT, seconds);
+    }
+
     public static String formatDateTimeAgo(long seconds) {
-        String ret = formatDateTime(seconds) + "\n";
+        String ret = formatDateTime(DATE_TIME_FORMAT_WEEKDAY, seconds) + "\n";
         long timeAgo = Calendar.currentTime() - seconds;
 
         // Process weeks.
@@ -54,10 +60,6 @@ public class Util {
         return ret + TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toHours(timeAgo)) + ":" +
                 TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toMinutes(timeAgo) -
                         TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(timeAgo)));
-    }
-
-    public static String formatDateTime(long seconds) {
-        return DATE_TIME_FORMAT.format(TimeUnit.SECONDS.toMillis(seconds));
     }
 
     public static String formatDuration(long millis) {
@@ -82,5 +84,9 @@ public class Util {
         if (inputMethodManager != null) {
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+    }
+
+    private static String formatDateTime(DateFormat format, long seconds) {
+        return format.format(TimeUnit.SECONDS.toMillis(seconds));
     }
 }

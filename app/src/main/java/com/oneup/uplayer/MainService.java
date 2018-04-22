@@ -263,17 +263,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.prepareAsync();
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
-
-            // Delete song from DB when it doesn't exist anymore.
-            dbOpenHelper.deleteSong(song);
-            songs.remove(song);
-
-            if (songIndex < songs.size()) {
-                play();
-            } else {
-                Log.d(TAG, "No more songs to play");
-                stop();
-            }
         }
     }
 

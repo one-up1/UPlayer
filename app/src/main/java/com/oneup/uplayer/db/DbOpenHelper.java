@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.oneup.uplayer.util.Calendar;
 
-import java.sql.SQLInput;
 import java.util.ArrayList;
 
 public class DbOpenHelper extends SQLiteOpenHelper {
@@ -71,11 +70,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 } else {
                     values.put(Artist.LAST_PLAYED, artist.getLastPlayed());
                 }
-                if (artist.getTimesPlayed() == 0) {
-                    values.putNull(Artist.TIMES_PLAYED);
-                } else {
-                    values.put(Artist.TIMES_PLAYED, artist.getTimesPlayed());
-                }
+                values.put(Artist.TIMES_PLAYED, artist.getTimesPlayed());
                 if (artist.getDateModified() == 0) {
                     values.putNull(Artist.DATE_MODIFIED);
                 } else {
@@ -191,11 +186,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 } else {
                     values.put(Song.DURATION, song.getDuration());
                 }
-                if (song.getLastPlayed() == 0) {
-                    values.putNull(Song.LAST_PLAYED);
-                } else {
-                    values.put(Song.LAST_PLAYED, song.getLastPlayed());
-                }
+                values.put(Song.LAST_PLAYED, song.getLastPlayed());
                 if (song.getTimesPlayed() == 0) {
                     values.putNull(Song.TIMES_PLAYED);
                 } else {
@@ -276,17 +267,35 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    public int queryInt(String sql, String[] selectionArgs) {
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            return queryInt(db, sql, selectionArgs);
-        }
-    }
-
     public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
         try (Cursor c = db.rawQuery(sql, selectionArgs)) {
             return c.moveToFirst() ? c.getInt(0) : 0;
         }
     }
+
+    public static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
+        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+            return c.moveToFirst() ? c.getLong(0) : 0;
+        }
+    }
+
+    /*public void t(Context context) {
+        try {
+            try (SQLiteDatabase db = getWritableDatabase()) {
+                db.execSQL("UPDATE " + Artist.TABLE_NAME + " SET " +
+                        Artist.TIMES_PLAYED + "=0 WHERE " +
+                        Artist.TIMES_PLAYED + " IS NULL");
+
+                db.execSQL("UPDATE " + Song.TABLE_NAME + " SET " +
+                        Song.TIMES_PLAYED + "=0 WHERE " +
+                        Song.TIMES_PLAYED + " IS NULL");
+                Log.d(TAG,  "OK");
+            }
+            Toast.makeText(context, R.string.ok, Toast.LENGTH_LONG).show();
+        } catch (Exception ex) {
+            Log.e(TAG, "Error", ex);
+        }
+    }*/
 
     /*public void t(Context context) {
         Log.d(TAG, "Starting");

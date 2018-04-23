@@ -21,9 +21,11 @@ public class Util {
     private static final DateFormat DATE_TIME_FORMAT_WEEKDAY =
             new SimpleDateFormat("E dd-MM-yyyy HH:mm");
     private static final NumberFormat TIME_NUMBER_FORMAT = NumberFormat.getInstance();
+    private static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
 
     static {
         TIME_NUMBER_FORMAT.setMinimumIntegerDigits(2);
+        PERCENT_FORMAT.setMaximumFractionDigits(1);
     }
 
     private Util() {
@@ -39,35 +41,16 @@ public class Util {
     }
 
     public static String formatDateTimeAgo(long seconds) {
-        String ret = formatDateTime(DATE_TIME_FORMAT_WEEKDAY, seconds) + "\n";
-        long timeAgo = Calendar.currentTime() - seconds;
-
-        // Process weeks.
-        long weeks = TimeUnit.SECONDS.toDays(timeAgo) / 7;
-        if (weeks > 0) {
-            ret += Long.toString(weeks) + "w ";
-            timeAgo -= TimeUnit.DAYS.toSeconds(weeks * 7);
-        }
-
-        // Process days.
-        long days = TimeUnit.SECONDS.toDays(timeAgo);
-        if (days > 0) {
-            ret += Long.toString(days) + "d ";
-            timeAgo -= TimeUnit.DAYS.toSeconds(days);
-        }
-
-        // Append HH:mm.
-        return ret + TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toHours(timeAgo)) + ":" +
-                TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toMinutes(timeAgo) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(timeAgo)));
+        return formatDateTime(DATE_TIME_FORMAT_WEEKDAY, seconds) + "\n" +
+                formatDuration(Calendar.currentTime() - seconds, false);
     }
 
     public static String formatDuration(long millis) {
-        return TIME_NUMBER_FORMAT.format(TimeUnit.MILLISECONDS.toHours(millis)) + ":" +
-                TIME_NUMBER_FORMAT.format(TimeUnit.MILLISECONDS.toMinutes(millis) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis))) + ":" +
-                TIME_NUMBER_FORMAT.format(TimeUnit.MILLISECONDS.toSeconds(millis) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+        return formatDuration(TimeUnit.MILLISECONDS.toSeconds(millis), true);
+    }
+
+    public static String formatPercent(double number) {
+        return PERCENT_FORMAT.format(number);
     }
 
     public static void showInfoDialog(Context context, String title, String message) {
@@ -88,5 +71,36 @@ public class Util {
 
     private static String formatDateTime(DateFormat format, long seconds) {
         return format.format(TimeUnit.SECONDS.toMillis(seconds));
+    }
+
+    private static String formatDuration(long seconds, boolean showSeconds) {
+        String ret = "";
+
+        // Process weeks.
+        long weeks = TimeUnit.SECONDS.toDays(seconds) / 7;
+        if (weeks > 0) {
+            ret += Long.toString(weeks) + "w ";
+            seconds -= TimeUnit.DAYS.toSeconds(weeks * 7);
+        }
+
+        // Process days.
+        long days = TimeUnit.SECONDS.toDays(seconds);
+        if (days > 0) {
+            ret += Long.toString(days) + "d ";
+            seconds -= TimeUnit.DAYS.toSeconds(days);
+        }
+
+        // Append HH:mm.
+        ret += TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toHours(seconds)) + ":" +
+                TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toMinutes(seconds) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(seconds)));
+
+        // Process seconds.
+        if (showSeconds) {
+            ret += ":" + TIME_NUMBER_FORMAT.format(seconds -
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(seconds)));
+        }
+
+        return ret;
     }
 }

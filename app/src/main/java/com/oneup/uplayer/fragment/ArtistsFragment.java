@@ -1,6 +1,7 @@
 package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -36,8 +37,9 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
 
     private static final String TAG = "UPlayer";
 
-    private static final String SQL_QUERY_PLAYED_DURATION = "SELECT SUM(" + Song.DURATION + "*" +
-            Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";
+    private static final String SQL_QUERY_PLAYED_DURATION =
+            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " +
+                    Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";
 
     private SparseArray<Artist> artists;
     private int joinedSortBy;
@@ -165,14 +167,18 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                 item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.info:
+                long playedDuration;
+                try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+                    playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION,
+                            new String[]{Integer.toString(artist.getId())});
+                }
                 Util.showInfoDialog(getContext(), artist.getArtist(), getString(
                         R.string.info_message_artist,
                         artist.getLastPlayed() == 0 ?
                                 getString(R.string.never) :
                                 Util.formatDateTimeAgo(artist.getLastPlayed()),
                         artist.getTimesPlayed(),
-                        Util.formatDuration(dbOpenHelper.queryInt(SQL_QUERY_PLAYED_DURATION,
-                                new String[]{Integer.toString(artist.getId())})),
+                        Util.formatDuration(playedDuration),
                         artist.getDateModified() == 0 ?
                                 getString(R.string.na) :
                                 Util.formatDateTimeAgo(artist.getDateModified()))

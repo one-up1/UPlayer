@@ -41,7 +41,7 @@
     <string name="desc">Desc</string>
     <string name="tags">Tags&#8230;</string>
     <string name="statistics">Statistics&#8230;</string>
-    <string name="statistics_message">%1$d songs played (%2$d tagged), %3$d artists, %4$d total, %5$s</string>
+    <string name="statistics_message">Song count: %1$d\nSongs played: %2$d (%3$s)\nSongs unplayed: %4$d (%5$s)\nSongs tagged: %6$d (%7$s)\nSongs untagged: %8$d (%9$s)\nTimes played: %10$d (%11$s)</string>
     <string name="restore_playlist">Restore playlist</string>
     <string name="backup">Backup</string>
     <string name="backup_completed">Backup completed</string>

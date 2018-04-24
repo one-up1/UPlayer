@@ -426,6 +426,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
             songIndex = preferences.getInt(ARG_SONG_INDEX, 0);
             position = preferences.getInt(KEY_POSITION, 0);
+            //TODO: Don't start playing after restoring playlist when already done, go to start.
             Log.d(TAG, "Restored playlist with " + songs.size() +
                     " songs, songIndex=" + songIndex + ", position=" + position);
             if (songIndex >= songs.size()) {

@@ -57,6 +57,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String SQL_QUERY_SONG_COUNT =
             "SELECT COUNT(*) FROM " + Song.TABLE_NAME;
 
+    private static final String SQL_QUERY_SONGS_DURATION =
+            "SELECT SUM(" + Song.DURATION + ") FROM " + Song.TABLE_NAME;
+
     private static final String SQL_QUERY_SONGS_PLAYED =
             "SELECT COUNT(*) FROM " + Song.TABLE_NAME + " WHERE " + Song.TIMES_PLAYED + ">0";
 
@@ -350,23 +353,27 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     .show();
         } else if (v == bStatistics) {
             int songCount, songsPlayed, songsUnplayed, songsTagged, songsUntagged, timesPlayed;
-            long playedDuration;
+            long songsDuration, playedDuration;
             try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
                 songCount = DbOpenHelper.queryInt(db, SQL_QUERY_SONG_COUNT, null);
+                songsDuration = DbOpenHelper.queryLong(db, SQL_QUERY_SONGS_DURATION, null);
                 songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
                 songsUnplayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_UNPLAYED, null);
                 songsTagged = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_TAGGED, null);
                 songsUntagged = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_UNTAGGED, null);
                 timesPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TIMES_PLAYED, null);
                 playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
-            }
+            }Log.d(TAG, playedDuration + " / " + songsDuration + " = " + (playedDuration / songsDuration));
             Util.showInfoDialog(getContext(), getString(R.string.statistics), getString(
-                    R.string.statistics_message, songCount,
+                    R.string.statistics_message,
+                    songCount, Util.formatDuration(songsDuration),
                     songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
                     songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),
                     songsTagged, Util.formatPercent((double) songsTagged / songCount),
                     songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
-                    timesPlayed, Util.formatDuration(playedDuration)));
+                    timesPlayed, Util.formatDuration(playedDuration),
+                    Math.round((double) timesPlayed / songCount),
+                    Util.formatDuration(playedDuration / songCount)));
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));

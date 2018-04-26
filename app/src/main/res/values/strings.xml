@@ -40,6 +40,8 @@
     </string-array>
     <string name="desc">Desc</string>
     <string name="tags">Tags&#8230;</string>
+    <string name="none">None</string>
+    <string name="all">All</string>
     <string name="statistics">Statistics</string>
     <string name="statistics_message">Song count: %1$d (%2$s)\nSongs played: %3$d (%4$s)\nSongs unplayed: %5$d (%6$s)\nSongs tagged: %7$d (%8$s)\nSongs untagged: %9$d (%10$s)\nTimes played: %11$d (%12$s)\nAverage times played: %13$d (%14$s)</string>
     <string name="restore_playlist">Restore playlist</string>

@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -330,7 +331,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             for (int i = 0; i < tags.length; i++) {
                 checkedItems[i] = checkedTags.contains(tags[i]);
             }
-            new AlertDialog.Builder(getActivity())
+            final AlertDialog tagsDialog = new AlertDialog.Builder(getActivity())
                     .setMultiChoiceItems(tags, checkedItems,
                             new DialogInterface.OnMultiChoiceClickListener() {
 
@@ -344,6 +345,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                                     }
                                 }
                             })
+                    .setNeutralButton(R.string.none, null)
+                    .setNegativeButton(R.string.all, null)
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 
                         @Override
@@ -351,7 +354,31 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             query(checkedTags);
                         }
                     })
-                    .show();
+                    .create();
+            tagsDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+                @Override
+                public void onShow(DialogInterface dialog) {
+                    final ListView listView = tagsDialog.getListView();
+                    final Button bNone = tagsDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+                    final Button bAll = tagsDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+                    View.OnClickListener buttonOnClickListener = new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View v) {
+                            for (int i = 0; i < tags.length; i++) {
+                                if (v == bNone == checkedTags.contains(tags[i])) {
+                                    listView.performItemClick(listView, i, i);
+                                }
+                            }
+                        }
+                    };
+                    bAll.setOnClickListener(buttonOnClickListener);
+                    bNone.setOnClickListener(buttonOnClickListener);
+                }
+            });
+            tagsDialog.show();
         } else if (v == bStatistics) {
             int songCount, songsPlayed, songsUnplayed, songsTagged, songsUntagged, timesPlayed;
             long songsDuration, playedDuration;

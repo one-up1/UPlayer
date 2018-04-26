@@ -258,6 +258,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             menu.getItem(0).setVisible(artist == null);
         }
     }
+
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         return getUserVisibleHint() && listView.onContextItemSelected(item);

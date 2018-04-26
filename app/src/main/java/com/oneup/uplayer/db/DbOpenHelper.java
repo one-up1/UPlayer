@@ -186,12 +186,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 } else {
                     values.put(Song.DURATION, song.getDuration());
                 }
-                values.put(Song.LAST_PLAYED, song.getLastPlayed());
-                if (song.getTimesPlayed() == 0) {
-                    values.putNull(Song.TIMES_PLAYED);
+                if (song.getLastPlayed() == 0) {
+                    values.putNull(Song.LAST_PLAYED);
                 } else {
-                    values.put(Song.TIMES_PLAYED, song.getTimesPlayed());
+                    values.put(Song.LAST_PLAYED, song.getLastPlayed());
                 }
+                values.put(Song.TIMES_PLAYED, song.getTimesPlayed());
                 if (song.getBookmarked() == 0) {
                     values.putNull(Song.BOOKMARKED);
                 } else {
@@ -280,6 +280,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     /*public void t(Context context) {
+        String msg;
         try {
             try (SQLiteDatabase db = getWritableDatabase()) {
                 db.execSQL("UPDATE " + Artist.TABLE_NAME + " SET " +
@@ -291,10 +292,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                         Song.TIMES_PLAYED + " IS NULL");
                 Log.d(TAG,  "OK");
             }
-            Toast.makeText(context, R.string.ok, Toast.LENGTH_LONG).show();
+            msg = "OK";
         } catch (Exception ex) {
             Log.e(TAG, "Error", ex);
+            msg = "Error: " + ex.getMessage();
         }
+        com.oneup.uplayer.util.Util.showInfoDialog(context, "t()", msg);
     }*/
 
     /*public void t(Context context) {

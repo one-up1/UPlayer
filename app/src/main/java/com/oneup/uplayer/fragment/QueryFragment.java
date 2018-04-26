@@ -335,7 +335,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                             new DialogInterface.OnMultiChoiceClickListener() {
 
                                 @Override
-                                public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                                public void onClick(DialogInterface dialog,
+                                                    int which, boolean isChecked) {
                                     if (isChecked) {
                                         checkedTags.add(tags[which]);
                                     } else {
@@ -363,7 +364,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 songsUntagged = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_UNTAGGED, null);
                 timesPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TIMES_PLAYED, null);
                 playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
-            }Log.d(TAG, playedDuration + " / " + songsDuration + " = " + (playedDuration / songsDuration));
+            }
             Util.showInfoDialog(getContext(), getString(R.string.statistics), getString(
                     R.string.statistics_message,
                     songCount, Util.formatDuration(songsDuration),

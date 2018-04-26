@@ -400,8 +400,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     songsTagged, Util.formatPercent((double) songsTagged / songCount),
                     songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
                     timesPlayed, Util.formatDuration(playedDuration),
-                    Math.round((double) timesPlayed / songCount),
-                    Util.formatDuration(playedDuration / songCount)));
+                    Math.round((double) timesPlayed / songsPlayed),
+                    Util.formatDuration(playedDuration / songsPlayed)));
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));

@@ -109,7 +109,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(notificationViews, R.id.ibVolumeUp, REQUEST_VOLUME_UP);
 
         notification = new NotificationCompat.Builder(this, TAG)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setCustomContentView(notificationViews)
                 .setCustomBigContentView(notificationViews)
                 .setOngoing(true)

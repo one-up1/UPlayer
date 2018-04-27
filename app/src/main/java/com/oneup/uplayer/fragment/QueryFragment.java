@@ -663,9 +663,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     if (!c.isNull(2)) {
                         artist.put(Artist.LAST_PLAYED, c.getLong(2));
                     }
-                    if (!c.isNull(3)) {
-                        artist.put(Artist.TIMES_PLAYED, c.getInt(3));
-                    }
+                    artist.put(Artist.TIMES_PLAYED, c.getInt(3));
                     if (!c.isNull(4)) {
                         artist.put(Artist.DATE_MODIFIED, c.getLong(4));
                     }
@@ -693,9 +691,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     if (!c.isNull(6)) {
                         song.put(Song.LAST_PLAYED, c.getLong(6));
                     }
-                    if (!c.isNull(7)) {
-                        song.put(Song.TIMES_PLAYED, c.getInt(7));
-                    }
+                    song.put(Song.TIMES_PLAYED, c.getInt(7));
                     if (!c.isNull(8)) {
                         song.put(Song.BOOKMARKED, c.getLong(8));
                     }
@@ -744,9 +740,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 if (jsoArtist.has(Artist.LAST_PLAYED)) {
                     artist.setLastPlayed(jsoArtist.getLong(Artist.LAST_PLAYED));
                 }
-                if (jsoArtist.has(Artist.TIMES_PLAYED)) {
-                    artist.setTimesPlayed(jsoArtist.getInt(Artist.TIMES_PLAYED));
-                }
+                artist.setTimesPlayed(jsoArtist.getInt(Artist.TIMES_PLAYED));
                 if (jsoArtist.has(Artist.DATE_MODIFIED)) {
                     artist.setDateModified(jsoArtist.getLong(Artist.DATE_MODIFIED));
                 }
@@ -794,9 +788,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 if (jsoSong.has(Song.LAST_PLAYED)) {
                     song.setLastPlayed(jsoSong.getLong(Song.LAST_PLAYED));
                 }
-                if (jsoSong.has(Song.TIMES_PLAYED)) {
-                    song.setTimesPlayed(jsoSong.getInt(Song.TIMES_PLAYED));
-                }
+                song.setTimesPlayed(jsoSong.getInt(Song.TIMES_PLAYED));
                 if (jsoSong.has(Song.BOOKMARKED)) {
                     song.setBookmarked(jsoSong.getLong(Song.BOOKMARKED));
                 }

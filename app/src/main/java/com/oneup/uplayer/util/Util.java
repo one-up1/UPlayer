@@ -17,8 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressLint("SimpleDateFormat")
 public class Util {
-    private static final String MUSIC_DIR = "/mnt/ext_sdcard/Music";
-
     private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
     private static final DateFormat DATE_TIME_FORMAT_WEEKDAY =
             new SimpleDateFormat("E dd-MM-yyyy HH:mm");
@@ -34,9 +32,8 @@ public class Util {
     }
 
     public static File getMusicFile(String name) {
-        /*return new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC), name);*/
-        return new File(MUSIC_DIR, name);
+        return new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_MUSIC), name);
     }
 
     public static String formatDateTime(long seconds) {

@@ -108,6 +108,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(notificationViews, R.id.ibVolumeDown, REQUEST_VOLUME_DOWN);
         setOnClickPendingIntent(notificationViews, R.id.ibVolumeUp, REQUEST_VOLUME_UP);
 
+        //FIXME: Notification icon is always ic_launcher.
         notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setCustomContentView(notificationViews)

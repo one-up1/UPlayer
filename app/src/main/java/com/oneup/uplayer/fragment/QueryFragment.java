@@ -55,11 +55,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
 
-    private static final String SQL_QUERY_ARTIST_COUNT =
-            "SELECT COUNT(*) FROM " + Artist.TABLE_NAME;
-
     private static final String SQL_QUERY_SONG_COUNT =
             "SELECT COUNT(*) FROM " + Song.TABLE_NAME;
+
+    private static final String SQL_QUERY_ARTIST_COUNT =
+            "SELECT COUNT(*) FROM " + Artist.TABLE_NAME;
 
     private static final String SQL_QUERY_SONGS_DURATION =
             "SELECT SUM(" + Song.DURATION + ") FROM " + Song.TABLE_NAME;
@@ -398,8 +398,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
             }
             Util.showInfoDialog(getContext(), getString(R.string.statistics), getString(
-                    R.string.statistics_message, artistCount,
+                    R.string.statistics_message,
                     songCount, Util.formatDuration(songsDuration),
+                    artistCount, Math.round((double) songCount / artistCount),
                     songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
                     songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),
                     songsTagged, Util.formatPercent((double) songsTagged / songCount),

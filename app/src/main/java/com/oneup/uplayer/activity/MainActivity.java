@@ -36,6 +36,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
+
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
 
     private DbOpenHelper dbOpenHelper;
@@ -54,27 +55,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         dbOpenHelper = new DbOpenHelper(this);
         //dbOpenHelper.t(this);
 
-        if (ARTIST_IGNORE_FILE.exists()) {
-            try {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                        new FileInputStream(ARTIST_IGNORE_FILE)))) {
-                    String line;
-                    artistIgnore = new ArrayList<>();
-                    while ((line = reader.readLine()) != null) {
-                        artistIgnore.add(line.toLowerCase());
-                    }
-                }
-                Log.d(TAG, artistIgnore.size() + " artists on ignore list");
-            } catch (Exception ex) {
-                Log.e(TAG, "Error reading artist ignore file", ex);
-                Toast.makeText(this, R.string.artist_ignore_file_read_error,
-                        Toast.LENGTH_LONG).show();
-                artistIgnore = null;
-            }
-        } else {
-            Log.d(TAG, "No artist ignore file");
-        }
-
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
     }
@@ -88,6 +68,26 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             if (sectionsPagerAdapter == null) {
+                if (ARTIST_IGNORE_FILE.exists()) {
+                    try {
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                                new FileInputStream(ARTIST_IGNORE_FILE)))) {
+                            String line;
+                            artistIgnore = new ArrayList<>();
+                            while ((line = reader.readLine()) != null) {
+                                artistIgnore.add(line.toLowerCase());
+                            }
+                        }
+                        Log.d(TAG, artistIgnore.size() + " artists on ignore list");
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error reading artist ignore file", ex);
+                        Toast.makeText(this, R.string.artist_ignore_file_read_error,
+                                Toast.LENGTH_LONG).show();
+                        artistIgnore = null;
+                    }
+                } else {
+                    Log.d(TAG, "No artist ignore file");
+                }
                 queryArtists();
 
                 //Toolbar toolbar = findViewById(R.id.toolbar);

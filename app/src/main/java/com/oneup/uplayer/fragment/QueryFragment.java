@@ -55,6 +55,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
 
+    private static final String SQL_QUERY_ARTIST_COUNT =
+            "SELECT COUNT(*) FROM " + Artist.TABLE_NAME;
+
     private static final String SQL_QUERY_SONG_COUNT =
             "SELECT COUNT(*) FROM " + Song.TABLE_NAME;
 
@@ -380,9 +383,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             });
             tagsDialog.show();
         } else if (v == bStatistics) {
-            int songCount, songsPlayed, songsUnplayed, songsTagged, songsUntagged, timesPlayed;
+            int artistCount, songCount,
+                    songsPlayed, songsUnplayed, songsTagged, songsUntagged, timesPlayed;
             long songsDuration, playedDuration;
             try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+                artistCount = DbOpenHelper.queryInt(db, SQL_QUERY_ARTIST_COUNT, null);
                 songCount = DbOpenHelper.queryInt(db, SQL_QUERY_SONG_COUNT, null);
                 songsDuration = DbOpenHelper.queryLong(db, SQL_QUERY_SONGS_DURATION, null);
                 songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
@@ -393,7 +398,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
             }
             Util.showInfoDialog(getContext(), getString(R.string.statistics), getString(
-                    R.string.statistics_message,
+                    R.string.statistics_message, artistCount,
                     songCount, Util.formatDuration(songsDuration),
                     songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
                     songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),

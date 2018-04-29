@@ -55,7 +55,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         etTitle.setString(song.getTitle());
 
         etArtist = findViewById(R.id.etArtist);
-        etArtist.setString(song.getArtist().getArtist());
+        etArtist.setString(song.getArtist());
 
         bDateAdded = findViewById(R.id.bDateAdded);
         if (song.getDateAdded() > 0) {

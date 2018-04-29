@@ -390,7 +390,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
         } else if (v == bBackup) {
             Log.d(TAG, "Running backup");
             try {
-                backup();
+                //backup();
                 Log.d(TAG, "Backup completed");
                 Toast.makeText(getContext(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
@@ -624,7 +624,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
         preferences.apply();
     }
 
-    private void backup() throws JSONException, IOException {
+    /*private void backup() throws JSONException, IOException {
         JSONObject backup = new JSONObject();
 
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
@@ -774,7 +774,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
                 dbOpenHelper.insertOrUpdateSong(song);
             }
         }
-    }
+    }*/
 
     public static QueryFragment newInstance(SparseArray<Artist> artists) {
         QueryFragment fragment = new QueryFragment();

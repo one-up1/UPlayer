@@ -212,7 +212,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         Song song = songs.get(songIndex);
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
-        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist().getArtist());
+        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
         updatePlaylistPosition();
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_pause);
         startForeground(1, notification);
@@ -377,14 +377,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
+            //TODO: saving playlist
             JSONArray jsaSongs = new JSONArray();
             for (Song song : songs) {
                 JSONObject jsoSong = new JSONObject();
                 jsoSong.put(Song._ID, song.getId());
                 jsoSong.put(Song.TITLE, song.getTitle());
                 JSONObject jsoArtist = new JSONObject();
-                jsoArtist.put(Artist._ID, song.getArtist().getId());
-                jsoArtist.put(Artist.ARTIST, song.getArtist().getArtist());
+                jsoArtist.put(Artist._ID, song.getArtistId());
+                jsoArtist.put(Artist.ARTIST, song.getArtist());
                 jsoSong.put(Song.ARTIST, jsoArtist);
                 jsoSong.put(Song.DURATION, song.getDuration());
                 jsaSongs.put(jsoSong);
@@ -416,10 +417,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 song.setId(jsoSong.getInt(Song._ID));
                 song.setTitle(jsoSong.getString(Song.TITLE));
                 JSONObject jsoArtist = jsoSong.getJSONObject(Song.ARTIST);
-                Artist artist = new Artist();
-                artist.setId(jsoArtist.getInt(Artist._ID));
-                artist.setArtist(jsoArtist.getString(Artist.ARTIST));
-                song.setArtist(artist);
+                //Artist artist = new Artist();
+                //artist.setId(jsoArtist.getInt(Artist._ID));
+                //artist.setArtist(jsoArtist.getString(Artist.ARTIST));
+                //song.setArtist(artist);
                 song.setDuration(jsoSong.getInt(Song.DURATION));
                 dbOpenHelper.querySong(song);
                 songs.add(song);

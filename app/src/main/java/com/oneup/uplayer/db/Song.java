@@ -16,7 +16,8 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     private int id;
     private String title;
-    private Artist artist;
+    private long artistId;
+    private String artist;
     private long dateAdded;
     private int year;
     private int duration;
@@ -44,7 +45,8 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(id);
         out.writeString(title);
-        out.writeParcelable(artist, flags);
+        out.writeLong(artistId);
+        out.writeString(artist);
         out.writeLong(dateAdded);
         out.writeInt(year);
         out.writeInt(duration);
@@ -70,11 +72,19 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.title = title;
     }
 
-    public Artist getArtist() {
+    public long getArtistId() {
+        return artistId;
+    }
+
+    public void setArtistId(long artistId) {
+        this.artistId = artistId;
+    }
+
+    public String getArtist() {
         return artist;
     }
 
-    public void setArtist(Artist artist) {
+    public void setArtist(String artist) {
         this.artist = artist;
     }
 
@@ -153,7 +163,8 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
             Song ret = new Song();
             ret.id = in.readInt();
             ret.title = in.readString();
-            ret.artist = in.readParcelable(Artist.class.getClassLoader());
+            ret.artistId = in.readLong();
+            ret.artist = in.readString();
             ret.dateAdded = in.readLong();
             ret.year = in.readInt();
             ret.duration = in.readInt();

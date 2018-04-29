@@ -61,7 +61,7 @@ public abstract class SongAdapter extends BaseAdapter {
         tvTitle.setTextColor(song.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
 
         TextView tvArtist = ret.findViewById(R.id.tvArtist);
-        tvArtist.setText(song.getArtist().getArtist());
+        tvArtist.setText(song.getArtist());
 
         setButtons(ret, song);
         return ret;

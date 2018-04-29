@@ -81,19 +81,18 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     null, null, dbOrderBy)) {
                 while (c.moveToNext()) {
                     Song song = new Song();
+                    song.setId(c.getInt(0));
                     song.setTitle(c.getString(1));
-                    if (setArtist(song, c.getInt(3))) {
-                        song.setId(c.getInt(0));
-                        song.setDuration(c.getInt(2));
-                        song.setYear(c.getInt(4));
-                        song.setDateAdded(c.getLong(5));
-                        song.setBookmarked(c.getLong(6));
-                        song.setTag(c.getString(7));
-                        song.setLastPlayed(c.getLong(8));
-                        song.setTimesPlayed(c.getInt(9));
-                        Log.d(TAG, "Song: " + c.getString(1));
-                        objects.add(song);
-                    }
+                    song.setDuration(c.getInt(2));
+                    song.setArtistId(c.getLong(3));
+                    song.setArtist(c.getString(4));
+                    song.setYear(c.getInt(5));
+                    song.setDateAdded(c.getLong(6));
+                    song.setBookmarked(c.getLong(7));
+                    song.setTag(c.getString(8));
+                    song.setLastPlayed(c.getLong(9));
+                    song.setTimesPlayed(c.getInt(9));
+                    objects.add(song);
                 }
             }
         }
@@ -208,7 +207,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         sortOrderReversed = !sortOrderReversed;
     }
 
-    private boolean setArtist(Song song, int id) {
+    /*private boolean setArtist(Song song, int id) {
         if (artists == null) {
             song.setArtist(artist);
         } else {
@@ -220,7 +219,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             song.setArtist(artist);
         }
         return true;
-    }
+    }*/
 
     private void setTitle() {
         getActivity().setTitle(getString(R.string.song_count_duration, objects.size(),

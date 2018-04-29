@@ -44,6 +44,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Songs.TITLE + " TEXT," +
                     Songs.DURATION + " INTEGER," +
                     Songs.ARTIST_ID + " INTEGER," +
+                    Songs.ARTIST + " INTEGER," +
                     Songs.YEAR + " INTEGER," +
                     Songs.ADDED + " INTEGER," +
                     Songs.BOOKMARKED + " INTEGER," +
@@ -145,7 +146,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     public void querySong(Song song) {
         Log.d(TAG, "DbOpenHelper.querySong(" + song + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(Artists.TABLE_NAME,
+            /*try (Cursor c = db.query(Artists.TABLE_NAME,
                     new String[]{Artists.LAST_SONG_ADDED,
                             Artists.LAST_PLAYED, Artists.TIMES_PLAYED},
                     SQL_WHERE_ID, new String[]{Long.toString(song.getArtist().getId())},
@@ -157,7 +158,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 } else {
                     Log.d(TAG, "Artist not found");
                 }
-            }
+            }*/
 
             try (Cursor c = db.query(Songs.TABLE_NAME,
                     new String[]{Songs.YEAR, Songs.ADDED, Songs.BOOKMARKED, Songs.TAG,
@@ -175,8 +176,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 }
             }
 
-            Log.d(TAG, "Times played: " + song.getArtist().getTimesPlayed() +
-                    ":" + song.getTimesPlayed());
+            Log.d(TAG, "Times played: " + /*song.getArtist().getTimesPlayed() +
+                    ":"*/ +song.getTimesPlayed());
         }
     }
 
@@ -208,7 +209,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 } else {
                     values.put(Songs.DURATION, song.getDuration());
                 }
-                values.put(Songs.ARTIST_ID, song.getArtist().getId());
+                values.put(Songs.ARTIST_ID, song.getArtistId());
+                values.put(Songs.ARTIST, song.getArtist());
                 if (song.getYear() == 0) {
                     values.putNull(Songs.YEAR);
                 } else {
@@ -278,7 +280,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                                 Artists.LAST_PLAYED + "=?, " +
                                 Artists.TIMES_PLAYED + "=" + Artists.TIMES_PLAYED + "+1 " +
                                 " WHERE " + Artists._ID + "=?",
-                        new String[]{Long.toString(lastPlayed), Long.toString(song.getArtist().getId())});
+                        new String[]{Long.toString(lastPlayed), Long.toString(song.getArtistId())});
 
                 db.execSQL("UPDATE " + Songs.TABLE_NAME + " SET " +
                                 Songs.LAST_PLAYED + "=?, " +
@@ -295,10 +297,10 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     public void deleteSong(Song song) {
         Log.d(TAG, "DbOpenHelper.deleteSong(" + song + ")");
-        deleteSong(song.getId(), song.getArtist().getId());
+        deleteSong(song.getId(), song.getArtistId());
     }
 
-    public void deleteSong(int id, int artistId) {
+    public void deleteSong(int id, long artistId) {
         Log.d(TAG, "DbOpenHelper.deleteSong(" + id + ", " + artistId + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
@@ -324,7 +326,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     public void syncWithMediaStore(Context context) throws IOException {
         // Read artist ignore file.
-        List<String> artistIgnore;
+        List<String> artistIgnore; //TODO: WHERE NOT IN instead of artist ignore list? also apply to Songs.ARTIST?
         if (ARTIST_IGNORE_FILE.exists()) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                     new FileInputStream(ARTIST_IGNORE_FILE)))) {
@@ -353,8 +355,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
                 resSongs = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         db, Songs.TABLE_NAME, new String[]{Songs._ID, Songs.TITLE, Songs.DURATION,
-                                Songs.ARTIST_ID, Songs.YEAR},
-                        -1, null, 3, resArtists.ids, new int[]{1, 2, 3}, new int[]{4},
+                                Songs.ARTIST_ID, Songs.ARTIST, Songs.YEAR},
+                        -1, null, 3, resArtists.ids, new int[]{1, 2, 3, 4}, new int[]{5},
                         Songs.ADDED, now);
 
                 // Update artists when songs have been inserted or deleted.

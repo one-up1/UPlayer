@@ -9,20 +9,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:columnCount="2">
 
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/joined_sort_by"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        app:layout_columnWeight="1" />
-
-    <Spinner
-        android:id="@+id/sJoinedSortBy"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:entries="@array/joined_sort_by_entries"
-        app:layout_columnWeight="1" />
-
     <com.oneup.uplayer.widget.EditText
         android:id="@+id/etTitle"
         android:layout_width="0dp"
@@ -143,17 +129,17 @@
         app:layout_columnWeight="1" />
 
     <Button
+        android:id="@+id/bSyncDatabase"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/sync_database"
+        app:layout_columnWeight="1" />
+
+    <Button
         android:id="@+id/bBackup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/backup"
-        app:layout_columnWeight="1" />
-
-    <Button
-        android:id="@+id/bRestoreBackup"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/restore_backup"
         app:layout_columnWeight="1" />
 
 </android.support.v7.widget.GridLayout>

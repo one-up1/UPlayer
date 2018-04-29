@@ -28,9 +28,6 @@ public class Util {
         PERCENT_FORMAT.setMaximumFractionDigits(1);
     }
 
-    private Util() {
-    }
-
     public static File getMusicFile(String name) {
         return new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC), name);
@@ -53,10 +50,25 @@ public class Util {
         return PERCENT_FORMAT.format(number);
     }
 
-    public static void showInfoDialog(Context context, String title, String message) {
+    public static void showInfoDialog(Context context, int titleResId,
+                                      int messageResId, Object... messageFormatArgs) {
+        showInfoDialog(context, context.getString(titleResId), messageResId, messageFormatArgs);
+    }
+
+    public static void showInfoDialog(Context context, String title,
+                                      int messageResId, Object... messageFormatArgs) {
         new AlertDialog.Builder(context)
                 .setTitle(title)
-                .setMessage(message)
+                .setMessage(context.getString(messageResId, messageFormatArgs))
+                .setPositiveButton(R.string.ok, null)
+                .show();
+    }
+
+    //TODO: Implement Util.showErrorDialog().
+    public static void showErrorDialog(Context context, Exception ex) {
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.error)
+                .setMessage(ex.getMessage())
                 .setPositiveButton(R.string.ok, null)
                 .show();
     }

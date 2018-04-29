@@ -5,11 +5,24 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
+import android.provider.BaseColumns;
+import android.provider.MediaStore;
 import android.util.Log;
 
+import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
+import com.oneup.uplayer.util.Util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
+
+//TODO: Backup() in DBOpenHelper.
 
 public class DbOpenHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -18,25 +31,43 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UPlayer.db";
 
     private static final String SQL_CREATE_ARTISTS =
-            "CREATE TABLE " + Artist.TABLE_NAME + "(" +
-                    Artist._ID + " INTEGER PRIMARY KEY," +
-                    Artist.ARTIST + " TEXT," +
-                    Artist.LAST_PLAYED + " INTEGER," +
-                    Artist.TIMES_PLAYED + " INTEGER," +
-                    Artist.DATE_MODIFIED + " INTEGER)";
+            "CREATE TABLE " + Artists.TABLE_NAME + "(" +
+                    Artists._ID + " INTEGER PRIMARY KEY," +
+                    Artists.ARTIST + " TEXT," +
+                    Artists.LAST_SONG_ADDED + " INTEGER," +
+                    Artists.LAST_PLAYED + " INTEGER," +
+                    Artists.TIMES_PLAYED + " INTEGER DEFAULT 0)";
 
     private static final String SQL_CREATE_SONGS =
-            "CREATE TABLE " + Song.TABLE_NAME + "(" +
-                    Song._ID + " INTEGER PRIMARY KEY," +
-                    Song.TITLE + " TEXT," +
-                    Song.ARTIST_ID + " INTEGER," +
-                    Song.DATE_ADDED + " INTEGER," +
-                    Song.YEAR + " INTEGER," +
-                    Song.DURATION + " INTEGER," +
-                    Song.LAST_PLAYED + " INTEGER," +
-                    Song.TIMES_PLAYED + " INTEGER," +
-                    Song.BOOKMARKED + " INTEGER," +
-                    Song.TAG + " TEXT)";
+            "CREATE TABLE " + Songs.TABLE_NAME + "(" +
+                    Songs._ID + " INTEGER PRIMARY KEY," +
+                    Songs.TITLE + " TEXT," +
+                    Songs.DURATION + " INTEGER," +
+                    Songs.ARTIST_ID + " INTEGER," +
+                    Songs.YEAR + " INTEGER," +
+                    Songs.ADDED + " INTEGER," +
+                    Songs.BOOKMARKED + " INTEGER," +
+                    Songs.TAG + " TEXT," +
+                    Songs.LAST_PLAYED + " INTEGER," +
+                    Songs.TIMES_PLAYED + " INTEGER DEFAULT 0)";
+
+    private static final String SQL_WHERE_ID = BaseColumns._ID + "=?"; //TODO: Use this everywhere.
+
+    private static final String SQL_UPDATE_ARTISTS =
+            "UPDATE " + Artists.TABLE_NAME + " SET " +
+                    Artists.LAST_SONG_ADDED + "=(SELECT MAX(" + Songs.ADDED + ") FROM " +
+                    Songs.TABLE_NAME + " WHERE " +
+                    Songs.ARTIST_ID + "=" + Artists.TABLE_NAME + "." + Artists._ID + ")," +
+
+                    Artists.LAST_PLAYED + "=(SELECT MAX(" + Songs.LAST_PLAYED + ") FROM " +
+                    Songs.TABLE_NAME + " WHERE " +
+                    Songs.ARTIST_ID + "=" + Artists.TABLE_NAME + "." + Artists._ID + ")," +
+
+                    Artists.TIMES_PLAYED + "=(SELECT SUM(" + Songs.TIMES_PLAYED + ") FROM " +
+                    Songs.TABLE_NAME + " WHERE " +
+                    Songs.ARTIST_ID + "=" + Artists.TABLE_NAME + "." + Artists._ID + ")";
+
+    private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
 
     public DbOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -226,7 +257,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     public void updateSongPlayed(Song song) {
-        querySong(song);
+        long lastPlayed = Calendar.currentTime();
+        /*querySong(song);
         long lastPlayed = Calendar.currentTime();
 
         song.getArtist().setLastPlayed(lastPlayed);
@@ -235,7 +267,28 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
         song.setLastPlayed(lastPlayed);
         song.setTimesPlayed(song.getTimesPlayed() + 1);
-        insertOrUpdateSong(song);
+        insertOrUpdateSong(song);*/
+
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                db.execSQL("UPDATE " + Artists.TABLE_NAME + " SET " +
+                                Artists.LAST_PLAYED + "=?, " +
+                                Artists.TIMES_PLAYED + "=" + Artists.TIMES_PLAYED + "+1 " +
+                                " WHERE " + Artists._ID + "=?",
+                        new String[]{Long.toString(lastPlayed), Long.toString(song.getArtist().getId())});
+
+                db.execSQL("UPDATE " + Songs.TABLE_NAME + " SET " +
+                                Songs.LAST_PLAYED + "=?, " +
+                                Songs.TIMES_PLAYED + "=" + Songs.TIMES_PLAYED + "+1 " +
+                                " WHERE " + Artists._ID + "=?",
+                        new String[]{Long.toString(lastPlayed), Long.toString(song.getId())});
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
     }
 
     public void deleteSong(Song song) {
@@ -267,6 +320,158 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void syncWithMediaStore(Context context) throws IOException {
+        // Read artist ignore file.
+        List<String> artistIgnore;
+        if (ARTIST_IGNORE_FILE.exists()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(ARTIST_IGNORE_FILE)))) {
+                artistIgnore = new ArrayList<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    artistIgnore.add(line);
+                }
+            }
+            Log.d(TAG, artistIgnore.size() + " artists on ignore list");
+        } else {
+            Log.d(TAG, "No artist ignore file");
+            artistIgnore = null;
+        }
+
+        SyncResult resArtists, resSongs;
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                long now = Calendar.currentTime(); //TODO: Millis for time?
+
+                resArtists = syncTable(context, MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+                        db, Artists.TABLE_NAME, new String[]{Artists._ID, Artists.ARTIST},
+                        1, artistIgnore, -1, null, null, new int[0],
+                        Artists.LAST_SONG_ADDED, now);
+
+                resSongs = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        db, Songs.TABLE_NAME, new String[]{Songs._ID, Songs.TITLE, Songs.DURATION,
+                                Songs.ARTIST_ID, Songs.YEAR},
+                        -1, null, 3, resArtists.ids, new int[]{1, 2, 3}, new int[]{4},
+                        Songs.ADDED, now);
+
+                // Update artists when songs have been inserted or deleted.
+                if (resSongs.recordsInserted > 0 || resSongs.recordsDeleted > 0) {
+                    db.execSQL(SQL_UPDATE_ARTISTS);
+                    Log.d(TAG, "Artists updated");
+                }
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+
+        Util.showInfoDialog(context, R.string.sync_completed, R.string.sync_completed_message,
+                resArtists.recordsInserted, resArtists.recordsIgnored,
+                resArtists.recordsDeleted,
+                resSongs.recordsInserted, resSongs.recordsIgnored,
+                resSongs.recordsDeleted);
+    }
+    //TODO: getDatabase() only in DbOpenHelper.
+
+    private SyncResult syncTable(Context context, Uri contentUri, SQLiteDatabase db, String table,
+                                 String[] columns, int ignoreColumn, List<String> ignoreValues,
+                                 int refIdColumn, List<Long> refIds,
+                                 int[] updateColumns, int[] insertColumns,
+                                 String addedColumn, long added) {
+        Log.d(TAG, "Synchronizing table " + table);
+        SyncResult ret = new SyncResult();
+
+        // Insert/update database records from the MediaStore.
+        try (Cursor c = context.getContentResolver().query(contentUri, columns, null, null, null)) {
+            if (c == null) {
+                throw new RuntimeException("No MediaStore cursor");
+            }
+
+            while (c.moveToNext()) {
+                long id = c.getLong(0);
+
+                // Process ignoring.
+                if (ignoreColumn != -1) {
+                    String ignoreColumnValue = c.getString(ignoreColumn);
+                    if (ignoreValues.contains(ignoreColumnValue)) {
+                        Log.d(TAG, table + "." + columns[ignoreColumn] + " value '" +
+                                ignoreColumnValue + "' ignored: " + id);
+                        ret.recordsIgnored++;
+                        continue;
+                    }
+                }
+
+                // Ignore records with a non-existing ref ID.
+                if (refIdColumn != -1) {
+                    long refId = c.getLong(refIdColumn);
+                    if (!refIds.contains(refId)) {
+                        Log.d(TAG, table + "." + columns[refIdColumn] + " value " +
+                                refId + " ignored: " + id);
+                        ret.recordsIgnored++;
+                        continue;
+                    }
+                }
+
+                // Put update column values.
+                ContentValues values = new ContentValues();
+                putValues(values, c, columns, updateColumns, table, id);
+
+                // Update or insert the record if it doesn't exist.
+                if (db.update(table, values, SQL_WHERE_ID, new String[]{Long.toString(id)}) == 0) {
+                    values.put(BaseColumns._ID, id);
+                    putValues(values, c, columns, insertColumns, table, id);
+                    if (addedColumn != null) {
+                        values.put(addedColumn, added);
+                    }
+                    db.insert(table, null, values);
+                    Log.d(TAG, table + " record inserted: " + id);
+                    ret.recordsInserted++;
+                } else {
+                    Log.d(TAG, table + " record updated: " + id);
+                }
+                ret.ids.add(id);
+            }
+        }
+
+        // Delete records from the database.
+        try (Cursor c = db.query(table, new String[]{BaseColumns._ID},
+                null, null, null, null, null)) {
+            while (c.moveToNext()) {
+                long id = c.getLong(0);
+                if (!ret.ids.contains(id)) {
+                    db.delete(table, SQL_WHERE_ID, new String[]{Long.toString(id)});
+                    Log.d(TAG, table + " record deleted: " + id);
+                    ret.recordsDeleted++;
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    private void putValues(ContentValues values, Cursor c, String[] columns, int[] putColumns,
+                           String table, long id) {
+        for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
+            int column = putColumns == null ? i : putColumns[i];
+            switch (c.getType(column)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    values.putNull(columns[column]);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    values.put(columns[column], c.getLong(column));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    values.put(columns[column], c.getString(column));
+                    break;
+                default:
+                    throw new RuntimeException(table + "." + columns[column] + " field type " +
+                            c.getType(i) + " invalid: " + id);
+            }
+        }
+    }
+
     public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
         try (Cursor c = db.rawQuery(sql, selectionArgs)) {
             return c.moveToFirst() ? c.getInt(0) : 0;
@@ -279,110 +484,37 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    /*public void t(Context context) {
-        String msg;
-        try {
-            try (SQLiteDatabase db = getWritableDatabase()) {
-                db.execSQL("UPDATE " + Artist.TABLE_NAME + " SET " +
-                        Artist.TIMES_PLAYED + "=0 WHERE " +
-                        Artist.TIMES_PLAYED + " IS NULL");
+    private static class Artists implements BaseColumns, ArtistColumns, DbColumns {
+        private static final String TABLE_NAME = "artists";
+    }
 
-                db.execSQL("UPDATE " + Song.TABLE_NAME + " SET " +
-                        Song.TIMES_PLAYED + "=0 WHERE " +
-                        Song.TIMES_PLAYED + " IS NULL");
-                Log.d(TAG,  "OK");
-            }
-            msg = "OK";
-        } catch (Exception ex) {
-            Log.e(TAG, "Error", ex);
-            msg = "Error: " + ex.getMessage();
+    private static class Songs implements BaseColumns, SongColumns, DbColumns {
+        private static final String TABLE_NAME = "songs";
+    }
+
+    private interface ArtistColumns extends MediaStore.Audio.ArtistColumns {
+        String LAST_SONG_ADDED = "last_song_added";
+    }
+
+    private interface SongColumns extends MediaStore.Audio.AudioColumns {
+        String ADDED = "added";
+        String BOOKMARKED = "bookmarked";
+        String TAG = "tag";
+    }
+
+    private interface DbColumns {
+        String LAST_PLAYED = "last_played";
+        String TIMES_PLAYED = "times_played";
+    }
+
+    private static class SyncResult {
+        private List<Long> ids;
+        private int recordsIgnored;
+        private int recordsInserted;
+        private int recordsDeleted;
+
+        private SyncResult() {
+            ids = new ArrayList<>();
         }
-        com.oneup.uplayer.util.Util.showInfoDialog(context, "t()", msg);
-    }*/
-
-    /*public void t(Context context) {
-        Log.d(TAG, "Starting");
-        try {
-            try (SQLiteDatabase db = getWritableDatabase()) {
-                Log.d(TAG, "Altering table");
-                db.beginTransaction();
-                try {
-                    Log.d(TAG, "Renaming table");
-                    db.execSQL("ALTER TABLE " + Song.TABLE_NAME +
-                            " RENAME TO tmp_" + Song.TABLE_NAME);
-
-                    Log.d(TAG, "Creating new table");
-                    db.execSQL(SQL_CREATE_SONGS);
-
-                    Log.d(TAG, "Copying data");
-                    db.execSQL("INSERT INTO " + Song.TABLE_NAME + "(" +
-                            Song._ID + "," +
-                            Song.TITLE + "," +
-                            Song.ARTIST_ID + "," +
-                            Song.YEAR + "," +
-                            Song.DURATION + "," +
-                            Song.LAST_PLAYED + "," +
-                            Song.TIMES_PLAYED + "," +
-                            Song.BOOKMARKED + "," +
-                            Song.TAG + ")" +
-                            "SELECT " +
-                            Song._ID + "," +
-                            Song.TITLE + "," +
-                            Song.ARTIST_ID + "," +
-                            Song.YEAR + "," +
-                            Song.DURATION + "," +
-                            Song.LAST_PLAYED + "," +
-                            Song.TIMES_PLAYED + "," +
-                            Song.BOOKMARKED + "," +
-                            Song.TAG + " " +
-                            "FROM tmp_" + Song.TABLE_NAME);
-
-                    Log.d(TAG, "Dropping old table");
-                    db.execSQL("DROP TABLE tmp_" + Song.TABLE_NAME);
-
-                    Log.d(TAG, "Success!");
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
-
-                Log.d(TAG, "Setting dates added");
-                db.beginTransaction();
-                try {
-                    try (android.database.Cursor c = db.query(Song.TABLE_NAME,
-                            new String[]{Song._ID}, null, null, null, null, null)) {
-                        while (c.moveToNext()) {
-                            Song song = new Song();
-                            song.setId(c.getInt(0));
-
-                            try (Cursor c2 = context.getContentResolver().query(
-                                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                                    new String[]{Song.DATE_ADDED},
-                                    Song._ID + "=?", new String[]{Integer.toString(song.getId())},
-                                    null)) {
-                                if (c2 != null && c2.moveToFirst()) {
-                                    song.setDateAdded(c2.getLong(
-                                            c2.getColumnIndex(Song.DATE_ADDED)));
-                                }
-                                Log.d(TAG, "Setting date added of " + song + ":" + song.getId() +
-                                        " to " + Util.formatDateTime(song.getDateAdded()));
-                                ContentValues values = new ContentValues();
-                                values.put(Song.DATE_ADDED, song.getDateAdded());
-                                Log.d(TAG, db.update(Song.TABLE_NAME, values,
-                                        Song._ID + "=" + song.getId(), null) + " rows affected");
-                            }
-                        }
-                    }
-
-                    Log.d(TAG, "Success!");
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
-            }
-            Log.d(TAG, "Done!");
-        } catch (Exception ex) {
-            Log.e(TAG, "Ughh", ex);
-        }
-    }*/
+    }
 }

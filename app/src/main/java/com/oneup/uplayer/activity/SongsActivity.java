@@ -33,7 +33,6 @@ public class SongsActivity extends AppCompatActivity implements BaseArgs {
             songsFragment = SongsFragment.newInstance(
                     artists,
                     (Artist) args.getParcelable(ARG_ARTIST),
-                    args.getInt(ARG_JOINED_SORT_BY),
                     args.getString(ARG_SELECTION),
                     args.getString(ARG_DB_ORDER_BY));
             getSupportFragmentManager().beginTransaction().add(R.id.container, songsFragment)

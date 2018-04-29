@@ -23,18 +23,14 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
-import com.oneup.uplayer.db.DbComparator;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener {
-    public static final int SORT_BY_DATE_MODIFIED = 4;
-
     private static final String TAG = "UPlayer";
 
     private static final String SQL_QUERY_PLAYED_DURATION =
@@ -42,7 +38,6 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                     Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";
 
     private SparseArray<Artist> artists;
-    private int joinedSortBy;
 
     private DbOpenHelper dbOpenHelper;
     private ArrayList<Artist> objects;
@@ -60,8 +55,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                              Bundle savedInstanceState) {
         Log.d(TAG, "ArtistsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
-        joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
-        Log.d(TAG, artists.size() + " artists, joinedSortBy=" + joinedSortBy);
+        Log.d(TAG, artists.size() + " artists");
 
         dbOpenHelper = new DbOpenHelper(getActivity());
         if (objects == null) {
@@ -73,55 +67,6 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
             objects.add(artists.valueAt(i));
         }
 
-        Comparator<? super Artist> c;
-        switch (joinedSortBy) {
-            case SORT_BY_NAME:
-                c = new Comparator<Artist>() {
-
-                    @Override
-                    public int compare(Artist artist1, Artist artist2) {
-                        return DbComparator.sortByName(artist1.getArtist(), artist2.getArtist());
-                    }
-                };
-                break;
-            case SORT_BY_LAST_PLAYED:
-                c = new Comparator<Artist>() {
-
-                    @Override
-                    public int compare(Artist artist1, Artist artist2) {
-                        return DbComparator.sortByLastPlayed(
-                                artist1.getLastPlayed(), artist2.getLastPlayed(),
-                                artist1.getArtist(), artist2.getArtist());
-                    }
-                };
-                break;
-            case SORT_BY_TIMES_PLAYED:
-                c = new Comparator<Artist>() {
-
-                    @Override
-                    public int compare(Artist artist1, Artist artist2) {
-                        return DbComparator.sortByTimesPlayed(
-                                artist1.getTimesPlayed(), artist2.getTimesPlayed(),
-                                artist1.getLastPlayed(), artist2.getLastPlayed(),
-                                artist1.getArtist(), artist2.getArtist());
-                    }
-                };
-                break;
-            case SORT_BY_DATE_MODIFIED:
-                c = new Comparator<Artist>() {
-
-                    @Override
-                    public int compare(Artist artist1, Artist artist2) {
-                        return DbComparator.sortByDateModified(
-                                artist1.getDateModified(), artist2.getDateModified(),
-                                artist1.getArtist(), artist2.getArtist());
-                    }
-                };
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid artists sort by");
-        }
-        Collections.sort(objects, c);
         if (sortOrderReversed) {
             Collections.reverse(objects);
         }
@@ -171,18 +116,18 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                 try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
                     playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION,
                             new String[]{Integer.toString(artist.getId())});
+
+                    Util.showInfoDialog(getContext(), artist.getArtist(), R.string.info_message_artist,
+                            artist.getLastPlayed() == 0 ?
+                                    getString(R.string.never) :
+                                    Util.formatDateTimeAgo(artist.getLastPlayed()),
+                            DbOpenHelper.queryInt(db, "SELECT times_played FROM artists WHERE _id=" + artist.getId(), null),
+                            Util.formatDuration(playedDuration),
+                            artist.getDateModified() == 0 ?
+                                    getString(R.string.na) :
+                                    Util.formatDateTimeAgo(artist.getDateModified())
+                    );
                 }
-                Util.showInfoDialog(getContext(), artist.getArtist(), getString(
-                        R.string.info_message_artist,
-                        artist.getLastPlayed() == 0 ?
-                                getString(R.string.never) :
-                                Util.formatDateTimeAgo(artist.getLastPlayed()),
-                        artist.getTimesPlayed(),
-                        Util.formatDuration(playedDuration),
-                        artist.getDateModified() == 0 ?
-                                getString(R.string.na) :
-                                Util.formatDateTimeAgo(artist.getDateModified()))
-                );
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -209,9 +154,9 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == listView) {
+            //TODO: putExtra(ARG_JOINED_SORT_BY, joinedSortBy)
             startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(ARG_ARTIST, objects.get(position))
-                    .putExtra(ARG_JOINED_SORT_BY, joinedSortBy));
+                    .putExtra(ARG_ARTIST, objects.get(position)));
         }
     }
 
@@ -226,11 +171,11 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
         sortOrderReversed = !sortOrderReversed;
     }
 
-    public static ArtistsFragment newInstance(SparseArray<Artist> artists, int joinedSortBy) {
+    public static ArtistsFragment newInstance(SparseArray<Artist> artists) {
+        //TODO: Artist sort.
         ArtistsFragment fragment = new ArtistsFragment();
         Bundle args = new Bundle();
         args.putSparseParcelableArray(ARG_ARTISTS, artists);
-        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
         fragment.setArguments(args);
         return fragment;
     }

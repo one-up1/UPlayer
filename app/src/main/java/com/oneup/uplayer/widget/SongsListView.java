@@ -19,7 +19,6 @@ import com.oneup.uplayer.activity.EditSongActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
-import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.util.Calendar;
 
 //TODO: No SongsListView, PlaylistActivity should also use SongsFragment.
@@ -50,10 +49,9 @@ public class SongsListView extends ListView {
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.view_artist:
+                //TODO: putExtra(SongsActivity.ARG_JOINED_SORT_BY, viewArtistSortBy == 0 ? BaseArgs.SORT_BY_NAME : viewArtistSortBy)
                 context.startActivity(new Intent(getContext(), SongsActivity.class)
-                        .putExtra(SongsActivity.ARG_ARTIST, song.getArtist())
-                        .putExtra(SongsActivity.ARG_JOINED_SORT_BY,
-                                viewArtistSortBy == 0 ? BaseArgs.SORT_BY_NAME : viewArtistSortBy));
+                        .putExtra(SongsActivity.ARG_ARTIST, song.getArtist()));
                 return true;
             case R.id.edit:
                 dbOpenHelper.querySong(song);
@@ -80,7 +78,7 @@ public class SongsListView extends ListView {
                 }
                 return true;
             case R.id.mark_played:
-                dbOpenHelper.updateSongPlayed(song);
+                dbOpenHelper.updateSongPlayed(song); //TODO: ListView not updated when marking played first time
                 Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
 
                 ((SongAdapter) getAdapter()).notifyDataSetChanged();

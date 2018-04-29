@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,7 +25,6 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
-import com.oneup.uplayer.db.DbComparator;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
@@ -35,17 +33,13 @@ import com.oneup.uplayer.widget.SongsListView;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
-    public static final int SORT_BY_DATE_ADDED = 4;
-
     private static final String TAG = "UPlayer";
 
     private SparseArray<Artist> artists;
     private Artist artist;
-    private int joinedSortBy;
     private String selection;
     private String dbOrderBy;
 
@@ -65,47 +59,15 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                              Bundle savedInstanceState) {
         Log.d(TAG, "SongsFragment.onCreateView()");
         artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
-        joinedSortBy = getArguments().getInt(ARG_JOINED_SORT_BY);
         if (artists == null) {
             artist = getArguments().getParcelable(ARG_ARTIST);
             selection = Song.ARTIST_ID + "=" + artist.getId();
-            Log.d(TAG, "artist=" + artist + ", joinedSortBy=" + joinedSortBy +
-                    ", selection=" + selection);
+            Log.d(TAG, "artist=" + artist + ", selection=" + selection);
         } else {
             selection = getArguments().getString(ARG_SELECTION);
             dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
-            Log.d(TAG, artists.size() + " artists, joinedSortBy=" + joinedSortBy +
-                    ", selection=" + selection + ", dbOrderBy=" + dbOrderBy);
-        }
-
-        SparseArray<Song> songs;
-        Song song;
-
-        if (joinedSortBy > 0) {
-            try (Cursor c = getContext().getContentResolver().query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{Song._ID, Song.TITLE,
-                            Song.ARTIST_ID, Song.DATE_ADDED, Song.YEAR, Song.DURATION},
-                    selection, null, null)) {
-                if (c == null) {
-                    Log.wtf(TAG, "No cursor");
-                    return super.onCreateView(inflater, container, savedInstanceState);
-                }
-
-                songs = new SparseArray<>();
-                while (c.moveToNext()) {
-                    song = new Song();
-                    song.setTitle(c.getString(1));
-                    if (setArtist(song, c.getInt(2))) {
-                        song.setId(c.getInt(0));
-                        song.setDateAdded(c.getLong(3));
-                        song.setYear(c.getInt(4));
-                        song.setDuration(c.getInt(5));
-                        songs.put(song.getId(), song);
-                    }
-                }
-            }
-        } else {
-            songs = null;
+            Log.d(TAG, artists.size() + " artists, selection=" + selection +
+                    ", dbOrderBy=" + dbOrderBy);
         }
 
         dbOpenHelper = new DbOpenHelper(getActivity());
@@ -115,102 +77,27 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
             objects.clear();
         }
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            try (Cursor c = db.query(Song.TABLE_NAME, songs == null ? null :
-                            new String[]{Song._ID, Song.ARTIST_ID, Song.DATE_ADDED, Song.YEAR,
-                                    Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
-                    selection, null, null, null, dbOrderBy)) {
+            try (Cursor c = db.query(Song.TABLE_NAME, null, selection, null,
+                    null, null, dbOrderBy)) {
                 while (c.moveToNext()) {
-                    int id = c.getInt(0);
-                    if (songs == null) {
-                        song = new Song();
-                        song.setTitle(c.getString(1));
-                        if (setArtist(song, c.getInt(2))) {
-                            song.setId(id);
-                            song.setDateAdded(c.getLong(3));
-                            song.setYear(c.getInt(4));
-                            song.setDuration(c.getInt(5));
-                            song.setLastPlayed(c.getLong(6));
-                            song.setTimesPlayed(c.getInt(7));
-                            song.setBookmarked(c.getLong(8));
-                            song.setTag(c.getString(9));
-                            objects.add(song);
-                        }
-                    } else {
-                        song = songs.get(id);
-                        if (song == null) {
-                            dbOpenHelper.deleteSong(id, c.getInt(1));
-                        } else {
-                            // Overwrite values from the MediaStore that can be set manually
-                            // or that may be lost after restoring a backup.
-                            song.setDateAdded(c.getLong(2));
-                            song.setYear(c.getInt(3));
-
-                            // Set the other values not present in the MediaStore.
-                            song.setLastPlayed(c.getLong(4));
-                            song.setTimesPlayed(c.getInt(5));
-                            song.setBookmarked(c.getLong(6));
-                            song.setTag(c.getString(7));
-                        }
+                    Song song = new Song();
+                    song.setTitle(c.getString(1));
+                    if (setArtist(song, c.getInt(3))) {
+                        song.setId(c.getInt(0));
+                        song.setDuration(c.getInt(2));
+                        song.setYear(c.getInt(4));
+                        song.setDateAdded(c.getLong(5));
+                        song.setBookmarked(c.getLong(6));
+                        song.setTag(c.getString(7));
+                        song.setLastPlayed(c.getLong(8));
+                        song.setTimesPlayed(c.getInt(9));
+                        Log.d(TAG, "Song: " + c.getString(1));
+                        objects.add(song);
                     }
                 }
             }
         }
 
-        if (songs != null) {
-            for (int i = 0; i < songs.size(); i++) {
-                objects.add(songs.valueAt(i));
-            }
-
-            Comparator<? super Song> c;
-            switch (joinedSortBy) {
-                case SORT_BY_NAME:
-                    c = new Comparator<Song>() {
-
-                        @Override
-                        public int compare(Song song1, Song song2) {
-                            return DbComparator.sortByName(song1.getTitle(), song2.getTitle());
-                        }
-                    };
-                    break;
-                case SORT_BY_LAST_PLAYED:
-                    c = new Comparator<Song>() {
-
-                        @Override
-                        public int compare(Song song1, Song song2) {
-                            return DbComparator.sortByLastPlayed(
-                                    song1.getLastPlayed(), song2.getLastPlayed(),
-                                    song1.getTitle(), song2.getTitle());
-                        }
-                    };
-                    break;
-                case SORT_BY_TIMES_PLAYED:
-                    c = new Comparator<Song>() {
-
-                        @Override
-                        public int compare(Song song1, Song song2) {
-                            return DbComparator.sortByTimesPlayed(
-                                    song1.getTimesPlayed(), song2.getTimesPlayed(),
-                                    song1.getLastPlayed(), song2.getLastPlayed(),
-                                    song1.getTitle(), song2.getTitle());
-                        }
-                    };
-                    break;
-                case SORT_BY_DATE_ADDED:
-                    c = new Comparator<Song>() {
-
-                        @Override
-                        public int compare(Song song1, Song song2) {
-                            return DbComparator.sortByDateAdded(
-                                    song1.getDateAdded(), song2.getDateAdded(),
-                                    song1.getTitle(), song2.getTitle());
-                        }
-                    };
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid songs sort by");
-            }
-            Collections.sort(objects, c);
-        }
         if (sortOrderReversed) {
             Collections.reverse(objects);
         }
@@ -223,7 +110,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         if (listView == null) {
             listView = new SongsListView(getActivity());
             if (artist == null) {
-                listView.setViewArtistSortBy(joinedSortBy);
+                //TODO: listView.setViewArtistSortBy(joinedSortBy);
             }
             listView.setOnItemClickListener(this);
             if (getActivity() instanceof MainActivity) {
@@ -403,12 +290,12 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     }
 
     public static SongsFragment newInstance(SparseArray<Artist> artists, Artist artist,
-                                            int joinedSortBy, String selection, String dbOrderBy) {
+                                            String selection, String dbOrderBy) {
+        //TODO: Song sorting.
         SongsFragment fragment = new SongsFragment();
         Bundle args = new Bundle();
         args.putSparseParcelableArray(ARG_ARTISTS, artists);
         args.putParcelable(ARG_ARTIST, artist);
-        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
         args.putString(ARG_SELECTION, selection);
         args.putString(ARG_DB_ORDER_BY, dbOrderBy);
         fragment.setArguments(args);

@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -16,7 +15,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseArray;
-import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Artist;
@@ -25,22 +23,11 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
-import com.oneup.uplayer.util.Util;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
 
-    private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
-
     private DbOpenHelper dbOpenHelper;
-    private List<String> artistIgnore;
     private SparseArray<Artist> artists;
 
     private SectionsPagerAdapter sectionsPagerAdapter;
@@ -68,26 +55,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             if (sectionsPagerAdapter == null) {
-                if (ARTIST_IGNORE_FILE.exists()) {
-                    try {
-                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                                new FileInputStream(ARTIST_IGNORE_FILE)))) {
-                            String line;
-                            artistIgnore = new ArrayList<>();
-                            while ((line = reader.readLine()) != null) {
-                                artistIgnore.add(line.toLowerCase());
-                            }
-                        }
-                        Log.d(TAG, artistIgnore.size() + " artists on ignore list");
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error reading artist ignore file", ex);
-                        Toast.makeText(this, R.string.artist_ignore_file_read_error,
-                                Toast.LENGTH_LONG).show();
-                        artistIgnore = null;
-                    }
-                } else {
-                    Log.d(TAG, "No artist ignore file");
-                }
                 queryArtists();
 
                 //Toolbar toolbar = findViewById(R.id.toolbar);
@@ -207,42 +174,18 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         }
         Artist artist;
 
-        try (Cursor c = getContentResolver().query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                new String[]{Artist._ID, Artist.ARTIST}, null, null, null)) {
-            if (c == null) {
-                Log.wtf(TAG, "No cursor");
-                return;
-            }
-
-            while (c.moveToNext()) {
-                String name = c.getString(1);
-                if (artistIgnore != null && artistIgnore.contains(name.toLowerCase())) {
-                    Log.d(TAG, "Ignoring artist " + name);
-                    continue;
-                }
-
-                artist = new Artist();
-                artist.setId(c.getInt(0));
-                artist.setArtist(name);
-                artists.put(artist.getId(), artist);
-            }
-        }
-
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            try (Cursor c = db.query(Artist.TABLE_NAME,
-                    new String[]{Artist._ID, Artist.LAST_PLAYED, Artist.TIMES_PLAYED,
-                            Artist.DATE_MODIFIED},
-                    null, null, null, null, null)) {
+            try (Cursor c = db.query(Artist.TABLE_NAME,//TODO: Sort artist.
+                    null, null, null, null, null, null)) {
                 while (c.moveToNext()) {
+                    artist = new Artist();
                     int id = c.getInt(0);
-                    artist = artists.get(id);
-                    if (artist == null) {
-                        dbOpenHelper.deleteArtist(id);
-                    } else {
-                        artist.setLastPlayed(c.getLong(1));
-                        artist.setTimesPlayed(c.getInt(2));
-                        artist.setDateModified(c.getLong(3));
-                    }
+                    artist.setId(id);
+                    artist.setArtist(c.getString(1));
+                    artist.setDateModified(c.getLong(2));
+                    artist.setLastPlayed(c.getLong(3));
+                    artist.setTimesPlayed(c.getInt(4));
+                    artists.put(id, artist);
                 }
             }
         }
@@ -273,32 +216,28 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return queryFragment;
                 case 1:
                     if (bookmarksFragment == null) {
-                        bookmarksFragment = SongsFragment.newInstance(artists, null, 0,
+                        bookmarksFragment = SongsFragment.newInstance(artists, null,
                                 Song.BOOKMARKED + " IS NOT NULL", Song.BOOKMARKED + " DESC");
                     }
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
-                        lastAddedFragment = ArtistsFragment.newInstance(artists,
-                                ArtistsFragment.SORT_BY_DATE_MODIFIED);
+                        lastAddedFragment = ArtistsFragment.newInstance(artists);
                     }
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(artists,
-                                ArtistsFragment.SORT_BY_NAME);
+                        artistsFragment = ArtistsFragment.newInstance(artists);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
-                        lastPlayedFragment = ArtistsFragment.newInstance(artists,
-                                ArtistsFragment.SORT_BY_LAST_PLAYED);
+                        lastPlayedFragment = ArtistsFragment.newInstance(artists);
                     }
                     return lastPlayedFragment;
                 case 5:
                     if (mostPlayedFragment == null) {
-                        mostPlayedFragment = ArtistsFragment.newInstance(artists,
-                                ArtistsFragment.SORT_BY_TIMES_PLAYED);
+                        mostPlayedFragment = ArtistsFragment.newInstance(artists);
                     }
                     return mostPlayedFragment;
             }

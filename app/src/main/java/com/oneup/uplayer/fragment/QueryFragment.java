@@ -1,7 +1,6 @@
 package com.oneup.uplayer.fragment;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,7 +18,6 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
@@ -29,7 +27,6 @@ import android.widget.Toast;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
-import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
@@ -51,7 +48,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Set;
 
-public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnItemSelectedListener,
+public class QueryFragment extends Fragment implements BaseArgs,
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
 
@@ -82,7 +79,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private static final String SQL_QUERY_PLAYED_DURATION =
             "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
 
-    private static final String KEY_JOINED_SORT_BY = "joinedSortBy";
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
     private static final String KEY_MIN_DATE_ADDED = "minDateAdded";
@@ -109,7 +105,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private DbOpenHelper dbOpenHelper;
     private SharedPreferences preferences;
 
-    private Spinner sJoinedSortBy;
     private EditText etTitle;
     private EditText etArtist;
     private Button bMinDateAdded;
@@ -126,8 +121,8 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private Button bTags;
     private Button bStatistics;
     private Button bRestorePlaylist;
+    private Button bSyncDatabase;
     private Button bBackup;
-    private Button bRestoreBackup;
 
     private long minDateAdded;
     private long maxDateAdded;
@@ -147,10 +142,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         View ret = inflater.inflate(R.layout.fragment_query, container, false);
-
-        sJoinedSortBy = ret.findViewById(R.id.sJoinedSortBy);
-        sJoinedSortBy.setOnItemSelectedListener(this);
-        setSpinnerSelection(sJoinedSortBy, KEY_JOINED_SORT_BY);
 
         etTitle = ret.findViewById(R.id.etTitle);
         setEditTextString(etTitle, KEY_TITLE);
@@ -228,11 +219,11 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         bRestorePlaylist = ret.findViewById(R.id.bRestorePlaylist);
         bRestorePlaylist.setOnClickListener(this);
 
+        bSyncDatabase = ret.findViewById(R.id.bSyncDatabase);
+        bSyncDatabase.setOnClickListener(this);
+
         bBackup = ret.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
-
-        bRestoreBackup = ret.findViewById(R.id.bRestoreBackup);
-        bRestoreBackup.setOnClickListener(this);
 
         return ret;
     }
@@ -270,28 +261,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
 
         super.onDestroy();
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == sJoinedSortBy) {
-            etArtist.setEnabled(position == 0);
-            bMinDateAdded.setEnabled(position == 0);
-            bMaxDateAdded.setEnabled(position == 0);
-            etMinYear.setEnabled(position == 0);
-            etMaxYear.setEnabled(position == 0);
-            bMinLastPlayed.setEnabled(position == 0);
-            bMaxLastPlayed.setEnabled(position == 0);
-            etMinTimesPlayed.setEnabled(position == 0);
-            etMaxTimesPlayed.setEnabled(position == 0);
-            sDbOrderBy.setEnabled(position == 0);
-            cbDbOrderByDesc.setEnabled(position == 0);
-            bTags.setEnabled(position == 0);
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parentw) {
     }
 
     @Override
@@ -397,8 +366,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 timesPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TIMES_PLAYED, null);
                 playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
             }
-            Util.showInfoDialog(getContext(), getString(R.string.statistics), getString(
-                    R.string.statistics_message,
+            Util.showInfoDialog(getContext(), R.string.statistics, R.string.statistics_message,
                     songCount, Util.formatDuration(songsDuration),
                     artistCount, Math.round((double) songCount / artistCount),
                     songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
@@ -407,10 +375,18 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
                     timesPlayed, Util.formatDuration(playedDuration),
                     Math.round((double) timesPlayed / songsPlayed),
-                    Util.formatDuration(playedDuration / songsPlayed)));
+                    Util.formatDuration(playedDuration / songsPlayed));
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
+        } else if (v == bSyncDatabase) {
+            Log.d(TAG, "Syncing database");
+            try {
+                dbOpenHelper.syncWithMediaStore(getContext());
+            } catch (Exception ex) {
+                Log.e(TAG, "Error syncing database", ex);
+                Util.showErrorDialog(getContext(), ex);
+            }
         } else if (v == bBackup) {
             Log.d(TAG, "Running backup");
             try {
@@ -419,10 +395,9 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                 Toast.makeText(getContext(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
                 Log.e(TAG, "Error running backup", ex);
-                Toast.makeText(getContext(),
-                        getString(R.string.error, ex.getMessage()), Toast.LENGTH_LONG).show();
+                Util.showErrorDialog(getContext(), ex);
             }
-        } else if (v == bRestoreBackup) {
+        } /*else if (v == bRestoreBackup) {
             new AlertDialog.Builder(getContext())
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setTitle(R.string.app_name)
@@ -472,7 +447,7 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
                     })
                     .setNegativeButton(R.string.no, null)
                     .show();
-        }
+        }*/
     }
 
     @Override
@@ -524,9 +499,6 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
     private void query(Set<String> tags) {
         SharedPreferences.Editor preferences = this.preferences.edit();
 
-        int joinedSortBy = sJoinedSortBy.getSelectedItemPosition();
-        preferences.putInt(KEY_JOINED_SORT_BY, joinedSortBy);
-
         String selection = null, dbOrderBy = null;
 
         String title = etTitle.getString();
@@ -535,119 +507,116 @@ public class QueryFragment extends Fragment implements BaseArgs, AdapterView.OnI
             selection = Song.TITLE + " LIKE '%" + title + "%'";
         }
 
-        if (joinedSortBy == 0) {
-            String artist = etArtist.getString();
-            preferences.putString(KEY_ARTIST, artist);
-            if (artist.length() > 0) {
-                selection = appendSelection(selection, Song.ARTIST_ID +
-                        " IN(SELECT " + Artist._ID + " FROM " + Artist.TABLE_NAME +
-                        " WHERE " + Artist.ARTIST + " LIKE '%" + artist + "%')");
-            }
+        String artist = etArtist.getString();
+        preferences.putString(KEY_ARTIST, artist);
+        if (artist.length() > 0) {
+            selection = appendSelection(selection, Song.ARTIST_ID +
+                    " IN(SELECT " + Artist._ID + " FROM " + Artist.TABLE_NAME +
+                    " WHERE " + Artist.ARTIST + " LIKE '%" + artist + "%')");
+        }
 
-            String minYear = etMinYear.getString();
-            preferences.putString(KEY_MIN_YEAR, minYear);
-            if (minYear.length() > 0) {
-                selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
-            }
+        String minYear = etMinYear.getString();
+        preferences.putString(KEY_MIN_YEAR, minYear);
+        if (minYear.length() > 0) {
+            selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
+        }
 
-            String maxYear = etMaxYear.getString();
-            preferences.putString(KEY_MAX_YEAR, maxYear);
-            if (maxYear.length() > 0) {
-                selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
-            }
+        String maxYear = etMaxYear.getString();
+        preferences.putString(KEY_MAX_YEAR, maxYear);
+        if (maxYear.length() > 0) {
+            selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
+        }
 
-            preferences.putLong(KEY_MIN_DATE_ADDED, minDateAdded);
-            if (minDateAdded > 0) {
-                selection = appendSelection(selection,
-                        Song.DATE_ADDED + ">=" + minDateAdded);
-            }
+        preferences.putLong(KEY_MIN_DATE_ADDED, minDateAdded);
+        if (minDateAdded > 0) {
+            selection = appendSelection(selection,
+                    Song.DATE_ADDED + ">=" + minDateAdded);
+        }
 
-            preferences.putLong(KEY_MAX_DATE_ADDED, maxDateAdded);
-            if (maxDateAdded > 0) {
-                selection = appendSelection(selection,
-                        Song.DATE_ADDED + "<=" + maxDateAdded);
-            }
+        preferences.putLong(KEY_MAX_DATE_ADDED, maxDateAdded);
+        if (maxDateAdded > 0) {
+            selection = appendSelection(selection,
+                    Song.DATE_ADDED + "<=" + maxDateAdded);
+        }
 
-            preferences.putLong(KEY_MIN_LAST_PLAYED, minLastPlayed);
-            if (minLastPlayed > 0) {
-                selection = appendSelection(selection,
-                        Song.LAST_PLAYED + ">=" + minLastPlayed);
-            }
+        preferences.putLong(KEY_MIN_LAST_PLAYED, minLastPlayed);
+        if (minLastPlayed > 0) {
+            selection = appendSelection(selection,
+                    Song.LAST_PLAYED + ">=" + minLastPlayed);
+        }
 
-            preferences.putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed);
-            if (maxLastPlayed > 0) {
-                selection = appendSelection(selection,
-                        Song.LAST_PLAYED + "<=" + maxLastPlayed + 86400000);
-            }
+        preferences.putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed);
+        if (maxLastPlayed > 0) {
+            selection = appendSelection(selection,
+                    Song.LAST_PLAYED + "<=" + maxLastPlayed + 86400000);
+        }
 
-            String minTimesPlayed = etMinTimesPlayed.getString();
-            preferences.putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed);
-            if (minTimesPlayed.length() > 0) {
-                selection = appendSelection(selection,
-                        Song.TIMES_PLAYED + ">=" + minTimesPlayed);
-            }
+        String minTimesPlayed = etMinTimesPlayed.getString();
+        preferences.putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed);
+        if (minTimesPlayed.length() > 0) {
+            selection = appendSelection(selection,
+                    Song.TIMES_PLAYED + ">=" + minTimesPlayed);
+        }
 
-            String maxTimesPlayed = etMaxTimesPlayed.getString();
-            preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
-            if (maxTimesPlayed.length() > 0) {
-                selection = appendSelection(selection,
-                        Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
-            }
+        String maxTimesPlayed = etMaxTimesPlayed.getString();
+        preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
+        if (maxTimesPlayed.length() > 0) {
+            selection = appendSelection(selection,
+                    Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
+        }
 
-            if (tags != null) {
-                preferences.putStringSet(KEY_TAGS, tags);
+        if (tags != null) {
+            preferences.putStringSet(KEY_TAGS, tags);
 
-                String tagSelection;
-                if (tags.size() == 0) {
-                    tagSelection = "IS NULL";
-                } else {
-                    StringBuilder sbTags = new StringBuilder();
-                    for (String tag : tags) {
-                        sbTags.append(sbTags.length() == 0 ? '(' : ',');
-                        sbTags.append('\'');
-                        sbTags.append(tag);
-                        sbTags.append('\'');
-                    }
-                    sbTags.append(')');
-                    tagSelection = "IN" + sbTags;
+            String tagSelection;
+            if (tags.size() == 0) {
+                tagSelection = "IS NULL";
+            } else {
+                StringBuilder sbTags = new StringBuilder();
+                for (String tag : tags) {
+                    sbTags.append(sbTags.length() == 0 ? '(' : ',');
+                    sbTags.append('\'');
+                    sbTags.append(tag);
+                    sbTags.append('\'');
                 }
-                selection = appendSelection(selection,
-                        Song.TAG + " " + tagSelection);
+                sbTags.append(')');
+                tagSelection = "IN" + sbTags;
             }
+            selection = appendSelection(selection,
+                    Song.TAG + " " + tagSelection);
+        }
 
-            int dbOrderByColumn = sDbOrderBy.getSelectedItemPosition();
-            preferences.putInt(KEY_DB_ORDER_BY, dbOrderByColumn);
-            switch (dbOrderByColumn) {
-                case 1:
-                    dbOrderBy = Song.TITLE;
-                    break;
-                case 2:
-                    dbOrderBy = Song.ARTIST_ID;
-                    break;
-                case 3:
-                    dbOrderBy = Song.DATE_ADDED;
-                    break;
-                case 4:
-                    dbOrderBy = Song.YEAR;
-                    break;
-                case 5:
-                    dbOrderBy = Song.LAST_PLAYED;
-                    break;
-                case 6:
-                    dbOrderBy = Song.TIMES_PLAYED;
-                    break;
-            }
+        int dbOrderByColumn = sDbOrderBy.getSelectedItemPosition();
+        preferences.putInt(KEY_DB_ORDER_BY, dbOrderByColumn);
+        switch (dbOrderByColumn) {
+            case 1:
+                dbOrderBy = Song.TITLE;
+                break;
+            case 2:
+                dbOrderBy = Song.ARTIST_ID;
+                break;
+            case 3:
+                dbOrderBy = Song.DATE_ADDED;
+                break;
+            case 4:
+                dbOrderBy = Song.YEAR;
+                break;
+            case 5:
+                dbOrderBy = Song.LAST_PLAYED;
+                break;
+            case 6:
+                dbOrderBy = Song.TIMES_PLAYED;
+                break;
+        }
 
-            boolean dbOrderByDesc = cbDbOrderByDesc.isChecked();
-            preferences.putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc);
-            if (dbOrderBy != null && dbOrderByDesc) {
-                dbOrderBy += " DESC";
-            }
+        boolean dbOrderByDesc = cbDbOrderByDesc.isChecked();
+        preferences.putBoolean(KEY_DB_ORDER_BY_DESC, dbOrderByDesc);
+        if (dbOrderBy != null && dbOrderByDesc) {
+            dbOrderBy += " DESC";
         }
 
         Bundle args = new Bundle();
         args.putSparseParcelableArray(ARG_ARTISTS, artists);
-        args.putInt(ARG_JOINED_SORT_BY, joinedSortBy);
         args.putString(ARG_SELECTION, selection);
         args.putString(ARG_DB_ORDER_BY, dbOrderBy);
         startActivity(new Intent(getContext(), SongsActivity.class).putExtras(args));

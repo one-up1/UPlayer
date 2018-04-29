@@ -145,29 +145,31 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     public void querySong(Song song) {
         Log.d(TAG, "DbOpenHelper.querySong(" + song + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(Artist.TABLE_NAME,
-                    new String[]{Artist.LAST_PLAYED, Artist.TIMES_PLAYED, Artist.DATE_MODIFIED},
-                    Artist._ID + "=" + song.getArtist().getId(), null, null, null, null)) {
+            try (Cursor c = db.query(Artists.TABLE_NAME,
+                    new String[]{Artists.LAST_SONG_ADDED,
+                            Artists.LAST_PLAYED, Artists.TIMES_PLAYED},
+                    SQL_WHERE_ID, new String[]{Long.toString(song.getArtist().getId())},
+                    null, null, null)) {
                 if (c.moveToFirst()) {
-                    song.getArtist().setLastPlayed(c.getLong(0));
-                    song.getArtist().setTimesPlayed(c.getInt(1));
-                    song.getArtist().setDateModified(c.getLong(2));
+                    song.getArtist().setDateModified(c.getLong(0));
+                    song.getArtist().setLastPlayed(c.getLong(1));
+                    song.getArtist().setTimesPlayed(c.getInt(2));
                 } else {
                     Log.d(TAG, "Artist not found");
                 }
             }
 
-            try (Cursor c = db.query(Song.TABLE_NAME,
-                    new String[]{Song.DATE_ADDED, Song.YEAR,
-                            Song.LAST_PLAYED, Song.TIMES_PLAYED, Song.BOOKMARKED, Song.TAG},
+            try (Cursor c = db.query(Songs.TABLE_NAME,
+                    new String[]{Songs.YEAR, Songs.ADDED, Songs.BOOKMARKED, Songs.TAG,
+                            Songs.LAST_PLAYED, Songs.TIMES_PLAYED},
                     Song._ID + "=" + song.getId(), null, null, null, null)) {
                 if (c.moveToFirst()) {
-                    song.setDateAdded(c.getLong(0));
-                    song.setYear(c.getInt(1));
-                    song.setLastPlayed(c.getLong(2));
-                    song.setTimesPlayed(c.getInt(3));
-                    song.setBookmarked(c.getLong(4));
-                    song.setTag(c.getString(5));
+                    song.setYear(c.getInt(0));
+                    song.setDateAdded(c.getLong(1));
+                    song.setBookmarked(c.getLong(2));
+                    song.setTag(c.getString(3));
+                    song.setLastPlayed(c.getLong(4));
+                    song.setTimesPlayed(c.getInt(5));
                 } else {
                     Log.d(TAG, "Song not found");
                 }
@@ -199,42 +201,42 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             db.beginTransaction();
             try {
                 ContentValues values = new ContentValues();
-                values.put(Song._ID, song.getId());
-                values.put(Song.TITLE, song.getTitle());
-                values.put(Song.ARTIST_ID, song.getArtist().getId());
-                if (song.getDateAdded() == 0) {
-                    values.putNull(Song.DATE_ADDED);
-                } else {
-                    values.put(Song.DATE_ADDED, song.getDateAdded());
-                }
-                if (song.getYear() == 0) {
-                    values.putNull(Song.YEAR);
-                } else {
-                    values.put(Song.YEAR, song.getYear());
-                }
+                values.put(Songs._ID, song.getId());
+                values.put(Songs.TITLE, song.getTitle());
                 if (song.getDuration() == 0) {
-                    values.putNull(Song.DURATION);
+                    values.putNull(Songs.DURATION);
                 } else {
-                    values.put(Song.DURATION, song.getDuration());
+                    values.put(Songs.DURATION, song.getDuration());
                 }
-                if (song.getLastPlayed() == 0) {
-                    values.putNull(Song.LAST_PLAYED);
+                values.put(Songs.ARTIST_ID, song.getArtist().getId());
+                if (song.getYear() == 0) {
+                    values.putNull(Songs.YEAR);
                 } else {
-                    values.put(Song.LAST_PLAYED, song.getLastPlayed());
+                    values.put(Songs.YEAR, song.getYear());
                 }
-                values.put(Song.TIMES_PLAYED, song.getTimesPlayed());
+                if (song.getDateAdded() == 0) {
+                    values.putNull(Songs.ADDED);
+                } else {
+                    values.put(Songs.ADDED, song.getDateAdded());
+                }
                 if (song.getBookmarked() == 0) {
-                    values.putNull(Song.BOOKMARKED);
+                    values.putNull(Songs.BOOKMARKED);
                 } else {
-                    values.put(Song.BOOKMARKED, song.getBookmarked());
+                    values.put(Songs.BOOKMARKED, song.getBookmarked());
                 }
                 if (song.getTag() == null) {
-                    values.putNull(Song.TAG);
+                    values.putNull(Songs.TAG);
                 } else {
-                    values.put(Song.TAG, song.getTag());
+                    values.put(Songs.TAG, song.getTag());
                 }
+                if (song.getLastPlayed() == 0) {
+                    values.putNull(Songs.LAST_PLAYED);
+                } else {
+                    values.put(Songs.LAST_PLAYED, song.getLastPlayed());
+                }
+                values.put(Songs.TIMES_PLAYED, song.getTimesPlayed());
 
-                int rowsAffected = db.update(Song.TABLE_NAME, values,
+                int rowsAffected = db.update(Songs.TABLE_NAME, values,
                         Song._ID + "=" + song.getId(), null);
                 Log.d(TAG, rowsAffected + " songs updated");
 
@@ -249,11 +251,11 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             }
         }
 
-        if (song.getDateAdded() > song.getArtist().getDateModified()) {
+        /*if (song.getDateAdded() > song.getArtist().getDateModified()) {
             Log.d(TAG, "Updating date modified of artist " + song.getArtist());
             song.getArtist().setDateModified(song.getDateAdded());
             insertOrUpdateArtist(song.getArtist());
-        }
+        }*/
     }
 
     public void updateSongPlayed(Song song) {
@@ -342,7 +344,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                long now = Calendar.currentTime(); //TODO: Millis for time?
+                long now = Calendar.currentTime(); //TODO: Millis for time or DEFAULT CURRENT_TIMESTAMP?
 
                 resArtists = syncTable(context, MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                         db, Artists.TABLE_NAME, new String[]{Artists._ID, Artists.ARTIST},
@@ -368,10 +370,10 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
 
         Util.showInfoDialog(context, R.string.sync_completed, R.string.sync_completed_message,
-                resArtists.recordsInserted, resArtists.recordsIgnored,
-                resArtists.recordsDeleted,
-                resSongs.recordsInserted, resSongs.recordsIgnored,
-                resSongs.recordsDeleted);
+                resArtists.ids.size(), resArtists.recordsIgnored,
+                resArtists.recordsInserted, resArtists.recordsUpdated, resArtists.recordsDeleted,
+                resSongs.ids.size(), resSongs.recordsIgnored,
+                resSongs.recordsInserted, resSongs.recordsUpdated, resSongs.recordsDeleted);
     }
     //TODO: getDatabase() only in DbOpenHelper.
 
@@ -430,6 +432,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     ret.recordsInserted++;
                 } else {
                     Log.d(TAG, table + " record updated: " + id);
+                    ret.recordsUpdated++;
                 }
                 ret.ids.add(id);
             }
@@ -510,7 +513,9 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     private static class SyncResult {
         private List<Long> ids;
         private int recordsIgnored;
+
         private int recordsInserted;
+        private int recordsUpdated;
         private int recordsDeleted;
 
         private SyncResult() {

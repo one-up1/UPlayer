@@ -37,7 +37,7 @@
     <string name="restore_playlist">Restore playlist</string>
     <string name="sync_database">Sync database</string>
     <string name="sync_completed">Sync completed</string>
-    <string name="sync_completed_message">Artists inserted: %1$d (%2$d ignored)\nArtists deleted: %3$d\nSongs inserted: %4$d (%5$d ignored)\nSongs deleted: %6$d</string>
+    <string name="sync_completed_message">%1$d artists (%2$d ignored)\n%3$d inserted, %4$d updated, %5$d deleted\n\n%6$d songs (%7$d ignored)\n%8$d inserted, %9$d updated, %10$d deleted</string>
     <string name="backup">Backup&#8230;</string>
     <string name="backup_completed">Backup completed</string>
     <string name="restore_backup">Restore backup</string>

@@ -2,23 +2,15 @@ package com.oneup.uplayer.db;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.provider.BaseColumns;
-import android.provider.MediaStore;
 
-public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbColumns, Parcelable {
-    public static final String TABLE_NAME = "artists";
-
-    public static final String DATE_MODIFIED = "date_modified";
-
-    private int id;
+public class Artist implements Parcelable {
+    private long id;
     private String artist;
-
+    private long lastSongAdded;
     private long lastPlayed;
     private int timesPlayed;
 
-    private long dateModified;
-
-    public Artist() {
+    Artist() {
     }
 
     @Override
@@ -33,18 +25,18 @@ public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbCo
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeInt(id);
+        out.writeLong(id);
         out.writeString(artist);
+        out.writeLong(lastSongAdded);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
-        out.writeLong(dateModified);
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -54,6 +46,14 @@ public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbCo
 
     public void setArtist(String artist) {
         this.artist = artist;
+    }
+
+    public long getLastSongAdded() {
+        return lastSongAdded;
+    }
+
+    public void setLastSongAdded(long lastSongAdded) {
+        this.lastSongAdded = lastSongAdded;
     }
 
     public long getLastPlayed() {
@@ -72,24 +72,16 @@ public class Artist implements BaseColumns, MediaStore.Audio.ArtistColumns, DbCo
         this.timesPlayed = timesPlayed;
     }
 
-    public long getDateModified() {
-        return dateModified;
-    }
-
-    public void setDateModified(long dateModified) {
-        this.dateModified = dateModified;
-    }
-
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
 
         @Override
         public Object createFromParcel(Parcel in) {
             Artist ret = new Artist();
-            ret.id = in.readInt();
+            ret.id = in.readLong();
             ret.artist = in.readString();
+            ret.lastSongAdded = in.readLong();
             ret.lastPlayed = in.readLong();
             ret.timesPlayed = in.readInt();
-            ret.dateModified = in.readLong();
             return ret;
         }
 

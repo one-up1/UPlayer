@@ -32,7 +32,7 @@ public class SongsListView extends ListView {
     private DbOpenHelper dbOpenHelper;
     private Song editSong;
 
-    private int viewArtistSortBy;
+    private String viewArtistOrderBy;
 
     private OnDataSetChangedListener onDataSetChangedListener;
     private OnSongDeletedListener onSongDeletedListener;
@@ -49,19 +49,19 @@ public class SongsListView extends ListView {
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.view_artist:
-                //TODO: putExtra(SongsActivity.ARG_JOINED_SORT_BY, viewArtistSortBy == 0 ? BaseArgs.SORT_BY_NAME : viewArtistSortBy)
-                context.startActivity(new Intent(getContext(), SongsActivity.class)
-                        .putExtra(SongsActivity.ARG_ARTIST, song.getArtist()));
+                //TODO: View artist.
+                /*context.startActivity(new Intent(getContext(), SongsActivity.class)
+                        .putExtra(SongsActivity.ARG_ARTIST, song.getArtist()));*/
                 return true;
             case R.id.edit:
                 dbOpenHelper.querySong(song);
                 context.startActivityForResult(new Intent(getContext(), EditSongActivity.class)
-                                .putExtra(EditSongActivity.EXTRA_SONG, editSong = song)
-                                .putExtra(EditSongActivity.EXTRA_TAGS, dbOpenHelper.querySongTags()),
+                                .putExtra(EditSongActivity.EXTRA_SONG, editSong = song),
                         REQUEST_EDIT_SONG);
                 return true;
             case R.id.bookmark:
-                dbOpenHelper.querySong(song);
+                //TODO: Bookmarking
+                /*dbOpenHelper.querySong(song);
                 if (song.getBookmarked() == 0) {
                     Log.d(TAG, "Setting bookmark: " + song);
                     song.setBookmarked(Calendar.currentTime());
@@ -76,18 +76,20 @@ public class SongsListView extends ListView {
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
-                return true;
+                return true;*/
             case R.id.mark_played:
-                dbOpenHelper.updateSongPlayed(song); //TODO: ListView not updated when marking played first time
+                // TODO: Mark played.
+                /*dbOpenHelper.updateSongPlayed(song); //TODO: ListView not updated when marking played first time
                 Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
 
                 ((SongAdapter) getAdapter()).notifyDataSetChanged();
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
-                return true;
+                return true;*/
             case R.id.delete:
-                new AlertDialog.Builder(context)
+                //TODO: Delete.
+                /*new AlertDialog.Builder(context)
                         .setIcon(R.drawable.ic_dialog_warning)
                         .setTitle(R.string.delete_song)
                         .setMessage(context.getString(R.string.delete_confirm, song.getTitle()))
@@ -119,7 +121,7 @@ public class SongsListView extends ListView {
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show();
+                        .show();*/
                 return true;
         }
         return true;
@@ -130,9 +132,10 @@ public class SongsListView extends ListView {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:
-                    Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
+                    //TODO: Saving song after edit.
+                    /*Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
                     dbOpenHelper.querySong(editSong);
-                    editSong.setDateAdded(song.getDateAdded());
+                    editSong.setAdded(song.getAdded());
                     editSong.setYear(song.getYear());
                     editSong.setTag(song.getTag());
                     dbOpenHelper.insertOrUpdateSong(editSong);
@@ -143,14 +146,14 @@ public class SongsListView extends ListView {
                     ((SongAdapter) getAdapter()).notifyDataSetChanged();
                     if (onDataSetChangedListener != null) {
                         onDataSetChangedListener.onDataSetChanged();
-                    }
+                    }*/
                     break;
             }
         }
     }
 
-    public void setViewArtistSortBy(int viewArtistSortBy) {
-        this.viewArtistSortBy = viewArtistSortBy;
+    public void setViewArtistOrderBy(String viewArtistOrderBy) {
+        this.viewArtistOrderBy = viewArtistOrderBy;
     }
 
     public void setOnDataSetChangedListener(OnDataSetChangedListener onDataSetChangedListener) {

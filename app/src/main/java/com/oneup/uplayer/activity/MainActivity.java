@@ -3,8 +3,6 @@ package com.oneup.uplayer.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -14,21 +12,15 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.SparseArray;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
-
-    private DbOpenHelper dbOpenHelper;
-    private SparseArray<Artist> artists;
 
     private SectionsPagerAdapter sectionsPagerAdapter;
     private ViewPager viewPager;
@@ -39,9 +31,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        dbOpenHelper = new DbOpenHelper(this);
-        //dbOpenHelper.t(this);
-
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
     }
@@ -50,13 +39,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     protected void onResume() {
         Log.d(TAG, "MainActivity.onResume()");
         super.onResume();
-        //if (true) return;
 
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             if (sectionsPagerAdapter == null) {
-                queryArtists();
-
                 //Toolbar toolbar = findViewById(R.id.toolbar);
                 //setSupportActionBar(toolbar);
 
@@ -79,16 +65,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "MainActivity.onDestroy()");
-        if (dbOpenHelper != null) {
-            dbOpenHelper.close();
-        }
-
-        super.onDestroy();
     }
 
     @Override
@@ -143,54 +119,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     public void notifyDataSetChanged() {
         Log.d(TAG, "MainActivity.notifyDataSetChanged()");
-        queryArtists();
-
-        if (sectionsPagerAdapter.queryFragment != null) {
-            sectionsPagerAdapter.queryFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.bookmarksFragment != null) {
-            sectionsPagerAdapter.bookmarksFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.lastAddedFragment != null) {
-            sectionsPagerAdapter.lastAddedFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.artistsFragment != null) {
-            sectionsPagerAdapter.artistsFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.lastPlayedFragment != null) {
-            sectionsPagerAdapter.lastPlayedFragment.setArtists(artists);
-        }
-        if (sectionsPagerAdapter.mostPlayedFragment != null) {
-            sectionsPagerAdapter.mostPlayedFragment.setArtists(artists);
-        }
         sectionsPagerAdapter.notifyDataSetChanged();
-    }
-
-    private void queryArtists() {
-        if (artists == null) {
-            artists = new SparseArray<>();
-        } else {
-            artists.clear();
-        }
-        Artist artist;
-
-        try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            try (Cursor c = db.query(Artist.TABLE_NAME,//TODO: Sort artist.
-                    null, null, null, null, null, null)) {
-                while (c.moveToNext()) {
-                    artist = new Artist();
-                    int id = c.getInt(0);
-                    artist.setId(id);
-                    artist.setArtist(c.getString(1));
-                    artist.setDateModified(c.getLong(2));
-                    artist.setLastPlayed(c.getLong(3));
-                    artist.setTimesPlayed(c.getInt(4));
-                    artists.put(id, artist);
-                }
-            }
-        }
-
-        Log.d(TAG, "Queried " + artists.size() + " artists");
+        //TODO: MainActivity.notifyDataSetChanged() causes all fragments to reload data?
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -209,35 +139,49 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         public Fragment getItem(int position) {
             Log.d(TAG, "MainActivity.SectionsPagerAdapter.getItem(" + position + ")");
             switch (position) {
+                //TODO: Always recreate fragments in MainActivity.getItem() ?
                 case 0:
                     if (queryFragment == null) {
-                        queryFragment = QueryFragment.newInstance(artists);
+                        queryFragment = QueryFragment.newInstance();
                     }
                     return queryFragment;
                 case 1:
                     if (bookmarksFragment == null) {
-                        bookmarksFragment = SongsFragment.newInstance(artists, null,
-                                Song.BOOKMARKED + " IS NOT NULL", Song.BOOKMARKED + " DESC");
+                        //TODO: Constants for IS NOT NULL etc?
+                        //TODO: Order by multiple columns DESC,ASC?
+                        //TODO: What selection/orderBy to use and to pass from ArtistsFragment to SongsFragment.
+                        bookmarksFragment = SongsFragment.newInstance(
+                                DbOpenHelper.Songs.BOOKMARKED + " IS NOT NULL", null,
+                                DbOpenHelper.Songs.BOOKMARKED + " DESC");
                     }
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
-                        lastAddedFragment = ArtistsFragment.newInstance(artists);
+                        lastAddedFragment = ArtistsFragment.newInstance(
+                                DbOpenHelper.Artists.LAST_SONG_ADDED + " IS NOT NULL", null,
+                                DbOpenHelper.Artists.LAST_SONG_ADDED + " DESC",
+                                DbOpenHelper.Songs.ADDED + " DESC");
                     }
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(artists);
+                        artistsFragment = ArtistsFragment.newInstance(null, null,
+                                DbOpenHelper.Artists.ARTIST,
+                                DbOpenHelper.Songs.TITLE);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
-                        lastPlayedFragment = ArtistsFragment.newInstance(artists);
+                        lastPlayedFragment = ArtistsFragment.newInstance(null, null,
+                                DbOpenHelper.Artists.LAST_PLAYED + " DESC",
+                                DbOpenHelper.Songs.LAST_PLAYED + " DESC");
                     }
                     return lastPlayedFragment;
                 case 5:
                     if (mostPlayedFragment == null) {
-                        mostPlayedFragment = ArtistsFragment.newInstance(artists);
+                        mostPlayedFragment = ArtistsFragment.newInstance(null, null,
+                                DbOpenHelper.Artists.TIMES_PLAYED + " DESC",
+                                DbOpenHelper.Songs.TIMES_PLAYED + " DESC");
                     }
                     return mostPlayedFragment;
             }

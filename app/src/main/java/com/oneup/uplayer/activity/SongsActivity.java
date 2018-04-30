@@ -4,17 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.Artist;
-import com.oneup.uplayer.fragment.BaseArgs;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-public class SongsActivity extends AppCompatActivity implements BaseArgs {
+public class SongsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
     private SongsFragment songsFragment;
@@ -28,13 +25,7 @@ public class SongsActivity extends AppCompatActivity implements BaseArgs {
         setContentView(container);
 
         if (savedInstanceState == null) {
-            Bundle args = getIntent().getExtras();
-            SparseArray<Artist> artists = args.getSparseParcelableArray(ARG_ARTISTS);
-            songsFragment = SongsFragment.newInstance(
-                    artists,
-                    (Artist) args.getParcelable(ARG_ARTIST),
-                    args.getString(ARG_SELECTION),
-                    args.getString(ARG_DB_ORDER_BY));
+            songsFragment = SongsFragment.newInstance(getIntent().getExtras());
             getSupportFragmentManager().beginTransaction().add(R.id.container, songsFragment)
                     .commit();
         }

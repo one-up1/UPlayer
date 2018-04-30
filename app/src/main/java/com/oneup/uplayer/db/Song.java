@@ -8,27 +8,20 @@ import android.provider.MediaStore;
 
 import java.util.ArrayList;
 
-public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelable {
-    public static final String TABLE_NAME = "songs";
-
-    public static final String BOOKMARKED = "bookmarked";
-    public static final String TAG = "tag";
-
-    private int id;
+public class Song implements Parcelable {
+    private long id;
     private String title;
     private long artistId;
     private String artist;
-    private long dateAdded;
+    private long duration;
     private int year;
-    private int duration;
-
+    private long added;
+    private String tag;
+    private long bookmarked;
     private long lastPlayed;
     private int timesPlayed;
 
-    private long bookmarked;
-    private String tag;
-
-    public Song() {
+    Song() {
     }
 
     @Override
@@ -43,24 +36,24 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeInt(id);
+        out.writeLong(id);
         out.writeString(title);
         out.writeLong(artistId);
         out.writeString(artist);
-        out.writeLong(dateAdded);
+        out.writeLong(duration);
         out.writeInt(year);
-        out.writeInt(duration);
+        out.writeLong(added);
+        out.writeString(tag);
+        out.writeLong(bookmarked);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
-        out.writeLong(bookmarked);
-        out.writeString(tag);
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -88,12 +81,12 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.artist = artist;
     }
 
-    public long getDateAdded() {
-        return dateAdded;
+    public long getDuration() {
+        return duration;
     }
 
-    public void setDateAdded(long dateAdded) {
-        this.dateAdded = dateAdded;
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 
     public int getYear() {
@@ -104,12 +97,28 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         this.year = year;
     }
 
-    public int getDuration() {
-        return duration;
+    public long getAdded() {
+        return added;
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setAdded(long added) {
+        this.added = added;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public long getBookmarked() {
+        return bookmarked;
+    }
+
+    public void setBookmarked(long bookmarked) {
+        this.bookmarked = bookmarked;
     }
 
     public long getLastPlayed() {
@@ -126,22 +135,6 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
 
     public void setTimesPlayed(int timesPlayed) {
         this.timesPlayed = timesPlayed;
-    }
-
-    public long getBookmarked() {
-        return bookmarked;
-    }
-
-    public void setBookmarked(long bookmarked) {
-        this.bookmarked = bookmarked;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 
     public Uri getContentUri() {
@@ -161,17 +154,17 @@ public class Song implements MediaStore.Audio.AudioColumns, DbColumns, Parcelabl
         @Override
         public Object createFromParcel(Parcel in) {
             Song ret = new Song();
-            ret.id = in.readInt();
+            ret.id = in.readLong();
             ret.title = in.readString();
             ret.artistId = in.readLong();
             ret.artist = in.readString();
-            ret.dateAdded = in.readLong();
+            ret.duration = in.readLong();
             ret.year = in.readInt();
-            ret.duration = in.readInt();
+            ret.added = in.readLong();
+            ret.tag = in.readString();
+            ret.bookmarked = in.readLong();
             ret.lastPlayed = in.readLong();
             ret.timesPlayed = in.readInt();
-            ret.bookmarked = in.readLong();
-            ret.tag = in.readString();
             return ret;
         }
 

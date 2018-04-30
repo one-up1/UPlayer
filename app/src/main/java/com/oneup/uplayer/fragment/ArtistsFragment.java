@@ -1,7 +1,6 @@
 package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -9,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,51 +22,40 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.Song;
-import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener {
+public class ArtistsFragment extends Fragment implements AdapterView.OnItemClickListener {
     private static final String TAG = "UPlayer";
 
-    private static final String SQL_QUERY_PLAYED_DURATION =
-            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " +
-                    Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";
+    private static final String SONGS_ORDER_BY = "com.oneup.uplayer.extra.SONGS_ORDER_BY";
 
-    private SparseArray<Artist> artists;
+    /*private static final String SQL_QUERY_PLAYED_DURATION =
+            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " +
+                    Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";*/
 
     private DbOpenHelper dbOpenHelper;
-    private ArrayList<Artist> objects;
+    private ArrayList<Artist> artists;
 
     private ListView listView;
     private ListAdapter listAdapter;
     private Parcelable listViewState;
     private boolean sortOrderReversed;
 
-    public ArtistsFragment() {
-    }
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "ArtistsFragment.onCreateView()");
-        artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
-        Log.d(TAG, artists.size() + " artists");
-
         dbOpenHelper = new DbOpenHelper(getActivity());
-        if (objects == null) {
-            objects = new ArrayList<>();
-        } else {
-            objects.clear();
-        }
-        for (int i = 0; i < artists.size(); i++) {
-            objects.add(artists.valueAt(i));
-        }
 
+        artists = new ArrayList<>();
+        dbOpenHelper.queryArtists(artists,
+                getArguments().getString(BaseArgs.SELECTION),
+                getArguments().getStringArray(BaseArgs.SELECTION_ARGS),
+                getArguments().getString(BaseArgs.ORDER_BY));
         if (sortOrderReversed) {
-            Collections.reverse(objects);
+            Collections.reverse(artists);
         }
 
         if (listView == null) {
@@ -108,11 +95,12 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
             return false;
         }
 
-        Artist artist = objects.get(((AdapterView.AdapterContextMenuInfo)
+        Artist artist = artists.get(((AdapterView.AdapterContextMenuInfo)
                 item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.info:
-                long playedDuration;
+                //TODO: Artist info.
+                /*long playedDuration;
                 try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
                     playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION,
                             new String[]{Integer.toString(artist.getId())});
@@ -127,7 +115,7 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
                                     getString(R.string.na) :
                                     Util.formatDateTimeAgo(artist.getDateModified())
                     );
-                }
+                }*/
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -154,42 +142,43 @@ public class ArtistsFragment extends Fragment implements BaseArgs, AdapterView.O
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == listView) {
-            //TODO: putExtra(ARG_JOINED_SORT_BY, joinedSortBy)
             startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtra(ARG_ARTIST, objects.get(position)));
+                    .putExtras(BaseArgs.get(
+                            DbOpenHelper.Songs.ARTIST_ID + "=?",
+                            new String[]{Long.toString(artists.get(position).getId())},
+                            getArguments().getString(SONGS_ORDER_BY))));
         }
     }
 
-    public void setArtists(SparseArray<Artist> artists) {
-        getArguments().putSparseParcelableArray(ARG_ARTISTS, artists);
-        this.artists = artists;
-    }
-
     public void reverseSortOrder() {
-        Collections.reverse(objects);
+        Collections.reverse(artists);
         listAdapter.notifyDataSetChanged();
         sortOrderReversed = !sortOrderReversed;
     }
 
-    public static ArtistsFragment newInstance(SparseArray<Artist> artists) {
-        //TODO: Artist sort.
+    public static ArtistsFragment newInstance(String selection, String[] selectionArgs,
+                                              String orderBy, String songsOrderBy) {
+        Bundle args = BaseArgs.get(selection, selectionArgs, orderBy);
+        args.putString(SONGS_ORDER_BY, songsOrderBy);
+        return newInstance(args);
+    }
+
+    public static ArtistsFragment newInstance(Bundle args) {
         ArtistsFragment fragment = new ArtistsFragment();
-        Bundle args = new Bundle();
-        args.putSparseParcelableArray(ARG_ARTISTS, artists);
         fragment.setArguments(args);
         return fragment;
     }
 
     private class ListAdapter extends ArrayAdapter<Artist> {
         private ListAdapter() {
-            super(ArtistsFragment.this.getContext(), android.R.layout.simple_list_item_1, objects);
+            super(ArtistsFragment.this.getContext(), android.R.layout.simple_list_item_1, artists);
         }
 
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             TextView ret = (TextView) super.getView(position, convertView, parent);
-            ret.setTextColor(objects.get(position).getTimesPlayed() == 0 ?
+            ret.setTextColor(artists.get(position).getTimesPlayed() == 0 ?
                     Color.BLUE : Color.BLACK);
             return ret;
         }

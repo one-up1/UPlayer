@@ -1,15 +1,12 @@
 package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,7 +21,6 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
-import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
@@ -34,83 +30,45 @@ import com.oneup.uplayer.widget.SongsListView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnItemClickListener,
+//TODO: BaseFragment with ListView?
+
+public class SongsFragment extends Fragment implements AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
 
-    private SparseArray<Artist> artists;
-    private Artist artist;
-    private String selection;
-    private String dbOrderBy;
-
     private DbOpenHelper dbOpenHelper;
-    private ArrayList<Song> objects;
+    private ArrayList<Song> songs;
 
     private SongsListView listView;
     private ListAdapter listAdapter;
     private Parcelable listViewState;
     private boolean sortOrderReversed;
 
-    public SongsFragment() {
-    }
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "SongsFragment.onCreateView()");
-        artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
-        if (artists == null) {
-            artist = getArguments().getParcelable(ARG_ARTIST);
-            selection = Song.ARTIST_ID + "=" + artist.getId();
-            Log.d(TAG, "artist=" + artist + ", selection=" + selection);
-        } else {
-            selection = getArguments().getString(ARG_SELECTION);
-            dbOrderBy = getArguments().getString(ARG_DB_ORDER_BY);
-            Log.d(TAG, artists.size() + " artists, selection=" + selection +
-                    ", dbOrderBy=" + dbOrderBy);
-        }
 
         dbOpenHelper = new DbOpenHelper(getActivity());
-        if (objects == null) {
-            objects = new ArrayList<>();
-        } else {
-            objects.clear();
-        }
-        try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-            try (Cursor c = db.query(Song.TABLE_NAME, null, selection, null,
-                    null, null, dbOrderBy)) {
-                while (c.moveToNext()) {
-                    Song song = new Song();
-                    song.setId(c.getInt(0));
-                    song.setTitle(c.getString(1));
-                    song.setDuration(c.getInt(2));
-                    song.setArtistId(c.getLong(3));
-                    song.setArtist(c.getString(4));
-                    song.setYear(c.getInt(5));
-                    song.setDateAdded(c.getLong(6));
-                    song.setBookmarked(c.getLong(7));
-                    song.setTag(c.getString(8));
-                    song.setLastPlayed(c.getLong(9));
-                    song.setTimesPlayed(c.getInt(9));
-                    objects.add(song);
-                }
-            }
-        }
-
+        songs = new ArrayList<>();
+        dbOpenHelper.querySongs(songs,
+                getArguments().getString(BaseArgs.SELECTION),
+                getArguments().getStringArray(BaseArgs.SELECTION_ARGS),
+                getArguments().getString(BaseArgs.ORDER_BY));
         if (sortOrderReversed) {
-            Collections.reverse(objects);
+            Collections.reverse(songs);
         }
 
-        Log.d(TAG, "Queried " + objects.size() + " songs");
         if (getActivity() instanceof SongsActivity) {
             setTitle();
         }
 
         if (listView == null) {
             listView = new SongsListView(getActivity());
-            if (artist == null) {
-                //TODO: listView.setViewArtistSortBy(joinedSortBy);
-            }
+            //if (artist == null) {
+                //TODO: listView.setViewArtistSortBy(joinedSortBy)
+            //Only pass it from query fragment and bookmarks?
+            //}
             listView.setOnItemClickListener(this);
             if (getActivity() instanceof MainActivity) {
                 listView.setOnDataSetChangedListener(this);
@@ -141,7 +99,7 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
                                     ContextMenu.ContextMenuInfo menuInfo) {
         if (v == listView) {
             getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
-            menu.getItem(0).setVisible(artist == null);
+            //TODO: menu.getItem(0).setVisible(artist == null);
         }
     }
 
@@ -176,10 +134,10 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == listView) {
-            Log.d(TAG, "Playing " + objects.size() + " songs, songIndex=" + position);
+            Log.d(TAG, "Playing " + songs.size() + " songs, songIndex=" + position);
             getContext().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
-                    .putExtra(MainService.ARG_SONGS, objects)
+                    .putExtra(MainService.ARG_SONGS, songs)
                     .putExtra(MainService.ARG_SONG_INDEX, position));
         }
     }
@@ -191,44 +149,25 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
 
     @Override
     public void onSongDeleted(Song song) {
-        objects.remove(song);
+        songs.remove(song);
         setTitle();
         listAdapter.notifyDataSetChanged();
     }
 
-    public void setArtists(SparseArray<Artist> artists) {
-        getArguments().putSparseParcelableArray(ARG_ARTISTS, artists);
-        this.artists = artists;
-    }
-
     public void reverseSortOrder() {
-        Collections.reverse(objects);
+        Collections.reverse(songs);
         listAdapter.notifyDataSetChanged();
         sortOrderReversed = !sortOrderReversed;
     }
 
-    /*private boolean setArtist(Song song, int id) {
-        if (artists == null) {
-            song.setArtist(artist);
-        } else {
-            Artist artist = artists.get(id);
-            if (artist == null) {
-                Log.w(TAG, "Artist for song '" + song + "' not found");
-                return false;
-            }
-            song.setArtist(artist);
-        }
-        return true;
-    }*/
-
     private void setTitle() {
-        getActivity().setTitle(getString(R.string.song_count_duration, objects.size(),
-                Util.formatDuration(Song.getDuration(objects, 0))));
+        getActivity().setTitle(getString(R.string.song_count_duration, songs.size(),
+                Util.formatDuration(Song.getDuration(songs, 0))));
     }
 
     private class ListAdapter extends SongAdapter implements View.OnClickListener {
         private ListAdapter() {
-            super(getContext(), objects);
+            super(getContext(), songs);
         }
 
         @Override
@@ -288,15 +227,13 @@ public class SongsFragment extends Fragment implements BaseArgs, AdapterView.OnI
         }
     }
 
-    public static SongsFragment newInstance(SparseArray<Artist> artists, Artist artist,
-                                            String selection, String dbOrderBy) {
-        //TODO: Song sorting.
+    public static SongsFragment newInstance(String selection, String[] selectionArgs,
+                                            String orderBy) {
+        return newInstance(BaseArgs.get(selection, selectionArgs, orderBy));
+    }
+
+    public static SongsFragment newInstance(Bundle args) {
         SongsFragment fragment = new SongsFragment();
-        Bundle args = new Bundle();
-        args.putSparseParcelableArray(ARG_ARTISTS, artists);
-        args.putParcelable(ARG_ARTIST, artist);
-        args.putString(ARG_SELECTION, selection);
-        args.putString(ARG_DB_ORDER_BY, dbOrderBy);
         fragment.setArguments(args);
         return fragment;
     }

@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
@@ -22,12 +23,13 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         AdapterView.OnItemSelectedListener {
     public static final String EXTRA_SONG =
             "com.oneup.timer.activity.EditSongActivity.SONG";
-    public static final String EXTRA_TAGS =
-            "com.oneup.timer.activity.EditSongActivity.TAGS";
 
     private static final int REQUEST_SELECT_DATE_ADDED = 1;
 
+    private DbOpenHelper dbOpenHelper;
+
     private Song song;
+
     private ArrayList<String> tags;
 
     private EditText etTitle;
@@ -47,8 +49,10 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         setContentView(R.layout.activity_edit_song);
         setTitle(R.string.edit_song);
 
+        dbOpenHelper = new DbOpenHelper(this);
+
         song = getIntent().getParcelableExtra(EXTRA_SONG);
-        tags = getIntent().getStringArrayListExtra(EXTRA_TAGS);
+        tags = dbOpenHelper.querySongTags();
         tags.add(0, "");
 
         etTitle = findViewById(R.id.etTitle);
@@ -58,8 +62,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         etArtist.setString(song.getArtist());
 
         bDateAdded = findViewById(R.id.bDateAdded);
-        if (song.getDateAdded() > 0) {
-            bDateAdded.setText(Util.formatDateTimeAgo(song.getDateAdded()));
+        if (song.getAdded() > 0) {
+            bDateAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
         }
         bDateAdded.setOnClickListener(this);
 
@@ -125,11 +129,19 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_SELECT_DATE_ADDED:
-                    song.setDateAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bDateAdded.setText(Util.formatDateTimeAgo(song.getDateAdded()));
+                    song.setAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
+                    bDateAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
                     break;
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (dbOpenHelper != null) {
+            dbOpenHelper.close();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -137,8 +149,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         if (v == bDateAdded) {
             Intent intent = new Intent(this, DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.date_added);
-            if (song.getDateAdded() > 0) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getDateAdded());
+            if (song.getAdded() > 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getAdded());
             }
             startActivityForResult(intent, REQUEST_SELECT_DATE_ADDED);
         }

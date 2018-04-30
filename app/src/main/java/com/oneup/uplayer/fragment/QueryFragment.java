@@ -1,18 +1,12 @@
 package com.oneup.uplayer.fragment;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -20,39 +14,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
-import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
-import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.Set;
 
-public class QueryFragment extends Fragment implements BaseArgs,
+//TODO: QueryFragment.
+
+public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
 
-    private static final String SQL_QUERY_SONG_COUNT =
+    /*private static final String SQL_QUERY_SONG_COUNT =
             "SELECT COUNT(*) FROM " + Song.TABLE_NAME;
 
     private static final String SQL_QUERY_ARTIST_COUNT =
@@ -77,7 +56,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
             "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
 
     private static final String SQL_QUERY_PLAYED_DURATION =
-            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
+            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;*/
 
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
@@ -129,14 +108,10 @@ public class QueryFragment extends Fragment implements BaseArgs,
     private long minLastPlayed;
     private long maxLastPlayed;
 
-    public QueryFragment() {
-    }
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "QueryFragment.onCreateView()");
-        artists = getArguments().getSparseParcelableArray(ARG_ARTISTS);
 
         dbOpenHelper = new DbOpenHelper(getActivity());
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -265,7 +240,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
 
     @Override
     public void onClick(View v) {
-        if (v == bMinDateAdded) {
+        /*if (v == bMinDateAdded) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_date_added);
             if (minDateAdded > 0) {
@@ -379,7 +354,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
-        } else if (v == bSyncDatabase) {
+        } else*/ if (v == bSyncDatabase) {
             Log.d(TAG, "Syncing database");
             try {
                 dbOpenHelper.syncWithMediaStore(getContext());
@@ -387,7 +362,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
                 Log.e(TAG, "Error syncing database", ex);
                 Util.showErrorDialog(getContext(), ex);
             }
-        } else if (v == bBackup) {
+        } /*else if (v == bBackup) {
             Log.d(TAG, "Running backup");
             try {
                 //backup();
@@ -397,7 +372,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
                 Log.e(TAG, "Error running backup", ex);
                 Util.showErrorDialog(getContext(), ex);
             }
-        } /*else if (v == bRestoreBackup) {
+        } else if (v == bRestoreBackup) {
             new AlertDialog.Builder(getContext())
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setTitle(R.string.app_name)
@@ -473,11 +448,6 @@ public class QueryFragment extends Fragment implements BaseArgs,
         }
     }
 
-    public void setArtists(SparseArray<Artist> artists) {
-        getArguments().putSparseParcelableArray(ARG_ARTISTS, artists);
-        this.artists = artists;
-    }
-
     private void setSpinnerSelection(Spinner view, String preferencesKey) {
         if (preferences.contains(preferencesKey)) {
             view.setSelection(preferences.getInt(preferencesKey, 0));
@@ -496,7 +466,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
         }
     }
 
-    private void query(Set<String> tags) {
+    /*private void query(Set<String> tags) {
         SharedPreferences.Editor preferences = this.preferences.edit();
 
         String selection = null, dbOrderBy = null;
@@ -624,7 +594,7 @@ public class QueryFragment extends Fragment implements BaseArgs,
         preferences.apply();
     }
 
-    /*private void backup() throws JSONException, IOException {
+    private void backup() throws JSONException, IOException {
         JSONObject backup = new JSONObject();
 
         try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
@@ -776,12 +746,8 @@ public class QueryFragment extends Fragment implements BaseArgs,
         }
     }*/
 
-    public static QueryFragment newInstance(SparseArray<Artist> artists) {
-        QueryFragment fragment = new QueryFragment();
-        Bundle args = new Bundle();
-        args.putSparseParcelableArray(ARG_ARTISTS, artists);
-        fragment.setArguments(args);
-        return fragment;
+    public static QueryFragment newInstance() {
+        return new QueryFragment();
     }
 
     private static String appendSelection(String selection, String s) {

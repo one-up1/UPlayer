@@ -243,7 +243,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player.getCurrentPosition() == 0) {
             Log.d(TAG, "Current position is 0");
         } else {
-            dbOpenHelper.updateSongPlayed(songs.get(songIndex));
+            //TODO: Updating song played.
+            //dbOpenHelper.updateSongPlayed(songs.get(songIndex));
             next();
         }
     }
@@ -377,8 +378,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
-            //TODO: saving playlist
-            JSONArray jsaSongs = new JSONArray();
+            //TODO: saving/restoring playlist
+            /*JSONArray jsaSongs = new JSONArray();
             for (Song song : songs) {
                 JSONObject jsoSong = new JSONObject();
                 jsoSong.put(Song._ID, song.getId());
@@ -395,7 +396,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                     .putString(ARG_SONGS, jsaSongs.toString())
                     .putInt(ARG_SONG_INDEX, songIndex)
                     .putInt(KEY_POSITION, player.getCurrentPosition())
-                    .apply();
+                    .apply();*/
             Log.d(TAG, "Playlist saved");
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
@@ -403,7 +404,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void restorePlaylist() {
-        try {
+        /*try {
             String sSongs = preferences.getString(ARG_SONGS, null);
             if (sSongs == null) {
                 throw new Exception("No saved playlist found");
@@ -441,7 +442,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             if (songs == null) {
                 stop();
             }
-        }
+        }*/
     }
 
     private void stop() {

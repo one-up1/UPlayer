@@ -22,6 +22,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,6 +100,16 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
                 item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.info:
+                dbOpenHelper.queryArtist(artist);
+                Util.showInfoDialog(getContext(), artist.getArtist(), R.string.info_message_artist,
+                        artist.getLastPlayed() == 0 ?
+                                getString(R.string.never) :
+                                Util.formatDateTimeAgo(artist.getLastPlayed()),
+                        artist.getTimesPlayed(),
+                        "foo",
+                        artist.getLastSongAdded() == 0 ?
+                                getString(R.string.na) :
+                                Util.formatDateTimeAgo(artist.getLastSongAdded()));
                 //TODO: Artist info.
                 /*long playedDuration;
                 try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {

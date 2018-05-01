@@ -11,6 +11,7 @@ import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.LongSparseArray;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
@@ -106,13 +107,15 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                              String selection, String[] selectionArgs, String orderBy) {
         Log.d(TAG, "DbOpenHelper.queryArtists(" + selection + "," + orderBy + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(Artists.TABLE_NAME, new String[]{Artists._ID, Artists.ARTIST},
+            try (Cursor c = db.query(Artists.TABLE_NAME, new String[]{Artists._ID, Artists.ARTIST,
+                            Artists.TIMES_PLAYED},
                     selection, selectionArgs, null, null, orderBy)) {
                 artists.clear();
                 while (c.moveToNext()) {
                     Artist artist = new Artist();
                     artist.setId(c.getLong(0));
                     artist.setArtist(c.getString(1));
+                    artist.setTimesPlayed(c.getInt(2));
                     artists.add(artist);
                 }
             }
@@ -142,7 +145,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbOpenHelper.querySongs(" + selection + "," + orderBy + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(Songs.TABLE_NAME, new String[]{Songs._ID, Songs.TITLE,
-                            Songs.ARTIST_ID, Songs.ARTIST, Songs.DURATION},
+                            Songs.ARTIST_ID, Songs.ARTIST, Songs.DURATION, Artists.TIMES_PLAYED},
                     selection, selectionArgs, null, null, orderBy)) {
                 songs.clear();
                 while (c.moveToNext()) {
@@ -152,6 +155,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     song.setArtistId(c.getLong(2));
                     song.setArtist(c.getString(3));
                     song.setDuration(c.getLong(4));
+                    song.setTimesPlayed(c.getInt(5));
                     songs.add(song);
                 }
             }
@@ -495,18 +499,19 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 new FileInputStream(BACKUP_FILE)))) {
             backup = new JSONObject(reader.readLine());
         }
+        updateBackup(backup);
 
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
                 restoreTableBackup(backup, db, Artists.TABLE_NAME, new String[]{
                         Artists.LAST_SONG_ADDED, Artists.LAST_PLAYED, Artists.TIMES_PLAYED},
-                        Artists.ARTIST + "=?", new String[]{Artists.ARTIST});
+                        Artists.ARTIST + " LIKE ?", new String[]{Artists.ARTIST});
 
                 restoreTableBackup(backup, db, Songs.TABLE_NAME, new String[]{
                         Songs.YEAR, Songs.ADDED, Songs.TAG, Songs.BOOKMARKED,
                                 Songs.LAST_PLAYED, Songs.TIMES_PLAYED},
-                        Songs.TITLE + "=? AND " + Songs.ARTIST + "=?",
+                        Songs.TITLE + " LIKE ? AND " + Songs.ARTIST + " LIKE ?",
                         new String[]{Songs.TITLE, Songs.ARTIST});
 
                 db.setTransactionSuccessful();
@@ -525,6 +530,9 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 JSONObject row = new JSONObject();
                 for (int i = 0; i < columns.length; i++) {
                     switch (c.getType(i)) {
+                        case Cursor.FIELD_TYPE_NULL:
+                            // Null values are ignored.
+                            break;
                         case Cursor.FIELD_TYPE_INTEGER:
                             row.put(columns[i], c.getLong(i));
                             break;
@@ -699,6 +707,37 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     public static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
         try (Cursor c = db.rawQuery(sql, selectionArgs)) {
             return c.moveToFirst() ? c.getLong(0) : 0;
+        }
+    }
+
+    private static void updateBackup(JSONObject backup) throws JSONException {
+        JSONArray artists = backup.getJSONArray(Artists.TABLE_NAME);
+        LongSparseArray<String> artistNames = new LongSparseArray<>();
+        for (int i = 0; i < artists.length(); i++) {
+            JSONObject artist = artists.getJSONObject(i);
+            artistNames.put(artist.getLong(Artists._ID), artist.getString(Artists.ARTIST));
+
+            if (artist.has("date_modified")) {
+                artist.put(Artists.LAST_SONG_ADDED, artist.getLong("date_modified"));
+                artist.remove("date_modified");
+            }
+        }
+
+        JSONArray songs = backup.getJSONArray(Songs.TABLE_NAME);
+        for (int i = 0; i < songs.length(); i++) {
+            JSONObject song = songs.getJSONObject(i);
+
+            String artist = artistNames.get(song.getLong(Songs.ARTIST_ID));
+            if (artist == null) {
+                throw new JSONException("Artist not found");
+            }
+            song.put(Songs.ARTIST, artist);
+            song.remove(Songs.ARTIST_ID);
+
+            if (song.has(Songs.DATE_ADDED)) {
+                song.put(Songs.ADDED, song.getLong(Songs.DATE_ADDED));
+                song.remove(Songs.DATE_ADDED);
+            }
         }
     }
 

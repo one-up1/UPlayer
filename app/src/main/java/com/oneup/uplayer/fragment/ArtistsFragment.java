@@ -158,6 +158,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
 
     public static ArtistsFragment newInstance(String selection, String[] selectionArgs,
                                               String orderBy, String songsOrderBy) {
+        //TODO: Use selection in ArtistsFragment?
         Bundle args = BaseArgs.get(selection, selectionArgs, orderBy);
         args.putString(SONGS_ORDER_BY, songsOrderBy);
         return newInstance(args);

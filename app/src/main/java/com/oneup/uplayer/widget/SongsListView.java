@@ -49,7 +49,7 @@ public class SongsListView extends ListView {
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.view_artist:
-                //TODO: View artist.
+                //TODO: View artist, viewArtistOrderBy.
                 /*context.startActivity(new Intent(getContext(), SongsActivity.class)
                         .putExtra(SongsActivity.ARG_ARTIST, song.getArtist()));*/
                 return true;

@@ -149,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (bookmarksFragment == null) {
                         //TODO: Constants for IS NOT NULL etc?
                         //TODO: Order by multiple columns DESC,ASC?
-                        //TODO: What selection/orderBy to use and to pass from ArtistsFragment to SongsFragment.
                         bookmarksFragment = SongsFragment.newInstance(
                                 DbOpenHelper.Songs.BOOKMARKED + " IS NOT NULL", null,
                                 DbOpenHelper.Songs.BOOKMARKED + " DESC");
@@ -157,8 +156,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
-                        lastAddedFragment = ArtistsFragment.newInstance(
-                                DbOpenHelper.Artists.LAST_SONG_ADDED + " IS NOT NULL", null,
+                        lastAddedFragment = ArtistsFragment.newInstance(null, null,
                                 DbOpenHelper.Artists.LAST_SONG_ADDED + " DESC",
                                 DbOpenHelper.Songs.ADDED + " DESC");
                     }

@@ -199,6 +199,7 @@ public class QueryFragment extends Fragment implements
 
         bBackup = ret.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
+        bBackup.setOnLongClickListener(this);
 
         return ret;
     }
@@ -362,17 +363,16 @@ public class QueryFragment extends Fragment implements
                 Log.e(TAG, "Error syncing database", ex);
                 Util.showErrorDialog(getContext(), ex);
             }
-        } /*else if (v == bBackup) {
+        } else if (v == bBackup) {
             Log.d(TAG, "Running backup");
             try {
-                //backup();
-                Log.d(TAG, "Backup completed");
-                Toast.makeText(getContext(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
+                dbOpenHelper.backup();
+                //Toast.makeText(getContext(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
                 Log.e(TAG, "Error running backup", ex);
                 Util.showErrorDialog(getContext(), ex);
             }
-        } else if (v == bRestoreBackup) {
+        } /*else if (v == bRestoreBackup) {
             new AlertDialog.Builder(getContext())
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setTitle(R.string.app_name)
@@ -442,6 +442,13 @@ public class QueryFragment extends Fragment implements
         } else if (v == bMaxLastPlayed) {
             maxLastPlayed = 0;
             bMaxLastPlayed.setText(R.string.max_last_played);
+            return true;
+        } else if (v == bBackup) {
+            try {
+                dbOpenHelper.restoreBackup();
+            } catch (Exception ex) {
+                Log.e(TAG, "Ughh", ex);
+            }
             return true;
         } else {
             return false;

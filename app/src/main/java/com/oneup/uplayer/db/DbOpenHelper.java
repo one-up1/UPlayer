@@ -9,19 +9,28 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+
 
 //TODO: Backup() in DBOpenHelper.
 //TODO: getDatabase() only in DbOpenHelper.
@@ -48,7 +57,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Songs.ARTIST_ID + " INTEGER," +
                     Songs.ARTIST + " INTEGER," +
                     Songs.DURATION + " INTEGER," +
-                    Songs.YEAR + " INTEGER," +
+                    Songs.YEAR + " INTEGER," + //TODO: What to do with NULL values.
                     Songs.ADDED + " INTEGER," +
                     Songs.TAG + " TEXT," +
                     Songs.BOOKMARKED + " INTEGER," +
@@ -72,6 +81,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Songs.ARTIST_ID + "=" + Artists.TABLE_NAME + "." + Artists._ID + ")";
 
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
+    private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
     public DbOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -105,9 +115,9 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     artist.setArtist(c.getString(1));
                     artists.add(artist);
                 }
-                Log.d(TAG, artists.size() + " artists");
             }
         }
+        Log.d(TAG, artists.size() + " artists");
     }
 
     public void queryArtist(Artist artist) {
@@ -144,9 +154,9 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     song.setDuration(c.getLong(4));
                     songs.add(song);
                 }
-                Log.d(TAG, songs.size() + " songs");
             }
         }
+        Log.d(TAG, songs.size() + " songs");
     }
 
     public void querySong(Song song) {
@@ -163,7 +173,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     song.setLastPlayed(c.getLong(4));
                     song.setTimesPlayed(c.getInt(5));
                 } else {
-                    throw new RuntimeException("Song " + song + "not found: " + song.getId());
+                    throw new SQLiteException("Song " + song + "not found: " + song.getId());
                 }
             }
         }
@@ -416,8 +426,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 while ((line = reader.readLine()) != null) {
                     artistIgnore.add(line);
                 }
+                Log.d(TAG, artistIgnore.size() + " artists on ignore list");
             }
-            Log.d(TAG, artistIgnore.size() + " artists on ignore list");
         } else {
             Log.d(TAG, "No artist ignore file");
             artistIgnore = null;
@@ -459,11 +469,135 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 resSongs.recordsInserted, resSongs.recordsUpdated, resSongs.recordsDeleted);
     }
 
-    private SyncResult syncTable(Context context, Uri contentUri, SQLiteDatabase db, String table,
-                                 String[] columns, int ignoreColumn, List<String> ignoreValues,
-                                 int refIdColumn, List<Long> refIds,
-                                 int[] updateColumns, int[] insertColumns,
-                                 String addedColumn, long added) {
+    public void backup() throws JSONException, IOException {
+        JSONObject backup;
+
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            backup = new JSONObject();
+
+            backupTable(backup, db, Artists.TABLE_NAME, new String[]{Artists.ARTIST,
+                    Artists.LAST_SONG_ADDED, Artists.LAST_PLAYED, Artists.TIMES_PLAYED});
+
+            backupTable(backup, db, Songs.TABLE_NAME, new String[]{Songs.TITLE, Songs.ARTIST,
+                    Songs.YEAR, Songs.ADDED, Songs.TAG, Songs.BOOKMARKED,
+                    Songs.LAST_PLAYED, Songs.TIMES_PLAYED});
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(BACKUP_FILE, false)))) {
+            writer.write(backup.toString());
+        }
+    }
+
+    public void restoreBackup() throws IOException, JSONException {
+        JSONObject backup;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(BACKUP_FILE)))) {
+            backup = new JSONObject(reader.readLine());
+        }
+
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                restoreTableBackup(backup, db, Artists.TABLE_NAME, new String[]{
+                        Artists.LAST_SONG_ADDED, Artists.LAST_PLAYED, Artists.TIMES_PLAYED},
+                        Artists.ARTIST + "=?", new String[]{Artists.ARTIST});
+
+                restoreTableBackup(backup, db, Songs.TABLE_NAME, new String[]{
+                        Songs.YEAR, Songs.ADDED, Songs.TAG, Songs.BOOKMARKED,
+                                Songs.LAST_PLAYED, Songs.TIMES_PLAYED},
+                        Songs.TITLE + "=? AND " + Songs.ARTIST + "=?",
+                        new String[]{Songs.TITLE, Songs.ARTIST});
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    private static void backupTable(JSONObject backup, SQLiteDatabase db,
+                                    String table, String[] columns)
+            throws JSONException {
+        try (Cursor c = db.query(table, columns, null, null, null, null, null)) {
+            JSONArray rows = new JSONArray();
+            while (c.moveToNext()) {
+                JSONObject row = new JSONObject();
+                for (int i = 0; i < columns.length; i++) {
+                    switch (c.getType(i)) {
+                        case Cursor.FIELD_TYPE_INTEGER:
+                            row.put(columns[i], c.getLong(i));
+                            break;
+                        case Cursor.FIELD_TYPE_STRING:
+                            row.put(columns[i], c.getString(i));
+                            break;
+                        default:
+                            throw new RuntimeException("Invalid type");
+                    }
+                }
+                rows.put(row);
+            }
+            backup.put(table, rows);
+            Log.d(TAG, rows.length() + " rows backed up from table " + table);
+        }
+    }
+
+    private static void restoreTableBackup(JSONObject backup, SQLiteDatabase db,
+                                           String table, String[] columns,
+                                           String whereClause, String[] whereArgColumns)
+            throws JSONException {
+        JSONArray rows = backup.getJSONArray(table);
+        for (int iRow = 0; iRow < rows.length(); iRow++) {
+            JSONObject row = rows.getJSONObject(iRow);
+            ContentValues values = new ContentValues();
+            for (String column : columns) {
+                if (row.has(column)) {
+                    Object value = row.get(column);
+                    if (value instanceof Integer) {
+                        values.put(column, (Integer) value);
+                    } else if (value instanceof Long) {
+                        values.put(column, (Long) value);
+                    } else if (value instanceof String) {
+                        values.put(column, (String) value);
+                    } else {
+                        throw new RuntimeException("Invalid type");
+                    }
+                } else {
+                    values.putNull(column);
+                }
+            }
+
+            String[] whereArgs = new String[whereArgColumns.length];
+            for (int iWhereArg = 0; iWhereArg < whereArgs.length; iWhereArg++) {
+                if (row.has(whereArgColumns[iWhereArg])) {
+                    whereArgs[iWhereArg] = row.get(whereArgColumns[iWhereArg]).toString();
+                } else {
+                    throw new RuntimeException("Null value for where argument column " +
+                            table + "." + whereArgColumns[iWhereArg]);
+                }
+            }
+
+            switch (db.update(table, values, whereClause, whereArgs)) {
+                case 0:
+                    throw new RuntimeException(table + " record not found: '" +
+                            TextUtils.join(",", whereArgs) + "'");
+                case 1:
+                    Log.d(TAG, table + " record updated: '" +
+                            TextUtils.join(",", whereArgs) + "'");
+                    break;
+                default:
+                    throw new RuntimeException(table + " record has duplicate value: '" +
+                            TextUtils.join(",", whereArgs) + "'");
+            }
+        }
+    }
+
+    private static SyncResult syncTable(Context context, Uri contentUri,
+                                        SQLiteDatabase db, String table, String[] columns,
+                                        int ignoreColumn, List<String> ignoreValues,
+                                        int refIdColumn, List<Long> refIds,
+                                        int[] updateColumns, int[] insertColumns,
+                                        String addedColumn, long added) {
         Log.d(TAG, "Synchronizing table " + table);
         SyncResult ret = new SyncResult();
 
@@ -500,12 +634,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
                 // Put update column values.
                 ContentValues values = new ContentValues();
-                putValues(values, c, columns, updateColumns, table, id);
+                putValues(values, c, columns, updateColumns);
 
                 // Update or insert the record if it doesn't exist.
                 if (db.update(table, values, SQL_WHERE_ID, new String[]{Long.toString(id)}) == 0) {
                     values.put(BaseColumns._ID, id);
-                    putValues(values, c, columns, insertColumns, table, id);
+                    putValues(values, c, columns, insertColumns);
                     if (addedColumn != null) {
                         values.put(addedColumn, added);
                     }
@@ -536,8 +670,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         return ret;
     }
 
-    private void putValues(ContentValues values, Cursor c, String[] columns, int[] putColumns,
-                           String table, long id) {
+    private static void putValues(ContentValues values, Cursor c,
+                                  String[] columns, int[] putColumns) {
         for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
             int column = putColumns == null ? i : putColumns[i];
             switch (c.getType(column)) {
@@ -551,8 +685,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     values.put(columns[column], c.getString(column));
                     break;
                 default:
-                    throw new RuntimeException(table + "." + columns[column] + " field type " +
-                            c.getType(i) + " invalid: " + id);
+                    throw new RuntimeException("Invalid type");
             }
         }
     }

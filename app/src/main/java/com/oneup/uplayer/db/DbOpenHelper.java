@@ -32,7 +32,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-
 //TODO: Backup() in DBOpenHelper.
 //TODO: getDatabase() only in DbOpenHelper.
 //TODO: List or ArrayList?
@@ -58,7 +57,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Songs.ARTIST_ID + " INTEGER," +
                     Songs.ARTIST + " INTEGER," +
                     Songs.DURATION + " INTEGER," +
-                    Songs.YEAR + " INTEGER," + //TODO: What to do with NULL values.
+                    Songs.YEAR + " INTEGER," +
                     Songs.ADDED + " INTEGER," +
                     Songs.TAG + " TEXT," +
                     Songs.BOOKMARKED + " INTEGER," +
@@ -120,7 +119,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 }
             }
         }
-        Log.d(TAG, artists.size() + " artists");
+        Log.d(TAG, artists.size() + " artists queried");
     }
 
     public void queryArtist(Artist artist) {
@@ -160,7 +159,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 }
             }
         }
-        Log.d(TAG, songs.size() + " songs");
+        Log.d(TAG, songs.size() + " songs queried");
     }
 
     public void querySong(Song song) {
@@ -183,7 +182,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    //TODO: DbOpenHelper.querySongTags().
     public ArrayList<String> querySongTags() {
         Log.d(TAG, "DbOpenHelper.querySongTags()");
         try (SQLiteDatabase db = getReadableDatabase()) {
@@ -193,7 +191,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 while (c.moveToNext()) {
                     ret.add(c.getString(0));
                 }
-                Log.d(TAG, "Queried " + ret.size() + " song tags");
+                Log.d(TAG, ret.size() + " song tags queried");
                 return ret;
             }
         }
@@ -441,7 +439,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                long now = Calendar.currentTime(); //TODO: Millis for time?
+                long now = Calendar.currentTime();
 
                 resArtists = syncTable(context, MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                         db, Artists.TABLE_NAME, new String[]{Artists._ID, Artists.ARTIST},
@@ -455,7 +453,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                         Songs.ADDED, now);
 
                 // Update artists when songs have been inserted or deleted.
-                if (resSongs.recordsInserted > 0 || resSongs.recordsDeleted > 0) {
+                if (resSongs.rowsInserted > 0 || resSongs.rowsDeleted > 0) {
                     db.execSQL(SQL_UPDATE_ARTISTS);
                     Log.d(TAG, "Artists updated");
                 }
@@ -467,18 +465,17 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
 
         Util.showInfoDialog(context, R.string.sync_completed, R.string.sync_completed_message,
-                resArtists.ids.size(), resArtists.recordsIgnored,
-                resArtists.recordsInserted, resArtists.recordsUpdated, resArtists.recordsDeleted,
-                resSongs.ids.size(), resSongs.recordsIgnored,
-                resSongs.recordsInserted, resSongs.recordsUpdated, resSongs.recordsDeleted);
+                resArtists.ids.size(), resArtists.rowsIgnored,
+                resArtists.rowsInserted, resArtists.rowsUpdated, resArtists.rowsDeleted,
+                resSongs.ids.size(), resSongs.rowsIgnored,
+                resSongs.rowsInserted, resSongs.rowsUpdated, resSongs.rowsDeleted);
     }
 
     public void backup() throws JSONException, IOException {
-        JSONObject backup;
+        JSONObject backup = new JSONObject();
 
+        // Put database tables in JSONObject.
         try (SQLiteDatabase db = getReadableDatabase()) {
-            backup = new JSONObject();
-
             backupTable(backup, db, Artists.TABLE_NAME, new String[]{Artists.ARTIST,
                     Artists.LAST_SONG_ADDED, Artists.LAST_PLAYED, Artists.TIMES_PLAYED});
 
@@ -487,6 +484,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Songs.LAST_PLAYED, Songs.TIMES_PLAYED});
         }
 
+        // Write JSONObject to file.
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(BACKUP_FILE, false)))) {
             writer.write(backup.toString());
@@ -494,6 +492,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     public void restoreBackup() throws IOException, JSONException {
+        // Read JSONObject from file.
         JSONObject backup;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new FileInputStream(BACKUP_FILE)))) {
@@ -501,6 +500,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
         updateBackup(backup);
 
+        // Update database tables from JSONObject.
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
@@ -521,9 +521,108 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    private static SyncResult syncTable(Context context, Uri contentUri,
+                                        SQLiteDatabase db, String table, String[] columns,
+                                        int ignoreColumn, List<String> ignoreValues,
+                                        int refIdColumn, List<Long> refIds,
+                                        int[] updateColumns, int[] insertColumns,
+                                        String timeColumn, long time) {
+        SyncResult ret = new SyncResult();
+
+        // Insert/update database tables from MediaStore.
+        try (Cursor c = context.getContentResolver().query(contentUri, columns, null, null, null)) {
+            if (c == null) {
+                throw new RuntimeException("No MediaStore cursor");
+            }
+
+            while (c.moveToNext()) {
+                long id = c.getLong(0);
+
+                // Process ignoring.
+                if (ignoreColumn != -1) {
+                    String ignoreColumnValue = c.getString(ignoreColumn);
+                    if (ignoreValues.contains(ignoreColumnValue)) {
+                        Log.d(TAG, table + "." + columns[ignoreColumn] + " value '" +
+                                ignoreColumnValue + "' ignored: " + id);
+                        ret.rowsIgnored++;
+                        continue;
+                    }
+                }
+
+                // Ignore rows with a non-existing ref ID.
+                if (refIdColumn != -1) {
+                    long refId = c.getLong(refIdColumn);
+                    if (!refIds.contains(refId)) {
+                        Log.d(TAG, table + "." + columns[refIdColumn] + " value " +
+                                refId + " ignored: " + id);
+                        ret.rowsIgnored++;
+                        continue;
+                    }
+                }
+
+                // Put update column values.
+                ContentValues values = new ContentValues();
+                putValues(values, c, columns, updateColumns);
+
+                // Update or insert row if it doesn't exist.
+                if (db.update(table, values, SQL_WHERE_ID, new String[]{Long.toString(id)}) == 0) {
+                    values.put(BaseColumns._ID, id);
+                    putValues(values, c, columns, insertColumns);
+                    if (timeColumn != null) {
+                        values.put(timeColumn, time);
+                    }
+                    db.insert(table, null, values);
+                    Log.d(TAG, table + " row inserted: " + id);
+                    ret.rowsInserted++;
+                } else {
+                    Log.d(TAG, table + " row updated: " + id);
+                    ret.rowsUpdated++;
+                }
+                ret.ids.add(id);
+            }
+        }
+
+        // Delete rows from database.
+        try (Cursor c = db.query(table, new String[]{BaseColumns._ID},
+                null, null, null, null, null)) {
+            while (c.moveToNext()) {
+                long id = c.getLong(0);
+                if (!ret.ids.contains(id)) {
+                    db.delete(table, SQL_WHERE_ID, new String[]{Long.toString(id)});
+                    Log.d(TAG, table + " row deleted: " + id);
+                    ret.rowsDeleted++;
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    private static void putValues(ContentValues values, Cursor c,
+                                  String[] columns, int[] putColumns) {
+        // Put all columns when putColumns is null or the specified column indices.
+        for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
+            int column = putColumns == null ? i : putColumns[i];
+            switch (c.getType(column)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    values.putNull(columns[column]);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    values.put(columns[column], c.getLong(column));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    values.put(columns[column], c.getString(column));
+                    break;
+                default:
+                    throw new RuntimeException("Invalid type");
+            }
+        }
+    }
+
     private static void backupTable(JSONObject backup, SQLiteDatabase db,
                                     String table, String[] columns)
             throws JSONException {
+        // Query database table and put rows in JSONObject.
         try (Cursor c = db.query(table, columns, null, null, null, null, null)) {
             JSONArray rows = new JSONArray();
             while (c.moveToNext()) {
@@ -531,7 +630,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 for (int i = 0; i < columns.length; i++) {
                     switch (c.getType(i)) {
                         case Cursor.FIELD_TYPE_NULL:
-                            // Null values are ignored.
+                            // Null values are not stored in JSON.
                             break;
                         case Cursor.FIELD_TYPE_INTEGER:
                             row.put(columns[i], c.getLong(i));
@@ -555,8 +654,9 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                                            String whereClause, String[] whereArgColumns)
             throws JSONException {
         JSONArray rows = backup.getJSONArray(table);
-        for (int iRow = 0; iRow < rows.length(); iRow++) {
-            JSONObject row = rows.getJSONObject(iRow);
+        for (int index = 0; index < rows.length(); index++) {
+            // Put JSONObject values in ContentValues.
+            JSONObject row = rows.getJSONObject(index);
             ContentValues values = new ContentValues();
             for (String column : columns) {
                 if (row.has(column)) {
@@ -575,139 +675,32 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 }
             }
 
+            // Get whereArgs from JSONObject based on whereArgColumns.
             String[] whereArgs = new String[whereArgColumns.length];
-            for (int iWhereArg = 0; iWhereArg < whereArgs.length; iWhereArg++) {
-                if (row.has(whereArgColumns[iWhereArg])) {
-                    whereArgs[iWhereArg] = row.get(whereArgColumns[iWhereArg]).toString();
+            for (int i = 0; i < whereArgs.length; i++) {
+                if (row.has(whereArgColumns[i])) {
+                    whereArgs[i] = row.get(whereArgColumns[i]).toString();
                 } else {
-                    throw new RuntimeException("Null value for where argument column " +
-                            table + "." + whereArgColumns[iWhereArg]);
+                    throw new RuntimeException("NULL value for where argument column " +
+                            table + "." + whereArgColumns[i]);
                 }
             }
 
+            // Update row and make sure 1 row is updated.
             switch (db.update(table, values, whereClause, whereArgs)) {
                 case 0:
-                    throw new RuntimeException(table + " record not found: '" +
+                    throw new RuntimeException(table + " row not found: '" +
                             TextUtils.join(",", whereArgs) + "'");
                 case 1:
-                    Log.d(TAG, table + " record updated: '" +
+                    Log.d(TAG, table + " row updated: '" +
                             TextUtils.join(",", whereArgs) + "'");
                     break;
                 default:
-                    throw new RuntimeException(table + " record has duplicate value: '" +
+                    throw new RuntimeException(table + " row has duplicate value: '" +
                             TextUtils.join(",", whereArgs) + "'");
             }
         }
-    }
-
-    private static SyncResult syncTable(Context context, Uri contentUri,
-                                        SQLiteDatabase db, String table, String[] columns,
-                                        int ignoreColumn, List<String> ignoreValues,
-                                        int refIdColumn, List<Long> refIds,
-                                        int[] updateColumns, int[] insertColumns,
-                                        String addedColumn, long added) {
-        Log.d(TAG, "Synchronizing table " + table);
-        SyncResult ret = new SyncResult();
-
-        // Insert/update database records from the MediaStore.
-        try (Cursor c = context.getContentResolver().query(contentUri, columns, null, null, null)) {
-            if (c == null) {
-                throw new RuntimeException("No MediaStore cursor");
-            }
-
-            while (c.moveToNext()) {
-                long id = c.getLong(0);
-
-                // Process ignoring.
-                if (ignoreColumn != -1) {
-                    String ignoreColumnValue = c.getString(ignoreColumn);
-                    if (ignoreValues.contains(ignoreColumnValue)) {
-                        Log.d(TAG, table + "." + columns[ignoreColumn] + " value '" +
-                                ignoreColumnValue + "' ignored: " + id);
-                        ret.recordsIgnored++;
-                        continue;
-                    }
-                }
-
-                // Ignore records with a non-existing ref ID.
-                if (refIdColumn != -1) {
-                    long refId = c.getLong(refIdColumn);
-                    if (!refIds.contains(refId)) {
-                        Log.d(TAG, table + "." + columns[refIdColumn] + " value " +
-                                refId + " ignored: " + id);
-                        ret.recordsIgnored++;
-                        continue;
-                    }
-                }
-
-                // Put update column values.
-                ContentValues values = new ContentValues();
-                putValues(values, c, columns, updateColumns);
-
-                // Update or insert the record if it doesn't exist.
-                if (db.update(table, values, SQL_WHERE_ID, new String[]{Long.toString(id)}) == 0) {
-                    values.put(BaseColumns._ID, id);
-                    putValues(values, c, columns, insertColumns);
-                    if (addedColumn != null) {
-                        values.put(addedColumn, added);
-                    }
-                    db.insert(table, null, values);
-                    Log.d(TAG, table + " record inserted: " + id);
-                    ret.recordsInserted++;
-                } else {
-                    Log.d(TAG, table + " record updated: " + id);
-                    ret.recordsUpdated++;
-                }
-                ret.ids.add(id);
-            }
-        }
-
-        // Delete records from the database.
-        try (Cursor c = db.query(table, new String[]{BaseColumns._ID},
-                null, null, null, null, null)) {
-            while (c.moveToNext()) {
-                long id = c.getLong(0);
-                if (!ret.ids.contains(id)) {
-                    db.delete(table, SQL_WHERE_ID, new String[]{Long.toString(id)});
-                    Log.d(TAG, table + " record deleted: " + id);
-                    ret.recordsDeleted++;
-                }
-            }
-        }
-
-        return ret;
-    }
-
-    private static void putValues(ContentValues values, Cursor c,
-                                  String[] columns, int[] putColumns) {
-        for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
-            int column = putColumns == null ? i : putColumns[i];
-            switch (c.getType(column)) {
-                case Cursor.FIELD_TYPE_NULL:
-                    values.putNull(columns[column]);
-                    break;
-                case Cursor.FIELD_TYPE_INTEGER:
-                    values.put(columns[column], c.getLong(column));
-                    break;
-                case Cursor.FIELD_TYPE_STRING:
-                    values.put(columns[column], c.getString(column));
-                    break;
-                default:
-                    throw new RuntimeException("Invalid type");
-            }
-        }
-    }
-
-    public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
-        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-            return c.moveToFirst() ? c.getInt(0) : 0;
-        }
-    }
-
-    public static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
-        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-            return c.moveToFirst() ? c.getLong(0) : 0;
-        }
+        Log.d(TAG, rows.length() + " rows restored to table " + table);
     }
 
     private static void updateBackup(JSONObject backup) throws JSONException {
@@ -741,7 +734,17 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    //TODO: Where classes implementing column interfaces are placed.
+    public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
+        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+
+    public static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
+        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+            return c.moveToFirst() ? c.getLong(0) : 0;
+        }
+    }
 
     public static class Artists implements BaseColumns, ArtistColumns, PlayedColumns {
         private static final String TABLE_NAME = "artists";
@@ -768,11 +771,11 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     private static class SyncResult {
         private List<Long> ids;
-        private int recordsIgnored;
+        private int rowsIgnored;
 
-        private int recordsInserted;
-        private int recordsUpdated;
-        private int recordsDeleted;
+        private int rowsInserted;
+        private int rowsUpdated;
+        private int rowsDeleted;
 
         private SyncResult() {
             ids = new ArrayList<>();

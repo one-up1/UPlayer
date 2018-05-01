@@ -132,7 +132,7 @@ public class SongsListView extends ListView {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:
-                    //TODO: Saving song after edit.
+                    //TODO: Saving song after edit. Is year also set to NULL when clearing value and is this correct after syncing/backup/restore?
                     /*Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
                     dbOpenHelper.querySong(editSong);
                     editSong.setAdded(song.getAdded());

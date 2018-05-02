@@ -32,8 +32,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: Backup() in DBOpenHelper.
-//TODO: getDatabase() only in DbOpenHelper.
+//TODO: getDatabase() only in DbOpenHelper?
 //TODO: List or ArrayList?
 
 public class DbOpenHelper extends SQLiteOpenHelper {
@@ -90,12 +89,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "DbOpenHelper.onCreate()");
-
         db.execSQL(SQL_CREATE_ARTISTS);
-        Log.d(TAG, "Created artists table");
-
         db.execSQL(SQL_CREATE_SONGS);
-        Log.d(TAG, "Created songs table");
     }
 
     @Override
@@ -439,18 +434,17 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                long now = Calendar.currentTime();
+                long time = Calendar.currentTime();
 
                 resArtists = syncTable(context, MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                         db, Artists.TABLE_NAME, new String[]{Artists._ID, Artists.ARTIST},
-                        1, artistIgnore, -1, null, null, new int[0],
-                        Artists.LAST_SONG_ADDED, now);
+                        null, new int[0], 1, artistIgnore, -1, null, null, 0);
 
                 resSongs = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         db, Songs.TABLE_NAME, new String[]{Songs._ID, Songs.TITLE,
                                 Songs.ARTIST_ID, Songs.ARTIST, Songs.DURATION, Songs.YEAR},
-                        -1, null, 2, resArtists.ids, new int[]{1, 2, 3, 4}, new int[]{5},
-                        Songs.ADDED, now);
+                        new int[]{1, 2, 3, 4}, new int[]{5}, -1, null, 2, resArtists.ids,
+                        Songs.ADDED, time);
 
                 // Update artists when songs have been inserted or deleted.
                 if (resSongs.rowsInserted > 0 || resSongs.rowsDeleted > 0) {
@@ -523,13 +517,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     private static SyncResult syncTable(Context context, Uri contentUri,
                                         SQLiteDatabase db, String table, String[] columns,
+                                        int[] updateColumns, int[] insertColumns,
                                         int ignoreColumn, List<String> ignoreValues,
                                         int refIdColumn, List<Long> refIds,
-                                        int[] updateColumns, int[] insertColumns,
                                         String timeColumn, long time) {
         SyncResult ret = new SyncResult();
 
-        // Insert/update database tables from MediaStore.
         try (Cursor c = context.getContentResolver().query(contentUri, columns, null, null, null)) {
             if (c == null) {
                 throw new RuntimeException("No MediaStore cursor");
@@ -562,12 +555,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
                 // Put update column values.
                 ContentValues values = new ContentValues();
-                putValues(values, c, columns, updateColumns);
+                putValuesFromCursor(c, values, columns, updateColumns);
 
                 // Update or insert row if it doesn't exist.
                 if (db.update(table, values, SQL_WHERE_ID, new String[]{Long.toString(id)}) == 0) {
                     values.put(BaseColumns._ID, id);
-                    putValues(values, c, columns, insertColumns);
+                    putValuesFromCursor(c, values, columns, insertColumns);
                     if (timeColumn != null) {
                         values.put(timeColumn, time);
                     }
@@ -598,9 +591,9 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         return ret;
     }
 
-    private static void putValues(ContentValues values, Cursor c,
-                                  String[] columns, int[] putColumns) {
-        // Put all columns when putColumns is null or the specified column indices.
+    private static void putValuesFromCursor(Cursor c, ContentValues values,
+                                            String[] columns, int[] putColumns) {
+        // Put all columns when putColumns is null or only the specified column indices.
         for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
             int column = putColumns == null ? i : putColumns[i];
             switch (c.getType(column)) {
@@ -622,7 +615,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     private static void backupTable(JSONObject backup, SQLiteDatabase db,
                                     String table, String[] columns)
             throws JSONException {
-        // Query database table and put rows in JSONObject.
         try (Cursor c = db.query(table, columns, null, null, null, null, null)) {
             JSONArray rows = new JSONArray();
             while (c.moveToNext()) {
@@ -655,7 +647,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             throws JSONException {
         JSONArray rows = backup.getJSONArray(table);
         for (int index = 0; index < rows.length(); index++) {
-            // Put JSONObject values in ContentValues.
+            // Put values to update from JSONObject.
             JSONObject row = rows.getJSONObject(index);
             ContentValues values = new ContentValues();
             for (String column : columns) {

@@ -45,12 +45,18 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
     private boolean sortOrderReversed;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        Log.d(TAG, "SongsFragment.onCreateView()");
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "SongsFragment.onCreate()");
+        super.onCreate(savedInstanceState);
 
         dbOpenHelper = new DbOpenHelper(getActivity());
         songs = new ArrayList<>();
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        Log.d(TAG, "SongsFragment.onCreateView()");
         dbOpenHelper.querySongs(songs,
                 getArguments().getString(BaseArgs.SELECTION),
                 getArguments().getStringArray(BaseArgs.SELECTION_ARGS),

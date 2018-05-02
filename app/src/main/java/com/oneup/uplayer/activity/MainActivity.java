@@ -19,6 +19,8 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
+//TODO: When/how to reload data from database and recreate/reload fragments.
+
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
 
@@ -120,7 +122,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     public void notifyDataSetChanged() {
         Log.d(TAG, "MainActivity.notifyDataSetChanged()");
         sectionsPagerAdapter.notifyDataSetChanged();
-        //TODO: MainActivity.notifyDataSetChanged() causes all fragments to reload data?
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -139,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         public Fragment getItem(int position) {
             Log.d(TAG, "MainActivity.SectionsPagerAdapter.getItem(" + position + ")");
             switch (position) {
-                //TODO: Always recreate fragments in MainActivity.getItem() ?
                 case 0:
                     if (queryFragment == null) {
                         queryFragment = QueryFragment.newInstance();
@@ -147,8 +147,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return queryFragment;
                 case 1:
                     if (bookmarksFragment == null) {
-                        //TODO: Constants for IS NOT NULL etc?
-                        //TODO: Order by multiple columns DESC,ASC?
                         bookmarksFragment = SongsFragment.newInstance(
                                 DbOpenHelper.Songs.BOOKMARKED + " IS NOT NULL", null,
                                 DbOpenHelper.Songs.BOOKMARKED + " DESC");
@@ -157,8 +155,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 2:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(null, null,
-                                DbOpenHelper.Artists.LAST_SONG_ADDED + " DESC",
-                                DbOpenHelper.Songs.ADDED + " DESC");
+                                DbOpenHelper.Artists.LAST_SONG_ADDED + " DESC," +
+                                        DbOpenHelper.Artists.ARTIST,
+                                DbOpenHelper.Songs.ADDED + " DESC," +
+                                        DbOpenHelper.Songs.TITLE);
                     }
                     return lastAddedFragment;
                 case 3:
@@ -178,8 +178,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 5:
                     if (mostPlayedFragment == null) {
                         mostPlayedFragment = ArtistsFragment.newInstance(null, null,
-                                DbOpenHelper.Artists.TIMES_PLAYED + " DESC",
-                                DbOpenHelper.Songs.TIMES_PLAYED + " DESC");
+                                DbOpenHelper.Artists.TIMES_PLAYED + " DESC," +
+                                        DbOpenHelper.Artists.ARTIST,
+                                DbOpenHelper.Songs.TIMES_PLAYED + " DESC," +
+                                        DbOpenHelper.Songs.TITLE);
                     }
                     return mostPlayedFragment;
             }

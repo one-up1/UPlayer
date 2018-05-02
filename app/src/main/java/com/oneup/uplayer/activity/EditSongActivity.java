@@ -19,6 +19,7 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
+//TODO: Ability to set added to NULL.
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
         AdapterView.OnItemSelectedListener {
     public static final String EXTRA_SONG =

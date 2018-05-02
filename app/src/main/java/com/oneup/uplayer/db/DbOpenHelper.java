@@ -32,8 +32,10 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: Check rows affected and moveToFirst() result.
 //TODO: getDatabase() only in DbOpenHelper?
 //TODO: List or ArrayList?
+//TODO: Constants for IS NOT NULL/DESC etc?
 
 public class DbOpenHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -63,9 +65,17 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Songs.LAST_PLAYED + " INTEGER," +
                     Songs.TIMES_PLAYED + " INTEGER DEFAULT 0)";
 
-    private static final String SQL_WHERE_ID = BaseColumns._ID + "=?"; //TODO: Use this everywhere.
+    //TODO: Use this everywhere.
+    private static final String SQL_ID_ARG = BaseColumns._ID + "=?";
+    private static final String SQL_WHERE_ID = "WHERE " + SQL_ID_ARG;
 
-    private static final String SQL_UPDATE_ARTISTS =
+    private static final String SQL_BOOKMARK_SONG =
+            "UPDATE " + Songs.TABLE_NAME + " SET " +
+                    Songs.BOOKMARKED + "=CASE WHEN " +
+                    Songs.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
+                    SQL_WHERE_ID;
+
+    private static final String SQL_UPDATE_ARTIST_STATS =
             "UPDATE " + Artists.TABLE_NAME + " SET " +
                     Artists.LAST_SONG_ADDED + "=(SELECT MAX(" + Songs.ADDED + ") FROM " +
                     Songs.TABLE_NAME + " WHERE " +
@@ -101,8 +111,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                              String selection, String[] selectionArgs, String orderBy) {
         Log.d(TAG, "DbOpenHelper.queryArtists(" + selection + "," + orderBy + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(Artists.TABLE_NAME, new String[]{Artists._ID, Artists.ARTIST,
-                            Artists.TIMES_PLAYED},
+            try (Cursor c = db.query(Artists.TABLE_NAME, new String[]{Artists._ID,
+                            Artists.ARTIST, Artists.TIMES_PLAYED},
                     selection, selectionArgs, null, null, orderBy)) {
                 artists.clear();
                 while (c.moveToNext()) {
@@ -112,24 +122,20 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     artist.setTimesPlayed(c.getInt(2));
                     artists.add(artist);
                 }
+                Log.d(TAG, artists.size() + " artists queried");
             }
         }
-        Log.d(TAG, artists.size() + " artists queried");
     }
 
     public void queryArtist(Artist artist) {
         Log.d(TAG, "DbOpenHelper.queryArtist(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(Artists.TABLE_NAME, new String[]{Artists.LAST_SONG_ADDED,
+            try (Cursor c = query(db, Artists.TABLE_NAME, new String[]{Artists.LAST_SONG_ADDED,
                             Artists.LAST_PLAYED, Artists.TIMES_PLAYED},
-                    SQL_WHERE_ID, new String[]{Long.toString(artist.getId())}, null, null, null)) {
-                if (c.moveToFirst()) {
-                    artist.setLastSongAdded(c.getLong(0));
-                    artist.setLastPlayed(c.getLong(1));
-                    artist.setTimesPlayed(c.getInt(2));
-                } else {
-                    throw new SQLiteException("Artist " + artist + " not found: " + artist.getId());
-                }
+                    artist.getId())) {
+                artist.setLastSongAdded(c.getLong(0));
+                artist.setLastPlayed(c.getLong(1));
+                artist.setTimesPlayed(c.getInt(2));
             }
         }
     }
@@ -152,33 +158,28 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     song.setTimesPlayed(c.getInt(5));
                     songs.add(song);
                 }
+                Log.d(TAG, songs.size() + " songs queried");
             }
         }
-        Log.d(TAG, songs.size() + " songs queried");
     }
 
     public void querySong(Song song) {
         Log.d(TAG, "DbOpenHelper.querySong(" + song + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(Songs.TABLE_NAME, new String[]{Songs.YEAR, Songs.ADDED,
+            try (Cursor c = query(db, Songs.TABLE_NAME, new String[]{Songs.YEAR, Songs.ADDED,
                             Songs.TAG, Songs.BOOKMARKED, Songs.LAST_PLAYED, Songs.TIMES_PLAYED},
-                    SQL_WHERE_ID, new String[]{Long.toString(song.getId())}, null, null, null)) {
-                if (c.moveToFirst()) {
-                    song.setYear(c.getInt(0));
-                    song.setAdded(c.getLong(1));
-                    song.setTag(c.getString(2));
-                    song.setBookmarked(c.getLong(3));
-                    song.setLastPlayed(c.getLong(4));
-                    song.setTimesPlayed(c.getInt(5));
-                } else {
-                    throw new SQLiteException("Song " + song + "not found: " + song.getId());
-                }
+                    song.getId())) {
+                song.setYear(c.getInt(0));
+                song.setAdded(c.getLong(1));
+                song.setTag(c.getString(2));
+                song.setBookmarked(c.getLong(3));
+                song.setLastPlayed(c.getLong(4));
+                song.setTimesPlayed(c.getInt(5));
             }
         }
     }
 
     public ArrayList<String> querySongTags() {
-        Log.d(TAG, "DbOpenHelper.querySongTags()");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, Songs.TABLE_NAME, new String[]{Songs.TAG},
                     Songs.TAG + " IS NOT NULL", null, null, null, Songs.TAG, null)) {
@@ -192,189 +193,49 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    /*public void insertOrUpdateArtist(Artist artist) {
-        Log.d(TAG, "DbOpenHelper.insertOrUpdateArtist(" + artist + ")");
+    public void updateSong(Song song) {
+        Log.d(TAG, "DbOpenHelper.updateSong(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
                 ContentValues values = new ContentValues();
-                values.put(Artist._ID, artist.getId());
-                values.put(Artist.ARTIST, artist.getArtist());
-                if (artist.getLastPlayed() == 0) {
-                    values.putNull(Artist.LAST_PLAYED);
-                } else {
-                    values.put(Artist.LAST_PLAYED, artist.getLastPlayed());
-                }
-                values.put(Artist.TIMES_PLAYED, artist.getTimesPlayed());
-                if (artist.getDateModified() == 0) {
-                    values.putNull(Artist.DATE_MODIFIED);
-                } else {
-                    values.put(Artist.DATE_MODIFIED, artist.getDateModified());
-                }
-
-                int rowsAffected = db.update(Artist.TABLE_NAME, values,
-                        Artist._ID + "=" + artist.getId(), null);
-                Log.d(TAG, rowsAffected + " artists updated");
-
-                if (rowsAffected == 0) {
-                    db.insert(Artist.TABLE_NAME, null, values);
-                    Log.d(TAG, "Artist inserted");
-                }
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-    }
-
-    public void deleteArtist(int id) {
-        Log.d(TAG, "DbOpenHelper.deleteArtist(" + id + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                Log.d(TAG, db.delete(Song.TABLE_NAME, Song.ARTIST_ID + "=" + id, null) +
-                        " songs deleted");
-
-                Log.d(TAG, db.delete(Artist.TABLE_NAME, Artist._ID + "=" + id, null) +
-                        " artists deleted");
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-    }
-
-    public void querySong(Song song) {
-        Log.d(TAG, "DbOpenHelper.querySong(" + song + ")");
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(Artists.TABLE_NAME,
-                    new String[]{Artists.LAST_SONG_ADDED,
-                            Artists.LAST_PLAYED, Artists.TIMES_PLAYED},
-                    SQL_WHERE_ID, new String[]{Long.toString(song.getArtist().getId())},
-                    null, null, null)) {
-                if (c.moveToFirst()) {
-                    song.getArtist().setDateModified(c.getLong(0));
-                    song.getArtist().setLastPlayed(c.getLong(1));
-                    song.getArtist().setTimesPlayed(c.getInt(2));
-                } else {
-                    Log.d(TAG, "Artist not found");
-                }
-            }
-
-            try (Cursor c = db.query(Songs.TABLE_NAME,
-                    new String[]{Songs.YEAR, Songs.ADDED, Songs.BOOKMARKED, Songs.TAG,
-                            Songs.LAST_PLAYED, Songs.TIMES_PLAYED},
-                    Song._ID + "=" + song.getId(), null, null, null, null)) {
-                if (c.moveToFirst()) {
-                    song.setYear(c.getInt(0));
-                    song.setDateAdded(c.getLong(1));
-                    song.setBookmarked(c.getLong(2));
-                    song.setTag(c.getString(3));
-                    song.setLastPlayed(c.getLong(4));
-                    song.setTimesPlayed(c.getInt(5));
-                } else {
-                    Log.d(TAG, "Song not found");
-                }
-            }
-
-            Log.d(TAG, "Times played: " + song.getArtist().getTimesPlayed() +
-                    ":" +song.getTimesPlayed());
-        }
-    }
-
-    public void insertOrUpdateSong(Song song) {
-        Log.d(TAG, "DbOpenHelper.insertOrUpdateSong(" + song + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                ContentValues values = new ContentValues();
-                values.put(Songs._ID, song.getId());
-                values.put(Songs.TITLE, song.getTitle());
-                if (song.getDuration() == 0) {
-                    values.putNull(Songs.DURATION);
-                } else {
-                    values.put(Songs.DURATION, song.getDuration());
-                }
-                values.put(Songs.ARTIST_ID, song.getArtistId());
-                values.put(Songs.ARTIST, song.getArtist());
                 if (song.getYear() == 0) {
                     values.putNull(Songs.YEAR);
                 } else {
                     values.put(Songs.YEAR, song.getYear());
                 }
-                if (song.getDateAdded() == 0) {
+                if (song.getAdded() == 0) {
                     values.putNull(Songs.ADDED);
                 } else {
-                    values.put(Songs.ADDED, song.getDateAdded());
+                    values.put(Songs.ADDED, song.getAdded());
                 }
-                if (song.getBookmarked() == 0) {
-                    values.putNull(Songs.BOOKMARKED);
-                } else {
-                    values.put(Songs.BOOKMARKED, song.getBookmarked());
-                }
-                if (song.getTag() == null) {
-                    values.putNull(Songs.TAG);
-                } else {
-                    values.put(Songs.TAG, song.getTag());
-                }
-                if (song.getLastPlayed() == 0) {
-                    values.putNull(Songs.LAST_PLAYED);
-                } else {
-                    values.put(Songs.LAST_PLAYED, song.getLastPlayed());
-                }
-                values.put(Songs.TIMES_PLAYED, song.getTimesPlayed());
+                values.put(Songs.TAG, song.getTag());
 
-                int rowsAffected = db.update(Songs.TABLE_NAME, values,
-                        Song._ID + "=" + song.getId(), null);
-                Log.d(TAG, rowsAffected + " songs updated");
-
-                if (rowsAffected == 0) {
-                    db.insert(Song.TABLE_NAME, null, values);
-                    Log.d(TAG, "Song inserted");
-                }
+                update(db, Songs.TABLE_NAME, values, song.getId());
+                updateArtistStats(db, song);
 
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
             }
         }
+    }
 
-        if (song.getDateAdded() > song.getArtist().getDateModified()) {
-            Log.d(TAG, "Updating date modified of artist " + song.getArtist());
-            song.getArtist().setDateModified(song.getDateAdded());
-            insertOrUpdateArtist(song.getArtist());
+    public void bookmarkSong(Song song) {
+        Log.d(TAG, "DbOpenHelper.bookmarkSong(" + song + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.execSQL(SQL_BOOKMARK_SONG, new Object[]{Calendar.currentTime(), song.getId()});
         }
     }
 
     public void updateSongPlayed(Song song) {
-        long lastPlayed = Calendar.currentTime();
-        querySong(song);
-        long lastPlayed = Calendar.currentTime();
-
-        song.getArtist().setLastPlayed(lastPlayed);
-        song.getArtist().setTimesPlayed(song.getArtist().getTimesPlayed() + 1);
-        insertOrUpdateArtist(song.getArtist());
-
-        song.setLastPlayed(lastPlayed);
-        song.setTimesPlayed(song.getTimesPlayed() + 1);
-        insertOrUpdateSong(song);
-
+        Log.d(TAG, "DbOpenHelper.updateSongPlayed(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                db.execSQL("UPDATE " + Artists.TABLE_NAME + " SET " +
-                                Artists.LAST_PLAYED + "=?, " +
-                                Artists.TIMES_PLAYED + "=" + Artists.TIMES_PLAYED + "+1 " +
-                                " WHERE " + Artists._ID + "=?",
-                        new String[]{Long.toString(lastPlayed), Long.toString(song.getArtistId())});
-
-                db.execSQL("UPDATE " + Songs.TABLE_NAME + " SET " +
-                                Songs.LAST_PLAYED + "=?, " +
-                                Songs.TIMES_PLAYED + "=" + Songs.TIMES_PLAYED + "+1 " +
-                                " WHERE " + Artists._ID + "=?",
-                        new String[]{Long.toString(lastPlayed), Long.toString(song.getId())});
+                long time = Calendar.currentTime();
+                updatePlayed(db, Songs.TABLE_NAME, time, song.getId());
+                updatePlayed(db, Artists.TABLE_NAME, time, song.getArtistId());
 
                 db.setTransactionSuccessful();
             } finally {
@@ -385,32 +246,19 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     public void deleteSong(Song song) {
         Log.d(TAG, "DbOpenHelper.deleteSong(" + song + ")");
-        deleteSong(song.getId(), song.getArtistId());
-    }
-
-    public void deleteSong(int id, long artistId) {
-        Log.d(TAG, "DbOpenHelper.deleteSong(" + id + ", " + artistId + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                Log.d(TAG, db.delete(Song.TABLE_NAME, Song._ID + "=" + id, null) +
-                        " songs deleted");
-
-                db.execSQL("UPDATE " + Artist.TABLE_NAME + " SET " +
-                        Artist.LAST_PLAYED + "=(SELECT MAX(" + Song.LAST_PLAYED + ") FROM " +
-                        Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=" + artistId + ")," +
-                        Artist.TIMES_PLAYED + "=(SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " +
-                        Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=" + artistId + ")," +
-                        Artist.DATE_MODIFIED + "=(SELECT MAX(" + Song.DATE_ADDED + ") FROM " +
-                        Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=" + artistId + ") " +
-                        "WHERE " + Artist._ID + "=" + artistId);
+                delete(db, Songs.TABLE_NAME, song.getId());
+                updateArtistStats(db, song);
+                //TODO: Delete artist when deleting last song from it?
 
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
             }
         }
-    }*/
+    }
 
     public void syncWithMediaStore(Context context) throws IOException {
         // Read artist ignore file.
@@ -448,8 +296,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
                 // Update artists when songs have been inserted or deleted.
                 if (resSongs.rowsInserted > 0 || resSongs.rowsDeleted > 0) {
-                    db.execSQL(SQL_UPDATE_ARTISTS);
-                    Log.d(TAG, "Artists updated");
+                    db.execSQL(SQL_UPDATE_ARTIST_STATS);
+                    Log.d(TAG, "Artist stats updated");
                 }
 
                 db.setTransactionSuccessful();
@@ -515,6 +363,37 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    private static void updateBackup(JSONObject backup) throws JSONException {
+        JSONArray artists = backup.getJSONArray(Artists.TABLE_NAME);
+        LongSparseArray<String> artistNames = new LongSparseArray<>();
+        for (int i = 0; i < artists.length(); i++) {
+            JSONObject artist = artists.getJSONObject(i);
+            artistNames.put(artist.getLong(Artists._ID), artist.getString(Artists.ARTIST));
+
+            if (artist.has("date_modified")) {
+                artist.put(Artists.LAST_SONG_ADDED, artist.getLong("date_modified"));
+                artist.remove("date_modified");
+            }
+        }
+
+        JSONArray songs = backup.getJSONArray(Songs.TABLE_NAME);
+        for (int i = 0; i < songs.length(); i++) {
+            JSONObject song = songs.getJSONObject(i);
+
+            String artist = artistNames.get(song.getLong(Songs.ARTIST_ID));
+            if (artist == null) {
+                throw new JSONException("Artist not found");
+            }
+            song.put(Songs.ARTIST, artist);
+            song.remove(Songs.ARTIST_ID);
+
+            if (song.has(Songs.DATE_ADDED)) {
+                song.put(Songs.ADDED, song.getLong(Songs.DATE_ADDED));
+                song.remove(Songs.DATE_ADDED);
+            }
+        }
+    }
+
     private static SyncResult syncTable(Context context, Uri contentUri,
                                         SQLiteDatabase db, String table, String[] columns,
                                         int[] updateColumns, int[] insertColumns,
@@ -558,7 +437,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 putValuesFromCursor(c, values, columns, updateColumns);
 
                 // Update or insert row if it doesn't exist.
-                if (db.update(table, values, SQL_WHERE_ID, new String[]{Long.toString(id)}) == 0) {
+                if (update(db, table, values, id) == 0) {
                     values.put(BaseColumns._ID, id);
                     putValuesFromCursor(c, values, columns, insertColumns);
                     if (timeColumn != null) {
@@ -581,7 +460,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             while (c.moveToNext()) {
                 long id = c.getLong(0);
                 if (!ret.ids.contains(id)) {
-                    db.delete(table, SQL_WHERE_ID, new String[]{Long.toString(id)});
+                    delete(db, table, id);
                     Log.d(TAG, table + " row deleted: " + id);
                     ret.rowsDeleted++;
                 }
@@ -695,35 +574,34 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         Log.d(TAG, rows.length() + " rows restored to table " + table);
     }
 
-    private static void updateBackup(JSONObject backup) throws JSONException {
-        JSONArray artists = backup.getJSONArray(Artists.TABLE_NAME);
-        LongSparseArray<String> artistNames = new LongSparseArray<>();
-        for (int i = 0; i < artists.length(); i++) {
-            JSONObject artist = artists.getJSONObject(i);
-            artistNames.put(artist.getLong(Artists._ID), artist.getString(Artists.ARTIST));
+    private static Cursor query(SQLiteDatabase db, String table, String[] columns, long id) {
+        Cursor c = db.query(table, columns, SQL_ID_ARG, getWhereArgs(id), null, null, null);
+        c.moveToFirst();
+        return c;
+    }
 
-            if (artist.has("date_modified")) {
-                artist.put(Artists.LAST_SONG_ADDED, artist.getLong("date_modified"));
-                artist.remove("date_modified");
-            }
-        }
+    private static int update(SQLiteDatabase db, String table, ContentValues values, long id) {
+        return db.update(table, values, SQL_ID_ARG, getWhereArgs(id));
+    }
 
-        JSONArray songs = backup.getJSONArray(Songs.TABLE_NAME);
-        for (int i = 0; i < songs.length(); i++) {
-            JSONObject song = songs.getJSONObject(i);
+    private static int delete(SQLiteDatabase db, String table, long id) {
+        return db.delete(table, SQL_ID_ARG, getWhereArgs(id));
+    }
 
-            String artist = artistNames.get(song.getLong(Songs.ARTIST_ID));
-            if (artist == null) {
-                throw new JSONException("Artist not found");
-            }
-            song.put(Songs.ARTIST, artist);
-            song.remove(Songs.ARTIST_ID);
+    private static String[] getWhereArgs(long id) {
+        return new String[]{Long.toString(id)};
+    }
 
-            if (song.has(Songs.DATE_ADDED)) {
-                song.put(Songs.ADDED, song.getLong(Songs.DATE_ADDED));
-                song.remove(Songs.DATE_ADDED);
-            }
-        }
+    private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
+        db.execSQL("UPDATE " + table + " SET " +
+                PlayedColumns.LAST_PLAYED + "=?," +
+                PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1 " +
+                SQL_WHERE_ID,
+                new Object[]{time, id});
+    }
+
+    private static void updateArtistStats(SQLiteDatabase db, Song song) {
+        db.execSQL(SQL_UPDATE_ARTIST_STATS + SQL_WHERE_ID, new Object[]{song.getArtistId()});
     }
 
     public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {

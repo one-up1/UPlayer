@@ -60,33 +60,20 @@ public class SongsListView extends ListView {
                         REQUEST_EDIT_SONG);
                 return true;
             case R.id.bookmark:
-                //TODO: Bookmarking
-                /*dbOpenHelper.querySong(song);
-                if (song.getBookmarked() == 0) {
-                    Log.d(TAG, "Setting bookmark: " + song);
-                    song.setBookmarked(Calendar.currentTime());
-                    Toast.makeText(context, R.string.bookmark_set, Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.d(TAG, "Deleting bookmark: " + song);
-                    song.setBookmarked(0);
-                    Toast.makeText(context, R.string.bookmark_deleted, Toast.LENGTH_SHORT).show();
-                }
-                dbOpenHelper.insertOrUpdateSong(song);
-
+                dbOpenHelper.bookmarkSong(song);
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
-                return true;*/
+                //TODO: Bookmark set/deleted toast.
             case R.id.mark_played:
-                // TODO: Mark played.
-                /*dbOpenHelper.updateSongPlayed(song); //TODO: ListView not updated when marking played first time
+                dbOpenHelper.updateSongPlayed(song);
                 Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
 
                 ((SongAdapter) getAdapter()).notifyDataSetChanged();
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
-                return true;*/
+                return true;
             case R.id.delete:
                 //TODO: Delete.
                 /*new AlertDialog.Builder(context)
@@ -132,6 +119,20 @@ public class SongsListView extends ListView {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:
+                    Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
+                    editSong.setYear(song.getYear());
+                    editSong.setAdded(song.getAdded());
+                    editSong.setTag(song.getTag());
+
+                    dbOpenHelper.updateSong(song);
+                    Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
+                    editSong = null;
+
+                    ((SongAdapter) getAdapter()).notifyDataSetChanged();
+                    if (onDataSetChangedListener != null) {
+                        onDataSetChangedListener.onDataSetChanged();
+                    }
+
                     //TODO: Saving song after edit. Is year also set to NULL when clearing value and is this correct after syncing/backup/restore?
                     /*Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
                     dbOpenHelper.querySong(editSong);

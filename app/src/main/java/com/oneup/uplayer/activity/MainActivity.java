@@ -20,6 +20,7 @@ import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: When/how to reload data from database and recreate/reload fragments.
+//TODO: Extra and pref key naming.
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
@@ -154,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
-                        lastAddedFragment = ArtistsFragment.newInstance(null, null,
+                        lastAddedFragment = ArtistsFragment.newInstance(
                                 DbOpenHelper.Artists.LAST_SONG_ADDED + " DESC," +
                                         DbOpenHelper.Artists.ARTIST,
                                 DbOpenHelper.Songs.ADDED + " DESC," +
@@ -163,21 +164,21 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(null, null,
+                        artistsFragment = ArtistsFragment.newInstance(
                                 DbOpenHelper.Artists.ARTIST,
                                 DbOpenHelper.Songs.TITLE);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
-                        lastPlayedFragment = ArtistsFragment.newInstance(null, null,
+                        lastPlayedFragment = ArtistsFragment.newInstance(
                                 DbOpenHelper.Artists.LAST_PLAYED + " DESC",
                                 DbOpenHelper.Songs.LAST_PLAYED + " DESC");
                     }
                     return lastPlayedFragment;
                 case 5:
                     if (mostPlayedFragment == null) {
-                        mostPlayedFragment = ArtistsFragment.newInstance(null, null,
+                        mostPlayedFragment = ArtistsFragment.newInstance(
                                 DbOpenHelper.Artists.TIMES_PLAYED + " DESC," +
                                         DbOpenHelper.Artists.ARTIST,
                                 DbOpenHelper.Songs.TIMES_PLAYED + " DESC," +

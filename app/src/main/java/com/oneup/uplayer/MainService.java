@@ -18,15 +18,12 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
-import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
+import java.util.List;
 
 //TODO: Improve MainService impl, songIndex, time left calc, when notification is updated and when/how many times the ListView in PlaylistActivity gets updated.
 
@@ -69,7 +66,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private RemoteViews notificationViews;
     private Notification notification;
 
-    private ArrayList<Song> songs;
+    private List<Song> songs;
     private int songIndex;
     private boolean prepared;
 
@@ -243,8 +240,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player.getCurrentPosition() == 0) {
             Log.d(TAG, "Current position is 0");
         } else {
-            //TODO: Updating song played.
-            //dbOpenHelper.updateSongPlayed(songs.get(songIndex));
+            dbOpenHelper.updateSongPlayed(songs.get(songIndex));
             next();
         }
     }
@@ -378,7 +374,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
-            //TODO: saving/restoring playlist
+            //TODO: Saving/restoring playlist.
             /*JSONArray jsaSongs = new JSONArray();
             for (Song song : songs) {
                 JSONObject jsoSong = new JSONObject();
@@ -455,7 +451,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         this.onSongIndexChangedListener = onSongIndexChangedListener;
     }
 
-    public ArrayList<Song> getSongs() {
+    public List<Song> getSongs() {
         return songs;
     }
 

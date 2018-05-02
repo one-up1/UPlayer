@@ -17,7 +17,7 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
-import java.util.ArrayList;
+import java.util.List;
 
 //TODO: Ability to set added to NULL.
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
@@ -31,7 +31,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     private Song song;
 
-    private ArrayList<String> tags;
+    private List<String> tags;
 
     private EditText etTitle;
     private EditText etArtist;

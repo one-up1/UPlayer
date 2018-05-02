@@ -21,7 +21,7 @@ import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Calendar;
 
-//TODO: No SongsListView, PlaylistActivity should also use SongsFragment.
+//TODO: How ListViews are implemented. BaseFragment with ListViews?
 
 public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";

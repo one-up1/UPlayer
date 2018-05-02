@@ -32,10 +32,8 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: Return ArrayList from queryArtists() but fill it in querySongs() because only songs are reloaded.
 //TODO: Check rows affected and moveToFirst() result.
-//TODO: getDatabase() only in DbOpenHelper?
-//TODO: List or ArrayList?
-//TODO: Constants for IS NOT NULL/DESC etc?
 
 public class DbOpenHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -65,15 +63,8 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Songs.LAST_PLAYED + " INTEGER," +
                     Songs.TIMES_PLAYED + " INTEGER DEFAULT 0)";
 
-    //TODO: Use this everywhere.
     private static final String SQL_ID_ARG = BaseColumns._ID + "=?";
     private static final String SQL_WHERE_ID = "WHERE " + SQL_ID_ARG;
-
-    private static final String SQL_BOOKMARK_SONG =
-            "UPDATE " + Songs.TABLE_NAME + " SET " +
-                    Songs.BOOKMARKED + "=CASE WHEN " +
-                    Songs.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
-                    SQL_WHERE_ID;
 
     private static final String SQL_UPDATE_ARTIST_STATS =
             "UPDATE " + Artists.TABLE_NAME + " SET " +
@@ -88,6 +79,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Artists.TIMES_PLAYED + "=(SELECT SUM(" + Songs.TIMES_PLAYED + ") FROM " +
                     Songs.TABLE_NAME + " WHERE " +
                     Songs.ARTIST_ID + "=" + Artists.TABLE_NAME + "." + Artists._ID + ")";
+
+    private static final String SQL_BOOKMARK_SONG =
+            "UPDATE " + Songs.TABLE_NAME + " SET " +
+                    Songs.BOOKMARKED + "=CASE WHEN " +
+                    Songs.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
+                    SQL_WHERE_ID;
 
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
@@ -107,13 +104,12 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public void queryArtists(List<Artist> artists,
-                             String selection, String[] selectionArgs, String orderBy) {
-        Log.d(TAG, "DbOpenHelper.queryArtists(" + selection + "," + orderBy + ")");
+    public void queryArtists(List<Artist> artists, String orderBy) {
+        Log.d(TAG, "DbOpenHelper.queryArtists(" + orderBy + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(Artists.TABLE_NAME, new String[]{Artists._ID,
                             Artists.ARTIST, Artists.TIMES_PLAYED},
-                    selection, selectionArgs, null, null, orderBy)) {
+                    null, null, null, null, orderBy)) {
                 artists.clear();
                 while (c.moveToNext()) {
                     Artist artist = new Artist();
@@ -179,11 +175,11 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    public ArrayList<String> querySongTags() {
+    public List<String> querySongTags() {
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, Songs.TABLE_NAME, new String[]{Songs.TAG},
                     Songs.TAG + " IS NOT NULL", null, null, null, Songs.TAG, null)) {
-                ArrayList<String> ret = new ArrayList<>();
+                List<String> ret = new ArrayList<>();
                 while (c.moveToNext()) {
                     ret.add(c.getString(0));
                 }
@@ -251,7 +247,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             try {
                 delete(db, Songs.TABLE_NAME, song.getId());
                 updateArtistStats(db, song);
-                //TODO: Delete artist when deleting last song from it?
+                //TODO: Delete artist when deleting last song from it.
 
                 db.setTransactionSuccessful();
             } finally {

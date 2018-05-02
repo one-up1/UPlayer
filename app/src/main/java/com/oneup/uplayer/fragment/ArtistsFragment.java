@@ -26,18 +26,20 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class ArtistsFragment extends Fragment implements AdapterView.OnItemClickListener {
     private static final String TAG = "UPlayer";
 
-    private static final String SONGS_ORDER_BY = "com.oneup.uplayer.extra.SONGS_ORDER_BY";
+    private static final String ARG_ORDER_BY = "order_by";
+    private static final String ARG_SONGS_ORDER_BY = "songs_order_by";
 
     /*private static final String SQL_QUERY_PLAYED_DURATION =
             "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " +
                     Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";*/
 
     private DbOpenHelper dbOpenHelper;
-    private ArrayList<Artist> artists;
+    private List<Artist> artists;
 
     private ListView listView;
     private ListAdapter listAdapter;
@@ -57,10 +59,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "ArtistsFragment.onCreateView()");
-        dbOpenHelper.queryArtists(artists,
-                getArguments().getString(BaseArgs.SELECTION),
-                getArguments().getStringArray(BaseArgs.SELECTION_ARGS),
-                getArguments().getString(BaseArgs.ORDER_BY));
+        dbOpenHelper.queryArtists(artists, getArguments().getString(ARG_ORDER_BY));
         if (sortOrderReversed) {
             Collections.reverse(artists);
         }
@@ -160,10 +159,10 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == listView) {
             startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtras(BaseArgs.get(
+                    .putExtras(SongsFragment.getArguments(
                             DbOpenHelper.Songs.ARTIST_ID + "=?",
                             new String[]{Long.toString(artists.get(position).getId())},
-                            getArguments().getString(SONGS_ORDER_BY))));
+                            getArguments().getString(ARG_SONGS_ORDER_BY))));
         }
     }
 
@@ -173,16 +172,11 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
         sortOrderReversed = !sortOrderReversed;
     }
 
-    public static ArtistsFragment newInstance(String selection, String[] selectionArgs,
-                                              String orderBy, String songsOrderBy) {
-        //TODO: Use selection in ArtistsFragment?
-        Bundle args = BaseArgs.get(selection, selectionArgs, orderBy);
-        args.putString(SONGS_ORDER_BY, songsOrderBy);
-        return newInstance(args);
-    }
-
-    public static ArtistsFragment newInstance(Bundle args) {
+    public static ArtistsFragment newInstance(String orderBy, String songsOrderBy) {
         ArtistsFragment fragment = new ArtistsFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_ORDER_BY, orderBy);
+        args.putString(ARG_SONGS_ORDER_BY, songsOrderBy);
         fragment.setArguments(args);
         return fragment;
     }

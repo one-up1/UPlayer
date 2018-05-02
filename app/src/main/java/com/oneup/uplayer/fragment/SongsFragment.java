@@ -30,11 +30,13 @@ import com.oneup.uplayer.widget.SongsListView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-//TODO: BaseFragment with ListView?
-
 public class SongsFragment extends Fragment implements AdapterView.OnItemClickListener,
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
+
+    private static final String ARG_SELECTION = "selection";
+    private static final String ARG_SELECTION_ARGS = "selection_args";
+    private static final String ARG_ORDER_BY = "order_by";
 
     private DbOpenHelper dbOpenHelper;
     private ArrayList<Song> songs;
@@ -58,9 +60,9 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
                              Bundle savedInstanceState) {
         Log.d(TAG, "SongsFragment.onCreateView()");
         dbOpenHelper.querySongs(songs,
-                getArguments().getString(BaseArgs.SELECTION),
-                getArguments().getStringArray(BaseArgs.SELECTION_ARGS),
-                getArguments().getString(BaseArgs.ORDER_BY));
+                getArguments().getString(ARG_SELECTION),
+                getArguments().getStringArray(ARG_SELECTION_ARGS),
+                getArguments().getString(ARG_ORDER_BY));
         if (sortOrderReversed) {
             Collections.reverse(songs);
         }
@@ -235,12 +237,20 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
 
     public static SongsFragment newInstance(String selection, String[] selectionArgs,
                                             String orderBy) {
-        return newInstance(BaseArgs.get(selection, selectionArgs, orderBy));
+        return newInstance(getArguments(selection, selectionArgs, orderBy));
     }
 
     public static SongsFragment newInstance(Bundle args) {
         SongsFragment fragment = new SongsFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public static Bundle getArguments(String selection, String[] selectionArgs, String orderBy) {
+        Bundle args = new Bundle();
+        args.putString(ARG_SELECTION, selection);
+        args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
+        args.putString(ARG_ORDER_BY, orderBy);
+        return args;
     }
 }

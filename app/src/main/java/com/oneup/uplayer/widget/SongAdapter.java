@@ -13,15 +13,15 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Song;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class SongAdapter extends BaseAdapter {
     private Context context;
-    private ArrayList<Song> objects;
+    private List<Song> objects;
 
     private LayoutInflater layoutInflater;
 
-    public SongAdapter(Context context, ArrayList<Song> objects) {
+    public SongAdapter(Context context, List<Song> objects) {
         this.context = context;
         this.objects = objects;
 

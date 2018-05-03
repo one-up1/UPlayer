@@ -22,7 +22,6 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbOpenHelper;
-import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
@@ -160,8 +159,8 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == listView) {
             startActivity(new Intent(getContext(), SongsActivity.class)
-                    .putExtras(SongsFragment.getArguments(Song.ARTIST_ID + "=?",
-                            new String[]{Long.toString(artists.get(position).getId())},
+                    .putExtras(SongsFragment.getArguments(
+                            artists.get(position).getId(),
                             getArguments().getString(ARG_SONGS_ORDER_BY))));
         }
     }

@@ -34,12 +34,18 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
         SongsListView.OnDataSetChangedListener, SongsListView.OnSongDeletedListener {
     private static final String TAG = "UPlayer";
 
+    private static final String ARG_ARTIST_ID = "artist_id";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTION_ARGS = "selection_args";
     private static final String ARG_ORDER_BY = "order_by";
 
     private DbOpenHelper dbOpenHelper;
     private ArrayList<Song> songs;
+
+    private long artistId;
+    private String selection;
+    private String[] selectionArgs;
+    private String orderBy;
 
     private SongsListView listView;
     private ListAdapter listAdapter;
@@ -53,16 +59,23 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
 
         dbOpenHelper = new DbOpenHelper(getActivity());
         songs = new ArrayList<>();
+
+        artistId = getArguments().getLong(ARG_ARTIST_ID);
+        if (artistId == 0) {
+            selection = getArguments().getString(ARG_SELECTION);
+            selectionArgs = getArguments().getStringArray(ARG_SELECTION_ARGS);
+        } else {
+            selection = Song.ARTIST_ID + "=?";;
+            selectionArgs = DbOpenHelper.getWhereArgs(artistId);
+        }
+        orderBy = getArguments().getString(ARG_ORDER_BY);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "SongsFragment.onCreateView()");
-        dbOpenHelper.querySongs(songs,
-                getArguments().getString(ARG_SELECTION),
-                getArguments().getStringArray(ARG_SELECTION_ARGS),
-                getArguments().getString(ARG_ORDER_BY));
+        dbOpenHelper.querySongs(songs, selection, selectionArgs, orderBy);
         if (sortOrderReversed) {
             Collections.reverse(songs);
         }
@@ -73,10 +86,9 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
 
         if (listView == null) {
             listView = new SongsListView(getActivity());
-            //if (artist == null) {
-                //TODO: listView.setViewArtistSortBy(joinedSortBy)
-            //Only pass it from query fragment and bookmarks?
-            //}
+            if (artistId == 0) {
+                listView.setViewArtistOrderBy(orderBy);
+            }
             listView.setOnItemClickListener(this);
             if (getActivity() instanceof MainActivity) {
                 listView.setOnDataSetChangedListener(this);
@@ -107,7 +119,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
                                     ContextMenu.ContextMenuInfo menuInfo) {
         if (v == listView) {
             getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
-            //TODO: menu.getItem(0).setVisible(artist == null);
+            menu.getItem(0).setVisible(artistId == 0);
         }
     }
 
@@ -244,6 +256,13 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
         SongsFragment fragment = new SongsFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public static Bundle getArguments(long artistId, String orderBy) {
+        Bundle args = new Bundle();
+        args.putLong(ARG_ARTIST_ID, artistId);
+        args.putString(ARG_ORDER_BY, orderBy);
+        return args;
     }
 
     public static Bundle getArguments(String selection, String[] selectionArgs, String orderBy) {

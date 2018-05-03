@@ -360,6 +360,10 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    public static String[] getWhereArgs(long id) {
+        return new String[]{Long.toString(id)};
+    }
+
     private static void updateBackup(JSONObject backup) throws JSONException {
         JSONArray artists = backup.getJSONArray(TABLE_ARTISTS);
         LongSparseArray<String> artistNames = new LongSparseArray<>();
@@ -583,10 +587,6 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     private static int delete(SQLiteDatabase db, String table, long id) {
         return db.delete(table, SQL_ID_ARG, getWhereArgs(id));
-    }
-
-    private static String[] getWhereArgs(long id) {
-        return new String[]{Long.toString(id)};
     }
 
     private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {

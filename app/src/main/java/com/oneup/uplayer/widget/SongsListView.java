@@ -11,8 +11,10 @@ import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
+import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: How ListViews are implemented. BaseFragment with ListViews?
 
@@ -42,9 +44,11 @@ public class SongsListView extends ListView {
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.view_artist:
-                //TODO: View artist, viewArtistOrderBy.
-                /*context.startActivity(new Intent(getContext(), SongsActivity.class)
-                        .putExtra(SongsActivity.ARG_ARTIST, song.getArtist()));*/
+                //TODO: viewArtistOrderBy correct from query, bookmarks and playlist?
+                context.startActivity(new Intent(getContext(), SongsActivity.class)
+                        .putExtras(SongsFragment.getArguments(
+                                song.getArtistId(),
+                                viewArtistOrderBy == null ? Song.TITLE : viewArtistOrderBy)));
                 return true;
             case R.id.edit:
                 dbOpenHelper.querySong(song);

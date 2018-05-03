@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (bookmarksFragment == null) {
                         bookmarksFragment = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                Song.BOOKMARKED + " DESC");
+                                Song.BOOKMARKED + " DESC," + Song.TITLE);
                     }
                     return bookmarksFragment;
                 case 2:
@@ -170,8 +170,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(
-                                Artist.LAST_PLAYED + " DESC",
-                                Song.LAST_PLAYED + " DESC");
+                                Artist.LAST_PLAYED + " DESC," + Artist.ARTIST,
+                                Song.LAST_PLAYED + " DESC," + Song.TITLE);
                     }
                     return lastPlayedFragment;
                 case 5:

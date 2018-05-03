@@ -421,6 +421,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 song.setDuration(playlistSong.getLong(Song.DURATION));
                 songs.add(song);
             }
+            //TODO: Saved playlist could be invalid after syncing media store or manually deleting songs.
 
             songIndex = preferences.getInt(ARG_SONG_INDEX, 0);
             position = preferences.getInt(KEY_POSITION, 0);

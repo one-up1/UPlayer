@@ -116,10 +116,12 @@ public class SongsListView extends ListView {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:
+                    //TODO: Saving song after edit. Is year also set to NULL when clearing value and is this correct after syncing/backup/restore?
                     Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
                     editSong.setYear(song.getYear());
                     editSong.setAdded(song.getAdded());
                     editSong.setTag(song.getTag());
+                    editSong.setBookmarked(song.getBookmarked());
 
                     dbOpenHelper.updateSong(song);
                     Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
@@ -129,22 +131,6 @@ public class SongsListView extends ListView {
                     if (onDataSetChangedListener != null) {
                         onDataSetChangedListener.onDataSetChanged();
                     }
-
-                    //TODO: Saving song after edit. Is year also set to NULL when clearing value and is this correct after syncing/backup/restore?
-                    /*Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
-                    dbOpenHelper.querySong(editSong);
-                    editSong.setAdded(song.getAdded());
-                    editSong.setYear(song.getYear());
-                    editSong.setTag(song.getTag());
-                    dbOpenHelper.insertOrUpdateSong(editSong);
-
-                    Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
-                    editSong = null;
-
-                    ((SongAdapter) getAdapter()).notifyDataSetChanged();
-                    if (onDataSetChangedListener != null) {
-                        onDataSetChangedListener.onDataSetChanged();
-                    }*/
                     break;
             }
         }

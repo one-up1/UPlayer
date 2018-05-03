@@ -65,7 +65,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Song.LAST_PLAYED + " INTEGER," +
                     Song.TIMES_PLAYED + " INTEGER DEFAULT 0)";
 
-    private static final String SQL_WHERE_ID = BaseColumns._ID + "=?";
+    private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
     private static final String SQL_UPDATE_ARTISTS_STATS =
             "UPDATE " + TABLE_ARTISTS + " SET " +
@@ -579,24 +579,24 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     private static Cursor query(SQLiteDatabase db, String table, String[] columns, long id) {
-        Cursor c = db.query(table, columns, SQL_WHERE_ID, getWhereArgs(id), null, null, null);
+        Cursor c = db.query(table, columns, SQL_ID_IS, getWhereArgs(id), null, null, null);
         c.moveToFirst();
         return c;
     }
 
     private static int update(SQLiteDatabase db, String table, ContentValues values, long id) {
-        return db.update(table, values, SQL_WHERE_ID, getWhereArgs(id));
+        return db.update(table, values, SQL_ID_IS, getWhereArgs(id));
     }
 
     private static int delete(SQLiteDatabase db, String table, long id) {
-        return db.delete(table, SQL_WHERE_ID, getWhereArgs(id));
+        return db.delete(table, SQL_ID_IS, getWhereArgs(id));
     }
 
     private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
         db.execSQL("UPDATE " + table + " SET " +
                 PlayedColumns.LAST_PLAYED + "=?," +
                 PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1 " +
-                SQL_WHERE_ID,
+                        "WHERE " + SQL_ID_IS,
                 new Object[]{time, id});
     }
 

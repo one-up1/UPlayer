@@ -25,7 +25,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     public static final String EXTRA_SONG =
             "com.oneup.timer.activity.EditSongActivity.SONG";
 
-    private static final int REQUEST_SELECT_DATE_ADDED = 1;
+    private static final int REQUEST_SELECT_ADDED = 1;
+    private static final int REQUEST_SELECT_BOOKMARKED = 2;
 
     private DbOpenHelper dbOpenHelper;
 
@@ -38,8 +39,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private EditText etDuration;
     private EditText etYear;
     private Button bAdded;
-    private Spinner sTag;
     private EditText etTag;
+    private Spinner sTag;
     private Button bBookmarked;
     private Button bLastPlayed;
     private EditText etTimesPlayed;
@@ -132,10 +133,13 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_SELECT_DATE_ADDED:
+                case REQUEST_SELECT_ADDED:
                     song.setAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
                     bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
                     break;
+                case REQUEST_SELECT_BOOKMARKED:
+                    song.setBookmarked(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
+                    bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
             }
         }
     }
@@ -151,19 +155,20 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View v) {
         if (v == bAdded) {
-            Intent intent = new Intent(this, DateTimeActivity.class);
-            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.added);
-            if (song.getAdded() > 0) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getAdded());
-            }
-            startActivityForResult(intent, REQUEST_SELECT_DATE_ADDED);
+            selectTime(REQUEST_SELECT_ADDED, R.string.added, song.getAdded());
+        } else if (v == bBookmarked) {
+            selectTime(REQUEST_SELECT_BOOKMARKED, R.string.bookmarked, song.getBookmarked());
         }
     }
 
     @Override
     public boolean onLongClick(View v) {
         if (v == bAdded) {
+            song.setAdded(0);
+            bAdded.setText("");
         } else if (v == bBookmarked) {
+            song.setBookmarked(0);
+            bBookmarked.setText("");
         }
         return true;//TODO: Always return true from onLongClick()?
     }
@@ -181,5 +186,15 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
+    }
+
+    //TODO: Implement selectTime() in QueryFragment as well. Method for getting/clearing value?
+    private void selectTime(int requestCode, int titleId, long time) {
+        Intent intent = new Intent(this, DateTimeActivity.class);
+        intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, titleId);
+        if (time > 0) {
+            intent.putExtra(DateTimeActivity.EXTRA_TIME, time);
+        }
+        startActivityForResult(intent, requestCode);
     }
 }

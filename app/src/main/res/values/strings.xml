@@ -72,6 +72,7 @@
     <string name="edit_last_played">Last played:</string>
     <string name="edit_times_played">Times played:</string>
     <string name="added">Added&#8230;</string>
+    <string name="bookmarked">Bookmarked&#8230;</string>
 
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>

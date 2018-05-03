@@ -65,10 +65,9 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     Song.LAST_PLAYED + " INTEGER," +
                     Song.TIMES_PLAYED + " INTEGER DEFAULT 0)";
 
-    private static final String SQL_ID_ARG = BaseColumns._ID + "=?";
-    private static final String SQL_WHERE_ID = "WHERE " + SQL_ID_ARG;
+    private static final String SQL_WHERE_ID = BaseColumns._ID + "=?";
 
-    private static final String SQL_UPDATE_ARTIST_STATS =
+    private static final String SQL_UPDATE_ARTISTS_STATS =
             "UPDATE " + TABLE_ARTISTS + " SET " +
                     Artist.LAST_SONG_ADDED +
                     "=(SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS +
@@ -82,11 +81,14 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                     "=(SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS +
                     " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")";
 
+    private static final String SQL_UPDATE_ARTIST_STATS =
+            SQL_UPDATE_ARTISTS_STATS + " WHERE " + Artist._ID + "=?";
+
     private static final String SQL_BOOKMARK_SONG =
             "UPDATE " + TABLE_SONGS + " SET " +
                     Song.BOOKMARKED + "=CASE WHEN " +
                     Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
-                    SQL_WHERE_ID;
+                    "WHERE " + Song._ID + "=?";
 
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
@@ -197,17 +199,10 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             db.beginTransaction();
             try {
                 ContentValues values = new ContentValues();
-                if (song.getYear() == 0) {
-                    values.putNull(Song.YEAR);
-                } else {
-                    values.put(Song.YEAR, song.getYear());
-                }
-                if (song.getAdded() == 0) {
-                    values.putNull(Song.ADDED);
-                } else {
-                    values.put(Song.ADDED, song.getAdded());
-                }
+                putValue(values, Song.YEAR, song.getYear());
+                putValue(values, Song.ADDED, song.getAdded());
                 values.put(Song.TAG, song.getTag());
+                putValue(values, Song.BOOKMARKED, song.getBookmarked());
 
                 update(db, TABLE_SONGS, values, song.getId());
                 updateArtistStats(db, song);
@@ -294,7 +289,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
                 // Update artists when songs have been inserted or deleted.
                 if (resSongs.rowsInserted > 0 || resSongs.rowsDeleted > 0) {
-                    db.execSQL(SQL_UPDATE_ARTIST_STATS);
+                    db.execSQL(SQL_UPDATE_ARTISTS_STATS);
                     Log.d(TAG, "Artist stats updated");
                 }
 
@@ -362,6 +357,14 @@ public class DbOpenHelper extends SQLiteOpenHelper {
 
     public static String[] getWhereArgs(long id) {
         return new String[]{Long.toString(id)};
+    }
+
+    private static void putValue(ContentValues values, String key, long value) {
+        if (value == 0) {
+            values.putNull(key);
+        } else {
+            values.put(key, value);
+        }
     }
 
     private static void updateBackup(JSONObject backup) throws JSONException {
@@ -576,17 +579,17 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     private static Cursor query(SQLiteDatabase db, String table, String[] columns, long id) {
-        Cursor c = db.query(table, columns, SQL_ID_ARG, getWhereArgs(id), null, null, null);
+        Cursor c = db.query(table, columns, SQL_WHERE_ID, getWhereArgs(id), null, null, null);
         c.moveToFirst();
         return c;
     }
 
     private static int update(SQLiteDatabase db, String table, ContentValues values, long id) {
-        return db.update(table, values, SQL_ID_ARG, getWhereArgs(id));
+        return db.update(table, values, SQL_WHERE_ID, getWhereArgs(id));
     }
 
     private static int delete(SQLiteDatabase db, String table, long id) {
-        return db.delete(table, SQL_ID_ARG, getWhereArgs(id));
+        return db.delete(table, SQL_WHERE_ID, getWhereArgs(id));
     }
 
     private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
@@ -598,7 +601,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     private static void updateArtistStats(SQLiteDatabase db, Song song) {
-        db.execSQL(SQL_UPDATE_ARTIST_STATS + SQL_WHERE_ID, new Object[]{song.getArtistId()});
+        db.execSQL(SQL_UPDATE_ARTIST_STATS, new Object[]{song.getArtistId()});
     }
 
     public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {

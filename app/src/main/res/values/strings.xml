@@ -64,14 +64,14 @@
     <string name="edit_song">Edit song</string>
     <string name="edit_title">Title:</string>
     <string name="edit_artist">Artist:</string>
-    <string name="edit_date_added">Date added:</string>
-    <string name="edit_year">Year:</string>
     <string name="edit_duration">Duration:</string>
+    <string name="edit_year">Year:</string>
+    <string name="edit_added">Added:</string>
+    <string name="edit_tag">Tag:</string>
+    <string name="edit_bookmarked">Bookmarked:</string>
     <string name="edit_last_played">Last played:</string>
     <string name="edit_times_played">Times played:</string>
-    <string name="edit_bookmkared">Bookmarked:</string>
-    <string name="edit_tag">Tag:</string>
-    <string name="date_added">Date added&#8230;</string>
+    <string name="added">Added&#8230;</string>
 
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>

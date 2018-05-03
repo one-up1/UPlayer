@@ -19,9 +19,9 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.List;
 
-//TODO: Ability to set added to NULL.
+//TODO: Ability to set year,added and bookmarked including NULL.
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
-        AdapterView.OnItemSelectedListener {
+        View.OnLongClickListener, AdapterView.OnItemSelectedListener {
     public static final String EXTRA_SONG =
             "com.oneup.timer.activity.EditSongActivity.SONG";
 
@@ -35,14 +35,14 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     private EditText etTitle;
     private EditText etArtist;
-    private Button bDateAdded;
-    private EditText etYear;
     private EditText etDuration;
-    private Button bLastPlayed;
-    private EditText etTimesPlayed;
-    private Button bBookmarked;
+    private EditText etYear;
+    private Button bAdded;
     private Spinner sTag;
     private EditText etTag;
+    private Button bBookmarked;
+    private Button bLastPlayed;
+    private EditText etTimesPlayed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,33 +62,20 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         etArtist = findViewById(R.id.etArtist);
         etArtist.setString(song.getArtist());
 
-        bDateAdded = findViewById(R.id.bDateAdded);
-        if (song.getAdded() > 0) {
-            bDateAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
-        }
-        bDateAdded.setOnClickListener(this);
+        etDuration = findViewById(R.id.etDuration);
+        etDuration.setString(Util.formatDuration(song.getDuration()));
 
         etYear = findViewById(R.id.etYear);
         if (song.getYear() > 0) {
             etYear.setInt(song.getYear());
         }
 
-        etDuration = findViewById(R.id.etDuration);
-        etDuration.setString(Util.formatDuration(song.getDuration()));
-
-        bLastPlayed = findViewById(R.id.bLastPlayed);
-        if (song.getLastPlayed() > 0) {
-            bLastPlayed.setText(Util.formatDateTimeAgo(song.getLastPlayed()));
+        bAdded = findViewById(R.id.bAdded);
+        if (song.getAdded() > 0) {
+            bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
         }
-
-        etTimesPlayed = findViewById(R.id.etTimesPlayed);
-        etTimesPlayed.setString(song.getTimesPlayed() +
-                " (" + Util.formatDuration(song.getTimesPlayed() * song.getDuration()) + ")");
-
-        bBookmarked = findViewById(R.id.bBookmarked);
-        if (song.getBookmarked() > 0) {
-            bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
-        }
+        bAdded.setOnClickListener(this);
+        bAdded.setOnLongClickListener(this);
 
         etTag = findViewById(R.id.etTag);
         if (song.getTag() != null) {
@@ -99,6 +86,22 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         sTag.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, tags));
         sTag.setOnItemSelectedListener(this);
+
+        bBookmarked = findViewById(R.id.bBookmarked);
+        if (song.getBookmarked() > 0) {
+            bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
+        }
+        bBookmarked.setOnClickListener(this);
+        bBookmarked.setOnLongClickListener(this);
+
+        bLastPlayed = findViewById(R.id.bLastPlayed);
+        if (song.getLastPlayed() > 0) {
+            bLastPlayed.setText(Util.formatDateTimeAgo(song.getLastPlayed()));
+        }
+
+        etTimesPlayed = findViewById(R.id.etTimesPlayed);
+        etTimesPlayed.setString(song.getTimesPlayed() +
+                " (" + Util.formatDuration(song.getTimesPlayed() * song.getDuration()) + ")");
     }
 
     @Override
@@ -131,7 +134,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             switch (requestCode) {
                 case REQUEST_SELECT_DATE_ADDED:
                     song.setAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bDateAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
+                    bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
                     break;
             }
         }
@@ -147,14 +150,22 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        if (v == bDateAdded) {
+        if (v == bAdded) {
             Intent intent = new Intent(this, DateTimeActivity.class);
-            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.date_added);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.added);
             if (song.getAdded() > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getAdded());
             }
             startActivityForResult(intent, REQUEST_SELECT_DATE_ADDED);
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        if (v == bAdded) {
+        } else if (v == bBookmarked) {
+        }
+        return true;//TODO: Always return true from onLongClick()?
     }
 
     @Override

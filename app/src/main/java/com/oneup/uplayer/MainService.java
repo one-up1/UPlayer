@@ -3,6 +3,7 @@ package com.oneup.uplayer;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -12,6 +13,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -21,6 +23,9 @@ import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,7 +150,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 addSong((Song) intent.getParcelableExtra(ARG_SONG), false);
                 break;
             case REQUEST_RESTORE_PLAYLIST:
-                restorePlaylist();
+                if (preferences.contains(ARG_SONGS)) {
+                    restorePlaylist();
+                } else {
+                    Log.w(TAG, "No saved playlist found");
+                    stop();
+                }
                 break;
             case REQUEST_PREVIOUS:
                 previous();
@@ -257,7 +267,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Song song = songs.get(songIndex);
         try {
             player.reset();
-            player.setDataSource(getApplicationContext(), song.getContentUri());
+            player.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.getId()));
             player.prepareAsync();
         } catch (Exception ex) {
             Log.e(TAG, "Error setting data source", ex);
@@ -374,25 +385,22 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
-            //TODO: Saving/restoring playlist.
-            /*JSONArray jsaSongs = new JSONArray();
+            JSONArray playlistSongs = new JSONArray();
             for (Song song : songs) {
-                JSONObject jsoSong = new JSONObject();
-                jsoSong.put(Song._ID, song.getId());
-                jsoSong.put(Song.TITLE, song.getTitle());
-                JSONObject jsoArtist = new JSONObject();
-                jsoArtist.put(Artist._ID, song.getArtistId());
-                jsoArtist.put(Artist.ARTIST, song.getArtist());
-                jsoSong.put(Song.ARTIST, jsoArtist);
-                jsoSong.put(Song.DURATION, song.getDuration());
-                jsaSongs.put(jsoSong);
+                JSONObject playlistSong = new JSONObject();
+                playlistSong.put(Song._ID, song.getId());
+                playlistSong.put(Song.TITLE, song.getTitle());
+                playlistSong.put(Song.ARTIST_ID, song.getArtistId());
+                playlistSong.put(Song.ARTIST, song.getArtist());
+                playlistSong.put(Song.DURATION, song.getDuration());
+                playlistSongs.put(playlistSong);
             }
 
             preferences.edit()
-                    .putString(ARG_SONGS, jsaSongs.toString())
+                    .putString(ARG_SONGS, playlistSongs.toString())
                     .putInt(ARG_SONG_INDEX, songIndex)
                     .putInt(KEY_POSITION, player.getCurrentPosition())
-                    .apply();*/
+                    .apply();
             Log.d(TAG, "Playlist saved");
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
@@ -400,26 +408,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void restorePlaylist() {
-        /*try {
-            String sSongs = preferences.getString(ARG_SONGS, null);
-            if (sSongs == null) {
-                throw new Exception("No saved playlist found");
-            }
-
-            JSONArray jsaSongs = new JSONArray(sSongs);
+        try {
+            JSONArray playlistSongs = new JSONArray(preferences.getString(ARG_SONGS, null));
             songs = new ArrayList<>();
-            for (int i = 0; i < jsaSongs.length(); i++) {
-                JSONObject jsoSong = jsaSongs.getJSONObject(i);
+            for (int i = 0; i < playlistSongs.length(); i++) {
+                JSONObject playlistSong = playlistSongs.getJSONObject(i);
                 Song song = new Song();
-                song.setId(jsoSong.getInt(Song._ID));
-                song.setTitle(jsoSong.getString(Song.TITLE));
-                JSONObject jsoArtist = jsoSong.getJSONObject(Song.ARTIST);
-                //Artist artist = new Artist();
-                //artist.setId(jsoArtist.getInt(Artist._ID));
-                //artist.setArtist(jsoArtist.getString(Artist.ARTIST));
-                //song.setArtist(artist);
-                song.setDuration(jsoSong.getInt(Song.DURATION));
-                dbOpenHelper.querySong(song);
+                song.setId(playlistSong.getLong(Song._ID));
+                song.setTitle(playlistSong.getString(Song.TITLE));
+                song.setArtistId(playlistSong.getLong(Song.ARTIST_ID));
+                song.setArtist(playlistSong.getString(Song.ARTIST));
+                song.setDuration(playlistSong.getLong(Song.DURATION));
                 songs.add(song);
             }
 
@@ -438,7 +437,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             if (songs == null) {
                 stop();
             }
-        }*/
+        }
     }
 
     private void stop() {

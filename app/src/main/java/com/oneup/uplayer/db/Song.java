@@ -1,14 +1,12 @@
 package com.oneup.uplayer.db;
 
-import android.content.ContentUris;
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.provider.MediaStore;
 
 import java.util.List;
 
-public class Song implements Parcelable {
+public class Song implements Parcelable,
+        DbOpenHelper.SongColumns, DbOpenHelper.PlayedColumns {
     private long id;
     private String title;
     private long artistId;
@@ -20,9 +18,6 @@ public class Song implements Parcelable {
     private long bookmarked;
     private long lastPlayed;
     private int timesPlayed;
-
-    Song() {
-    }
 
     @Override
     public String toString() {
@@ -137,16 +132,12 @@ public class Song implements Parcelable {
         this.timesPlayed = timesPlayed;
     }
 
-    public Uri getContentUri() {
-        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
-    }
-
-    public static int getDuration(List<Song> songs, int i) {
-        int ret = 0;
-        for (; i < songs.size(); i++) {
-            ret += songs.get(i).getDuration();
+    public static long getDuration(List<Song> songs, int index) {
+        long duration = 0;
+        for (; index < songs.size(); index++) {
+            duration += songs.get(index).duration;
         }
-        return ret;
+        return duration;
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

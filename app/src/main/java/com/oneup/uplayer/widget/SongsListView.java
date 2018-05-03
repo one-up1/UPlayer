@@ -1,12 +1,7 @@
 package com.oneup.uplayer.widget;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,10 +11,8 @@ import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
-import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
-import com.oneup.uplayer.util.Calendar;
 
 //TODO: How ListViews are implemented. BaseFragment with ListViews?
 

@@ -2,16 +2,15 @@ package com.oneup.uplayer.db;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.BaseColumns;
 
-public class Artist implements Parcelable {
+public class Artist implements Parcelable,
+        BaseColumns, DbOpenHelper.ArtistColumns, DbOpenHelper.PlayedColumns {
     private long id;
     private String artist;
     private long lastSongAdded;
     private long lastPlayed;
     private int timesPlayed;
-
-    Artist() {
-    }
 
     @Override
     public String toString() {

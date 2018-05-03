@@ -14,13 +14,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.Artist;
+import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: When/how to reload data from database and recreate/reload fragments.
 //TODO: Extra and pref key naming.
+//TODO: Return ret;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
@@ -149,40 +151,34 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 1:
                     if (bookmarksFragment == null) {
                         bookmarksFragment = SongsFragment.newInstance(
-                                DbOpenHelper.Songs.BOOKMARKED + " IS NOT NULL", null,
-                                DbOpenHelper.Songs.BOOKMARKED + " DESC");
+                                Song.BOOKMARKED + " IS NOT NULL", null,
+                                Song.BOOKMARKED + " DESC");
                     }
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
-                                DbOpenHelper.Artists.LAST_SONG_ADDED + " DESC," +
-                                        DbOpenHelper.Artists.ARTIST,
-                                DbOpenHelper.Songs.ADDED + " DESC," +
-                                        DbOpenHelper.Songs.TITLE);
+                                Artist.LAST_SONG_ADDED + " DESC," + Artist.ARTIST,
+                                Song.ADDED + " DESC," + Song.TITLE);
                     }
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(
-                                DbOpenHelper.Artists.ARTIST,
-                                DbOpenHelper.Songs.TITLE);
+                        artistsFragment = ArtistsFragment.newInstance(Artist.ARTIST, Song.TITLE);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(
-                                DbOpenHelper.Artists.LAST_PLAYED + " DESC",
-                                DbOpenHelper.Songs.LAST_PLAYED + " DESC");
+                                Artist.LAST_PLAYED + " DESC",
+                                Song.LAST_PLAYED + " DESC");
                     }
                     return lastPlayedFragment;
                 case 5:
                     if (mostPlayedFragment == null) {
                         mostPlayedFragment = ArtistsFragment.newInstance(
-                                DbOpenHelper.Artists.TIMES_PLAYED + " DESC," +
-                                        DbOpenHelper.Artists.ARTIST,
-                                DbOpenHelper.Songs.TIMES_PLAYED + " DESC," +
-                                        DbOpenHelper.Songs.TITLE);
+                                Artist.TIMES_PLAYED + " DESC," + Artist.ARTIST,
+                                Song.TIMES_PLAYED + " DESC," + Song.TITLE);
                     }
                     return mostPlayedFragment;
             }

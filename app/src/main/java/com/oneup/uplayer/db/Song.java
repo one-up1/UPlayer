@@ -1,7 +1,10 @@
 package com.oneup.uplayer.db;
 
+import android.content.ContentUris;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 
 import java.util.List;
 
@@ -130,6 +133,10 @@ public class Song implements Parcelable,
 
     public void setTimesPlayed(int timesPlayed) {
         this.timesPlayed = timesPlayed;
+    }
+
+    public Uri getContentUri() {
+        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
     }
 
     public static long getDuration(List<Song> songs, int index) {

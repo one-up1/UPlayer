@@ -218,21 +218,30 @@ public class DbOpenHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbOpenHelper.bookmarkSong(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.execSQL(SQL_BOOKMARK_SONG, new Object[]{Calendar.currentTime(), song.getId()});
+
+            try (Cursor c = query(db, TABLE_SONGS, new String[]{Song.BOOKMARKED}, song.getId())) {
+                song.setBookmarked(c.getLong(0));
+            }
         }
     }
 
     public void updateSongPlayed(Song song) {
         Log.d(TAG, "DbOpenHelper.updateSongPlayed(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
+            long time = Calendar.currentTime();
+
             db.beginTransaction();
             try {
-                long time = Calendar.currentTime();
                 updatePlayed(db, TABLE_SONGS, time, song.getId());
                 updatePlayed(db, TABLE_ARTISTS, time, song.getArtistId());
-
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
+            }
+
+            song.setLastPlayed(time);
+            try (Cursor c = query(db, TABLE_SONGS, new String[]{Song.TIMES_PLAYED}, song.getId())) {
+                song.setTimesPlayed(c.getInt(0));
             }
         }
     }
@@ -243,8 +252,13 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             db.beginTransaction();
             try {
                 delete(db, TABLE_SONGS, song.getId());
-                updateArtistStats(db, song);
-                //TODO: Delete artist when deleting last song from it.
+
+                if (db.delete(TABLE_ARTISTS, Artist._ID + " NOT IN (SELECT " + Song.ARTIST_ID +
+                        " FROM " + TABLE_SONGS + ")", null) == 0) {
+                    updateArtistStats(db, song);
+                } else {
+                    Log.d(TAG, "Deleted artist: " + song.getArtist());
+                }
 
                 db.setTransactionSuccessful();
             } finally {
@@ -332,7 +346,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
                 new FileInputStream(BACKUP_FILE)))) {
             backup = new JSONObject(reader.readLine());
         }
-        updateBackup(backup);
+        //updateBackup(backup);
 
         // Update database tables from JSONObject.
         try (SQLiteDatabase db = getWritableDatabase()) {
@@ -601,6 +615,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
     }
 
     private static void updateArtistStats(SQLiteDatabase db, Song song) {
+        Log.d(TAG, "DbOpenHelper.updateArtistStats(" + song + ")");
         db.execSQL(SQL_UPDATE_ARTIST_STATS, new Object[]{song.getArtistId()});
     }
 

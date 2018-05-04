@@ -73,13 +73,14 @@
     <string name="edit_times_played">Times played:</string>
     <string name="added">Added&#8230;</string>
     <string name="bookmarked">Bookmarked&#8230;</string>
+    <string name="song_updated">Song updated</string>
 
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_deleted">Bookmark deleted</string>
 
     <string name="mark_played">Mark played</string>
-    <string name="song_updated">Song updated</string>
+    <string name="times_played">Times played: %1$d</string>
 
     <string name="delete">Delete</string>
     <string name="delete_song">Delete song</string>

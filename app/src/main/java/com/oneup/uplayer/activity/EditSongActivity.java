@@ -19,7 +19,6 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.List;
 
-//TODO: Ability to set year,added and bookmarked including NULL.
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
         View.OnLongClickListener, AdapterView.OnItemSelectedListener {
     public static final String EXTRA_SONG =
@@ -166,11 +165,14 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         if (v == bAdded) {
             song.setAdded(0);
             bAdded.setText("");
+            return true;
         } else if (v == bBookmarked) {
             song.setBookmarked(0);
             bBookmarked.setText("");
+            return true;
+        } else {
+            return false;
         }
-        return true;//TODO: Always return true from onLongClick()?
     }
 
     @Override

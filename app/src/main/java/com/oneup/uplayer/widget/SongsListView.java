@@ -1,7 +1,12 @@
 package com.oneup.uplayer.widget;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,7 +21,7 @@ import com.oneup.uplayer.db.DbOpenHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: How ListViews are implemented. BaseFragment with ListViews?
+//TODO: How ListViews are implemented. BaseFragment with ListView?
 
 public class SongsListView extends ListView {
     private static final String TAG = "UPlayer";
@@ -61,10 +66,15 @@ public class SongsListView extends ListView {
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
-                //TODO: Bookmark set/deleted toast.
+                Toast.makeText(context, song.getBookmarked() > 0 ?
+                        R.string.bookmark_set : R.string.bookmark_deleted,
+                        Toast.LENGTH_SHORT).show();
+                return true;
             case R.id.mark_played:
                 dbOpenHelper.updateSongPlayed(song);
-                Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, context.getString(
+                        R.string.times_played, song.getTimesPlayed()),
+                        Toast.LENGTH_SHORT).show();
 
                 ((SongAdapter) getAdapter()).notifyDataSetChanged();
                 if (onDataSetChangedListener != null) {
@@ -72,8 +82,7 @@ public class SongsListView extends ListView {
                 }
                 return true;
             case R.id.delete:
-                //TODO: Delete.
-                /*new AlertDialog.Builder(context)
+                new AlertDialog.Builder(context)
                         .setIcon(R.drawable.ic_dialog_warning)
                         .setTitle(R.string.delete_song)
                         .setMessage(context.getString(R.string.delete_confirm, song.getTitle()))
@@ -91,7 +100,7 @@ public class SongsListView extends ListView {
                                 contentResolver.update(uri, values, null, null);
 
                                 Log.d(TAG, contentResolver.delete(uri, null, null) +
-                                        " songs deleted");
+                                        " songs deleted from MediaStore");
                                 dbOpenHelper.deleteSong(song);
                                 Toast.makeText(context, R.string.song_deleted,
                                         Toast.LENGTH_SHORT).show();
@@ -105,7 +114,7 @@ public class SongsListView extends ListView {
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show();*/
+                        .show();
                 return true;
         }
         return true;
@@ -116,7 +125,6 @@ public class SongsListView extends ListView {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:
-                    //TODO: Saving song after edit. Is year also set to NULL when clearing value and is this correct after syncing/backup/restore?
                     Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
                     editSong.setYear(song.getYear());
                     editSong.setAdded(song.getAdded());

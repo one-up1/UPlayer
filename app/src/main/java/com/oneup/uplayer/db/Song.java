@@ -9,7 +9,7 @@ import android.provider.MediaStore;
 import java.util.List;
 
 public class Song implements Parcelable,
-        DbOpenHelper.SongColumns, DbOpenHelper.PlayedColumns {
+        DbHelper.SongColumns, DbHelper.PlayedColumns {
     private long id;
     private String title;
     private long artistId;

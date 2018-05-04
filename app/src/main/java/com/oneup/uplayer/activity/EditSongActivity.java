@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
@@ -27,7 +27,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private static final int REQUEST_SELECT_ADDED = 1;
     private static final int REQUEST_SELECT_BOOKMARKED = 2;
 
-    private DbOpenHelper dbOpenHelper;
+    private DbHelper dbHelper;
 
     private Song song;
 
@@ -50,10 +50,10 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         setContentView(R.layout.activity_edit_song);
         setTitle(R.string.edit_song);
 
-        dbOpenHelper = new DbOpenHelper(this);
+        dbHelper = new DbHelper(this);
 
         song = getIntent().getParcelableExtra(EXTRA_SONG);
-        tags = dbOpenHelper.querySongTags();
+        tags = dbHelper.querySongTags();
         tags.add(0, "");
 
         etTitle = findViewById(R.id.etTitle);
@@ -145,8 +145,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     protected void onDestroy() {
-        if (dbOpenHelper != null) {
-            dbOpenHelper.close();
+        if (dbHelper != null) {
+            dbHelper.close();
         }
         super.onDestroy();
     }

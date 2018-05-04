@@ -19,13 +19,11 @@ import android.widget.Spinner;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.db.Artist;
-import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
 import java.io.File;
-
-//TODO: QueryFragment.
 
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
@@ -56,7 +54,7 @@ public class QueryFragment extends Fragment implements
             "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
 
     private static final String SQL_QUERY_PLAYED_DURATION =
-            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;*/
+            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME*/
 
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
@@ -81,7 +79,7 @@ public class QueryFragment extends Fragment implements
 
     private SparseArray<Artist> artists;
 
-    private DbOpenHelper dbOpenHelper;
+    private DbHelper dbHelper;
     private SharedPreferences preferences;
 
     private EditText etTitle;
@@ -113,7 +111,7 @@ public class QueryFragment extends Fragment implements
                              Bundle savedInstanceState) {
         Log.d(TAG, "QueryFragment.onCreateView()");
 
-        dbOpenHelper = new DbOpenHelper(getActivity());
+        dbHelper = new DbHelper(getActivity());
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         View ret = inflater.inflate(R.layout.fragment_query, container, false);
@@ -232,8 +230,8 @@ public class QueryFragment extends Fragment implements
     @Override
     public void onDestroy() {
         Log.d(TAG, "QueryFragment.onDestroy()");
-        if (dbOpenHelper != null) {
-            dbOpenHelper.close();
+        if (dbHelper != null) {
+            dbHelper.close();
         }
 
         super.onDestroy();
@@ -272,7 +270,7 @@ public class QueryFragment extends Fragment implements
         } else if (v == bQuery) {
             query(null);
         } else if (v == bTags) {
-            final String[] tags = dbOpenHelper.querySongTags().toArray(new String[0]);
+            final String[] tags = dbHelper.querySongTags().toArray(new String[0]);
             final Set<String> checkedTags = preferences.getStringSet(KEY_TAGS,
                     new ArraySet<String>());
             boolean[] checkedItems = new boolean[tags.length];
@@ -331,16 +329,16 @@ public class QueryFragment extends Fragment implements
             int artistCount, songCount,
                     songsPlayed, songsUnplayed, songsTagged, songsUntagged, timesPlayed;
             long songsDuration, playedDuration;
-            try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-                artistCount = DbOpenHelper.queryInt(db, SQL_QUERY_ARTIST_COUNT, null);
-                songCount = DbOpenHelper.queryInt(db, SQL_QUERY_SONG_COUNT, null);
-                songsDuration = DbOpenHelper.queryLong(db, SQL_QUERY_SONGS_DURATION, null);
-                songsPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
-                songsUnplayed = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_UNPLAYED, null);
-                songsTagged = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_TAGGED, null);
-                songsUntagged = DbOpenHelper.queryInt(db, SQL_QUERY_SONGS_UNTAGGED, null);
-                timesPlayed = DbOpenHelper.queryInt(db, SQL_QUERY_TIMES_PLAYED, null);
-                playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
+            try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+                artistCount = DbHelper.queryInt(db, SQL_QUERY_ARTIST_COUNT, null);
+                songCount = DbHelper.queryInt(db, SQL_QUERY_SONG_COUNT, null);
+                songsDuration = DbHelper.queryLong(db, SQL_QUERY_SONGS_DURATION, null);
+                songsPlayed = DbHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
+                songsUnplayed = DbHelper.queryInt(db, SQL_QUERY_SONGS_UNPLAYED, null);
+                songsTagged = DbHelper.queryInt(db, SQL_QUERY_SONGS_TAGGED, null);
+                songsUntagged = DbHelper.queryInt(db, SQL_QUERY_SONGS_UNTAGGED, null);
+                timesPlayed = DbHelper.queryInt(db, SQL_QUERY_TIMES_PLAYED, null);
+                playedDuration = DbHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
             }
             Util.showInfoDialog(getContext(), R.string.statistics, R.string.statistics_message,
                     songCount, Util.formatDuration(songsDuration),
@@ -358,7 +356,7 @@ public class QueryFragment extends Fragment implements
         } else*/ if (v == bSyncDatabase) {
             Log.d(TAG, "Syncing database");
             try {
-                dbOpenHelper.syncWithMediaStore(getContext());
+                dbHelper.syncWithMediaStore(getContext());
             } catch (Exception ex) {
                 Log.e(TAG, "Error syncing database", ex);
                 Util.showErrorDialog(getContext(), ex);
@@ -366,7 +364,7 @@ public class QueryFragment extends Fragment implements
         } else if (v == bBackup) {
             Log.d(TAG, "Running backup");
             try {
-                dbOpenHelper.backup();
+                dbHelper.backup();
                 //Toast.makeText(getContext(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
                 Log.e(TAG, "Error running backup", ex);
@@ -445,7 +443,7 @@ public class QueryFragment extends Fragment implements
             return true;
         } else if (v == bBackup) {
             try {
-                dbOpenHelper.restoreBackup();
+                dbHelper.restoreBackup();
             } catch (Exception ex) {
                 Log.e(TAG, "Ughh", ex);
             }
@@ -604,7 +602,7 @@ public class QueryFragment extends Fragment implements
     private void backup() throws JSONException, IOException {
         JSONObject backup = new JSONObject();
 
-        try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
             // Process artists.
             JSONArray artists = new JSONArray();
             try (Cursor c = db.query(Artist.TABLE_NAME, null, null, null, null, null, null)) {
@@ -697,7 +695,7 @@ public class QueryFragment extends Fragment implements
                     artist.setDateModified(jsoArtist.getLong(Artist.DATE_MODIFIED));
                 }
 
-                dbOpenHelper.insertOrUpdateArtist(artist);
+                dbHelper.insertOrUpdateArtist(artist);
                 artists.put(jsoArtist.getInt(Artist._ID), artist);
             }
         }
@@ -748,7 +746,7 @@ public class QueryFragment extends Fragment implements
                     song.setTag(jsoSong.getString(Song.TAG));
                 }
 
-                dbOpenHelper.insertOrUpdateSong(song);
+                dbHelper.insertOrUpdateSong(song);
             }
         }
     }*/

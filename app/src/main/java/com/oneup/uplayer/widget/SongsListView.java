@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
 import com.oneup.uplayer.activity.SongsActivity;
-import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsFragment;
 
@@ -29,7 +29,7 @@ public class SongsListView extends ListView {
     private static final int REQUEST_EDIT_SONG = 1;
 
     private Activity context;
-    private DbOpenHelper dbOpenHelper;
+    private DbHelper dbHelper;
     private Song editSong;
 
     private String viewArtistOrderBy;
@@ -41,7 +41,7 @@ public class SongsListView extends ListView {
         super(context);
 
         this.context = context;
-        dbOpenHelper = new DbOpenHelper(context);
+        dbHelper = new DbHelper(context);
     }
 
     public boolean onContextItemSelected(MenuItem item) {
@@ -56,13 +56,13 @@ public class SongsListView extends ListView {
                                 viewArtistOrderBy == null ? Song.TITLE : viewArtistOrderBy)));
                 return true;
             case R.id.edit:
-                dbOpenHelper.querySong(song);
+                dbHelper.querySong(song);
                 context.startActivityForResult(new Intent(getContext(), EditSongActivity.class)
                                 .putExtra(EditSongActivity.EXTRA_SONG, editSong = song),
                         REQUEST_EDIT_SONG);
                 return true;
             case R.id.bookmark:
-                dbOpenHelper.bookmarkSong(song);
+                dbHelper.bookmarkSong(song);
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
@@ -71,7 +71,7 @@ public class SongsListView extends ListView {
                         Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.mark_played:
-                dbOpenHelper.updateSongPlayed(song);
+                dbHelper.updateSongPlayed(song);
                 Toast.makeText(context, context.getString(
                         R.string.times_played, song.getTimesPlayed()),
                         Toast.LENGTH_SHORT).show();
@@ -101,7 +101,7 @@ public class SongsListView extends ListView {
 
                                 Log.d(TAG, contentResolver.delete(uri, null, null) +
                                         " songs deleted from MediaStore");
-                                dbOpenHelper.deleteSong(song);
+                                dbHelper.deleteSong(song);
                                 Toast.makeText(context, R.string.song_deleted,
                                         Toast.LENGTH_SHORT).show();
 
@@ -131,7 +131,7 @@ public class SongsListView extends ListView {
                     editSong.setTag(song.getTag());
                     editSong.setBookmarked(song.getBookmarked());
 
-                    dbOpenHelper.updateSong(song);
+                    dbHelper.updateSong(song);
                     Toast.makeText(context, R.string.song_updated, Toast.LENGTH_SHORT).show();
                     editSong = null;
 

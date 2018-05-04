@@ -18,7 +18,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
-import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
@@ -60,7 +60,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private final IBinder mainBinder = new MainBinder();
 
     private SharedPreferences preferences;
-    private DbOpenHelper dbOpenHelper;
+    private DbHelper dbHelper;
 
     private MediaPlayer player;
     private int volume;
@@ -88,7 +88,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         super.onCreate();
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        dbOpenHelper = new DbOpenHelper(this);
+        dbHelper = new DbHelper(this);
 
         player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
@@ -196,8 +196,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             unregisterReceiver(mainReceiver);
         }
 
-        if (dbOpenHelper != null) {
-            dbOpenHelper.close();
+        if (dbHelper != null) {
+            dbHelper.close();
         }
 
         PlaylistActivity.finishIfRunning();
@@ -248,7 +248,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player.getCurrentPosition() == 0) {
             Log.d(TAG, "Current position is 0");
         } else {
-            dbOpenHelper.updateSongPlayed(songs.get(songIndex));
+            dbHelper.updateSongPlayed(songs.get(songIndex));
             next();
         }
     }

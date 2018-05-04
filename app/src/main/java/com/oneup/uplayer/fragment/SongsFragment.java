@@ -21,7 +21,7 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
-import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.SongAdapter;
@@ -39,7 +39,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
     private static final String ARG_SELECTION_ARGS = "selection_args";
     private static final String ARG_ORDER_BY = "order_by";
 
-    private DbOpenHelper dbOpenHelper;
+    private DbHelper dbHelper;
     private ArrayList<Song> songs;
 
     private long artistId;
@@ -57,7 +57,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
         Log.d(TAG, "SongsFragment.onCreate()");
         super.onCreate(savedInstanceState);
 
-        dbOpenHelper = new DbOpenHelper(getActivity());
+        dbHelper = new DbHelper(getActivity());
         songs = new ArrayList<>();
 
         artistId = getArguments().getLong(ARG_ARTIST_ID);
@@ -66,7 +66,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
             selectionArgs = getArguments().getStringArray(ARG_SELECTION_ARGS);
         } else {
             selection = Song.ARTIST_ID + "=?";;
-            selectionArgs = DbOpenHelper.getWhereArgs(artistId);
+            selectionArgs = DbHelper.getWhereArgs(artistId);
         }
         orderBy = getArguments().getString(ARG_ORDER_BY);
     }
@@ -75,7 +75,7 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "SongsFragment.onCreateView()");
-        dbOpenHelper.querySongs(songs, selection, selectionArgs, orderBy);
+        dbHelper.querySongs(songs, selection, selectionArgs, orderBy);
         if (sortOrderReversed) {
             Collections.reverse(songs);
         }
@@ -144,8 +144,8 @@ public class SongsFragment extends Fragment implements AdapterView.OnItemClickLi
     @Override
     public void onDestroy() {
         Log.d(TAG, "SongsFragment.onDestroy()");
-        if (dbOpenHelper != null) {
-            dbOpenHelper.close();
+        if (dbHelper != null) {
+            dbHelper.close();
         }
 
         super.onDestroy();

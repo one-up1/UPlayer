@@ -5,7 +5,7 @@ import android.os.Parcelable;
 import android.provider.BaseColumns;
 
 public class Artist implements Parcelable,
-        BaseColumns, DbOpenHelper.ArtistColumns, DbOpenHelper.PlayedColumns {
+        BaseColumns, DbHelper.ArtistColumns, DbHelper.PlayedColumns {
     private long id;
     private String artist;
     private long lastSongAdded;

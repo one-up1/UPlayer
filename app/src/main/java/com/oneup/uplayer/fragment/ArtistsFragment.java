@@ -21,7 +21,7 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
-import com.oneup.uplayer.db.DbOpenHelper;
+import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
             "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " +
                     Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";*/
 
-    private DbOpenHelper dbOpenHelper;
+    private DbHelper dbHelper;
     private List<Artist> artists;
 
     private ListView listView;
@@ -51,7 +51,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
         Log.d(TAG, "ArtistsFragment.onCreate()");
         super.onCreate(savedInstanceState);
 
-        dbOpenHelper = new DbOpenHelper(getActivity());
+        dbHelper = new DbHelper(getActivity());
         artists = new ArrayList<>();
     }
 
@@ -59,7 +59,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "ArtistsFragment.onCreateView()");
-        dbOpenHelper.queryArtists(artists, getArguments().getString(ARG_ORDER_BY));
+        dbHelper.queryArtists(artists, getArguments().getString(ARG_ORDER_BY));
         if (sortOrderReversed) {
             Collections.reverse(artists);
         }
@@ -105,7 +105,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
                 item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.info:
-                dbOpenHelper.queryArtist(artist);
+                dbHelper.queryArtist(artist);
                 Util.showInfoDialog(getContext(), artist.getArtist(), R.string.info_message_artist,
                         artist.getLastPlayed() == 0 ?
                                 getString(R.string.never) :
@@ -117,15 +117,15 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
                                 Util.formatDateTimeAgo(artist.getLastSongAdded()));
                 //TODO: Artist info.
                 /*long playedDuration;
-                try (SQLiteDatabase db = dbOpenHelper.getReadableDatabase()) {
-                    playedDuration = DbOpenHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION,
+                try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+                    playedDuration = DbHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION,
                             new String[]{Integer.toString(artist.getId())});
 
                     Util.showInfoDialog(getContext(), artist.getArtist(), R.string.info_message_artist,
                             artist.getLastPlayed() == 0 ?
                                     getString(R.string.never) :
                                     Util.formatDateTimeAgo(artist.getLastPlayed()),
-                            DbOpenHelper.queryInt(db, "SELECT times_played FROM artists WHERE _id=" + artist.getId(), null),
+                            DbHelper.queryInt(db, "SELECT times_played FROM artists WHERE _id=" + artist.getId(), null),
                             Util.formatDuration(playedDuration),
                             artist.getDateModified() == 0 ?
                                     getString(R.string.na) :
@@ -148,8 +148,8 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
     @Override
     public void onDestroy() {
         Log.d(TAG, "ArtistsFragment.onDestroy()");
-        if (dbOpenHelper != null) {
-            dbOpenHelper.close();
+        if (dbHelper != null) {
+            dbHelper.close();
         }
 
         super.onDestroy();

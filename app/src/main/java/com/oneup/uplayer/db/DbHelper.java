@@ -294,6 +294,9 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void showStats(Context context, Artist artist) {
+        //TODO: Dont open/close the database in showStats()
+        queryArtist(artist);
+
         try (SQLiteDatabase db = getReadableDatabase()) {
             int artistCount;
             String[] artistIdWhereArgs;
@@ -335,11 +338,15 @@ public class DbHelper extends SQLiteOpenHelper {
                         Util.formatDuration(playedDuration / songsPlayed));
             } else {
                 Util.showInfoDialog(context, artist.getArtist(), R.string.statistics_message_artist,
+                        artist.getLastSongAdded() == 0 ?
+                                context.getString(R.string.na) :
+                                Util.formatDateTimeAgo(artist.getLastSongAdded()),
                         songCount, Util.formatDuration(songsDuration),
                         songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
                         songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),
                         songsTagged, Util.formatPercent((double) songsTagged / songCount),
                         songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
+                        Util.formatDateTimeAgo(artist.getLastPlayed()),
                         timesPlayed, Util.formatDuration(playedDuration),
                         Math.round((double) timesPlayed / songsPlayed),
                         Util.formatDuration(playedDuration / songsPlayed));

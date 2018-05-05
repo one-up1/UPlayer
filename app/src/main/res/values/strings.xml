@@ -40,15 +40,13 @@
     <string name="sync_completed_message">%1$d artists (%2$d ignored)\n%3$d inserted, %4$d updated, %5$d deleted\n\n%6$d songs (%7$d ignored)\n%8$d inserted, %9$d updated, %10$d deleted</string>
     <string name="backup">Backup&#8230;</string>
     <string name="backup_completed">Backup completed</string>
-    <string name="restore_backup">Restore backup</string>
     <string name="restore_backup_confirm">Restore backup?</string>
-    <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
 
     <string name="info">Info</string>
-    <string name="statistics_message_artist">Song count: %1$d (%2$s)\nSongs played: %3$d (%4$s)\nSongs unplayed: %5$d (%6$s)\nSongs tagged: %7$d (%8$s)\nSongs untagged: %9$d (%10$s)\nTimes played: %11$d (%12$s)\nAvg times played: %13$d (%14$s)</string>
-    <string name="never">Never</string>
+    <string name="statistics_message_artist">Last song added: %1$s\nSong count: %2$d (%3$s)\nSongs played: %4$d (%5$s)\nSongs unplayed: %6$d (%7$s)\nSongs tagged: %8$d (%9$s)\nSongs untagged: %10$d (%11$s)\nLast played: %12$s\nTimes played: %13$d (%14$s)\nAvg times played: %15$d (%16$s)</string>
     <string name="na">N/A</string>
+    <string name="never">Never</string>
 
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>

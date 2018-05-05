@@ -22,7 +22,6 @@ import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: When/how to reload data from database and recreate/reload fragments.
 //TODO: Extra and pref key naming.
-//TODO: Return ret;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";

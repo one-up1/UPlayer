@@ -188,10 +188,10 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            TextView ret = (TextView) super.getView(position, convertView, parent);
-            ret.setTextColor(artists.get(position).getTimesPlayed() == 0 ?
+            TextView view = (TextView) super.getView(position, convertView, parent);
+            view.setTextColor(artists.get(position).getTimesPlayed() == 0 ?
                     Color.BLUE : Color.BLACK);
-            return ret;
+            return view;
         }
     }
 }

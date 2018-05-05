@@ -209,12 +209,12 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, TABLE_SONGS, new String[]{Song.TAG},
                     Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
-                List<String> ret = new ArrayList<>();
+                List<String> tags = new ArrayList<>();
                 while (c.moveToNext()) {
-                    ret.add(c.getString(0));
+                    tags.add(c.getString(0));
                 }
-                Log.d(TAG, ret.size() + " song tags queried");
-                return ret;
+                Log.d(TAG, tags.size() + " song tags queried");
+                return tags;
             }
         }
     }
@@ -505,7 +505,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                         int ignoreColumn, List<String> ignoreValues,
                                         int refIdColumn, List<Long> refIds,
                                         String timeColumn, long time) {
-        SyncResult ret = new SyncResult();
+        SyncResult res = new SyncResult();
 
         try (Cursor c = context.getContentResolver().query(contentUri, columns, null, null, null)) {
             if (c == null) {
@@ -521,7 +521,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     if (ignoreValues.contains(ignoreColumnValue)) {
                         Log.d(TAG, table + "." + columns[ignoreColumn] + " value '" +
                                 ignoreColumnValue + "' ignored: " + id);
-                        ret.rowsIgnored++;
+                        res.rowsIgnored++;
                         continue;
                     }
                 }
@@ -532,7 +532,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     if (!refIds.contains(refId)) {
                         Log.d(TAG, table + "." + columns[refIdColumn] + " value " +
                                 refId + " ignored: " + id);
-                        ret.rowsIgnored++;
+                        res.rowsIgnored++;
                         continue;
                     }
                 }
@@ -550,12 +550,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     }
                     db.insert(table, null, values);
                     Log.d(TAG, table + " row inserted: " + id);
-                    ret.rowsInserted++;
+                    res.rowsInserted++;
                 } else {
                     Log.d(TAG, table + " row updated: " + id);
-                    ret.rowsUpdated++;
+                    res.rowsUpdated++;
                 }
-                ret.ids.add(id);
+                res.ids.add(id);
             }
         }
 
@@ -564,15 +564,15 @@ public class DbHelper extends SQLiteOpenHelper {
                 null, null, null, null, null)) {
             while (c.moveToNext()) {
                 long id = c.getLong(0);
-                if (!ret.ids.contains(id)) {
+                if (!res.ids.contains(id)) {
                     delete(db, table, id);
                     Log.d(TAG, table + " row deleted: " + id);
-                    ret.rowsDeleted++;
+                    res.rowsDeleted++;
                 }
             }
         }
 
-        return ret;
+        return res;
     }
 
     private static void putValuesFromCursor(Cursor c, ContentValues values,

@@ -46,25 +46,25 @@ public abstract class SongAdapter extends BaseAdapter {
     @SuppressLint("SetTextI18n")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View ret;
+        View view;
         if (convertView == null) {
-            ret = layoutInflater.inflate(R.layout.list_item_song, parent, false);
-            addButtons((RelativeLayout) ret.findViewById(R.id.rlButtons));
+            view = layoutInflater.inflate(R.layout.list_item_song, parent, false);
+            addButtons((RelativeLayout) view.findViewById(R.id.rlButtons));
         } else {
-            ret = convertView;
+            view = convertView;
         }
 
         Song song = objects.get(position);
 
-        TextView tvTitle = ret.findViewById(R.id.tvTitle);
+        TextView tvTitle = view.findViewById(R.id.tvTitle);
         tvTitle.setText(song.getTitle());
         tvTitle.setTextColor(song.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
 
-        TextView tvArtist = ret.findViewById(R.id.tvArtist);
+        TextView tvArtist = view.findViewById(R.id.tvArtist);
         tvArtist.setText(song.getArtist());
 
-        setButtons(ret, song);
-        return ret;
+        setButtons(view, song);
+        return view;
     }
 
     public abstract void addButtons(RelativeLayout rlButtons);

@@ -151,19 +151,19 @@ public class Song implements Parcelable,
 
         @Override
         public Object createFromParcel(Parcel in) {
-            Song ret = new Song();
-            ret.id = in.readLong();
-            ret.title = in.readString();
-            ret.artistId = in.readLong();
-            ret.artist = in.readString();
-            ret.duration = in.readLong();
-            ret.year = in.readInt();
-            ret.added = in.readLong();
-            ret.tag = in.readString();
-            ret.bookmarked = in.readLong();
-            ret.lastPlayed = in.readLong();
-            ret.timesPlayed = in.readInt();
-            return ret;
+            Song song = new Song();
+            song.id = in.readLong();
+            song.title = in.readString();
+            song.artistId = in.readLong();
+            song.artist = in.readString();
+            song.duration = in.readLong();
+            song.year = in.readInt();
+            song.added = in.readLong();
+            song.tag = in.readString();
+            song.bookmarked = in.readLong();
+            song.lastPlayed = in.readLong();
+            song.timesPlayed = in.readInt();
+            return song;
         }
 
         @Override

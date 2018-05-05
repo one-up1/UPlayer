@@ -39,10 +39,10 @@ public class QueryFragment extends Fragment implements
 
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
-    private static final String KEY_MIN_ADDED = "minAdded";
-    private static final String KEY_MAX_ADDED = "maxAdded";
     private static final String KEY_MIN_YEAR = "minYear";
     private static final String KEY_MAX_YEAR = "maxYear";
+    private static final String KEY_MIN_ADDED = "minAdded";
+    private static final String KEY_MAX_ADDED = "maxAdded";
     private static final String KEY_MIN_LAST_PLAYED = "minLastPlayed";
     private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
     private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
@@ -91,15 +91,15 @@ public class QueryFragment extends Fragment implements
         dbHelper = new DbHelper(getActivity());
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        View ret = inflater.inflate(R.layout.fragment_query, container, false);
+        View view = inflater.inflate(R.layout.fragment_query, container, false);
 
-        etTitle = ret.findViewById(R.id.etTitle);
+        etTitle = view.findViewById(R.id.etTitle);
         setEditTextString(etTitle, KEY_TITLE);
 
-        etArtist = ret.findViewById(R.id.etArtist);
+        etArtist = view.findViewById(R.id.etArtist);
         setEditTextString(etArtist, KEY_ARTIST);
 
-        bMinAdded = ret.findViewById(R.id.bMinAdded);
+        bMinAdded = view.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
         bMinAdded.setOnLongClickListener(this);
         if (minAdded == 0) {
@@ -109,7 +109,7 @@ public class QueryFragment extends Fragment implements
             bMinAdded.setText(Util.formatDateTime(minAdded));
         }
 
-        bMaxAdded = ret.findViewById(R.id.bMaxAdded);
+        bMaxAdded = view.findViewById(R.id.bMaxAdded);
         bMaxAdded.setOnClickListener(this);
         bMaxAdded.setOnLongClickListener(this);
         if (maxAdded == 0) {
@@ -119,13 +119,13 @@ public class QueryFragment extends Fragment implements
             bMaxAdded.setText(Util.formatDateTime(maxAdded));
         }
 
-        etMinYear = ret.findViewById(R.id.etMinYear);
+        etMinYear = view.findViewById(R.id.etMinYear);
         setEditTextString(etMinYear, KEY_MIN_YEAR);
 
-        etMaxYear = ret.findViewById(R.id.etMaxYear);
+        etMaxYear = view.findViewById(R.id.etMaxYear);
         setEditTextString(etMaxYear, KEY_MAX_YEAR);
 
-        bMinLastPlayed = ret.findViewById(R.id.bMinLastPlayed);
+        bMinLastPlayed = view.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         bMinLastPlayed.setOnLongClickListener(this);
         if (minLastPlayed == 0) {
@@ -135,7 +135,7 @@ public class QueryFragment extends Fragment implements
             bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
         }
 
-        bMaxLastPlayed = ret.findViewById(R.id.bMaxLastPlayed);
+        bMaxLastPlayed = view.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
         if (maxLastPlayed == 0) {
@@ -145,38 +145,38 @@ public class QueryFragment extends Fragment implements
             bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
         }
 
-        etMinTimesPlayed = ret.findViewById(R.id.etMinTimesPlayed);
+        etMinTimesPlayed = view.findViewById(R.id.etMinTimesPlayed);
         setEditTextString(etMinTimesPlayed, KEY_MIN_TIMES_PLAYED);
 
-        etMaxTimesPlayed = ret.findViewById(R.id.etMaxTimesPlayed);
+        etMaxTimesPlayed = view.findViewById(R.id.etMaxTimesPlayed);
         setEditTextString(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
 
-        sOrderBy = ret.findViewById(R.id.sOrderBy);
+        sOrderBy = view.findViewById(R.id.sOrderBy);
         setSpinnerSelection(sOrderBy, KEY_ORDER_BY);
 
-        cbOrderByDesc = ret.findViewById(R.id.cbOrderByDesc);
+        cbOrderByDesc = view.findViewById(R.id.cbOrderByDesc);
         setCheckBoxChecked(cbOrderByDesc, KEY_ORDER_BY_DESC);
 
-        bQuery = ret.findViewById(R.id.bQuery);
+        bQuery = view.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
 
-        bTags = ret.findViewById(R.id.bTags);
+        bTags = view.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
 
-        bStatistics = ret.findViewById(R.id.bStatistics);
+        bStatistics = view.findViewById(R.id.bStatistics);
         bStatistics.setOnClickListener(this);
 
-        bRestorePlaylist = ret.findViewById(R.id.bRestorePlaylist);
+        bRestorePlaylist = view.findViewById(R.id.bRestorePlaylist);
         bRestorePlaylist.setOnClickListener(this);
 
-        bSyncDatabase = ret.findViewById(R.id.bSyncDatabase);
+        bSyncDatabase = view.findViewById(R.id.bSyncDatabase);
         bSyncDatabase.setOnClickListener(this);
 
-        bBackup = ret.findViewById(R.id.bBackup);
+        bBackup = view.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
         bBackup.setOnLongClickListener(this);
 
-        return ret;
+        return view;
     }
 
     @Override

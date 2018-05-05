@@ -86,33 +86,33 @@ public class Util {
     }
 
     private static String formatDuration(long seconds, boolean showSeconds) {
-        String ret = "";
+        String s = "";
 
         // Process weeks.
         long weeks = TimeUnit.SECONDS.toDays(seconds) / 7;
         if (weeks > 0) {
-            ret += Long.toString(weeks) + "w ";
+            s += Long.toString(weeks) + "w ";
             seconds -= TimeUnit.DAYS.toSeconds(weeks * 7);
         }
 
         // Process days.
         long days = TimeUnit.SECONDS.toDays(seconds);
         if (days > 0) {
-            ret += Long.toString(days) + "d ";
+            s += Long.toString(days) + "d ";
             seconds -= TimeUnit.DAYS.toSeconds(days);
         }
 
         // Append HH:mm.
-        ret += TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toHours(seconds)) + ":" +
+        s += TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toHours(seconds)) + ":" +
                 TIME_NUMBER_FORMAT.format(TimeUnit.SECONDS.toMinutes(seconds) -
                         TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(seconds)));
 
         // Process seconds.
         if (showSeconds) {
-            ret += ":" + TIME_NUMBER_FORMAT.format(seconds -
+            s += ":" + TIME_NUMBER_FORMAT.format(seconds -
                     TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(seconds)));
         }
 
-        return ret;
+        return s;
     }
 }

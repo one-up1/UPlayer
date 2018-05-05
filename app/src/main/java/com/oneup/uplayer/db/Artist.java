@@ -75,13 +75,13 @@ public class Artist implements Parcelable,
 
         @Override
         public Object createFromParcel(Parcel in) {
-            Artist ret = new Artist();
-            ret.id = in.readLong();
-            ret.artist = in.readString();
-            ret.lastSongAdded = in.readLong();
-            ret.lastPlayed = in.readLong();
-            ret.timesPlayed = in.readInt();
-            return ret;
+            Artist artist = new Artist();
+            artist.id = in.readLong();
+            artist.artist = in.readString();
+            artist.lastSongAdded = in.readLong();
+            artist.lastPlayed = in.readLong();
+            artist.timesPlayed = in.readInt();
+            return artist;
         }
 
         @Override

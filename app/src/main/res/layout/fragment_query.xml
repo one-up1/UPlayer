@@ -90,7 +90,7 @@
         android:id="@+id/sOrderBy"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:entries="@array/db_order_by"
+        android:entries="@array/order_by"
         app:layout_columnWeight="1" />
 
     <CheckBox

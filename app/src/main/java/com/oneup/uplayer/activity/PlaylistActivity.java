@@ -152,16 +152,16 @@ public class PlaylistActivity extends AppCompatActivity implements AdapterView.O
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View ret = super.getView(position, convertView, parent);
+            View view = super.getView(position, convertView, parent);
 
             if (mainService != null && position == mainService.getSongIndex()) {
-                TextView tvSongTitle = ret.findViewById(R.id.tvTitle);
+                TextView tvSongTitle = view.findViewById(R.id.tvTitle);
                 SpannableString underlinedText = new SpannableString(tvSongTitle.getText());
                 underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
                 tvSongTitle.setText(underlinedText);
             }
 
-            return ret;
+            return view;
         }
 
         @Override

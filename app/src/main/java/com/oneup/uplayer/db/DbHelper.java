@@ -244,10 +244,6 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.bookmarkSong(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.execSQL(SQL_BOOKMARK_SONG, new Object[]{Calendar.currentTime(), song.getId()});
-
-            try (Cursor c = query(db, TABLE_SONGS, new String[]{Song.BOOKMARKED}, song.getId())) {
-                song.setBookmarked(c.getLong(0));
-            }
         }
     }
 
@@ -263,11 +259,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
-            }
-
-            song.setLastPlayed(time);
-            try (Cursor c = query(db, TABLE_SONGS, new String[]{Song.TIMES_PLAYED}, song.getId())) {
-                song.setTimesPlayed(c.getInt(0));
             }
         }
     }
@@ -578,7 +569,6 @@ public class DbHelper extends SQLiteOpenHelper {
             }
         }
 
-        // Delete rows from database.
         try (Cursor c = db.query(table, new String[]{BaseColumns._ID},
                 null, null, null, null, null)) {
             while (c.moveToNext()) {

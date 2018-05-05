@@ -62,15 +62,18 @@ public class SongsListView extends ListView {
                 return true;
             case R.id.bookmark:
                 dbHelper.bookmarkSong(song);
+                dbHelper.querySong(song);
+                Toast.makeText(context, song.getBookmarked() > 0 ?
+                                R.string.bookmark_set : R.string.bookmark_deleted,
+                        Toast.LENGTH_SHORT).show();
+
                 if (onDataSetChangedListener != null) {
                     onDataSetChangedListener.onDataSetChanged();
                 }
-                Toast.makeText(context, song.getBookmarked() > 0 ?
-                        R.string.bookmark_set : R.string.bookmark_deleted,
-                        Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.mark_played:
                 dbHelper.updateSongPlayed(song);
+                dbHelper.querySong(song);
                 Toast.makeText(context, context.getString(
                         R.string.times_played, song.getTimesPlayed()),
                         Toast.LENGTH_SHORT).show();

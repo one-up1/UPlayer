@@ -49,7 +49,6 @@ public class SongsListView extends ListView {
                 ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.view_artist:
-                //TODO: viewArtistOrderBy correct from query, bookmarks and playlist?
                 context.startActivity(new Intent(getContext(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(
                                 song.getArtistId(),

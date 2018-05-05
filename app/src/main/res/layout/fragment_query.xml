@@ -26,20 +26,6 @@
         app:layout_columnSpan="2"
         app:layout_columnWeight="1" />
 
-    <Button
-        android:id="@+id/bMinAdded"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/min_added"
-        app:layout_columnWeight="1" />
-
-    <Button
-        android:id="@+id/bMaxAdded"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/max_added"
-        app:layout_columnWeight="1" />
-
     <com.oneup.uplayer.widget.EditText
         android:id="@+id/etMinYear"
         android:layout_width="0dp"
@@ -54,6 +40,20 @@
         android:layout_height="wrap_content"
         android:hint="@string/max_year"
         android:inputType="number"
+        app:layout_columnWeight="1" />
+
+    <Button
+        android:id="@+id/bMinAdded"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/min_added"
+        app:layout_columnWeight="1" />
+
+    <Button
+        android:id="@+id/bMaxAdded"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/max_added"
         app:layout_columnWeight="1" />
 
     <Button
@@ -87,14 +87,14 @@
         app:layout_columnWeight="1" />
 
     <Spinner
-        android:id="@+id/sDbOrderBy"
+        android:id="@+id/sOrderBy"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:entries="@array/db_order_by"
         app:layout_columnWeight="1" />
 
     <CheckBox
-        android:id="@+id/cbDbOrderByDesc"
+        android:id="@+id/cbOrderByDesc"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/desc"

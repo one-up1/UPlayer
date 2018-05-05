@@ -10,7 +10,6 @@ import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.LongSparseArray;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
@@ -424,7 +423,9 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    private static void updateBackup(JSONObject backup) throws JSONException {
+    /*private static void updateBackup(JSONObject backup) throws JSONException {
+        Log.d(TAG, "updateBackup()");
+
         JSONArray artists = backup.getJSONArray(TABLE_ARTISTS);
         LongSparseArray<String> artistNames = new LongSparseArray<>();
         for (int i = 0; i < artists.length(); i++) {
@@ -453,7 +454,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 song.remove(Song.DATE_ADDED);
             }
         }
-    }
+    }*/
 
     private static SyncResult syncTable(Context context, Uri contentUri,
                                         SQLiteDatabase db, String table, String[] columns,

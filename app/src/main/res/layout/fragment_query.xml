@@ -27,17 +27,17 @@
         app:layout_columnWeight="1" />
 
     <Button
-        android:id="@+id/bMinDateAdded"
+        android:id="@+id/bMinAdded"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/min_date_added"
+        android:text="@string/min_added"
         app:layout_columnWeight="1" />
 
     <Button
-        android:id="@+id/bMaxDateAdded"
+        android:id="@+id/bMaxAdded"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/max_date_added"
+        android:text="@string/max_added"
         app:layout_columnWeight="1" />
 
     <com.oneup.uplayer.widget.EditText

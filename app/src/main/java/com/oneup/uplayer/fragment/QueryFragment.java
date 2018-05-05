@@ -1,5 +1,7 @@
 package com.oneup.uplayer.fragment;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -14,47 +17,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.Spinner;
 
+import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
+import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
-import java.io.File;
+import java.util.Set;
 
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
-
-    /*private static final String SQL_QUERY_SONG_COUNT =
-            "SELECT COUNT(*) FROM " + Song.TABLE_NAME;
-
-    private static final String SQL_QUERY_ARTIST_COUNT =
-            "SELECT COUNT(*) FROM " + Artist.TABLE_NAME;
-
-    private static final String SQL_QUERY_SONGS_DURATION =
-            "SELECT SUM(" + Song.DURATION + ") FROM " + Song.TABLE_NAME;
-
-    private static final String SQL_QUERY_SONGS_PLAYED =
-            "SELECT COUNT(*) FROM " + Song.TABLE_NAME + " WHERE " + Song.TIMES_PLAYED + ">0";
-
-    private static final String SQL_QUERY_SONGS_UNPLAYED =
-            "SELECT COUNT(*) FROM " + Song.TABLE_NAME + " WHERE " + Song.TIMES_PLAYED + "=0";
-
-    private static final String SQL_QUERY_SONGS_TAGGED =
-            "SELECT COUNT(*) FROM " + Song.TABLE_NAME + " WHERE " + Song.TAG + " IS NOT NULL";
-
-    private static final String SQL_QUERY_SONGS_UNTAGGED =
-            "SELECT COUNT(*) FROM " + Song.TABLE_NAME + " WHERE " + Song.TAG + " IS NULL";
-
-    private static final String SQL_QUERY_TIMES_PLAYED =
-            "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME;
-
-    private static final String SQL_QUERY_PLAYED_DURATION =
-            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + Song.TABLE_NAME*/
 
     private static final String KEY_TITLE = "title";
     private static final String KEY_ARTIST = "artist";
@@ -75,19 +55,15 @@ public class QueryFragment extends Fragment implements
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
 
-    private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
-
-    private SparseArray<Artist> artists;
-
     private DbHelper dbHelper;
     private SharedPreferences preferences;
 
     private EditText etTitle;
     private EditText etArtist;
-    private Button bMinDateAdded;
-    private Button bMaxDateAdded;
     private EditText etMinYear;
     private EditText etMaxYear;
+    private Button bMinAdded;
+    private Button bMaxAdded;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
     private EditText etMinTimesPlayed;
@@ -122,24 +98,24 @@ public class QueryFragment extends Fragment implements
         etArtist = ret.findViewById(R.id.etArtist);
         setEditTextString(etArtist, KEY_ARTIST);
 
-        bMinDateAdded = ret.findViewById(R.id.bMinDateAdded);
-        bMinDateAdded.setOnClickListener(this);
-        bMinDateAdded.setOnLongClickListener(this);
+        bMinAdded = ret.findViewById(R.id.bMinAdded);
+        bMinAdded.setOnClickListener(this);
+        bMinAdded.setOnLongClickListener(this);
         if (minDateAdded == 0) {
             minDateAdded = preferences.getLong(KEY_MIN_DATE_ADDED, 0);
         }
         if (minDateAdded > 0) {
-            bMinDateAdded.setText(Util.formatDateTime(minDateAdded));
+            bMinAdded.setText(Util.formatDateTime(minDateAdded));
         }
 
-        bMaxDateAdded = ret.findViewById(R.id.bMaxDateAdded);
-        bMaxDateAdded.setOnClickListener(this);
-        bMaxDateAdded.setOnLongClickListener(this);
+        bMaxAdded = ret.findViewById(R.id.bMaxAdded);
+        bMaxAdded.setOnClickListener(this);
+        bMaxAdded.setOnLongClickListener(this);
         if (maxDateAdded == 0) {
             maxDateAdded = preferences.getLong(KEY_MAX_DATE_ADDED, 0);
         }
         if (maxDateAdded > 0) {
-            bMaxDateAdded.setText(Util.formatDateTime(maxDateAdded));
+            bMaxAdded.setText(Util.formatDateTime(maxDateAdded));
         }
 
         etMinYear = ret.findViewById(R.id.etMinYear);
@@ -209,11 +185,11 @@ public class QueryFragment extends Fragment implements
             switch (requestCode) {
                 case REQUEST_SELECT_MIN_DATE_ADDED:
                     minDateAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMinDateAdded.setText(Util.formatDateTime(minDateAdded));
+                    bMinAdded.setText(Util.formatDateTime(minDateAdded));
                     break;
                 case REQUEST_SELECT_MAX_DATE_ADDED:
                     maxDateAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMaxDateAdded.setText(Util.formatDateTime(maxDateAdded));
+                    bMaxAdded.setText(Util.formatDateTime(maxDateAdded));
                     break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
                     minLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
@@ -239,14 +215,14 @@ public class QueryFragment extends Fragment implements
 
     @Override
     public void onClick(View v) {
-        /*if (v == bMinDateAdded) {
+        if (v == bMinAdded) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_date_added);
             if (minDateAdded > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, minDateAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_DATE_ADDED);
-        } else if (v == bMaxDateAdded) {
+        } else if (v == bMaxAdded) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.max_date_added);
             if (maxDateAdded > 0) {
@@ -326,20 +302,6 @@ public class QueryFragment extends Fragment implements
             });
             tagsDialog.show();
         } else if (v == bStatistics) {
-            int artistCount, songCount,
-                    songsPlayed, songsUnplayed, songsTagged, songsUntagged, timesPlayed;
-            long songsDuration, playedDuration;
-            try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
-                artistCount = DbHelper.queryInt(db, SQL_QUERY_ARTIST_COUNT, null);
-                songCount = DbHelper.queryInt(db, SQL_QUERY_SONG_COUNT, null);
-                songsDuration = DbHelper.queryLong(db, SQL_QUERY_SONGS_DURATION, null);
-                songsPlayed = DbHelper.queryInt(db, SQL_QUERY_SONGS_PLAYED, null);
-                songsUnplayed = DbHelper.queryInt(db, SQL_QUERY_SONGS_UNPLAYED, null);
-                songsTagged = DbHelper.queryInt(db, SQL_QUERY_SONGS_TAGGED, null);
-                songsUntagged = DbHelper.queryInt(db, SQL_QUERY_SONGS_UNTAGGED, null);
-                timesPlayed = DbHelper.queryInt(db, SQL_QUERY_TIMES_PLAYED, null);
-                playedDuration = DbHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION, null);
-            }
             Util.showInfoDialog(getContext(), R.string.statistics, R.string.statistics_message,
                     songCount, Util.formatDuration(songsDuration),
                     artistCount, Math.round((double) songCount / artistCount),
@@ -353,7 +315,7 @@ public class QueryFragment extends Fragment implements
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
-        } else*/ if (v == bSyncDatabase) {
+        } else if (v == bSyncDatabase) {
             Log.d(TAG, "Syncing database");
             try {
                 dbHelper.syncWithMediaStore(getContext());
@@ -370,7 +332,7 @@ public class QueryFragment extends Fragment implements
                 Log.e(TAG, "Error running backup", ex);
                 Util.showErrorDialog(getContext(), ex);
             }
-        } /*else if (v == bRestoreBackup) {
+        } else if (v == bRestoreBackup) {
             new AlertDialog.Builder(getContext())
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setTitle(R.string.app_name)
@@ -420,18 +382,18 @@ public class QueryFragment extends Fragment implements
                     })
                     .setNegativeButton(R.string.no, null)
                     .show();
-        }*/
+        }
     }
 
     @Override
     public boolean onLongClick(View v) {
-        if (v == bMinDateAdded) {
+        if (v == bMinAdded) {
             minDateAdded = 0;
-            bMinDateAdded.setText(R.string.min_date_added);
+            bMinAdded.setText(R.string.min_date_added);
             return true;
-        } else if (v == bMaxDateAdded) {
+        } else if (v == bMaxAdded) {
             maxDateAdded = 0;
-            bMaxDateAdded.setText(R.string.max_date_added);
+            bMaxAdded.setText(R.string.max_date_added);
             return true;
         } else if (v == bMinLastPlayed) {
             minLastPlayed = 0;
@@ -471,7 +433,7 @@ public class QueryFragment extends Fragment implements
         }
     }
 
-    /*private void query(Set<String> tags) {
+    private void query(Set<String> tags) {
         SharedPreferences.Editor preferences = this.preferences.edit();
 
         String selection = null, dbOrderBy = null;
@@ -749,7 +711,7 @@ public class QueryFragment extends Fragment implements
                 dbHelper.insertOrUpdateSong(song);
             }
         }
-    }*/
+    }
 
     public static QueryFragment newInstance() {
         return new QueryFragment();

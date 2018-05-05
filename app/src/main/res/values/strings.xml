@@ -11,8 +11,8 @@
 
     <string name="title">Title&#8230;</string>
     <string name="artist">Artist&#8230;</string>
-    <string name="min_date_added">Min date added&#8230;</string>
-    <string name="max_date_added">Max date added&#8230;</string>
+    <string name="min_added">Min added&#8230;</string>
+    <string name="max_added">Max added&#8230;</string>
     <string name="min_year">Min year&#8230;</string>
     <string name="max_year">Max year&#8230;</string>
     <string name="min_last_played">Min last played&#8230;</string>

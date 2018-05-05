@@ -34,11 +34,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         Log.d(TAG, "MainActivity.onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);*/
-
-        //new com.oneup.uplayer.db.DbHelper(this).t();
     }
 
     @Override

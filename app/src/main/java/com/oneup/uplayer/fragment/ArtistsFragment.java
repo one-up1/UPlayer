@@ -104,6 +104,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
             case R.id.info:
                 dbHelper.queryArtist(artist);
                 Stats stats = dbHelper.queryStats(artist);
+                //TODO: Avg prc per artist of total songs.
                 Util.showInfoDialog(getContext(), artist.getArtist(), R.string.artist_message,
                         artist.getLastSongAdded() == 0 ? getString(R.string.na) :
                                 Util.formatDateTimeAgo(artist.getLastSongAdded()),

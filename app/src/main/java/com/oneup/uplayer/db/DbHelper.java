@@ -285,6 +285,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public Stats queryStats(Artist artist) {
+        Log.d(TAG, "DbOpenHelper.queryStats(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             Stats stats = new Stats();
             
@@ -373,46 +374,82 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void backup() throws JSONException, IOException {
-        JSONObject backup = new JSONObject();
+        JSONArray songs = new JSONArray();
 
-        // Put database tables in JSONObject.
+        // Put songs table in JSONArray.
         try (SQLiteDatabase db = getReadableDatabase()) {
-            backupTable(backup, db, TABLE_ARTISTS, new String[]{Artist.ARTIST,
-                    Artist.LAST_SONG_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED});
-
-            backupTable(backup, db, TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
-                    Song.ADDED, Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
+            try (Cursor c = db.query(TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
+                    Song.ADDED, Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED},
+                    null, null, null, null, null)) {
+                while (c.moveToNext()) {
+                    JSONObject song = new JSONObject();
+                    putValueFromCursor(c, 0, song, Song.TITLE);
+                    putValueFromCursor(c, 1, song, Song.ARTIST);
+                    putValueFromCursor(c, 2, song, Song.YEAR);
+                    putValueFromCursor(c, 3, song, Song.ADDED);
+                    putValueFromCursor(c, 4, song, Song.TAG);
+                    putValueFromCursor(c, 5, song, Song.BOOKMARKED);
+                    putValueFromCursor(c, 6, song, Song.LAST_PLAYED);
+                    putValueFromCursor(c, 6, song, Song.TIMES_PLAYED);
+                    songs.put(song);
+                }
+            }
         }
 
-        // Write JSONObject to file.
+        // Write JSONArray to file.
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(BACKUP_FILE, false)))) {
-            writer.write(backup.toString());
+            writer.write(songs.toString());
         }
+
+        Log.d(TAG, songs.length() + " songs backed up");
     }
 
     public void restoreBackup() throws IOException, JSONException {
-        // Read JSONObject from file.
-        JSONObject backup;
+        // Read JSONArray from file.
+        JSONArray songs;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new FileInputStream(BACKUP_FILE)))) {
-            backup = new JSONObject(reader.readLine());
+            songs = new JSONArray(reader.readLine());
         }
-        //updateBackup(backup);
 
-        // Update database tables from JSONObject.
+        // Update songs table from JSONArray.
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                restoreTableBackup(backup, db, TABLE_ARTISTS, new String[]{Artist.LAST_SONG_ADDED,
-                                Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
-                        Artist.ARTIST + " LIKE ?",
-                        new String[]{Artist.ARTIST});
+                for (int index = 0; index < songs.length(); index++) {
+                    // Put values to update from JSONObject.
+                    JSONObject song = songs.getJSONObject(index);
+                    ContentValues values = new ContentValues();
+                    putValueFromJSONObject(song, values, Song.YEAR);
+                    putValueFromJSONObject(song, values, Song.ADDED);
+                    putValueFromJSONObject(song, values, Song.TAG);
+                    putValueFromJSONObject(song, values, Song.BOOKMARKED);
+                    putValueFromJSONObject(song, values, Song.LAST_PLAYED);
+                    putValueFromJSONObject(song, values, Song.TIMES_PLAYED);
 
-                restoreTableBackup(backup, db, TABLE_SONGS, new String[]{Song.YEAR, Song.ADDED,
-                                Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED},
-                        Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?",
-                        new String[]{Song.TITLE, Song.ARTIST});
+                    // Update row and make sure 1 row is updated.
+                    switch (db.update(TABLE_SONGS, values,
+                            Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?", new String[]{
+                            song.getString(Song.TITLE), song.getString(Song.ARTIST)})) {
+                        case 0:
+                            throw new RuntimeException("Song not found: '" +
+                                    song.getString(Song.ARTIST) + "' - '" +
+                                    song.getString(Song.TITLE) + "'");
+                        case 1:
+                            Log.d(TAG, "Song updated: '" +
+                                    song.getString(Song.ARTIST) + "' - '" +
+                                    song.getString(Song.TITLE) + "'");
+                            break;
+                        default:
+                            throw new RuntimeException("Duplicate song: '" +
+                                    song.getString(Song.ARTIST) + "' - '" +
+                                    song.getString(Song.TITLE) + "'");
+                    }
+                }
+
+                db.execSQL(SQL_UPDATE_ARTISTS_STATS);
+                Log.d(TAG, songs.length() + " songs restored");
 
                 db.setTransactionSuccessful();
             } finally {
@@ -421,93 +458,9 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    /*public void t() {
-        Log.d(TAG, "DbOpenHelper.t()");
-        List<Song> updateSongs = new ArrayList<>();
-        Song prevSong = null;
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE, Song.ADDED},
-                    Song.ADDED + " IS NOT NULL", null, null, null, Song.ADDED)) {
-                while (c.moveToNext()) {
-                    Song song = new Song();
-                    song.setId(c.getLong(0));
-                    song.setTitle(c.getString(1));
-                    song.setAdded(c.getLong(2));
-
-                    if (prevSong == null) {
-                        prevSong = song;
-                    } else if (song.getAdded() != prevSong.getAdded()) {
-                        long diff = song.getAdded() - prevSong.getAdded();
-                        if (diff > TimeUnit.HOURS.toSeconds(1)) {
-                            prevSong = song;
-                        } else {
-                            Log.d(TAG, "Setting " + song + ":" +
-                                    Util.formatDateTime(song.getAdded()) + " to " +
-                                    prevSong + ":" + Util.formatDateTime(prevSong.getAdded()) +
-                                    " (diff=" + diff + ")");
-                            song.setAdded(prevSong.getAdded());
-                            updateSongs.add(song);
-                        }
-                    }
-                }
-            }
-
-            Log.d(TAG, "Updating " + updateSongs.size() + " songs");
-            for (Song updateSong : updateSongs) {
-                ContentValues values = new ContentValues();
-                values.put(Song.ADDED, updateSong.getAdded());
-                update(db, TABLE_SONGS, values, updateSong.getId());
-            }
-
-            db.execSQL(SQL_UPDATE_ARTISTS_STATS);
-            Log.d(TAG, "Artist stats updated");
-        }
-    }*/
-
     public static String[] getWhereArgs(long id) {
         return new String[]{Long.toString(id)};
     }
-
-    private static void putValue(ContentValues values, String key, long value) {
-        if (value == 0) {
-            values.putNull(key);
-        } else {
-            values.put(key, value);
-        }
-    }
-
-    /*private static void updateBackup(JSONObject backup) throws JSONException {
-        Log.d(TAG, "updateBackup()");
-
-        JSONArray artists = backup.getJSONArray(TABLE_ARTISTS);
-        LongSparseArray<String> artistNames = new LongSparseArray<>();
-        for (int i = 0; i < artists.length(); i++) {
-            JSONObject artist = artists.getJSONObject(i);
-            artistNames.put(artist.getLong(Artist._ID), artist.getString(Artist.ARTIST));
-
-            if (artist.has("date_modified")) {
-                artist.put(Artist.LAST_SONG_ADDED, artist.getLong("date_modified"));
-                artist.remove("date_modified");
-            }
-        }
-
-        JSONArray songs = backup.getJSONArray(TABLE_SONGS);
-        for (int i = 0; i < songs.length(); i++) {
-            JSONObject song = songs.getJSONObject(i);
-
-            String artist = artistNames.get(song.getLong(Song.ARTIST_ID));
-            if (artist == null) {
-                throw new JSONException("Artist not found");
-            }
-            song.put(Song.ARTIST, artist);
-            song.remove(Song.ARTIST_ID);
-
-            if (song.has(Song.DATE_ADDED)) {
-                song.put(Song.ADDED, song.getLong(Song.DATE_ADDED));
-                song.remove(Song.DATE_ADDED);
-            }
-        }
-    }*/
 
     private static SyncResult syncTable(Context context, Uri contentUri,
                                         SQLiteDatabase db, String table, String[] columns,
@@ -549,12 +502,12 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 // Put update column values.
                 ContentValues values = new ContentValues();
-                putValuesFromCursor(c, values, columns, updateColumns);
+                putValuesFromCursor(c, columns, values, updateColumns);
 
                 // Update or insert row if it doesn't exist.
                 if (update(db, table, values, id) == 0) {
                     values.put(BaseColumns._ID, id);
-                    putValuesFromCursor(c, values, columns, insertColumns);
+                    putValuesFromCursor(c, columns, values, insertColumns);
                     if (timeColumn != null) {
                         values.put(timeColumn, time);
                     }
@@ -584,108 +537,22 @@ public class DbHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    private static void putValuesFromCursor(Cursor c, ContentValues values,
-                                            String[] columns, int[] putColumns) {
-        // Put all columns when putColumns is null or only the specified column indices.
-        for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
-            int column = putColumns == null ? i : putColumns[i];
-            switch (c.getType(column)) {
-                case Cursor.FIELD_TYPE_NULL:
-                    values.putNull(columns[column]);
-                    break;
-                case Cursor.FIELD_TYPE_INTEGER:
-                    values.put(columns[column], c.getLong(column));
-                    break;
-                case Cursor.FIELD_TYPE_STRING:
-                    values.put(columns[column], c.getString(column));
-                    break;
-                default:
-                    throw new RuntimeException("Invalid type");
-            }
-        }
+    private static void updateArtistStats(SQLiteDatabase db, Song song) {
+        Log.d(TAG, "DbHelper.updateArtistStats(" + song + ")");
+        db.execSQL(SQL_UPDATE_ARTIST_STATS, new Object[]{song.getArtistId()});
     }
 
-    private static void backupTable(JSONObject backup, SQLiteDatabase db,
-                                    String table, String[] columns)
-            throws JSONException {
-        try (Cursor c = db.query(table, columns, null, null, null, null, null)) {
-            JSONArray rows = new JSONArray();
-            while (c.moveToNext()) {
-                JSONObject row = new JSONObject();
-                for (int i = 0; i < columns.length; i++) {
-                    switch (c.getType(i)) {
-                        case Cursor.FIELD_TYPE_NULL:
-                            // Null values are not stored in JSON.
-                            break;
-                        case Cursor.FIELD_TYPE_INTEGER:
-                            row.put(columns[i], c.getLong(i));
-                            break;
-                        case Cursor.FIELD_TYPE_STRING:
-                            row.put(columns[i], c.getString(i));
-                            break;
-                        default:
-                            throw new RuntimeException("Invalid type");
-                    }
-                }
-                rows.put(row);
-            }
-            backup.put(table, rows);
-            Log.d(TAG, rows.length() + " rows backed up from table " + table);
-        }
+    private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
+        db.execSQL("UPDATE " + table + " SET " +
+                        PlayedColumns.LAST_PLAYED + "=?," +
+                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1 " +
+                        "WHERE " + SQL_ID_IS,
+                new Object[]{time, id});
     }
 
-    private static void restoreTableBackup(JSONObject backup, SQLiteDatabase db,
-                                           String table, String[] columns,
-                                           String whereClause, String[] whereArgColumns)
-            throws JSONException {
-        JSONArray rows = backup.getJSONArray(table);
-        for (int index = 0; index < rows.length(); index++) {
-            // Put values to update from JSONObject.
-            JSONObject row = rows.getJSONObject(index);
-            ContentValues values = new ContentValues();
-            for (String column : columns) {
-                if (row.has(column)) {
-                    Object value = row.get(column);
-                    if (value instanceof Integer) {
-                        values.put(column, (Integer) value);
-                    } else if (value instanceof Long) {
-                        values.put(column, (Long) value);
-                    } else if (value instanceof String) {
-                        values.put(column, (String) value);
-                    } else {
-                        throw new RuntimeException("Invalid type");
-                    }
-                } else {
-                    values.putNull(column);
-                }
-            }
-
-            // Get whereArgs from JSONObject based on whereArgColumns.
-            String[] whereArgs = new String[whereArgColumns.length];
-            for (int i = 0; i < whereArgs.length; i++) {
-                if (row.has(whereArgColumns[i])) {
-                    whereArgs[i] = row.get(whereArgColumns[i]).toString();
-                } else {
-                    throw new RuntimeException("NULL value for where argument column " +
-                            table + "." + whereArgColumns[i]);
-                }
-            }
-
-            // Update row and make sure 1 row is updated.
-            switch (db.update(table, values, whereClause, whereArgs)) {
-                case 0:
-                    throw new RuntimeException(table + " row not found: '" +
-                            TextUtils.join(",", whereArgs) + "'");
-                case 1:
-                    Log.d(TAG, table + " row updated: '" +
-                            TextUtils.join(",", whereArgs) + "'");
-                    break;
-                default:
-                    throw new RuntimeException(table + " row has duplicate value: '" +
-                            TextUtils.join(",", whereArgs) + "'");
-            }
-        }
-        Log.d(TAG, rows.length() + " rows restored to table " + table);
+    private static String addArtistIdWhereClause(String sql, Artist artist, boolean and) {
+        return artist == null ? sql : sql + " " +
+                (and ? "AND" : "WHERE") + " " + Song.ARTIST_ID + "=?";
     }
 
     private static Cursor query(SQLiteDatabase db, String table, String[] columns, long id) {
@@ -714,22 +581,67 @@ public class DbHelper extends SQLiteOpenHelper {
         return db.delete(table, SQL_ID_IS, getWhereArgs(id));
     }
 
-    private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
-        db.execSQL("UPDATE " + table + " SET " +
-                PlayedColumns.LAST_PLAYED + "=?," +
-                PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1 " +
-                        "WHERE " + SQL_ID_IS,
-                new Object[]{time, id});
+    private static void putValue(ContentValues values, String key, long value) {
+        if (value == 0) {
+            values.putNull(key);
+        } else {
+            values.put(key, value);
+        }
     }
 
-    private static void updateArtistStats(SQLiteDatabase db, Song song) {
-        Log.d(TAG, "DbHelper.updateArtistStats(" + song + ")");
-        db.execSQL(SQL_UPDATE_ARTIST_STATS, new Object[]{song.getArtistId()});
+    private static void putValuesFromCursor(Cursor c, String[] columns,
+                                            ContentValues values, int[] putColumns) {
+        // Put all columns when putColumns is null or only the specified column indices.
+        for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
+            int column = putColumns == null ? i : putColumns[i];
+            switch (c.getType(column)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    values.putNull(columns[column]);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    values.put(columns[column], c.getLong(column));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    values.put(columns[column], c.getString(column));
+                    break;
+                default:
+                    throw new RuntimeException("Invalid type");
+            }
+        }
     }
 
-    private static String addArtistIdWhereClause(String sql, Artist artist, boolean and) {
-        return artist == null ? sql : sql + " " +
-                (and ? "AND" : "WHERE") + " " + Song.ARTIST_ID + "=?";
+    private static void putValueFromCursor(Cursor c, int column, JSONObject obj, String key)
+            throws JSONException {
+        switch (c.getType(column)) {
+            case Cursor.FIELD_TYPE_NULL:
+                break;
+            case Cursor.FIELD_TYPE_INTEGER:
+                obj.put(key, c.getLong(column));
+                break;
+            case Cursor.FIELD_TYPE_STRING:
+                obj.put(key, c.getString(column));
+                break;
+            default:
+                throw new RuntimeException("Invalid type");
+        }
+    }
+
+    private static void putValueFromJSONObject(JSONObject obj, ContentValues values, String key)
+            throws JSONException {
+        if (obj.has(key)) {
+            Object value = obj.get(key);
+            if (value instanceof Integer) {
+                values.put(key, (Integer) value);
+            } else if (value instanceof Long) {
+                values.put(key, (Long) value);
+            } else if (value instanceof String) {
+                values.put(key, (String) value);
+            } else {
+                throw new RuntimeException("Invalid type");
+            }
+        } else {
+            values.putNull(key);
+        }
     }
 
     interface ArtistColumns extends MediaStore.Audio.ArtistColumns {

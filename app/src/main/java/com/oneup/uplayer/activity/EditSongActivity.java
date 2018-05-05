@@ -154,9 +154,19 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View v) {
         if (v == bAdded) {
-            selectTime(REQUEST_SELECT_ADDED, R.string.added, song.getAdded());
+            Intent intent = new Intent(this, DateTimeActivity.class);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.added);
+            if (song.getAdded() > 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getAdded());
+            }
+            startActivityForResult(intent, REQUEST_SELECT_ADDED);
         } else if (v == bBookmarked) {
-            selectTime(REQUEST_SELECT_BOOKMARKED, R.string.bookmarked, song.getBookmarked());
+            Intent intent = new Intent(this, DateTimeActivity.class);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.bookmarked);
+            if (song.getBookmarked() > 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getBookmarked());
+            }
+            startActivityForResult(intent, REQUEST_SELECT_BOOKMARKED);
         }
     }
 
@@ -188,15 +198,5 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-    }
-
-    //TODO: Implement selectTime() in QueryFragment as well. Method for getting/clearing value?
-    private void selectTime(int requestCode, int titleId, long time) {
-        Intent intent = new Intent(this, DateTimeActivity.class);
-        intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, titleId);
-        if (time > 0) {
-            intent.putExtra(DateTimeActivity.EXTRA_TIME, time);
-        }
-        startActivityForResult(intent, requestCode);
     }
 }

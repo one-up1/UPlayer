@@ -27,6 +27,7 @@ import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.db.Stats;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
@@ -302,7 +303,22 @@ public class QueryFragment extends Fragment implements
             });
             tagsDialog.show();
         } else if (v == bStatistics) {
-            dbHelper.showStats(getContext(), null);
+            Stats stats = dbHelper.queryStats(null);
+            Util.showInfoDialog(getContext(), R.string.statistics, R.string.statistics_message,
+                    stats.getSongCount(), Util.formatDuration(stats.getSongsDuration()),
+                    stats.getArtistCount(), Math.round(
+                            (double) stats.getSongCount() / stats.getArtistCount()),
+                    stats.getSongsPlayed(), Util.formatPercent(
+                            (double) stats.getSongsPlayed() / stats.getSongCount()),
+                    stats.getSongsUnplayed(), Util.formatPercent(
+                            (double) stats.getSongsUnplayed() / stats.getSongCount()),
+                    stats.getSongsTagged(), Util.formatPercent(
+                            (double) stats.getSongsTagged() / stats.getSongCount()),
+                    stats.getSongsUntagged(), Util.formatPercent(
+                            (double) stats.getSongsUntagged() / stats.getSongCount()),
+                    stats.getTimesPlayed(), Util.formatDuration(stats.getPlayedDuration()),
+                    Math.round((double) stats.getTimesPlayed() / stats.getSongsPlayed()),
+                    Util.formatDuration(stats.getPlayedDuration() / stats.getSongsPlayed()));
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getContext(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));

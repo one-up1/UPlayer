@@ -293,64 +293,38 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void showStats(Context context, Artist artist) {
-        //TODO: Dont open/close the database in showStats()
-        queryArtist(artist);
-
+    public Stats queryStats(Artist artist) {
         try (SQLiteDatabase db = getReadableDatabase()) {
-            int artistCount;
+            Stats stats = new Stats();
+            
             String[] artistIdWhereArgs;
             if (artist == null) {
-                artistCount = queryInt(db, SQL_QUERY_ARTIST_COUNT, null);
+                stats.setArtistCount(queryInt(db, SQL_QUERY_ARTIST_COUNT, null));
                 artistIdWhereArgs = null;
             } else {
-                artistCount = 0;
                 artistIdWhereArgs = getWhereArgs(artist.getId());
             }
 
-            int songCount = queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONG_COUNT, artist, false), artistIdWhereArgs);
-            long songsDuration = queryLong(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_DURATION, artist, false), artistIdWhereArgs);
-            int songsPlayed = queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_PLAYED, artist, true), artistIdWhereArgs);
-            int songsUnplayed = queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_UNPLAYED, artist, true), artistIdWhereArgs);
-            int songsTagged = queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_TAGGED, artist, true), artistIdWhereArgs);
-            int songsUntagged = queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_UNTAGGED, artist, true), artistIdWhereArgs);
-            int timesPlayed = queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_TIMES_PLAYED, artist, false), artistIdWhereArgs);
-            long playedDuration = queryLong(db, addArtistIdWhereClause(
-                    SQL_QUERY_PLAYED_DURATION, artist, false), artistIdWhereArgs);
-
+            stats.setSongCount(queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONG_COUNT, artist, false), artistIdWhereArgs));
+            stats.setSongsDuration(queryLong(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_DURATION, artist, false), artistIdWhereArgs));
+            stats.setSongsPlayed(queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_PLAYED, artist, true), artistIdWhereArgs));
+            stats.setSongsUnplayed(queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_UNPLAYED, artist, true), artistIdWhereArgs));
+            stats.setSongsTagged(queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_TAGGED, artist, true), artistIdWhereArgs));
+            stats.setSongsUntagged(queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_UNTAGGED, artist, true), artistIdWhereArgs));
             if (artist == null) {
-                Util.showInfoDialog(context, R.string.statistics, R.string.statistics_message,
-                        songCount, Util.formatDuration(songsDuration),
-                        artistCount, Math.round((double) songCount / artistCount),
-                        songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
-                        songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),
-                        songsTagged, Util.formatPercent((double) songsTagged / songCount),
-                        songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
-                        timesPlayed, Util.formatDuration(playedDuration),
-                        Math.round((double) timesPlayed / songsPlayed),
-                        Util.formatDuration(playedDuration / songsPlayed));
-            } else {
-                Util.showInfoDialog(context, artist.getArtist(), R.string.statistics_message_artist,
-                        artist.getLastSongAdded() == 0 ?
-                                context.getString(R.string.na) :
-                                Util.formatDateTimeAgo(artist.getLastSongAdded()),
-                        songCount, Util.formatDuration(songsDuration),
-                        songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
-                        songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),
-                        songsTagged, Util.formatPercent((double) songsTagged / songCount),
-                        songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
-                        Util.formatDateTimeAgo(artist.getLastPlayed()),
-                        timesPlayed, Util.formatDuration(playedDuration),
-                        Math.round((double) timesPlayed / songsPlayed),
-                        Util.formatDuration(playedDuration / songsPlayed));
+                stats.setTimesPlayed(queryInt(db, addArtistIdWhereClause(
+                        SQL_QUERY_TIMES_PLAYED, null, false), null));
             }
+            stats.setPlayedDuration(queryLong(db, addArtistIdWhereClause(
+                    SQL_QUERY_PLAYED_DURATION, artist, false), artistIdWhereArgs));
+
+            return stats;
         }
     }
 

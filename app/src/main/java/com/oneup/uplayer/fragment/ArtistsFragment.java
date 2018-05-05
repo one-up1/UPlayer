@@ -22,6 +22,8 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.db.Stats;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,7 +102,25 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
                 item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.info:
-                dbHelper.showStats(getContext(), artist);
+                dbHelper.queryArtist(artist);
+                Stats stats = dbHelper.queryStats(artist);
+                Util.showInfoDialog(getContext(), artist.getArtist(), R.string.artist_message,
+                        artist.getLastSongAdded() == 0 ? getString(R.string.na) :
+                                Util.formatDateTimeAgo(artist.getLastSongAdded()),
+                        stats.getSongCount(), Util.formatDuration(stats.getSongsDuration()),
+                        stats.getSongsPlayed(), Util.formatPercent(
+                                (double) stats.getSongsPlayed() / stats.getSongCount()),
+                        stats.getSongsUnplayed(), Util.formatPercent(
+                                (double) stats.getSongsUnplayed() / stats.getSongCount()),
+                        stats.getSongsTagged(), Util.formatPercent(
+                                (double) stats.getSongsTagged() / stats.getSongCount()),
+                        stats.getSongsUntagged(), Util.formatPercent(
+                                (double) stats.getSongsUntagged() / stats.getSongCount()),
+                        Util.formatDateTimeAgo(artist.getLastPlayed()),
+                        artist.getTimesPlayed(), Util.formatDuration(stats.getPlayedDuration()),
+                        Math.round((double) artist.getTimesPlayed() / stats.getSongsPlayed()),
+                        Util.formatDuration(stats.getPlayedDuration() / stats.getSongsPlayed()));
+
                 return true;
             default:
                 return super.onContextItemSelected(item);

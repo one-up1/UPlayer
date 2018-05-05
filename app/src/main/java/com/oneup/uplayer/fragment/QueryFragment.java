@@ -51,8 +51,8 @@ public class QueryFragment extends Fragment implements
     private static final String KEY_ORDER_BY_DESC = "orderByDesc";
     private static final String KEY_TAGS = "tags";
 
-    private static final int REQUEST_SELECT_MIN_DATE_ADDED = 1;
-    private static final int REQUEST_SELECT_MAX_DATE_ADDED = 2;
+    private static final int REQUEST_SELECT_MIN_ADDED = 1;
+    private static final int REQUEST_SELECT_MAX_ADDED = 2;
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
 
@@ -184,11 +184,11 @@ public class QueryFragment extends Fragment implements
         Log.d(TAG, "QueryFragment.onActivityResult(" + requestCode + ", " + resultCode + ")");
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_SELECT_MIN_DATE_ADDED:
+                case REQUEST_SELECT_MIN_ADDED:
                     minAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMinAdded.setText(Util.formatDateTime(minAdded));
                     break;
-                case REQUEST_SELECT_MAX_DATE_ADDED:
+                case REQUEST_SELECT_MAX_ADDED:
                     maxAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMaxAdded.setText(Util.formatDateTime(maxAdded));
                     break;
@@ -222,14 +222,14 @@ public class QueryFragment extends Fragment implements
             if (minAdded > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, minAdded);
             }
-            startActivityForResult(intent, REQUEST_SELECT_MIN_DATE_ADDED);
+            startActivityForResult(intent, REQUEST_SELECT_MIN_ADDED);
         } else if (v == bMaxAdded) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.max_added);
             if (maxAdded > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, maxAdded);
             }
-            startActivityForResult(intent, REQUEST_SELECT_MAX_DATE_ADDED);
+            startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getContext(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_last_played);
@@ -436,40 +436,34 @@ public class QueryFragment extends Fragment implements
 
         preferences.putLong(KEY_MIN_ADDED, minAdded);
         if (minAdded > 0) {
-            selection = appendSelection(selection,
-                    Song.DATE_ADDED + ">=" + minAdded);
+            selection = appendSelection(selection, Song.ADDED + ">=" + minAdded);
         }
 
         preferences.putLong(KEY_MAX_ADDED, maxAdded);
         if (maxAdded > 0) {
-            selection = appendSelection(selection,
-                    Song.DATE_ADDED + "<=" + maxAdded);
+            selection = appendSelection(selection, Song.ADDED + "<=" + maxAdded);
         }
 
         preferences.putLong(KEY_MIN_LAST_PLAYED, minLastPlayed);
         if (minLastPlayed > 0) {
-            selection = appendSelection(selection,
-                    Song.LAST_PLAYED + ">=" + minLastPlayed);
+            selection = appendSelection(selection, Song.LAST_PLAYED + ">=" + minLastPlayed);
         }
 
         preferences.putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed);
         if (maxLastPlayed > 0) {
-            selection = appendSelection(selection,
-                    Song.LAST_PLAYED + "<=" + maxLastPlayed + 86400000);
+            selection = appendSelection(selection, Song.LAST_PLAYED + "<=" + maxLastPlayed);
         }
 
         String minTimesPlayed = etMinTimesPlayed.getString();
         preferences.putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed);
         if (minTimesPlayed.length() > 0) {
-            selection = appendSelection(selection,
-                    Song.TIMES_PLAYED + ">=" + minTimesPlayed);
+            selection = appendSelection(selection, Song.TIMES_PLAYED + ">=" + minTimesPlayed);
         }
 
         String maxTimesPlayed = etMaxTimesPlayed.getString();
         preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
         if (maxTimesPlayed.length() > 0) {
-            selection = appendSelection(selection,
-                    Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
+            selection = appendSelection(selection, Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
         }
 
         if (tags != null) {

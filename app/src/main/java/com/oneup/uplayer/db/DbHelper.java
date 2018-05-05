@@ -411,6 +411,49 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    /*public void t() {
+        Log.d(TAG, "DbOpenHelper.t()");
+        List<Song> updateSongs = new ArrayList<>();
+        Song prevSong = null;
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE, Song.ADDED},
+                    Song.ADDED + " IS NOT NULL", null, null, null, Song.ADDED)) {
+                while (c.moveToNext()) {
+                    Song song = new Song();
+                    song.setId(c.getLong(0));
+                    song.setTitle(c.getString(1));
+                    song.setAdded(c.getLong(2));
+
+                    if (prevSong == null) {
+                        prevSong = song;
+                    } else if (song.getAdded() != prevSong.getAdded()) {
+                        long diff = song.getAdded() - prevSong.getAdded();
+                        if (diff > TimeUnit.HOURS.toSeconds(1)) {
+                            prevSong = song;
+                        } else {
+                            Log.d(TAG, "Setting " + song + ":" +
+                                    Util.formatDateTime(song.getAdded()) + " to " +
+                                    prevSong + ":" + Util.formatDateTime(prevSong.getAdded()) +
+                                    " (diff=" + diff + ")");
+                            song.setAdded(prevSong.getAdded());
+                            updateSongs.add(song);
+                        }
+                    }
+                }
+            }
+
+            Log.d(TAG, "Updating " + updateSongs.size() + " songs");
+            for (Song updateSong : updateSongs) {
+                ContentValues values = new ContentValues();
+                values.put(Song.ADDED, updateSong.getAdded());
+                update(db, TABLE_SONGS, values, updateSong.getId());
+            }
+
+            db.execSQL(SQL_UPDATE_ARTISTS_STATS);
+            Log.d(TAG, "Artist stats updated");
+        }
+    }*/
+
     public static String[] getWhereArgs(long id) {
         return new String[]{Long.toString(id)};
     }

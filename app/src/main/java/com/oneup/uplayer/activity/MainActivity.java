@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
+
+        //new com.oneup.uplayer.db.DbHelper(this).t();
     }
 
     @Override

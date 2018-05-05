@@ -22,7 +22,6 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
-import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,10 +32,6 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
 
     private static final String ARG_ORDER_BY = "order_by";
     private static final String ARG_SONGS_ORDER_BY = "songs_order_by";
-
-    /*private static final String SQL_QUERY_PLAYED_DURATION =
-            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " +
-                    Song.TABLE_NAME + " WHERE " + Song.ARTIST_ID + "=?";*/
 
     private DbHelper dbHelper;
     private List<Artist> artists;
@@ -105,33 +100,7 @@ public class ArtistsFragment extends Fragment implements AdapterView.OnItemClick
                 item.getMenuInfo()).position);
         switch (item.getItemId()) {
             case R.id.info:
-                dbHelper.queryArtist(artist);
-                Util.showInfoDialog(getContext(), artist.getArtist(), R.string.info_message_artist,
-                        artist.getLastPlayed() == 0 ?
-                                getString(R.string.never) :
-                                Util.formatDateTimeAgo(artist.getLastPlayed()),
-                        artist.getTimesPlayed(),
-                        "foo",
-                        artist.getLastSongAdded() == 0 ?
-                                getString(R.string.na) :
-                                Util.formatDateTimeAgo(artist.getLastSongAdded()));
-                //TODO: Artist info.
-                /*long playedDuration;
-                try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
-                    playedDuration = DbHelper.queryLong(db, SQL_QUERY_PLAYED_DURATION,
-                            new String[]{Integer.toString(artist.getId())});
-
-                    Util.showInfoDialog(getContext(), artist.getArtist(), R.string.info_message_artist,
-                            artist.getLastPlayed() == 0 ?
-                                    getString(R.string.never) :
-                                    Util.formatDateTimeAgo(artist.getLastPlayed()),
-                            DbHelper.queryInt(db, "SELECT times_played FROM artists WHERE _id=" + artist.getId(), null),
-                            Util.formatDuration(playedDuration),
-                            artist.getDateModified() == 0 ?
-                                    getString(R.string.na) :
-                                    Util.formatDateTimeAgo(artist.getDateModified())
-                    );
-                }*/
+                dbHelper.showStats(getContext(), artist);
                 return true;
             default:
                 return super.onContextItemSelected(item);

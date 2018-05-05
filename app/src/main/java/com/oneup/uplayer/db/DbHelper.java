@@ -89,9 +89,6 @@ public class DbHelper extends SQLiteOpenHelper {
                     Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
                     "WHERE " + Song._ID + "=?";
 
-    private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
-    private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
-
     private static final String SQL_QUERY_SONG_COUNT =
             "SELECT COUNT(*) FROM " + TABLE_SONGS;
 
@@ -118,6 +115,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String SQL_QUERY_PLAYED_DURATION =
             "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS;
+
+    private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
+    private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -292,20 +292,58 @@ public class DbHelper extends SQLiteOpenHelper {
             }
         }
     }
-    
-    public Stats queryStats(long artistId) {
+
+    public void showStats(Context context, Artist artist) {
         try (SQLiteDatabase db = getReadableDatabase()) {
-            Stats stats = new Stats();
-            stats.setArtistCount(queryInt(db, SQL_QUERY_ARTIST_COUNT, null));
-            stats.setSongCount(queryInt(db, SQL_QUERY_SONG_COUNT, null));
-            stats.setSongsDuration(queryLong(db, SQL_QUERY_SONGS_DURATION, null));
-            stats.setSongsPlayed(queryInt(db, SQL_QUERY_SONGS_PLAYED, null));
-            stats.setSongsUnplayed(queryInt(db, SQL_QUERY_SONGS_UNPLAYED, null));
-            stats.setSongsTagged(queryInt(db, SQL_QUERY_SONGS_TAGGED, null));
-            stats.setSongsUntagged(queryInt(db, SQL_QUERY_SONGS_UNTAGGED, null));
-            stats.setTimesPlayed(queryInt(db, SQL_QUERY_TIMES_PLAYED, null));
-            stats.setPlayedDuration(queryLong(db, SQL_QUERY_PLAYED_DURATION, null));
-            return stats;
+            int artistCount;
+            String[] artistIdWhereArgs;
+            if (artist == null) {
+                artistCount = queryInt(db, SQL_QUERY_ARTIST_COUNT, null);
+                artistIdWhereArgs = null;
+            } else {
+                artistCount = 0;
+                artistIdWhereArgs = getWhereArgs(artist.getId());
+            }
+
+            int songCount = queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONG_COUNT, artist, false), artistIdWhereArgs);
+            long songsDuration = queryLong(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_DURATION, artist, false), artistIdWhereArgs);
+            int songsPlayed = queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_PLAYED, artist, true), artistIdWhereArgs);
+            int songsUnplayed = queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_UNPLAYED, artist, true), artistIdWhereArgs);
+            int songsTagged = queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_TAGGED, artist, true), artistIdWhereArgs);
+            int songsUntagged = queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_SONGS_UNTAGGED, artist, true), artistIdWhereArgs);
+            int timesPlayed = queryInt(db, addArtistIdWhereClause(
+                    SQL_QUERY_TIMES_PLAYED, artist, false), artistIdWhereArgs);
+            long playedDuration = queryLong(db, addArtistIdWhereClause(
+                    SQL_QUERY_PLAYED_DURATION, artist, false), artistIdWhereArgs);
+
+            if (artist == null) {
+                Util.showInfoDialog(context, R.string.statistics, R.string.statistics_message,
+                        songCount, Util.formatDuration(songsDuration),
+                        artistCount, Math.round((double) songCount / artistCount),
+                        songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
+                        songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),
+                        songsTagged, Util.formatPercent((double) songsTagged / songCount),
+                        songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
+                        timesPlayed, Util.formatDuration(playedDuration),
+                        Math.round((double) timesPlayed / songsPlayed),
+                        Util.formatDuration(playedDuration / songsPlayed));
+            } else {
+                Util.showInfoDialog(context, artist.getArtist(), R.string.statistics_message_artist,
+                        songCount, Util.formatDuration(songsDuration),
+                        songsPlayed, Util.formatPercent((double) songsPlayed / songCount),
+                        songsUnplayed, Util.formatPercent((double) songsUnplayed / songCount),
+                        songsTagged, Util.formatPercent((double) songsTagged / songCount),
+                        songsUntagged, Util.formatPercent((double) songsUntagged / songCount),
+                        timesPlayed, Util.formatDuration(playedDuration),
+                        Math.round((double) timesPlayed / songsPlayed),
+                        Util.formatDuration(playedDuration / songsPlayed));
+            }
         }
     }
 
@@ -685,6 +723,18 @@ public class DbHelper extends SQLiteOpenHelper {
         return c;
     }
 
+    private static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
+        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+
+    private static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
+        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+            return c.moveToFirst() ? c.getLong(0) : 0;
+        }
+    }
+
     private static int update(SQLiteDatabase db, String table, ContentValues values, long id) {
         return db.update(table, values, SQL_ID_IS, getWhereArgs(id));
     }
@@ -706,16 +756,9 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_UPDATE_ARTIST_STATS, new Object[]{song.getArtistId()});
     }
 
-    public static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
-        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-            return c.moveToFirst() ? c.getInt(0) : 0;
-        }
-    }
-
-    public static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
-        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-            return c.moveToFirst() ? c.getLong(0) : 0;
-        }
+    private static String addArtistIdWhereClause(String sql, Artist artist, boolean and) {
+        return artist == null ? sql : sql + " " +
+                (and ? "AND" : "WHERE") + " " + Song.ARTIST_ID + "=?";
     }
 
     interface ArtistColumns extends MediaStore.Audio.ArtistColumns {

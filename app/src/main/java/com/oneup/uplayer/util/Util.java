@@ -64,7 +64,6 @@ public class Util {
                 .show();
     }
 
-    //TODO: Implement Util.showErrorDialog().
     public static void showErrorDialog(Context context, Exception ex) {
         new AlertDialog.Builder(context)
                 .setTitle(R.string.error)

@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.oneup.uplayer.R;
@@ -134,21 +133,24 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public void queryArtists(List<Artist> artists, String orderBy) {
+    public ArrayList<Artist> queryArtists(String orderBy) {
         Log.d(TAG, "DbHelper.queryArtists(" + orderBy + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_ARTISTS, new String[]{Artist._ID, Artist.ARTIST,
-                            Artist.TIMES_PLAYED},
+                            Artist.LAST_SONG_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
                     null, null, null, null, orderBy)) {
-                artists.clear();
+                ArrayList<Artist> artists = new ArrayList<>();
                 while (c.moveToNext()) {
                     Artist artist = new Artist();
                     artist.setId(c.getLong(0));
                     artist.setArtist(c.getString(1));
-                    artist.setTimesPlayed(c.getInt(2));
+                    artist.setLastSongAdded(c.getLong(2));
+                    artist.setLastPlayed(c.getLong(3));
+                    artist.setTimesPlayed(c.getInt(4));
                     artists.add(artist);
                 }
                 Log.d(TAG, artists.size() + " artists queried");
+                return artists;
             }
         }
     }
@@ -166,14 +168,13 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void querySongs(List<Song> songs,
-                           String selection, String[] selectionArgs, String orderBy) {
+    public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
         Log.d(TAG, "DbHelper.querySongs(" + selection + "," + orderBy + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
                             Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Artist.TIMES_PLAYED},
                     selection, selectionArgs, null, null, orderBy)) {
-                songs.clear();
+                ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
                     Song song = new Song();
                     song.setId(c.getLong(0));
@@ -185,6 +186,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     songs.add(song);
                 }
                 Log.d(TAG, songs.size() + " songs queried");
+                return songs;
             }
         }
     }
@@ -206,6 +208,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public List<String> querySongTags() {
+        Log.d(TAG, "DbOpenHelper.querySongTags()");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, TABLE_SONGS, new String[]{Song.TAG},
                     Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
@@ -322,21 +325,17 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public void syncWithMediaStore(Context context) throws IOException {
         // Read artist ignore file.
-        List<String> artistIgnore;
+        List<String> artistIgnore = new ArrayList<>();
         if (ARTIST_IGNORE_FILE.exists()) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                     new FileInputStream(ARTIST_IGNORE_FILE)))) {
-                artistIgnore = new ArrayList<>();
                 String line;
                 while ((line = reader.readLine()) != null) {
                     artistIgnore.add(line);
                 }
-                Log.d(TAG, artistIgnore.size() + " artists on ignore list");
             }
-        } else {
-            Log.d(TAG, "No artist ignore file");
-            artistIgnore = null;
         }
+        Log.d(TAG, artistIgnore.size() + " artists on ignore list");
 
         SyncResult resArtists, resSongs;
         try (SQLiteDatabase db = getWritableDatabase()) {
@@ -390,7 +389,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     putValueFromCursor(c, 4, song, Song.TAG);
                     putValueFromCursor(c, 5, song, Song.BOOKMARKED);
                     putValueFromCursor(c, 6, song, Song.LAST_PLAYED);
-                    putValueFromCursor(c, 6, song, Song.TIMES_PLAYED);
+                    putValueFromCursor(c, 7, song, Song.TIMES_PLAYED);
                     songs.put(song);
                 }
             }

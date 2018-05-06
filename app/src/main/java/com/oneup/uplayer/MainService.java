@@ -26,7 +26,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 //TODO: Improve MainService impl, songIndex, time left calc, when notification is updated and when/how many times the ListView in PlaylistActivity gets updated.
 
@@ -69,7 +68,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private RemoteViews notificationViews;
     private Notification notification;
 
-    private List<Song> songs;
+    private ArrayList<Song> songs;
     private int songIndex;
     private boolean prepared;
 
@@ -448,7 +447,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         this.onSongIndexChangedListener = onSongIndexChangedListener;
     }
 
-    public List<Song> getSongs() {
+    public ArrayList<Song> getSongs() {
         return songs;
     }
 

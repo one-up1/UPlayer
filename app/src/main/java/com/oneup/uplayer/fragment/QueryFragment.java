@@ -23,7 +23,6 @@ import android.widget.Toast;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
-import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
@@ -91,15 +90,15 @@ public class QueryFragment extends Fragment implements
         dbHelper = new DbHelper(getActivity());
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        View view = inflater.inflate(R.layout.fragment_query, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_query, container, false);
 
-        etTitle = view.findViewById(R.id.etTitle);
+        etTitle = rootView.findViewById(R.id.etTitle);
         setEditTextString(etTitle, KEY_TITLE);
 
-        etArtist = view.findViewById(R.id.etArtist);
+        etArtist = rootView.findViewById(R.id.etArtist);
         setEditTextString(etArtist, KEY_ARTIST);
 
-        bMinAdded = view.findViewById(R.id.bMinAdded);
+        bMinAdded = rootView.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
         bMinAdded.setOnLongClickListener(this);
         if (minAdded == 0) {
@@ -109,7 +108,7 @@ public class QueryFragment extends Fragment implements
             bMinAdded.setText(Util.formatDateTime(minAdded));
         }
 
-        bMaxAdded = view.findViewById(R.id.bMaxAdded);
+        bMaxAdded = rootView.findViewById(R.id.bMaxAdded);
         bMaxAdded.setOnClickListener(this);
         bMaxAdded.setOnLongClickListener(this);
         if (maxAdded == 0) {
@@ -119,13 +118,13 @@ public class QueryFragment extends Fragment implements
             bMaxAdded.setText(Util.formatDateTime(maxAdded));
         }
 
-        etMinYear = view.findViewById(R.id.etMinYear);
+        etMinYear = rootView.findViewById(R.id.etMinYear);
         setEditTextString(etMinYear, KEY_MIN_YEAR);
 
-        etMaxYear = view.findViewById(R.id.etMaxYear);
+        etMaxYear = rootView.findViewById(R.id.etMaxYear);
         setEditTextString(etMaxYear, KEY_MAX_YEAR);
 
-        bMinLastPlayed = view.findViewById(R.id.bMinLastPlayed);
+        bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         bMinLastPlayed.setOnLongClickListener(this);
         if (minLastPlayed == 0) {
@@ -135,7 +134,7 @@ public class QueryFragment extends Fragment implements
             bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
         }
 
-        bMaxLastPlayed = view.findViewById(R.id.bMaxLastPlayed);
+        bMaxLastPlayed = rootView.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
         if (maxLastPlayed == 0) {
@@ -145,38 +144,38 @@ public class QueryFragment extends Fragment implements
             bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
         }
 
-        etMinTimesPlayed = view.findViewById(R.id.etMinTimesPlayed);
+        etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
         setEditTextString(etMinTimesPlayed, KEY_MIN_TIMES_PLAYED);
 
-        etMaxTimesPlayed = view.findViewById(R.id.etMaxTimesPlayed);
+        etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
         setEditTextString(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
 
-        sOrderBy = view.findViewById(R.id.sOrderBy);
+        sOrderBy = rootView.findViewById(R.id.sOrderBy);
         setSpinnerSelection(sOrderBy, KEY_ORDER_BY);
 
-        cbOrderByDesc = view.findViewById(R.id.cbOrderByDesc);
+        cbOrderByDesc = rootView.findViewById(R.id.cbOrderByDesc);
         setCheckBoxChecked(cbOrderByDesc, KEY_ORDER_BY_DESC);
 
-        bQuery = view.findViewById(R.id.bQuery);
+        bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
 
-        bTags = view.findViewById(R.id.bTags);
+        bTags = rootView.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
 
-        bStatistics = view.findViewById(R.id.bStatistics);
+        bStatistics = rootView.findViewById(R.id.bStatistics);
         bStatistics.setOnClickListener(this);
 
-        bRestorePlaylist = view.findViewById(R.id.bRestorePlaylist);
+        bRestorePlaylist = rootView.findViewById(R.id.bRestorePlaylist);
         bRestorePlaylist.setOnClickListener(this);
 
-        bSyncDatabase = view.findViewById(R.id.bSyncDatabase);
+        bSyncDatabase = rootView.findViewById(R.id.bSyncDatabase);
         bSyncDatabase.setOnClickListener(this);
 
-        bBackup = view.findViewById(R.id.bBackup);
+        bBackup = rootView.findViewById(R.id.bBackup);
         bBackup.setOnClickListener(this);
         bBackup.setOnLongClickListener(this);
 
-        return view;
+        return rootView;
     }
 
     @Override
@@ -372,7 +371,7 @@ public class QueryFragment extends Fragment implements
                                 dbHelper.restoreBackup();
                                 Toast.makeText(getContext(), R.string.backup_restored,
                                         Toast.LENGTH_SHORT).show();
-                                ((MainActivity) getActivity()).notifyDataSetChanged();
+                                //((MainActivity) getActivity()).notifyDataSetChanged();
                             } catch (final Exception ex) {
                                 Log.e(TAG, "Error restoring backup", ex);
                                 Util.showErrorDialog(getContext(), ex);
@@ -512,8 +511,11 @@ public class QueryFragment extends Fragment implements
 
         boolean orderByDesc = cbOrderByDesc.isChecked();
         preferences.putBoolean(KEY_ORDER_BY_DESC, orderByDesc);
-        if (orderBy != null && orderByDesc) {
-            orderBy += " DESC";
+        if (orderBy != null) {
+            if (orderByDesc) {
+                orderBy += " DESC";
+            }
+            orderBy += "," + Song.TITLE;
         }
 
         startActivity(new Intent(getContext(), SongsActivity.class)

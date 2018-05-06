@@ -20,6 +20,7 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
+//TODO: Setting title from fragments.
 //TODO: When/how to reload data from database and recreate/reload fragments.
 //TODO: Extra and pref key naming.
 
@@ -34,62 +35,24 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         Log.d(TAG, "MainActivity.onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
 
-    @Override
-    protected void onResume() {
-        Log.d(TAG, "MainActivity.onResume()");
-        super.onResume();
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+        // Set up the ViewPager with the sections adapter.
+        viewPager = findViewById(R.id.container);
+        viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.setCurrentItem(3);
+
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.addOnTabSelectedListener(this);
+
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
                 PackageManager.PERMISSION_GRANTED) {
-            if (sectionsPagerAdapter == null) {
-                //Toolbar toolbar = findViewById(R.id.toolbar);
-                //setSupportActionBar(toolbar);
-
-                // Create the adapter that will return a fragment for each of the three
-                // primary sections of the activity.
-                sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-                // Set up the ViewPager with the sections adapter.
-                viewPager = findViewById(R.id.container);
-                viewPager.setAdapter(sectionsPagerAdapter);
-                viewPager.setCurrentItem(3);
-
-                TabLayout tabLayout = findViewById(R.id.tabs);
-                tabLayout.setupWithViewPager(viewPager);
-                tabLayout.addOnTabSelectedListener(this);
-            } else {
-                notifyDataSetChanged();
-            }
-        } else {
             Log.d(TAG, "Requesting permissions");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        Log.d(TAG, "MainActivity.onRequestPermissionsResult(" +
-                requestCode + ", " + permissions[0] + ", " + grantResults[0] + ")");
-        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            Log.w(TAG, "Permissions not granted");
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            finish();
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "MainActivity.onActivityResult(" + requestCode + "," + resultCode + ")");
-        Fragment currentItem = sectionsPagerAdapter.getItem(viewPager.getCurrentItem());
-        Log.d(TAG, "Current item: " + viewPager.getCurrentItem() + ":" +
-                currentItem.getClass().getSimpleName());
-        if (currentItem instanceof SongsFragment) {
-            currentItem.onActivityResult(requestCode, resultCode, data);
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -118,11 +81,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         }
     }
 
-    public void notifyDataSetChanged() {
-        Log.d(TAG, "MainActivity.notifyDataSetChanged()");
-        sectionsPagerAdapter.notifyDataSetChanged();
-    }
-
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
         private QueryFragment queryFragment;
         private SongsFragment bookmarksFragment;
@@ -142,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 0:
                     if (queryFragment == null) {
                         queryFragment = QueryFragment.newInstance();
+                        //TODO: Recreate fragments everytime?
                     }
                     return queryFragment;
                 case 1:
@@ -155,37 +114,41 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
                                 Artist.LAST_SONG_ADDED + " DESC," + Artist.ARTIST,
-                                Song.ADDED + " DESC," + Song.TITLE);
+                                Song.ADDED + " DESC," + Song.TITLE,
+                                ArtistsFragment.INFO_LAST_SONG_ADDED);
                     }
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(Artist.ARTIST, Song.TITLE);
+                        artistsFragment = ArtistsFragment.newInstance(
+                                Artist.ARTIST, Song.TITLE, 0);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(
                                 Artist.LAST_PLAYED + " DESC," + Artist.ARTIST,
-                                Song.LAST_PLAYED + " DESC," + Song.TITLE);
+                                Song.LAST_PLAYED + " DESC," + Song.TITLE,
+                                ArtistsFragment.INFO_LAST_PLAYED);
                     }
                     return lastPlayedFragment;
                 case 5:
                     if (mostPlayedFragment == null) {
                         mostPlayedFragment = ArtistsFragment.newInstance(
                                 Artist.TIMES_PLAYED + " DESC," + Artist.ARTIST,
-                                Song.TIMES_PLAYED + " DESC," + Song.TITLE);
+                                Song.TIMES_PLAYED + " DESC," + Song.TITLE,
+                                ArtistsFragment.INFO_TIMES_PLAYED);
                     }
                     return mostPlayedFragment;
             }
             return null;
         }
 
-        @Override
+        /*@Override
         public int getItemPosition(@NonNull Object object) {
             // POSITION_NONE makes it possible to reload the PagerAdapter.
             return POSITION_NONE;
-        }
+        }*/
 
         @Override
         public int getCount() {

@@ -36,19 +36,28 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/ibPlayNext"
+            android:id="@+id/ibMoveUp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_play_next"
-            android:contentDescription="@string/play_next" />
+            android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/ic_move_up"
+            android:contentDescription="@string/move_up" />
 
         <ImageButton
-            android:id="@+id/ibPlayLast"
+            android:id="@+id/ibMoveDown"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/ic_move_down"
+            android:contentDescription="@string/move_down" />
+
+        <ImageButton
+            android:id="@+id/ibDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/ibPlayNext"
-            android:src="@drawable/ic_play_last"
-            android:contentDescription="@string/play_last" />
+            android:layout_toEndOf="@+id/ibMoveUp"
+            android:src="@drawable/ic_delete"
+            android:contentDescription="@string/delete" />
 
     </RelativeLayout>
 

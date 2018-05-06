@@ -1,9 +1,7 @@
 package com.oneup.uplayer.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
@@ -46,11 +44,5 @@ public class SongsActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "SongsActivity.onActivityResult(" + requestCode + ", " + resultCode + ")");
-        songsFragment.onActivityResult(requestCode, resultCode, data);
     }
 }

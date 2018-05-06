@@ -91,7 +91,10 @@
     <string name="next">Next</string>
     <string name="stop">Stop</string>
 
-    <string name="song_count_duration">%1$d songs, %2$s</string>
+    <plurals name="song_count_duration">
+        <item quantity="one">%1$d song, %2$s</item>
+        <item quantity="other">%1$d songs, %2$s</item>
+    </plurals>
     <string name="ok">OK</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

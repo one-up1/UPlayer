@@ -83,8 +83,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "MainService.onCreate()");
         super.onCreate();
+        Log.d(TAG, "MainService.onCreate()");
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         dbHelper = new DbHelper(this);

@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Song;
-import com.oneup.uplayer.fragment.BaseSongsFragment;
+import com.oneup.uplayer.fragment.SongsListFragment;
 
 public class PlaylistActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
@@ -30,8 +30,8 @@ public class PlaylistActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "PlaylistActivity.onCreate()");
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "PlaylistActivity.onCreate()");
 
         FrameLayout container = new FrameLayout(this);
         container.setId(R.id.container);
@@ -65,18 +65,19 @@ public class PlaylistActivity extends AppCompatActivity {
         }
     }
 
-    public static class PlaylistFragment extends BaseSongsFragment
-            implements MainService.OnSongIndexChangedListener, View.OnClickListener {
+    public static class PlaylistFragment extends SongsListFragment
+            implements MainService.OnSongIndexChangedListener {
         private MainService mainService;
 
         public PlaylistFragment() {
             super(R.layout.list_item_playlist);
+            Log.d(TAG, "PlaylistFragment()");
         }
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
-            Log.d(TAG, "PlaylistFragment.onCreate()");
             super.onCreate(savedInstanceState);
+            Log.d(TAG, "PlaylistFragment.onCreate()");
 
             setViewArtistOrderBy(Song.TITLE);
             getActivity().bindService(new Intent(getContext(), MainService.class), serviceConnection,
@@ -85,6 +86,8 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         public void onDestroy() {
+            Log.d(TAG, "PlaylistFragment.onDestroy()");
+
             if (mainService != null) {
                 Log.d(TAG, "Unbinding service");
                 mainService.setOnSongIndexChangedListener(null);
@@ -96,15 +99,31 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onSongIndexChanged() {
-            Log.d(TAG, "PlaylistActivity.onSongIndexChanged()");
-            notifyDataSetChanged();
+        protected void setRowViews(View rootView, int position, Song song) {
+            super.setRowViews(rootView, position, song);
+
+            if (mainService != null && position == mainService.getSongIndex()) {
+                TextView tvTitle = rootView.findViewById(R.id.tvTitle);
+                SpannableString underlinedText = new SpannableString(tvTitle.getText());
+                underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
+                tvTitle.setText(underlinedText);
+            }
+
+            setButton(rootView, R.id.ibMoveUp, song);
+            setButton(rootView, R.id.ibMoveDown, song);
+            setButton(rootView, R.id.ibDelete, song);
         }
 
         @Override
-        public void onClick(View v) {
-            Song song = (Song) v.getTag();
-            switch (v.getId()) {
+        protected void onItemClick(int position, Song song) {
+            if (mainService != null) {
+                mainService.setSongIndex(position);
+            }
+        }
+
+        @Override
+        protected void onButtonClick(int id, Song song) {
+            switch (id) {
                 case R.id.ibMoveUp:
                     moveSong(song, -1);
                     break;
@@ -113,38 +132,7 @@ public class PlaylistActivity extends AppCompatActivity {
                     break;
                 case R.id.ibDelete:
                     onSongDeleted(song);
-                    notifyDataSetChanged();
                     break;
-            }
-        }
-
-        @Override
-        protected void setListViewViews(View rootview, int position, Song song) {
-            if (mainService != null && position == mainService.getSongIndex()) {
-                TextView tvTitle = rootview.findViewById(R.id.tvTitle);
-                SpannableString underlinedText = new SpannableString(tvTitle.getText());
-                underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
-                tvTitle.setText(underlinedText);
-            }
-
-            ImageButton ibMoveUp = rootview.findViewById(R.id.ibMoveUp);
-            ibMoveUp.setOnClickListener(this);
-            ibMoveUp.setTag(song);
-
-            ImageButton ibMoveDown = rootview.findViewById(R.id.ibMoveDown);
-            ibMoveDown.setOnClickListener(this);
-            ibMoveDown.setTag(song);
-
-            ImageButton ibDelete = rootview.findViewById(R.id.ibDelete);
-            ibDelete.setId(R.id.ibDelete);
-            ibDelete.setOnClickListener(this);
-            ibDelete.setTag(song);
-        }
-
-        @Override
-        protected void onListViewItemClick(int position) {
-            if (mainService != null) {
-                mainService.setSongIndex(position);
             }
         }
 
@@ -156,6 +144,12 @@ public class PlaylistActivity extends AppCompatActivity {
                 notifyDataSetChanged();
                 //setTitle();
             }
+        }
+
+        @Override
+        public void onSongIndexChanged() {
+            Log.d(TAG, "PlaylistActivity.onSongIndexChanged()");
+            notifyDataSetChanged();
         }
 
         private void moveSong(Song song, int i) {
@@ -181,8 +175,8 @@ public class PlaylistActivity extends AppCompatActivity {
                 mainService = binder.getService();
                 mainService.setOnSongIndexChangedListener(PlaylistFragment.this);
 
-                setSongs(mainService.getSongs());
-                setListViewSelection(mainService.getSongIndex());
+                setObjects(mainService.getSongs());
+                setSelection(mainService.getSongIndex());
             }
 
             @Override

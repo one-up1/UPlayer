@@ -17,11 +17,12 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
+import com.oneup.uplayer.fragment.ListFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: Setting title from fragments.
-//TODO: When/how to reload data from database and recreate/reload fragments.
+//TODO: When/how fragments are recreated/reloaded. Android auto reload fragments when switching to tab more than 1 tab away.
 //TODO: Extra and pref key naming.
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
@@ -32,9 +33,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "MainActivity.onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG, "MainActivity.onCreate()");
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
+        Log.d(TAG, "MainActivity.onTabSelected(" + tab.getPosition() + ")");
     }
 
     @Override
@@ -66,7 +68,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
-        switch (tab.getPosition()) {
+        Log.d(TAG, "MainActivity.onTabReselected(" + tab.getPosition() + ")");
+        Fragment fragment = sectionsPagerAdapter.getItem(tab.getPosition());
+        if (fragment instanceof ListFragment) {
+            ((ListFragment) fragment).reverseSortOrder();
+        }
+        /*switch (tab.getPosition()) {
             case 1:
                 ((SongsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
                         .reverseSortOrder();
@@ -78,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 ((ArtistsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
                         .reverseSortOrder();
                 break;
-        }
+        }*/
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -100,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 0:
                     if (queryFragment == null) {
                         queryFragment = QueryFragment.newInstance();
-                        //TODO: Recreate fragments everytime?
                     }
                     return queryFragment;
                 case 1:

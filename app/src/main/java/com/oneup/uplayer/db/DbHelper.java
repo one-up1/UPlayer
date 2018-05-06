@@ -29,7 +29,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: Return ArrayList from queryArtists() but fill it in querySongs() because only songs are reloaded.
 //TODO: Check rows affected and moveToFirst() result.
 
 public class DbHelper extends SQLiteOpenHelper {

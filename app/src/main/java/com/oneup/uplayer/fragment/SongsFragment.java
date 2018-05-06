@@ -13,10 +13,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-public class SongsFragment extends BaseSongsFragment implements View.OnClickListener {
+public class SongsFragment extends SongsListFragment {
     private static final String TAG = "UPlayer";
 
     private static final String ARG_ARTIST_ID = "artist_id";
@@ -28,8 +25,6 @@ public class SongsFragment extends BaseSongsFragment implements View.OnClickList
     private String selection;
     private String[] selectionArgs;
     private String orderBy;
-
-    private boolean sortOrderReversed;
 
     public SongsFragment() {
         super(R.layout.list_item_song);
@@ -57,15 +52,31 @@ public class SongsFragment extends BaseSongsFragment implements View.OnClickList
 
     @Override
     public void onResume() {
-        Log.d(TAG, "SongsFragment.onResume()");
         super.onResume();
+        Log.d(TAG, "SongsFragment.onResume()");
+
         loadSongs();
     }
 
     @Override
-    public void onClick(View v) {
-        Song song = (Song) v.getTag();
-        switch (v.getId()) {
+    protected void setRowViews(View rootView, int position, Song song) {
+        super.setRowViews(rootView, position, song);
+        setButton(rootView, R.id.ibPlayNext, song);
+        setButton(rootView, R.id.ibPlayLast, song);
+    }
+
+    @Override
+    protected void onItemClick(int position, Song song) {
+        Log.d(TAG, "Playing " + getObjects().size() + " songs, songIndex=" + position);
+        getContext().startService(new Intent(getContext(), MainService.class)
+                .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
+                .putExtra(MainService.ARG_SONGS, getObjects())
+                .putExtra(MainService.ARG_SONG_INDEX, position));
+    }
+
+    @Override
+    protected void onButtonClick(int id, Song song) {
+        switch (id) {
             case R.id.ibPlayNext:
                 Log.d(TAG, "Playing next: " + song);
                 getContext().startService(new Intent(getContext(), MainService.class)
@@ -85,39 +96,9 @@ public class SongsFragment extends BaseSongsFragment implements View.OnClickList
         }
     }
 
-    public void reverseSortOrder() {
-        Collections.reverse(getSongs());
-        notifyDataSetChanged();
-        sortOrderReversed = !sortOrderReversed;
-    }
-
     @Override
     protected void loadSongs() {
-        ArrayList<Song> songs = getDbHelper().querySongs(selection, selectionArgs, orderBy);
-        if (sortOrderReversed) {
-            Collections.reverse(songs);
-        }
-        setSongs(songs);
-    }
-
-    @Override
-    protected void setListViewViews(View rootView, int position, Song song) {
-        ImageButton ibPlayNext = rootView.findViewById(R.id.ibPlayNext);
-        ibPlayNext.setOnClickListener(this);
-        ibPlayNext.setTag(song);
-
-        ImageButton ibPlayLast = rootView.findViewById(R.id.ibPlayLast);
-        ibPlayLast.setOnClickListener(this);
-        ibPlayLast.setTag(song);
-    }
-
-    @Override
-    protected void onListViewItemClick(int position) {
-        Log.d(TAG, "Playing " + getSongs().size() + " songs, songIndex=" + position);
-        getContext().startService(new Intent(getContext(), MainService.class)
-                .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
-                .putExtra(MainService.ARG_SONGS, getSongs())
-                .putExtra(MainService.ARG_SONG_INDEX, position));
+        setObjects(getDbHelper().querySongs(selection, selectionArgs, orderBy));
     }
 
     /*private void setTitle() {

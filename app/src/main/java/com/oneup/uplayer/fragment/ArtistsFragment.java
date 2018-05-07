@@ -14,7 +14,7 @@ import com.oneup.uplayer.db.Stats;
 import com.oneup.uplayer.util.Util;
 
 public class ArtistsFragment extends ListFragment<Artist> {
-    public static final int INFO_LAST_SONG_ADDED = 1;
+    public static final int INFO_LAST_SONG_ADDED = 1; //TODO: Only use these and no orderBy and songsOrderBy?
     public static final int INFO_LAST_PLAYED = 2;
     public static final int INFO_TIMES_PLAYED = 3;
 

@@ -25,7 +25,6 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
     private static final int REQUEST_EDIT_SONG = 1;
 
     private String viewArtistOrderBy;
-    private Song editSong;
 
     public SongsListFragment(int resource) {
         super(resource, R.menu.list_item_song);
@@ -54,7 +53,7 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
             case R.id.edit:
                 getDbHelper().querySong(song);
                 startActivityForResult(new Intent(getContext(), EditSongActivity.class)
-                                .putExtra(EditSongActivity.EXTRA_SONG, editSong = song),
+                                .putExtra(EditSongActivity.EXTRA_SONG, song),
                         REQUEST_EDIT_SONG);
                 break;
             case R.id.bookmark:
@@ -69,7 +68,9 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
                 Toast.makeText(getContext(), getString(
                         R.string.times_played, song.getTimesPlayed()),
                         Toast.LENGTH_SHORT).show();
-                loadSongs();
+                if (!loadSongs()) {
+                    notifyDataSetChanged();
+                }
                 break;
             case R.id.delete:
                 new AlertDialog.Builder(getContext())
@@ -113,14 +114,9 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:
                     Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
-                    editSong.setYear(song.getYear());
-                    editSong.setAdded(song.getAdded());
-                    editSong.setTag(song.getTag());
-                    editSong.setBookmarked(song.getBookmarked());
-
                     getDbHelper().updateSong(song);
                     Toast.makeText(getContext(), R.string.song_updated, Toast.LENGTH_SHORT).show();
-                    editSong = null;
+                    loadSongs();
                     break;
             }
         }
@@ -143,7 +139,8 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
         this.viewArtistOrderBy = viewArtistOrderBy;
     }
 
-    protected void loadSongs() {
+    protected boolean loadSongs() {
+        return false;
     }
 
     protected void onSongDeleted(Song song) {

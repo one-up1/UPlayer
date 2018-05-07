@@ -97,8 +97,9 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
-    protected void loadSongs() {
+    protected boolean loadSongs() {
         setObjects(getDbHelper().querySongs(selection, selectionArgs, orderBy));
+        return true;
     }
 
     /*private void setTitle() {

@@ -138,6 +138,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     protected void notifyDataSetChanged() {
+        Log.d(TAG, "ListFragment.notifyDataSetChanged()");
         listAdapter.notifyDataSetChanged();
     }
 

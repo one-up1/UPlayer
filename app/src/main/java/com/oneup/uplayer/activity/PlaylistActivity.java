@@ -21,11 +21,14 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsListFragment;
 
+import java.util.ArrayList;
+
 public class PlaylistActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
     private static PlaylistActivity instance;
 
+    private MainService mainService;
     private PlaylistFragment playlistFragment;
 
     @Override
@@ -37,10 +40,11 @@ public class PlaylistActivity extends AppCompatActivity {
         container.setId(R.id.container);
         setContentView(container);
 
+        bindService(new Intent(this, MainService.class),
+                serviceConnection, Context.BIND_AUTO_CREATE);
+
         if (savedInstanceState == null) {
-            playlistFragment = PlaylistFragment.newInstance();
-            getSupportFragmentManager().beginTransaction().add(R.id.container, playlistFragment)
-                    .commit();
+
         }
 
         instance = this;
@@ -49,6 +53,14 @@ public class PlaylistActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         Log.d(TAG, "PlaylistActivity.onDestroy()");
+
+        if (mainService != null) {
+            Log.d(TAG, "Unbinding service");
+            mainService.setOnSongIndexChangedListener(null);
+            unbindService(serviceConnection);
+            mainService = null;
+        }
+
         instance = null;
         super.onDestroy();
     }
@@ -65,10 +77,42 @@ public class PlaylistActivity extends AppCompatActivity {
         }
     }
 
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "PlaylistFragment.onServiceConnected()");
+            if (isFinishing()) {
+                Log.d(TAG, "Finishing");
+                return;
+            }
+
+            MainService.MainBinder binder = (MainService.MainBinder) service;
+            mainService = binder.getService();
+
+            playlistFragment = PlaylistFragment.newInstance();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, playlistFragment)
+                    .commit();
+
+
+            /*mainService.setOnSongIndexChangedListener(MainActivity.this);
+
+            setObjects(mainService.getSongs());
+            setSelection(mainService.getSongIndex());*/
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "PlaylistFragment.onServiceDisconnected()");
+            if (mainService != null) {
+                mainService.setOnSongIndexChangedListener(null);
+                mainService = null;
+            }
+        }
+    };
+
     public static class PlaylistFragment extends SongsListFragment
             implements MainService.OnSongIndexChangedListener {
-        private MainService mainService;
-
         public PlaylistFragment() {
             super(R.layout.list_item_playlist);
             Log.d(TAG, "PlaylistFragment()");
@@ -80,20 +124,16 @@ public class PlaylistActivity extends AppCompatActivity {
             Log.d(TAG, "PlaylistFragment.onCreate()");
 
             setViewArtistOrderBy(Song.TITLE);
-            getActivity().bindService(new Intent(getContext(), MainService.class), serviceConnection,
-                    Context.BIND_AUTO_CREATE);
+        }
+
+        @Override
+        protected ArrayList<Song> getData() {
+            return getActivity();
         }
 
         @Override
         public void onDestroy() {
             Log.d(TAG, "PlaylistFragment.onDestroy()");
-
-            if (mainService != null) {
-                Log.d(TAG, "Unbinding service");
-                mainService.setOnSongIndexChangedListener(null);
-                getActivity().unbindService(serviceConnection);
-                mainService = null;
-            }
 
             super.onDestroy();
         }
@@ -102,7 +142,7 @@ public class PlaylistActivity extends AppCompatActivity {
         protected void setRowViews(View rootView, int position, Song song) {
             super.setRowViews(rootView, position, song);
 
-            if (mainService != null && position == mainService.getSongIndex()) {
+            if (getActivity().mainService != null && position == mainService.getSongIndex()) {
                 TextView tvTitle = rootView.findViewById(R.id.tvTitle);
                 SpannableString underlinedText = new SpannableString(tvTitle.getText());
                 underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
@@ -161,32 +201,5 @@ public class PlaylistActivity extends AppCompatActivity {
         public static PlaylistFragment newInstance() {
             return new PlaylistFragment();
         }
-
-        private ServiceConnection serviceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                Log.d(TAG, "PlaylistFragment.onServiceConnected()");
-                if (getActivity().isFinishing()) {
-                    Log.d(TAG, "Finishing");
-                    return;
-                }
-
-                MainService.MainBinder binder = (MainService.MainBinder) service;
-                mainService = binder.getService();
-                mainService.setOnSongIndexChangedListener(PlaylistFragment.this);
-
-                setObjects(mainService.getSongs());
-                setSelection(mainService.getSongIndex());
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Log.d(TAG, "PlaylistFragment.onServiceDisconnected()");
-                if (mainService != null) {
-                    mainService.setOnSongIndexChangedListener(null);
-                    mainService = null;
-                }
-            }
-        };
     }
 }

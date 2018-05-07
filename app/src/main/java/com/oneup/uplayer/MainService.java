@@ -390,6 +390,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 playlistSong.put(Song.ARTIST_ID, song.getArtistId());
                 playlistSong.put(Song.ARTIST, song.getArtist());
                 playlistSong.put(Song.DURATION, song.getDuration());
+                playlistSong.put(Song.TIMES_PLAYED, song.getTimesPlayed());
                 playlistSongs.put(playlistSong);
             }
 
@@ -416,6 +417,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 song.setArtistId(playlistSong.getLong(Song.ARTIST_ID));
                 song.setArtist(playlistSong.getString(Song.ARTIST));
                 song.setDuration(playlistSong.getLong(Song.DURATION));
+                song.setTimesPlayed(playlistSong.getInt(Song.TIMES_PLAYED));
                 songs.add(song);
             }
             //TODO: Saved playlist could be invalid after syncing media store or manually deleting songs.

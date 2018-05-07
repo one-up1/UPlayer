@@ -13,6 +13,8 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
 
+import java.util.ArrayList;
+
 public class SongsFragment extends SongsListFragment {
     private static final String TAG = "UPlayer";
 
@@ -51,11 +53,9 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "SongsFragment.onResume()");
-
-        loadSongs();
+    protected ArrayList<Song> getData() {
+        Log.d(TAG, "SongsFragment.getData()");
+        return getDbHelper().querySongs(selection, selectionArgs, orderBy);
     }
 
     @Override
@@ -94,12 +94,6 @@ public class SongsFragment extends SongsListFragment {
                         Toast.LENGTH_SHORT).show();
                 break;
         }
-    }
-
-    @Override
-    protected boolean loadSongs() {
-        setObjects(getDbHelper().querySongs(selection, selectionArgs, orderBy));
-        return true;
     }
 
     /*private void setTitle() {

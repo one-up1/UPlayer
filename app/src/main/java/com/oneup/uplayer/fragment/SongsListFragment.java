@@ -61,16 +61,15 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
                 Toast.makeText(getContext(), song.getBookmarked() > 0 ?
                                 R.string.bookmark_set : R.string.bookmark_deleted,
                         Toast.LENGTH_SHORT).show();
-                loadSongs(); //TODO: When to reload songs. Don't reload on delete?
+                loadData(); //TODO: When to reload songs. Don't reload on delete?
                 break;
             case R.id.mark_played:
                 getDbHelper().updateSongPlayed(song);
                 Toast.makeText(getContext(), getString(
                         R.string.times_played, song.getTimesPlayed()),
                         Toast.LENGTH_SHORT).show();
-                if (!loadSongs()) {
-                    notifyDataSetChanged();
-                }
+                loadData();
+                //TODO: Mark played ListView update in PlaylistActivity.
                 break;
             case R.id.delete:
                 new AlertDialog.Builder(getContext())
@@ -97,7 +96,7 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
                                 Toast.makeText(getContext(), R.string.song_deleted,
                                         Toast.LENGTH_SHORT).show();
 
-                                loadSongs();
+                                loadData();
                                 onSongDeleted(song);
                             }
                         })
@@ -116,7 +115,7 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
                     Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
                     getDbHelper().updateSong(song);
                     Toast.makeText(getContext(), R.string.song_updated, Toast.LENGTH_SHORT).show();
-                    loadSongs();
+                    // onResume() is called after onActivityResult().
                     break;
             }
         }
@@ -137,10 +136,6 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
 
     protected void setViewArtistOrderBy(String viewArtistOrderBy) {
         this.viewArtistOrderBy = viewArtistOrderBy;
-    }
-
-    protected boolean loadSongs() {
-        return false;
     }
 
     protected void onSongDeleted(Song song) {

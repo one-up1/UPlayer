@@ -13,6 +13,8 @@ import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.Stats;
 import com.oneup.uplayer.util.Util;
 
+import java.util.ArrayList;
+
 public class ArtistsFragment extends ListFragment<Artist> {
     public static final int INFO_LAST_SONG_ADDED = 1; //TODO: Only use these and no orderBy and songsOrderBy?
     public static final int INFO_LAST_PLAYED = 2;
@@ -30,11 +32,9 @@ public class ArtistsFragment extends ListFragment<Artist> {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "ArtistsFragment.onResume()");
-
-        setObjects(getDbHelper().queryArtists(getArguments().getString(ARG_ORDER_BY)));
+    protected ArrayList<Artist> getData() {
+        Log.d(TAG, "ArtistsFragment.getData()");
+        return getDbHelper().queryArtists(getArguments().getString(ARG_ORDER_BY));
     }
 
     @Override
@@ -45,6 +45,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
         tvArtist.setText(artist.getArtist());
 
         // Get info.
+        //TODO: Artist info in ListView.
         String info;
         switch (getArguments().getInt(ARG_INFO)) {
             case INFO_LAST_SONG_ADDED:

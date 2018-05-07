@@ -1,6 +1,8 @@
 package com.oneup.uplayer.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.MenuRes;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -26,7 +28,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     private DbHelper dbHelper;
 
-    private int listItemLayoutResource;
+    private int listItemResource;
     private int contextMenuResource;
 
     private ListAdapter listAdapter;
@@ -34,9 +36,9 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     private boolean sortOrderReversed;
 
-    public ListFragment(int listItemLayoutResource, int contextMenuResource) {
+    public ListFragment(@LayoutRes int listItemResource, @MenuRes int contextMenuResource) {
         Log.d(TAG, "ListFragment()");
-        this.listItemLayoutResource = listItemLayoutResource;
+        this.listItemResource = listItemResource;
         this.contextMenuResource = contextMenuResource;
     }
 
@@ -49,28 +51,30 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        registerForContextMenu(getListView());
-    }
-
-    /*@Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
         Log.d(TAG, "ListFragment.onCreateView()");
-        if (listView == null) {
-            Log.d(TAG, "Creating ListView");
-            listView = (ListView) inflater.inflate(R.layout.fragment_list, container, false);
-            listView.setOnItemClickListener(this);
-            registerForContextMenu(listView);
+
+        if (view != null) {
+            registerForContextMenu(view);
         }
-        return listView;
-    }*/
+        return view;
+    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
+        Log.d(TAG, "ListFragment.onCreateContextMenu()");
         getActivity().getMenuInflater().inflate(contextMenuResource, menu);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "ListFragment.onResume()");
+
+        loadData();
     }
 
     @Override
@@ -106,18 +110,9 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         sortOrderReversed = !sortOrderReversed;
     }
 
-    protected abstract void setRowViews(View rootView, int position, T item);
-
-    protected abstract void onListItemClick(int position, T item);
-
-    protected abstract void onContextItemSelected(int itemId, int position, T item);
-
-    protected DbHelper getDbHelper() {
-        return dbHelper;
-    }
-
-    protected void setObjects(ArrayList<T> objects) {
-        this.objects = objects;
+    protected void loadData() {
+        Log.d(TAG, "ListFragment.loadData()");
+        objects = getData();
 
         if (sortOrderReversed) {
             Collections.reverse(objects);
@@ -131,6 +126,18 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
             Log.d(TAG, "Calling ListAdapter.notifyDataSetChanged()");
             listAdapter.notifyDataSetChanged();
         }
+    }
+
+    protected abstract ArrayList<T> getData();
+
+    protected abstract void setRowViews(View rootView, int position, T item);
+
+    protected abstract void onListItemClick(int position, T item);
+
+    protected abstract void onContextItemSelected(int itemId, int position, T item);
+
+    protected DbHelper getDbHelper() {
+        return dbHelper;
     }
 
     protected ArrayList<T> getObjects() {
@@ -167,7 +174,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         @Override
         public View getView(int position, View view, ViewGroup parent) {
             if (view == null) {
-                view = layoutInflater.inflate(listItemLayoutResource, parent, false);
+                view = layoutInflater.inflate(listItemResource, parent, false);
             }
             setRowViews(view, position, objects.get(position));
             return view;

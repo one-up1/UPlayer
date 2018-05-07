@@ -26,7 +26,8 @@ public class SongsActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             songsFragment = SongsFragment.newInstance(getIntent().getExtras());
-            getSupportFragmentManager().beginTransaction().add(R.id.container, songsFragment)
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, songsFragment)
                     .commit();
         }
     }

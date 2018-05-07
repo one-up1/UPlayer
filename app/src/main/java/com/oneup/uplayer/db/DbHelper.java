@@ -171,7 +171,7 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.querySongs(" + selection + "," + orderBy + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
-                            Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Artist.TIMES_PLAYED},
+                            Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.TIMES_PLAYED},
                     selection, selectionArgs, null, null, orderBy)) {
                 ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
@@ -246,6 +246,7 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.bookmarkSong(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.execSQL(SQL_BOOKMARK_SONG, new Object[]{Calendar.currentTime(), song.getId()});
+            song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED, song.getId()));
         }
     }
 
@@ -262,6 +263,9 @@ public class DbHelper extends SQLiteOpenHelper {
             } finally {
                 db.endTransaction();
             }
+
+            song.setLastPlayed(time);
+            song.setTimesPlayed(queryInt(db, TABLE_SONGS, Song.TIMES_PLAYED, song.getId()));
         }
     }
 
@@ -559,15 +563,29 @@ public class DbHelper extends SQLiteOpenHelper {
         return c;
     }
 
+    private static int queryInt(SQLiteDatabase db, String table, String column, long id) {
+        try (Cursor c = query(db, table, new String[]{column}, id)) {
+            return c.getInt(0);
+        }
+    }
+
     private static int queryInt(SQLiteDatabase db, String sql, String[] selectionArgs) {
         try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-            return c.moveToFirst() ? c.getInt(0) : 0;
+            c.moveToFirst();
+            return c.getInt(0);
+        }
+    }
+
+    private static long queryLong(SQLiteDatabase db, String table, String column, long id) {
+        try (Cursor c = query(db, table, new String[]{column}, id)) {
+            return c.getLong(0);
         }
     }
 
     private static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
         try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-            return c.moveToFirst() ? c.getLong(0) : 0;
+            c.moveToFirst();
+            return c.getLong(0);
         }
     }
 

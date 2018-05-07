@@ -1,9 +1,7 @@
 package com.oneup.uplayer.fragment;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -14,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
-import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
@@ -24,23 +21,22 @@ import java.util.Collections;
 //TODO: @Nullable / @NotNull anotations?
 //TODO: getActivity() vs getContext()
 
-public abstract class ListFragment<T> extends Fragment implements AdapterView.OnItemClickListener {
+public abstract class ListFragment<T> extends android.support.v4.app.ListFragment {
     private static final String TAG = "UPlayer";
 
     private DbHelper dbHelper;
 
-    private int resource;
+    private int listItemLayoutResource;
     private int contextMenuResource;
 
-    private ListView listView;
     private ListAdapter listAdapter;
     private ArrayList<T> objects;
 
     private boolean sortOrderReversed;
 
-    public ListFragment(int resource, int contextMenuResource) {
+    public ListFragment(int listItemLayoutResource, int contextMenuResource) {
         Log.d(TAG, "ListFragment()");
-        this.resource = resource;
+        this.listItemLayoutResource = listItemLayoutResource;
         this.contextMenuResource = contextMenuResource;
     }
 
@@ -53,6 +49,12 @@ public abstract class ListFragment<T> extends Fragment implements AdapterView.On
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        registerForContextMenu(getListView());
+    }
+
+    /*@Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "ListFragment.onCreateView()");
@@ -63,14 +65,12 @@ public abstract class ListFragment<T> extends Fragment implements AdapterView.On
             registerForContextMenu(listView);
         }
         return listView;
-    }
+    }*/
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        if (v == listView) {
-            getActivity().getMenuInflater().inflate(contextMenuResource, menu);
-        }
+        getActivity().getMenuInflater().inflate(contextMenuResource, menu);
     }
 
     @Override
@@ -94,10 +94,8 @@ public abstract class ListFragment<T> extends Fragment implements AdapterView.On
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == listView) {
-            onItemClick(position, objects.get(position));
-        }
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        onListItemClick(position, objects.get(position));
     }
 
     public void reverseSortOrder() {
@@ -110,7 +108,7 @@ public abstract class ListFragment<T> extends Fragment implements AdapterView.On
 
     protected abstract void setRowViews(View rootView, int position, T item);
 
-    protected abstract void onItemClick(int position, T item);
+    protected abstract void onListItemClick(int position, T item);
 
     protected abstract void onContextItemSelected(int itemId, int position, T item);
 
@@ -128,7 +126,7 @@ public abstract class ListFragment<T> extends Fragment implements AdapterView.On
         if (listAdapter == null) {
             Log.d(TAG, "Creating ListAdapter");
             listAdapter = new ListAdapter();
-            listView.setAdapter(listAdapter);
+            setListAdapter(listAdapter);
         } else {
             Log.d(TAG, "Calling ListAdapter.notifyDataSetChanged()");
             listAdapter.notifyDataSetChanged();
@@ -137,10 +135,6 @@ public abstract class ListFragment<T> extends Fragment implements AdapterView.On
 
     protected ArrayList<T> getObjects() {
         return objects;
-    }
-
-    protected void setSelection(int position) {
-        listView.setSelection(position);
     }
 
     protected void notifyDataSetChanged() {
@@ -172,7 +166,7 @@ public abstract class ListFragment<T> extends Fragment implements AdapterView.On
         @Override
         public View getView(int position, View view, ViewGroup parent) {
             if (view == null) {
-                view = layoutInflater.inflate(resource, parent, false);
+                view = layoutInflater.inflate(listItemLayoutResource, parent, false);
             }
             setRowViews(view, position, objects.get(position));
             return view;

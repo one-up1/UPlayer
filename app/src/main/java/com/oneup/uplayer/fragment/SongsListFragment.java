@@ -59,15 +59,13 @@ public abstract class SongsListFragment extends ListFragment<Song> implements Vi
                 break;
             case R.id.bookmark:
                 getDbHelper().bookmarkSong(song);
-                getDbHelper().querySong(song);
                 Toast.makeText(getContext(), song.getBookmarked() > 0 ?
                                 R.string.bookmark_set : R.string.bookmark_deleted,
                         Toast.LENGTH_SHORT).show();
-                loadSongs();
+                loadSongs(); //TODO: When to reload songs. Don't reload on delete?
                 break;
             case R.id.mark_played:
                 getDbHelper().updateSongPlayed(song);
-                getDbHelper().querySong(song);
                 Toast.makeText(getContext(), getString(
                         R.string.times_played, song.getTimesPlayed()),
                         Toast.LENGTH_SHORT).show();

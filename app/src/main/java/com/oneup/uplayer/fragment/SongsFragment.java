@@ -66,7 +66,7 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
-    protected void onItemClick(int position, Song song) {
+    protected void onListItemClick(int position, Song song) {
         Log.d(TAG, "Playing " + getObjects().size() + " songs, songIndex=" + position);
         getContext().startService(new Intent(getContext(), MainService.class)
                 .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)

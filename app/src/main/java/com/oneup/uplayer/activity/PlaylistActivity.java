@@ -115,7 +115,7 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onItemClick(int position, Song song) {
+        protected void onListItemClick(int position, Song song) {
             if (mainService != null) {
                 mainService.setSongIndex(position);
             }

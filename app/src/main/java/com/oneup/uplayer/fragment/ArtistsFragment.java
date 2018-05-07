@@ -73,7 +73,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     }
 
     @Override
-    protected void onItemClick(int position, Artist artist) {
+    protected void onListItemClick(int position, Artist artist) {
         startActivity(new Intent(getContext(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(artist.getId(),
                         getArguments().getString(ARG_SONGS_ORDER_BY))));
@@ -86,7 +86,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 getDbHelper().queryArtist(artist);
                 Stats stats = getDbHelper().queryStats(artist);
 
-                //TODO: Avg prc per artist of total songs, / 0 stats.getSongPlayed() ?
+                //TODO: Artist stats. Avg prc per artist of total songs, division by 0 stats.getSongPlayed() ?
                 Util.showInfoDialog(getContext(), artist.getArtist(), R.string.artist_message,
                         artist.getLastSongAdded() == 0 ? getString(R.string.na) :
                                 Util.formatDateTimeAgo(artist.getLastSongAdded()),

@@ -32,6 +32,8 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.Set;
 
+//TODO: Review QueryFragment and statistics.
+
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";

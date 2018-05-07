@@ -21,7 +21,7 @@ import com.oneup.uplayer.fragment.ListFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: Setting title from fragments.
+//TODO: Setting title from fragments, also after deleting song etc.
 //TODO: When/how fragments are recreated/reloaded. Android auto reload fragments when switching to tab more than 1 tab away.
 //TODO: Extra and pref key naming.
 

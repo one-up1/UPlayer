@@ -53,11 +53,6 @@ public class PlaylistActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-   /* private void setTitle() {
-        setTitle(getString(R.string.song_count_duration, mainService.getSongs().size(),
-                Util.formatDuration(Song.getDuration(mainService.getSongs(), 0))));
-    }*/
-
     public static void finishIfRunning() {
         if (instance != null) {
             Log.d(TAG, "Finishing PlaylistActivity");
@@ -119,7 +114,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
             setListItemButton(rootView, R.id.ibMoveUp, song);
             setListItemButton(rootView, R.id.ibMoveDown, song);
-            setListItemButton(rootView, R.id.ibDelete, song);
+            setListItemButton(rootView, R.id.ibRemove, song);
         }
 
         @Override
@@ -139,18 +134,18 @@ public class PlaylistActivity extends AppCompatActivity {
                 case R.id.ibMoveDown:
                     moveSong(index, 1);
                     break;
-                case R.id.ibDelete:
-                    deleteSong(index);
+                case R.id.ibRemove:
+                    onSongRemoved(index);
+                    setActivityTitle();
                     break;
             }
         }
 
         @Override
-        protected void deleteSong(int index) {
-            Log.d(TAG, "PlaylistActivity.deleteSong(" + index + ")");
+        protected void onSongRemoved(int index) {
+            Log.d(TAG, "PlaylistActivity.onSongRemoved(" + index + ")");
             if (mainService != null) {
-                mainService.deleteSong(index);
-                notifyDataSetChanged();
+                mainService.removeSong(index);
             }
         }
 

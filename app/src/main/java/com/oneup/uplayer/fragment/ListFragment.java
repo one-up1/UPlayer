@@ -1,5 +1,6 @@
 package com.oneup.uplayer.fragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -12,6 +13,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
@@ -38,7 +40,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "ListFragment.onCreate()");
         super.onCreate(savedInstanceState);
         dbHelper = new DbHelper(getActivity());
     }
@@ -63,7 +64,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "ListFragment.onDestroy()");
         if (dbHelper != null) {
             dbHelper.close();
         }
@@ -104,7 +104,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     protected void updateList() {
-        Log.d(TAG, "ListFragment.updateList()");
         ArrayList<T> data = loadData();
         if (data != null) {
             if (sortOrderReversed) {
@@ -114,14 +113,28 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
             this.data = data;
 
             if (listAdapter == null) {
-                Log.d(TAG, "Creating ListAdapter");
                 listAdapter = new ListAdapter();
                 setListAdapter(listAdapter);
             } else {
-                Log.d(TAG, "Calling ListAdapter.notifyDataSetChanged()");
                 listAdapter.notifyDataSetChanged();
             }
+
+            setActivityTitle();
         }
+    }
+
+    protected void setActivityTitle() {
+        Activity activity = getActivity();
+        if (activity != null && !(activity instanceof MainActivity)) {
+            String title = getActivityTitle();
+            if (title != null) {
+                activity.setTitle(title);
+            }
+        }
+    }
+
+    protected String getActivityTitle() {
+        return null;
     }
 
     protected void notifyDataSetChanged() {

@@ -92,11 +92,6 @@ public class SongsFragment extends SongsListFragment {
         }
     }
 
-    /*private void setTitle() {
-        getActivity().setTitle(getString(R.string.song_count_duration, songs.size(),
-                Util.formatDuration(Song.getDuration(songs, 0))));
-    }*/
-
     public static SongsFragment newInstance(String selection, String[] selectionArgs,
                                             String orderBy) {
         return newInstance(getArguments(selection, selectionArgs, orderBy));

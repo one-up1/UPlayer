@@ -52,12 +52,12 @@
             android:contentDescription="@string/move_down" />
 
         <ImageButton
-            android:id="@+id/ibDelete"
+            android:id="@+id/ibRemove"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/ibMoveUp"
-            android:src="@drawable/ic_delete"
-            android:contentDescription="@string/delete" />
+            android:src="@drawable/ic_remove"
+            android:contentDescription="@string/remove" />
 
     </RelativeLayout>
 

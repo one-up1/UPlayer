@@ -17,6 +17,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
@@ -27,6 +28,28 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     public SongsListFragment(int listItemResource) {
         super(listItemResource, R.menu.list_item_song);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == AppCompatActivity.RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_EDIT_SONG:
+                    Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
+                    getDbHelper().updateSong(song);
+                    Toast.makeText(getActivity(), R.string.song_updated, Toast.LENGTH_SHORT).show();
+                    // onResume() is called after onActivityResult().
+                    break;
+            }
+        }
+    }
+
+    @Override
+    protected String getActivityTitle() {
+        return getResources().getQuantityString(R.plurals.song_count_duration,
+                getData().size(), getData().size(),
+                Util.formatDuration(Song.getDuration(getData(), 0)));
     }
 
     @Override
@@ -57,7 +80,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.bookmark:
                 getDbHelper().bookmarkSong(song);
                 Toast.makeText(getActivity(), song.getBookmarked() > 0 ?
-                                R.string.bookmark_set : R.string.bookmark_deleted,
+                                R.string.bookmark_set : R.string.bookmark_cleared,
                         Toast.LENGTH_SHORT).show();
                 updateList();
                 break;
@@ -93,7 +116,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
                                 Toast.makeText(getActivity(), R.string.song_deleted,
                                         Toast.LENGTH_SHORT).show();
-                                deleteSong(position);
+                                updateList();
+                                onSongRemoved(position);
                             }
                         })
                         .setNegativeButton(R.string.no, null)
@@ -102,29 +126,10 @@ public abstract class SongsListFragment extends ListFragment<Song> {
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "SongsListFragment.onActivityResult(" + requestCode + ", " + resultCode + ")");
-        if (resultCode == AppCompatActivity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_EDIT_SONG:
-                    Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
-                    getDbHelper().updateSong(song);
-                    Toast.makeText(getActivity(), R.string.song_updated, Toast.LENGTH_SHORT).show();
-                    // onResume() is called after onActivityResult().
-                    break;
-            }
-        }
-    }
-
     protected void setViewArtistOrderBy(String viewArtistOrderBy) {
         this.viewArtistOrderBy = viewArtistOrderBy;
     }
 
-    protected void deleteSong(int index) {
-        Log.d(TAG, "SongsListFragment.deleteSong(" + index + ")");
-        getData().remove(index);
-        notifyDataSetChanged();
+    protected void onSongRemoved(int position) {
     }
 }

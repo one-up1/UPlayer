@@ -51,15 +51,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-        Log.d(TAG, "ListFragment.onCreateView()");
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "ListFragment.onActivityCreated()");
 
-        if (view != null) {
-            registerForContextMenu(view);
-        }
-        return view;
+        registerForContextMenu(getListView());
     }
 
     @Override
@@ -103,7 +99,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     public void reverseSortOrder() {
-        if (objects != null) {
+        Log.d(TAG, "ListFragment.reverseSortOrder()");
+        if (objects == null) {
+            Log.e(TAG, "objects null !! !! !!");
+        } else {
+            Log.d(TAG, "Reversing sort order");
             Collections.reverse(objects);
             notifyDataSetChanged();
         }
@@ -112,29 +112,40 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected void loadData() {
         Log.d(TAG, "ListFragment.loadData()");
-        objects = getData();
+        ArrayList<T> data = getData();
 
-        if (sortOrderReversed) {
-            Collections.reverse(objects);
-        }
-
-        if (listAdapter == null) {
-            Log.d(TAG, "Creating ListAdapter");
-            listAdapter = new ListAdapter();
-            setListAdapter(listAdapter);
+        if (data == null) {
+            Log.d(TAG, "data == null");
         } else {
-            Log.d(TAG, "Calling ListAdapter.notifyDataSetChanged()");
-            listAdapter.notifyDataSetChanged();
+            if (sortOrderReversed) {
+                Log.d(TAG, "Reversing sort order");
+                Collections.reverse(data);
+            }
+            objects = data;
+
+            if (listAdapter == null) {
+                Log.d(TAG, "Creating ListAdapter");
+                listAdapter = new ListAdapter();
+                setListAdapter(listAdapter);
+            } else {
+                Log.d(TAG, "Calling ListAdapter.notifyDataSetChanged()");
+                listAdapter.notifyDataSetChanged();
+            }
         }
     }
 
-    protected abstract ArrayList<T> getData();
+    protected ArrayList<T> getData() {
+        Log.d(TAG, "ListFragment.getData()");
+        return null;
+    }
 
     protected abstract void setRowViews(View rootView, int position, T item);
 
-    protected abstract void onListItemClick(int position, T item);
+    protected void onListItemClick(int position, T item) {
+    }
 
-    protected abstract void onContextItemSelected(int itemId, int position, T item);
+    protected void onContextItemSelected(int itemId, int position, T item) {
+    }
 
     protected DbHelper getDbHelper() {
         return dbHelper;
@@ -146,7 +157,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected void notifyDataSetChanged() {
         Log.d(TAG, "ListFragment.notifyDataSetChanged()");
-        listAdapter.notifyDataSetChanged();
+        if (listAdapter == null) {
+            Log.e(TAG, "listAdapter null !! !! !!");
+        } else {
+            listAdapter.notifyDataSetChanged();
+        }
     }
 
     private class ListAdapter extends BaseAdapter {

@@ -27,7 +27,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-//TODO: Improve MainService impl, songIndex, time left calc, when notification is updated and when/how many times the ListView in PlaylistActivity gets updated.
+//TODO: Improve MainService impl, songIndex, time left calc, when notification is updated and when/how many times the ListView in PlaylistActivity gets updated. getApplicationContext()
 //TODO: Update lists after service completes playing?
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
@@ -464,9 +464,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         play();
     }
 
-    public boolean moveSong(Song song, int i) {
-        Log.d(TAG, "MainService.moveSong(" + song + "," + i + ")");
-        int index = songs.indexOf(song);
+    public boolean moveSong(int index, int i) {
+        Log.d(TAG, "MainService.moveSong(" + index + "," + i + ")");
         int newIndex = index + i;
         Log.d(TAG, "index=" + index + ", newIndex=" + newIndex + ", songIndex=" + songIndex);
         if (newIndex >= 0 && newIndex < songs.size()) {
@@ -490,17 +489,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
     }
 
-    public void deleteSong(Song song) {
-        Log.d(TAG, "MainService.deleteSong(" + song + ")");
+    public void deleteSong(int index) {
+        Log.d(TAG, "MainService.deleteSong(" + index + ")");
         if (songs.size() > 1) {
-            int songIndex = songs.indexOf(song);
-            songs.remove(songIndex);
+            songs.remove(index);
 
-            if (songIndex < this.songIndex) {
-                this.songIndex--;
-            } else if (songIndex == this.songIndex) {
-                if (songIndex == songs.size()) {
-                    this.songIndex--;
+            if (index < songIndex) {
+                songIndex--;
+            } else if (index == songIndex) {
+                if (index == songs.size()) {
+                    songIndex--;
                 }
                 play();
             }

@@ -2,10 +2,8 @@ package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
@@ -33,8 +31,7 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "SongsFragment.onCreate()");
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         artistId = getArguments().getLong(ARG_ARTIST_ID);
@@ -53,44 +50,43 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
-    protected ArrayList<Song> getData() {
-        Log.d(TAG, "SongsFragment.getData()");
+    protected ArrayList<Song> loadData() {
         return getDbHelper().querySongs(selection, selectionArgs, orderBy);
     }
 
     @Override
-    protected void setRowViews(View rootView, int position, Song song) {
-        super.setRowViews(rootView, position, song);
-        setButton(rootView, R.id.ibPlayNext, song);
-        setButton(rootView, R.id.ibPlayLast, song);
+    protected void setListItemViews(View rootView, int position, Song song) {
+        super.setListItemViews(rootView, position, song);
+        setListItemButton(rootView, R.id.ibPlayNext, song);
+        setListItemButton(rootView, R.id.ibPlayLast, song);
     }
 
     @Override
     protected void onListItemClick(int position, Song song) {
-        Log.d(TAG, "Playing " + getObjects().size() + " songs, songIndex=" + position);
-        getContext().startService(new Intent(getContext(), MainService.class)
+        Log.d(TAG, "Playing " + getData().size() + " songs, songIndex=" + position);
+        getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
-                .putExtra(MainService.ARG_SONGS, getObjects())
+                .putExtra(MainService.ARG_SONGS, getData())
                 .putExtra(MainService.ARG_SONG_INDEX, position));
     }
 
     @Override
-    protected void onButtonClick(int id, Song song) {
-        switch (id) {
+    protected void onListItemButtonClick(int buttonId, Song song) {
+        switch (buttonId) {
             case R.id.ibPlayNext:
                 Log.d(TAG, "Playing next: " + song);
-                getContext().startService(new Intent(getContext(), MainService.class)
+                getActivity().startService(new Intent(getActivity(), MainService.class)
                         .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
                         .putExtra(MainService.ARG_SONG, song));
-                Toast.makeText(getContext(), getString(R.string.playing_next, song),
+                Toast.makeText(getActivity(), getString(R.string.playing_next, song),
                         Toast.LENGTH_SHORT).show();
                 break;
             case R.id.ibPlayLast:
                 Log.d(TAG, "Playing last: " + song);
-                getContext().startService(new Intent(getContext(), MainService.class)
+                getActivity().startService(new Intent(getActivity(), MainService.class)
                         .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
                         .putExtra(MainService.ARG_SONG, song));
-                Toast.makeText(getContext(), getString(R.string.playing_last, song),
+                Toast.makeText(getActivity(), getString(R.string.playing_last, song),
                         Toast.LENGTH_SHORT).show();
                 break;
         }

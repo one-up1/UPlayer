@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.ArraySet;
@@ -85,12 +84,12 @@ public class QueryFragment extends Fragment implements
     private long maxLastPlayed;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "QueryFragment.onCreateView()");
 
         dbHelper = new DbHelper(getActivity());
-        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         View rootView = inflater.inflate(R.layout.fragment_query, container, false);
 
@@ -182,6 +181,7 @@ public class QueryFragment extends Fragment implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "QueryFragment.onActivityResult(" + requestCode + ", " + resultCode + ")");
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
@@ -218,28 +218,28 @@ public class QueryFragment extends Fragment implements
     @Override
     public void onClick(View v) {
         if (v == bMinAdded) {
-            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_added);
             if (minAdded > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, minAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_ADDED);
         } else if (v == bMaxAdded) {
-            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.max_added);
             if (maxAdded > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, maxAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
         } else if (v == bMinLastPlayed) {
-            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.min_last_played);
             if (minLastPlayed > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, minLastPlayed);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
         } else if (v == bMaxLastPlayed) {
-            Intent intent = new Intent(getContext(), DateTimeActivity.class);
+            Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.max_last_played);
             if (maxLastPlayed > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, maxLastPlayed);
@@ -305,7 +305,7 @@ public class QueryFragment extends Fragment implements
             tagsDialog.show();
         } else if (v == bStatistics) {
             Stats stats = dbHelper.queryStats(null);
-            Util.showInfoDialog(getContext(), R.string.statistics, R.string.statistics_message,
+            Util.showInfoDialog(getActivity(), R.string.statistics, R.string.statistics_message,
                     stats.getSongCount(), Util.formatDuration(stats.getSongsDuration()),
                     stats.getArtistCount(), Math.round(
                             (double) stats.getSongCount() / stats.getArtistCount()),
@@ -321,24 +321,24 @@ public class QueryFragment extends Fragment implements
                     Math.round((double) stats.getTimesPlayed() / stats.getSongsPlayed()),
                     Util.formatDuration(stats.getPlayedDuration() / stats.getSongsPlayed()));
         } else if (v == bRestorePlaylist) {
-            getActivity().startService(new Intent(getContext(), MainService.class)
+            getActivity().startService(new Intent(getActivity(), MainService.class)
                     .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
         } else if (v == bSyncDatabase) {
             Log.d(TAG, "Syncing database");
             try {
-                dbHelper.syncWithMediaStore(getContext());
+                dbHelper.syncWithMediaStore(getActivity());
             } catch (Exception ex) {
                 Log.e(TAG, "Error syncing database", ex);
-                Util.showErrorDialog(getContext(), ex);
+                Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bBackup) {
             Log.d(TAG, "Running backup");
             try {
                 dbHelper.backup();
-                Toast.makeText(getContext(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
                 Log.e(TAG, "Error running backup", ex);
-                Util.showErrorDialog(getContext(), ex);
+                Util.showErrorDialog(getActivity(), ex);
             }
         }
     }
@@ -348,21 +348,17 @@ public class QueryFragment extends Fragment implements
         if (v == bMinAdded) {
             minAdded = 0;
             bMinAdded.setText(R.string.min_added);
-            return true;
         } else if (v == bMaxAdded) {
             maxAdded = 0;
             bMaxAdded.setText(R.string.max_added);
-            return true;
         } else if (v == bMinLastPlayed) {
             minLastPlayed = 0;
             bMinLastPlayed.setText(R.string.min_last_played);
-            return true;
         } else if (v == bMaxLastPlayed) {
             maxLastPlayed = 0;
             bMaxLastPlayed.setText(R.string.max_last_played);
-            return true;
         } else if (v == bBackup) {
-            new AlertDialog.Builder(getContext())
+            new AlertDialog.Builder(getActivity())
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setTitle(R.string.app_name)
                     .setMessage(R.string.restore_backup_confirm)
@@ -371,21 +367,19 @@ public class QueryFragment extends Fragment implements
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 dbHelper.restoreBackup();
-                                Toast.makeText(getContext(), R.string.backup_restored,
+                                Toast.makeText(getActivity(), R.string.backup_restored,
                                         Toast.LENGTH_SHORT).show();
                                 //((MainActivity) getActivity()).notifyDataSetChanged();
-                            } catch (final Exception ex) {
+                            } catch (Exception ex) {
                                 Log.e(TAG, "Error restoring backup", ex);
-                                Util.showErrorDialog(getContext(), ex);
+                                Util.showErrorDialog(getActivity(), ex);
                             }
                         }
                     })
                     .setNegativeButton(R.string.no, null)
                     .show();
-            return true;
-        } else {
-            return false;
         }
+        return true;
     }
 
     private void setSpinnerSelection(Spinner view, String preferencesKey) {
@@ -520,7 +514,7 @@ public class QueryFragment extends Fragment implements
             orderBy += "," + Song.TITLE;
         }
 
-        startActivity(new Intent(getContext(), SongsActivity.class)
+        startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(
                         selection, null, orderBy)));
 

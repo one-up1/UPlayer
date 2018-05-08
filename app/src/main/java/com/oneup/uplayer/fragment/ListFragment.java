@@ -1,9 +1,6 @@
 package com.oneup.uplayer.fragment;
 
 import android.os.Bundle;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.MenuRes;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -12,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.oneup.uplayer.db.DbHelper;
@@ -19,11 +17,8 @@ import com.oneup.uplayer.db.DbHelper;
 import java.util.ArrayList;
 import java.util.Collections;
 
-//TODO: Reversing of sort order.
-//TODO: @Nullable / @NotNull anotations?
-//TODO: getActivity() vs getContext()
-
-public abstract class ListFragment<T> extends android.support.v4.app.ListFragment {
+public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
+        implements View.OnClickListener {
     private static final String TAG = "UPlayer";
 
     private DbHelper dbHelper;
@@ -32,56 +27,38 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private int contextMenuResource;
 
     private ListAdapter listAdapter;
-    private ArrayList<T> objects;
+    private ArrayList<T> data;
 
     private boolean sortOrderReversed;
 
-    public ListFragment(@LayoutRes int listItemResource, @MenuRes int contextMenuResource) {
-        Log.d(TAG, "ListFragment()");
+    public ListFragment(int listItemResource, int contextMenuResource) {
         this.listItemResource = listItemResource;
         this.contextMenuResource = contextMenuResource;
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "ListFragment.onCreate()");
-
+        super.onCreate(savedInstanceState);
         dbHelper = new DbHelper(getActivity());
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "ListFragment.onActivityCreated()");
-
         registerForContextMenu(getListView());
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        Log.d(TAG, "ListFragment.onCreateContextMenu()");
         getActivity().getMenuInflater().inflate(contextMenuResource, menu);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "ListFragment.onResume()");
-
-        loadData();
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        if (getUserVisibleHint()) { //TODO: Or the wrong fragment may receive the onContextItemSelected() call?
-            int position = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
-            onContextItemSelected(item.getItemId(), position, objects.get(position));
-            return true;
-        } else {
-            return false;
-        }
+        updateList();
     }
 
     @Override
@@ -95,33 +72,46 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        onListItemClick(position, objects.get(position));
+        onListItemClick(position, data.get(position));
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        //TODO: Or the wrong fragment may receive the onContextItemSelected() call?
+        if (getUserVisibleHint()) {
+            int position = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
+            onContextItemSelected(item.getItemId(), position, data.get(position));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        //noinspection unchecked
+        onListItemButtonClick(v.getId(), (T) v.getTag());
     }
 
     public void reverseSortOrder() {
         Log.d(TAG, "ListFragment.reverseSortOrder()");
-        if (objects == null) {
-            Log.e(TAG, "objects null !! !! !!");
-        } else {
+        if (data != null) {
             Log.d(TAG, "Reversing sort order");
-            Collections.reverse(objects);
-            notifyDataSetChanged();
+            Collections.reverse(data);
+            listAdapter.notifyDataSetChanged();
         }
         sortOrderReversed = !sortOrderReversed;
     }
 
-    protected void loadData() {
-        Log.d(TAG, "ListFragment.loadData()");
-        ArrayList<T> data = getData();
-
-        if (data == null) {
-            Log.d(TAG, "data == null");
-        } else {
+    protected void updateList() {
+        Log.d(TAG, "ListFragment.updateList()");
+        ArrayList<T> data = loadData();
+        if (data != null) {
             if (sortOrderReversed) {
                 Log.d(TAG, "Reversing sort order");
                 Collections.reverse(data);
             }
-            objects = data;
+            this.data = data;
 
             if (listAdapter == null) {
                 Log.d(TAG, "Creating ListAdapter");
@@ -134,12 +124,21 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
-    protected ArrayList<T> getData() {
-        Log.d(TAG, "ListFragment.getData()");
-        return null;
+    protected void notifyDataSetChanged() {
+        Log.d(TAG, "ListFragment.notifyDataSetChanged()");
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
     }
 
-    protected abstract void setRowViews(View rootView, int position, T item);
+    protected void setListItemViews(View rootView, int position, T item) {
+    }
+
+    protected void setListItemButton(View rootView, int buttonId, T item) {
+        ImageButton button = rootView.findViewById(buttonId);
+        button.setTag(item);
+        button.setOnClickListener(this);
+    }
 
     protected void onListItemClick(int position, T item) {
     }
@@ -147,38 +146,34 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     protected void onContextItemSelected(int itemId, int position, T item) {
     }
 
+    protected void onListItemButtonClick(int buttonId, T item) {
+    }
+
     protected DbHelper getDbHelper() {
         return dbHelper;
     }
 
-    protected ArrayList<T> getObjects() {
-        return objects;
+    protected ArrayList<T> getData() {
+        return data;
     }
 
-    protected void notifyDataSetChanged() {
-        Log.d(TAG, "ListFragment.notifyDataSetChanged()");
-        if (listAdapter == null) {
-            Log.e(TAG, "listAdapter null !! !! !!");
-        } else {
-            listAdapter.notifyDataSetChanged();
-        }
-    }
+    protected abstract ArrayList<T> loadData();
 
     private class ListAdapter extends BaseAdapter {
         private LayoutInflater layoutInflater;
 
         private ListAdapter() {
-            layoutInflater = LayoutInflater.from(getContext());
+            layoutInflater = LayoutInflater.from(getActivity());
         }
 
         @Override
         public int getCount() {
-            return objects.size();
+            return data.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return objects.get(position);
+            return data.get(position);
         }
 
         @Override
@@ -191,7 +186,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
             if (view == null) {
                 view = layoutInflater.inflate(listItemResource, parent, false);
             }
-            setRowViews(view, position, objects.get(position));
+            setListItemViews(view, position, data.get(position));
             return view;
         }
     }

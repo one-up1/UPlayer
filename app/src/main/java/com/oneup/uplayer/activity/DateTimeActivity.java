@@ -2,7 +2,6 @@ package com.oneup.uplayer.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -68,8 +67,7 @@ public class DateTimeActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSelectedDayChange(@NonNull CalendarView view,
-                                    int year, int month, int dayOfMonth) {
+    public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
         if (view == cvDate) {
             calendar.setDate(year, month, dayOfMonth);
         }

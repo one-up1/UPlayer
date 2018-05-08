@@ -1,10 +1,8 @@
 package com.oneup.uplayer.activity;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -73,19 +71,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (fragment instanceof ListFragment) {
             ((ListFragment) fragment).reverseSortOrder();
         }
-        /*switch (tab.getPosition()) {
-            case 1:
-                ((SongsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
-                        .reverseSortOrder();
-                break;
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                ((ArtistsFragment) sectionsPagerAdapter.getItem(viewPager.getCurrentItem()))
-                        .reverseSortOrder();
-                break;
-        }*/
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -146,15 +131,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                                 ArtistsFragment.INFO_TIMES_PLAYED);
                     }
                     return mostPlayedFragment;
+                default:
+                    return null;
             }
-            return null;
         }
-
-        /*@Override
-        public int getItemPosition(@NonNull Object object) {
-            // POSITION_NONE makes it possible to reload the PagerAdapter.
-            return POSITION_NONE;
-        }*/
 
         @Override
         public int getCount() {
@@ -176,8 +156,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return getString(R.string.last_played);
                 case 5:
                     return getString(R.string.most_played);
+                default:
+                    return null;
             }
-            return null;
         }
     }
 }

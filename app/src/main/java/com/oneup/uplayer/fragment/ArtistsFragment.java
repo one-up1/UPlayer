@@ -3,7 +3,6 @@ package com.oneup.uplayer.fragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -20,25 +19,21 @@ public class ArtistsFragment extends ListFragment<Artist> {
     public static final int INFO_LAST_PLAYED = 2;
     public static final int INFO_TIMES_PLAYED = 3;
 
-    private static final String TAG = "UPlayer";
-
     private static final String ARG_ORDER_BY = "order_by";
     private static final String ARG_SONGS_ORDER_BY = "songs_order_by";
     private static final String ARG_INFO = "info";
 
     public ArtistsFragment() {
         super(R.layout.list_item_artist, R.menu.list_item_artist);
-        Log.d(TAG, "ArtistsFragment()");
     }
 
     @Override
-    protected ArrayList<Artist> getData() {
-        Log.d(TAG, "ArtistsFragment.getData()");
+    protected ArrayList<Artist> loadData() {
         return getDbHelper().queryArtists(getArguments().getString(ARG_ORDER_BY));
     }
 
     @Override
-    protected void setRowViews(View rootView, int position, Artist artist) {
+    protected void setListItemViews(View rootView, int position, Artist artist) {
         // Set artist.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
         tvArtist.setTextColor(artist.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
@@ -75,7 +70,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected void onListItemClick(int position, Artist artist) {
-        startActivity(new Intent(getContext(), SongsActivity.class)
+        startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(artist.getId(),
                         getArguments().getString(ARG_SONGS_ORDER_BY))));
     }
@@ -88,7 +83,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 Stats stats = getDbHelper().queryStats(artist);
 
                 //TODO: Artist stats. Avg prc per artist of total songs, division by 0 stats.getSongPlayed() ?
-                Util.showInfoDialog(getContext(), artist.getArtist(), R.string.artist_message,
+                Util.showInfoDialog(getActivity(), artist.getArtist(), R.string.artist_message,
                         artist.getLastSongAdded() == 0 ? getString(R.string.na) :
                                 Util.formatDateTimeAgo(artist.getLastSongAdded()),
                         stats.getSongCount(), Util.formatDuration(stats.getSongsDuration()),

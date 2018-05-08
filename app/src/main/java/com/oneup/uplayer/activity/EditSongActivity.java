@@ -130,6 +130,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_SELECT_ADDED:
@@ -139,6 +140,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 case REQUEST_SELECT_BOOKMARKED:
                     song.setBookmarked(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
                     bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
+                    break;
             }
         }
     }
@@ -175,14 +177,11 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         if (v == bAdded) {
             song.setAdded(0);
             bAdded.setText("");
-            return true;
         } else if (v == bBookmarked) {
             song.setBookmarked(0);
             bBookmarked.setText("");
-            return true;
-        } else {
-            return false;
         }
+        return true;
     }
 
     @Override

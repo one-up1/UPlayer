@@ -32,10 +32,10 @@ import java.util.ArrayList;
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
-    public static final String ARG_REQUEST_CODE = "request_code";
-    public static final String ARG_SONGS = "songs";
-    public static final String ARG_SONG_INDEX = "song_index";
-    public static final String ARG_SONG = "song";
+    public static final String EXTRA_REQUEST_CODE = "com.oneup.extra.request_code";
+    public static final String EXTRA_SONGS = "com.oneup.extra.songs";
+    public static final String EXTRA_SONG_INDEX = "com.oneup.extra.song_index";
+    public static final String EXTRA_SONG = "com.oneup.extra.song";
 
     public static final int REQUEST_START = 1;
     public static final int REQUEST_PLAY_NEXT = 2;
@@ -131,24 +131,24 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             return START_STICKY;
         }
 
-        int requestCode = intent.getIntExtra(ARG_REQUEST_CODE, 0);
+        int requestCode = intent.getIntExtra(EXTRA_REQUEST_CODE, 0);
         Log.d(TAG, "requestCode=" + requestCode);
 
         switch (requestCode) {
             case REQUEST_START:
                 savePlaylist();
-                songs = intent.getParcelableArrayListExtra(ARG_SONGS);
-                songIndex = intent.getIntExtra(ARG_SONG_INDEX, 0);
+                songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
+                songIndex = intent.getIntExtra(EXTRA_SONG_INDEX, 0);
                 play();
                 break;
             case REQUEST_PLAY_NEXT:
-                addSong((Song) intent.getParcelableExtra(ARG_SONG), true);
+                addSong((Song) intent.getParcelableExtra(EXTRA_SONG), true);
                 break;
             case REQUEST_PLAY_LAST:
-                addSong((Song) intent.getParcelableExtra(ARG_SONG), false);
+                addSong((Song) intent.getParcelableExtra(EXTRA_SONG), false);
                 break;
             case REQUEST_RESTORE_PLAYLIST:
-                if (preferences.contains(ARG_SONGS)) {
+                if (preferences.contains(EXTRA_SONGS)) {
                     restorePlaylist();
                 } else {
                     Log.w(TAG, "No saved playlist found");
@@ -256,7 +256,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void setOnClickPendingIntent(RemoteViews views, int viewId, int requestCode) {
         views.setOnClickPendingIntent(viewId, PendingIntent.getService(this, requestCode,
                 new Intent(this, MainService.class)
-                        .putExtra(ARG_REQUEST_CODE, requestCode),
+                        .putExtra(EXTRA_REQUEST_CODE, requestCode),
                 PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
@@ -395,8 +395,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             }
 
             preferences.edit()
-                    .putString(ARG_SONGS, playlistSongs.toString())
-                    .putInt(ARG_SONG_INDEX, songIndex)
+                    .putString(EXTRA_SONGS, playlistSongs.toString())
+                    .putInt(EXTRA_SONG_INDEX, songIndex)
                     .putInt(KEY_POSITION, player.getCurrentPosition())
                     .apply();
             Log.d(TAG, "Playlist saved");
@@ -407,7 +407,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void restorePlaylist() {
         try {
-            JSONArray playlistSongs = new JSONArray(preferences.getString(ARG_SONGS, null));
+            JSONArray playlistSongs = new JSONArray(preferences.getString(EXTRA_SONGS, null));
             songs = new ArrayList<>();
             for (int i = 0; i < playlistSongs.length(); i++) {
                 JSONObject playlistSong = playlistSongs.getJSONObject(i);
@@ -422,7 +422,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             }
             //TODO: Saved playlist could be invalid after syncing media store or manually deleting songs.
 
-            songIndex = preferences.getInt(ARG_SONG_INDEX, 0);
+            songIndex = preferences.getInt(EXTRA_SONG_INDEX, 0);
             position = preferences.getInt(KEY_POSITION, 0);
             //TODO: Don't start playing after restoring playlist when already done, go to start.
             Log.d(TAG, "Restored playlist with " + songs.size() +

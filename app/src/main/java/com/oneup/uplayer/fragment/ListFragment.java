@@ -77,7 +77,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        //TODO: Or the wrong fragment may receive the onContextItemSelected() call?
+        // Or the wrong fragment may receive the onContextItemSelected() call,
+        // because there are multiple fragments with the same context menu item ID's.
         if (getUserVisibleHint()) {
             int position = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
             onContextItemSelected(item.getItemId(), position, data.get(position));

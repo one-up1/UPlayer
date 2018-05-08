@@ -8,11 +8,12 @@ import android.util.Log;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
 
+//TODO: MainReceiver, where to store preferences?
+
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
 
-    private static final String ARG_STATE = "state";
-    private static final String KEY_HEADSET_STATE = "headsetState";
+    private static final String PREF_HEADSET_STATE = "headset_state";
 
     private Context context;
     private SharedPreferences preferences;
@@ -26,7 +27,7 @@ public class MainReceiver extends BroadcastReceiver {
         Log.d(TAG, "MainReceiver.onReceive(" + action + ")");
 
         if (action != null && action.equals(Intent.ACTION_HEADSET_PLUG)) {
-            onHeadsetPlug(intent.getIntExtra(ARG_STATE, -1));
+            onHeadsetPlug(intent.getIntExtra("state", -1));
         }
     }
 
@@ -36,13 +37,13 @@ public class MainReceiver extends BroadcastReceiver {
         switch (state) {
             case 0:
                 Log.d(TAG, "Headset unplugged");
-                if (preferences.getInt(KEY_HEADSET_STATE, 0) == 1) {
+                if (preferences.getInt(PREF_HEADSET_STATE, 0) == 1) {
                     PlaylistActivity.finishIfRunning();
                     context.stopService(new Intent(context, MainService.class));
                 }
                 break;
         }
 
-        preferences.edit().putInt(KEY_HEADSET_STATE, state).apply();
+        preferences.edit().putInt(PREF_HEADSET_STATE, state).apply();
     }
 }

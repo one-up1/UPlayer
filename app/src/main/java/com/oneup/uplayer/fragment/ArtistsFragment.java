@@ -45,11 +45,11 @@ public class ArtistsFragment extends ListFragment<Artist> {
         switch (getArguments().getInt(ARG_INFO)) {
             case INFO_LAST_SONG_ADDED:
                 info = artist.getLastSongAdded() == 0 ? null :
-                        Util.formatDateTimeAgo(artist.getLastSongAdded());
+                        Util.formatTimeAgo(artist.getLastSongAdded());
                 break;
             case INFO_LAST_PLAYED:
                 info = artist.getLastPlayed() == 0 ? null :
-                        Util.formatDateTimeAgo(artist.getLastPlayed());
+                        Util.formatTimeAgo(artist.getLastPlayed());
                 break;
             case INFO_TIMES_PLAYED:
                 info = Integer.toString(artist.getTimesPlayed());

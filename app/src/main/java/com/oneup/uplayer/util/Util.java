@@ -38,8 +38,11 @@ public class Util {
     }
 
     public static String formatDateTimeAgo(long seconds) {
-        return formatDateTime(DATE_TIME_FORMAT_WEEKDAY, seconds) + "\n" +
-                formatDuration(Calendar.currentTime() - seconds, false);
+        return formatDateTime(DATE_TIME_FORMAT_WEEKDAY, seconds) + "\n" + formatTimeAgo(seconds);
+    }
+
+    public static String formatTimeAgo(long seconds) {
+        return formatDuration(Calendar.currentTime() - seconds, false);
     }
 
     public static String formatDuration(long millis) {

@@ -65,9 +65,9 @@ public class SongsFragment extends SongsListFragment {
     protected void onListItemClick(int position, Song song) {
         Log.d(TAG, "Playing " + getData().size() + " songs, songIndex=" + position);
         getActivity().startService(new Intent(getActivity(), MainService.class)
-                .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_START)
-                .putExtra(MainService.ARG_SONGS, getData())
-                .putExtra(MainService.ARG_SONG_INDEX, position));
+                .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_START)
+                .putExtra(MainService.EXTRA_SONGS, getData())
+                .putExtra(MainService.EXTRA_SONG_INDEX, position));
     }
 
     @Override
@@ -76,16 +76,16 @@ public class SongsFragment extends SongsListFragment {
             case R.id.ibPlayNext:
                 Log.d(TAG, "Playing next: " + song);
                 getActivity().startService(new Intent(getActivity(), MainService.class)
-                        .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
-                        .putExtra(MainService.ARG_SONG, song));
+                        .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
+                        .putExtra(MainService.EXTRA_SONG, song));
                 Toast.makeText(getActivity(), getString(R.string.playing_next, song),
                         Toast.LENGTH_SHORT).show();
                 break;
             case R.id.ibPlayLast:
                 Log.d(TAG, "Playing last: " + song);
                 getActivity().startService(new Intent(getActivity(), MainService.class)
-                        .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
-                        .putExtra(MainService.ARG_SONG, song));
+                        .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
+                        .putExtra(MainService.EXTRA_SONG, song));
                 Toast.makeText(getActivity(), getString(R.string.playing_last, song),
                         Toast.LENGTH_SHORT).show();
                 break;

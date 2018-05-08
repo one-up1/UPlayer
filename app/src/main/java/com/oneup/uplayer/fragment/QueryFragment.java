@@ -37,19 +37,19 @@ public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
 
-    private static final String KEY_TITLE = "title";
-    private static final String KEY_ARTIST = "artist";
-    private static final String KEY_MIN_YEAR = "minYear";
-    private static final String KEY_MAX_YEAR = "maxYear";
-    private static final String KEY_MIN_ADDED = "minAdded";
-    private static final String KEY_MAX_ADDED = "maxAdded";
-    private static final String KEY_MIN_LAST_PLAYED = "minLastPlayed";
-    private static final String KEY_MAX_LAST_PLAYED = "maxLastPlayed";
-    private static final String KEY_MIN_TIMES_PLAYED = "minTimesPlayed";
-    private static final String KEY_MAX_TIMES_PLAYED = "maxTimesPlayed";
-    private static final String KEY_ORDER_BY = "orderBy";
-    private static final String KEY_ORDER_BY_DESC = "orderByDesc";
-    private static final String KEY_TAGS = "tags";
+    private static final String PREF_TITLE = "title";
+    private static final String PREF_ARTIST = "artist";
+    private static final String PREF_MIN_YEAR = "min_year";
+    private static final String PREF_MAX_YEAR = "max_year";
+    private static final String PREF_MIN_ADDED = "min_added";
+    private static final String PREF_MAX_ADDED = "max_added";
+    private static final String PREF_MIN_LAST_PLAYED = "min_last_played";
+    private static final String PREF_MAX_LAST_PLAYED = "max_last_played";
+    private static final String PREF_MIN_TIMES_PLAYED = "min_times_played";
+    private static final String PREF_MAX_TIMES_PLAYED = "max_times_played";
+    private static final String PREF_ORDER_BY = "order_by";
+    private static final String PREF_ORDER_BY_DESC = "order_by_desc";
+    private static final String PREF_TAGS = "tags";
 
     private static final int REQUEST_SELECT_MIN_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
@@ -94,16 +94,16 @@ public class QueryFragment extends Fragment implements
         View rootView = inflater.inflate(R.layout.fragment_query, container, false);
 
         etTitle = rootView.findViewById(R.id.etTitle);
-        setEditTextString(etTitle, KEY_TITLE);
+        setEditTextString(etTitle, PREF_TITLE);
 
         etArtist = rootView.findViewById(R.id.etArtist);
-        setEditTextString(etArtist, KEY_ARTIST);
+        setEditTextString(etArtist, PREF_ARTIST);
 
         bMinAdded = rootView.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
         bMinAdded.setOnLongClickListener(this);
         if (minAdded == 0) {
-            minAdded = preferences.getLong(KEY_MIN_ADDED, 0);
+            minAdded = preferences.getLong(PREF_MIN_ADDED, 0);
         }
         if (minAdded > 0) {
             bMinAdded.setText(Util.formatDateTime(minAdded));
@@ -113,23 +113,23 @@ public class QueryFragment extends Fragment implements
         bMaxAdded.setOnClickListener(this);
         bMaxAdded.setOnLongClickListener(this);
         if (maxAdded == 0) {
-            maxAdded = preferences.getLong(KEY_MAX_ADDED, 0);
+            maxAdded = preferences.getLong(PREF_MAX_ADDED, 0);
         }
         if (maxAdded > 0) {
             bMaxAdded.setText(Util.formatDateTime(maxAdded));
         }
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
-        setEditTextString(etMinYear, KEY_MIN_YEAR);
+        setEditTextString(etMinYear, PREF_MIN_YEAR);
 
         etMaxYear = rootView.findViewById(R.id.etMaxYear);
-        setEditTextString(etMaxYear, KEY_MAX_YEAR);
+        setEditTextString(etMaxYear, PREF_MAX_YEAR);
 
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         bMinLastPlayed.setOnLongClickListener(this);
         if (minLastPlayed == 0) {
-            minLastPlayed = preferences.getLong(KEY_MIN_LAST_PLAYED, 0);
+            minLastPlayed = preferences.getLong(PREF_MIN_LAST_PLAYED, 0);
         }
         if (minLastPlayed > 0) {
             bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
@@ -139,23 +139,23 @@ public class QueryFragment extends Fragment implements
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
         if (maxLastPlayed == 0) {
-            maxLastPlayed = preferences.getLong(KEY_MAX_LAST_PLAYED, 0);
+            maxLastPlayed = preferences.getLong(PREF_MAX_LAST_PLAYED, 0);
         }
         if (maxLastPlayed > 0) {
             bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
         }
 
         etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
-        setEditTextString(etMinTimesPlayed, KEY_MIN_TIMES_PLAYED);
+        setEditTextString(etMinTimesPlayed, PREF_MIN_TIMES_PLAYED);
 
         etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
-        setEditTextString(etMaxTimesPlayed, KEY_MAX_TIMES_PLAYED);
+        setEditTextString(etMaxTimesPlayed, PREF_MAX_TIMES_PLAYED);
 
         sOrderBy = rootView.findViewById(R.id.sOrderBy);
-        setSpinnerSelection(sOrderBy, KEY_ORDER_BY);
+        setSpinnerSelection(sOrderBy, PREF_ORDER_BY);
 
         cbOrderByDesc = rootView.findViewById(R.id.cbOrderByDesc);
-        setCheckBoxChecked(cbOrderByDesc, KEY_ORDER_BY_DESC);
+        setCheckBoxChecked(cbOrderByDesc, PREF_ORDER_BY_DESC);
 
         bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
@@ -249,7 +249,7 @@ public class QueryFragment extends Fragment implements
             query(null);
         } else if (v == bTags) {
             final String[] tags = dbHelper.querySongTags().toArray(new String[0]);
-            final Set<String> checkedTags = preferences.getStringSet(KEY_TAGS,
+            final Set<String> checkedTags = preferences.getStringSet(PREF_TAGS,
                     new ArraySet<String>());
             boolean[] checkedItems = new boolean[tags.length];
             for (int i = 0; i < tags.length; i++) {
@@ -322,8 +322,10 @@ public class QueryFragment extends Fragment implements
                     Util.formatDuration(stats.getPlayedDuration() / stats.getSongsPlayed()));
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getActivity(), MainService.class)
-                    .putExtra(MainService.ARG_REQUEST_CODE, MainService.REQUEST_RESTORE_PLAYLIST));
+                    .putExtra(MainService.EXTRA_REQUEST_CODE,
+                            MainService.REQUEST_RESTORE_PLAYLIST));
         } else if (v == bSyncDatabase) {
+            //TODO: Sync and backup in new thread with ProgressDialog, and reload lists.
             Log.d(TAG, "Syncing database");
             try {
                 dbHelper.syncWithMediaStore(getActivity());
@@ -406,63 +408,63 @@ public class QueryFragment extends Fragment implements
         String selection = null, orderBy = null;
 
         String title = etTitle.getString();
-        preferences.putString(KEY_TITLE, title);
+        preferences.putString(PREF_TITLE, title);
         if (title.length() > 0) {
             selection = Song.TITLE + " LIKE '%" + title + "%'";
         }
 
         String artist = etArtist.getString();
-        preferences.putString(KEY_ARTIST, artist);
+        preferences.putString(PREF_ARTIST, artist);
         if (artist.length() > 0) {
             selection = appendSelection(selection, Song.ARTIST + " LIKE '%" + artist + "%'");
         }
 
         String minYear = etMinYear.getString();
-        preferences.putString(KEY_MIN_YEAR, minYear);
+        preferences.putString(PREF_MIN_YEAR, minYear);
         if (minYear.length() > 0) {
             selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
         }
 
         String maxYear = etMaxYear.getString();
-        preferences.putString(KEY_MAX_YEAR, maxYear);
+        preferences.putString(PREF_MAX_YEAR, maxYear);
         if (maxYear.length() > 0) {
             selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
         }
 
-        preferences.putLong(KEY_MIN_ADDED, minAdded);
+        preferences.putLong(PREF_MIN_ADDED, minAdded);
         if (minAdded > 0) {
             selection = appendSelection(selection, Song.ADDED + ">=" + minAdded);
         }
 
-        preferences.putLong(KEY_MAX_ADDED, maxAdded);
+        preferences.putLong(PREF_MAX_ADDED, maxAdded);
         if (maxAdded > 0) {
             selection = appendSelection(selection, Song.ADDED + "<=" + maxAdded);
         }
 
-        preferences.putLong(KEY_MIN_LAST_PLAYED, minLastPlayed);
+        preferences.putLong(PREF_MIN_LAST_PLAYED, minLastPlayed);
         if (minLastPlayed > 0) {
             selection = appendSelection(selection, Song.LAST_PLAYED + ">=" + minLastPlayed);
         }
 
-        preferences.putLong(KEY_MAX_LAST_PLAYED, maxLastPlayed);
+        preferences.putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed);
         if (maxLastPlayed > 0) {
             selection = appendSelection(selection, Song.LAST_PLAYED + "<=" + maxLastPlayed);
         }
 
         String minTimesPlayed = etMinTimesPlayed.getString();
-        preferences.putString(KEY_MIN_TIMES_PLAYED, minTimesPlayed);
+        preferences.putString(PREF_MIN_TIMES_PLAYED, minTimesPlayed);
         if (minTimesPlayed.length() > 0) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + ">=" + minTimesPlayed);
         }
 
         String maxTimesPlayed = etMaxTimesPlayed.getString();
-        preferences.putString(KEY_MAX_TIMES_PLAYED, maxTimesPlayed);
+        preferences.putString(PREF_MAX_TIMES_PLAYED, maxTimesPlayed);
         if (maxTimesPlayed.length() > 0) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
         }
 
         if (tags != null) {
-            preferences.putStringSet(KEY_TAGS, tags);
+            preferences.putStringSet(PREF_TAGS, tags);
 
             String tagSelection;
             if (tags.size() == 0) {
@@ -483,7 +485,7 @@ public class QueryFragment extends Fragment implements
         }
 
         int orderByColumn = sOrderBy.getSelectedItemPosition();
-        preferences.putInt(KEY_ORDER_BY, orderByColumn);
+        preferences.putInt(PREF_ORDER_BY, orderByColumn);
         switch (orderByColumn) {
             case 1:
                 orderBy = Song.TITLE;
@@ -506,7 +508,7 @@ public class QueryFragment extends Fragment implements
         }
 
         boolean orderByDesc = cbOrderByDesc.isChecked();
-        preferences.putBoolean(KEY_ORDER_BY_DESC, orderByDesc);
+        preferences.putBoolean(PREF_ORDER_BY_DESC, orderByDesc);
         if (orderBy != null) {
             if (orderByDesc) {
                 orderBy += " DESC";

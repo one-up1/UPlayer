@@ -20,7 +20,6 @@ import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
 //TODO: When/how fragments are recreated/reloaded. Android auto reload fragments when switching to tab more than 1 tab away.
-//TODO: Extra and pref key naming.
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";

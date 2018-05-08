@@ -21,8 +21,7 @@ import java.util.List;
 
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
         View.OnLongClickListener, AdapterView.OnItemSelectedListener {
-    public static final String EXTRA_SONG =
-            "com.oneup.timer.activity.EditSongActivity.SONG";
+    public static final String EXTRA_SONG = "com.oneup.uplayer.extra.SONG";
 
     private static final int REQUEST_SELECT_ADDED = 1;
     private static final int REQUEST_SELECT_BOOKMARKED = 2;

@@ -44,9 +44,8 @@
     <string name="backup_restored">Backup restored</string>
 
     <string name="info">Info</string>
-    <string name="artist_message">Last song added: %1$s\nSong count: %2$d (%3$s)\nSongs played: %4$d (%5$s)\nSongs unplayed: %6$d (%7$s)\nSongs tagged: %8$d (%9$s)\nSongs untagged: %10$d (%11$s)\nLast played: %12$s\nTimes played: %13$d (%14$s)\nAvg times played: %15$d (%16$s)</string>
+    <string name="artist_message">Song count: %1$d (%2$s)\nSongs played: %3$d (%4$s)\nSongs unplayed: %5$d (%6$s)\nSongs tagged: %7$d (%8$s)\nSongs untagged: %9$d (%10$s)\nLast song added: %11$s\nLast played: %12$s\nTimes played: %13$d (%14$s)\nAvg times played: %15$d (%16$s)</string>
     <string name="na">N/A</string>
-    <string name="never">Never</string>
 
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>

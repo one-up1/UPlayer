@@ -1,9 +1,9 @@
 package com.oneup.uplayer.db;
 
 public class Stats {
-    private int artistCount;
     private int songCount;
     private long songsDuration;
+    private int artistCount;
     private int songsPlayed;
     private int songsUnplayed;
     private int songsTagged;
@@ -12,14 +12,6 @@ public class Stats {
     private long playedDuration;
 
     Stats() {
-    }
-
-    public int getArtistCount() {
-        return artistCount;
-    }
-
-    void setArtistCount(int artistCount) {
-        this.artistCount = artistCount;
     }
 
     public int getSongCount() {
@@ -36,6 +28,14 @@ public class Stats {
 
     void setSongsDuration(long songsDuration) {
         this.songsDuration = songsDuration;
+    }
+
+    public int getArtistCount() {
+        return artistCount;
+    }
+
+    void setArtistCount(int artistCount) {
+        this.artistCount = artistCount;
     }
 
     public int getSongsPlayed() {

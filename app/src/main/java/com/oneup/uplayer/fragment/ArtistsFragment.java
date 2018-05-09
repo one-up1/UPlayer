@@ -83,8 +83,6 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 Stats stats = getDbHelper().queryStats(artist);
 
                 Util.showInfoDialog(getActivity(), artist.getArtist(), R.string.artist_message,
-                        artist.getLastSongAdded() == 0 ? getString(R.string.na) :
-                                Util.formatDateTimeAgo(artist.getLastSongAdded()),
                         stats.getSongCount(), Util.formatDuration(stats.getSongsDuration()),
                         stats.getSongsPlayed(), Util.formatPercent(
                                 (double) stats.getSongsPlayed() / stats.getSongCount()),
@@ -94,8 +92,10 @@ public class ArtistsFragment extends ListFragment<Artist> {
                                 (double) stats.getSongsTagged() / stats.getSongCount()),
                         stats.getSongsUntagged(), Util.formatPercent(
                                 (double) stats.getSongsUntagged() / stats.getSongCount()),
+                        artist.getLastSongAdded() == 0 ? getString(R.string.na) :
+                                Util.formatDateTimeAgo(artist.getLastSongAdded()),
                         artist.getLastPlayed() == 0 ?
-                                getString(R.string.never) :
+                                getString(R.string.na) :
                                 Util.formatDateTimeAgo(artist.getLastPlayed()),
                         artist.getTimesPlayed(), Util.formatDuration(stats.getPlayedDuration()),
                         Math.round((double) artist.getTimesPlayed() / stats.getSongsPlayed()),

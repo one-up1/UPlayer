@@ -43,33 +43,6 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
     private static final String SQL_WHERE_ID_IS = " WHERE " + SQL_ID_IS;
 
-    private static final String SQL_QUERY_SONG_COUNT =
-            "SELECT COUNT(*) FROM " + TABLE_SONGS;
-
-    private static final String SQL_QUERY_ARTIST_COUNT =
-            "SELECT COUNT(*) FROM " + TABLE_ARTISTS;
-
-    private static final String SQL_QUERY_SONGS_DURATION =
-            "SELECT SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS;
-
-    private static final String SQL_QUERY_SONGS_PLAYED =
-            "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + ">0";
-
-    private static final String SQL_QUERY_SONGS_UNPLAYED =
-            "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + "=0";
-
-    private static final String SQL_QUERY_SONGS_TAGGED =
-            "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NOT NULL";
-
-    private static final String SQL_QUERY_SONGS_UNTAGGED =
-            "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NULL";
-
-    private static final String SQL_QUERY_TIMES_PLAYED =
-            "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS;
-
-    private static final String SQL_QUERY_PLAYED_DURATION =
-            "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS;
-
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
@@ -277,30 +250,46 @@ public class DbHelper extends SQLiteOpenHelper {
             
             String[] artistIdWhereArgs;
             if (artist == null) {
-                stats.setArtistCount(queryInt(db, SQL_QUERY_ARTIST_COUNT, null));
+                stats.setArtistCount(queryInt(db,
+                        "SELECT COUNT(*) FROM " + TABLE_ARTISTS, null));
+
+                stats.setTimesPlayed(queryInt(db, addArtistIdWhereClause(
+                        "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS,
+                        null, false), null));
+
                 artistIdWhereArgs = null;
             } else {
                 artistIdWhereArgs = getWhereArgs(artist.getId());
             }
 
             stats.setSongCount(queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONG_COUNT, artist, false), artistIdWhereArgs));
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS,
+                    artist, false), artistIdWhereArgs));
+
             stats.setSongsDuration(queryLong(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_DURATION, artist, false), artistIdWhereArgs));
+                    "SELECT SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS, artist, false),
+                    artistIdWhereArgs));
+
             stats.setSongsPlayed(queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_PLAYED, artist, true), artistIdWhereArgs));
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + ">0",
+                    artist, true), artistIdWhereArgs));
+
             stats.setSongsUnplayed(queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_UNPLAYED, artist, true), artistIdWhereArgs));
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + "=0",
+                    artist, true), artistIdWhereArgs));
+
             stats.setSongsTagged(queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_TAGGED, artist, true), artistIdWhereArgs));
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NOT NULL",
+                    artist, true), artistIdWhereArgs));
+
             stats.setSongsUntagged(queryInt(db, addArtistIdWhereClause(
-                    SQL_QUERY_SONGS_UNTAGGED, artist, true), artistIdWhereArgs));
-            if (artist == null) {
-                stats.setTimesPlayed(queryInt(db, addArtistIdWhereClause(
-                        SQL_QUERY_TIMES_PLAYED, null, false), null));
-            }
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NULL",
+                    artist, true), artistIdWhereArgs));
+
             stats.setPlayedDuration(queryLong(db, addArtistIdWhereClause(
-                    SQL_QUERY_PLAYED_DURATION, artist, false), artistIdWhereArgs));
+                    "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED +
+                            ") FROM " + TABLE_SONGS,
+                    artist, false), artistIdWhereArgs));
 
             return stats;
         }

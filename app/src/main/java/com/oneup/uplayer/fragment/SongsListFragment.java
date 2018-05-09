@@ -82,14 +82,14 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 Toast.makeText(getActivity(), song.getBookmarked() > 0 ?
                                 R.string.bookmark_set : R.string.bookmark_cleared,
                         Toast.LENGTH_SHORT).show();
-                updateList();
+                reloadData();
                 break;
             case R.id.mark_played:
                 getDbHelper().updateSongPlayed(song);
                 Toast.makeText(getActivity(), getString(
                         R.string.times_played, song.getTimesPlayed()),
                         Toast.LENGTH_SHORT).show();
-                updateList();
+                reloadData();
                 break;
             case R.id.delete:
                 new AlertDialog.Builder(getActivity())
@@ -116,7 +116,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
                                 Toast.makeText(getActivity(), R.string.song_deleted,
                                         Toast.LENGTH_SHORT).show();
-                                updateList();
+                                reloadData();
                                 onSongRemoved(position);
                             }
                         })

@@ -98,7 +98,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Song> loadData() {
-            return mainService == null ? null : mainService.getSongs();
+            return mainService.getSongs();
         }
 
         @Override
@@ -172,7 +172,7 @@ public class PlaylistActivity extends AppCompatActivity {
                 mainService = binder.getService();
                 mainService.setOnSongIndexChangedListener(PlaylistFragment.this);
 
-                updateList();
+                reloadData();
                 setSelection(mainService.getSongIndex());
             }
 

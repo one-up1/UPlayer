@@ -57,12 +57,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        updateList();
-    }
-
-    @Override
     public void onDestroy() {
         if (dbHelper != null) {
             dbHelper.close();
@@ -104,38 +98,22 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         sortOrderReversed = !sortOrderReversed;
     }
 
-    protected void updateList() {
-        ArrayList<T> data = loadData();
-        if (data != null) {
-            if (sortOrderReversed) {
-                Log.d(TAG, "Reversing sort order");
-                Collections.reverse(data);
-            }
-            this.data = data;
+    protected void reloadData() {
+        data = loadData();
 
-            if (listAdapter == null) {
-                listAdapter = new ListAdapter();
-                setListAdapter(listAdapter);
-            } else {
-                listAdapter.notifyDataSetChanged();
-            }
-
-            setActivityTitle();
+        if (sortOrderReversed) {
+            Log.d(TAG, "Reversing sort order");
+            Collections.reverse(data);
         }
-    }
 
-    protected void setActivityTitle() {
-        Activity activity = getActivity();
-        if (activity != null && !(activity instanceof MainActivity)) {
-            String title = getActivityTitle();
-            if (title != null) {
-                activity.setTitle(title);
-            }
+        if (listAdapter == null) {
+            listAdapter = new ListAdapter();
+            setListAdapter(listAdapter);
+        } else {
+            listAdapter.notifyDataSetChanged();
         }
-    }
 
-    protected String getActivityTitle() {
-        return null;
+        setActivityTitle();
     }
 
     protected void notifyDataSetChanged() {
@@ -143,6 +121,17 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         if (listAdapter != null) {
             listAdapter.notifyDataSetChanged();
         }
+    }
+
+    protected void setActivityTitle() {
+        Activity activity = getActivity();
+        if (activity != null && !(activity instanceof MainActivity)) {
+            activity.setTitle(getActivityTitle());
+        }
+    }
+
+    protected String getActivityTitle() {
+        return null;
     }
 
     protected void setListItemViews(View rootView, int position, T item) {

@@ -50,6 +50,12 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        reloadData();
+    }
+
+    @Override
     protected ArrayList<Song> loadData() {
         return getDbHelper().querySongs(selection, selectionArgs, orderBy);
     }

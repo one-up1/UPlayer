@@ -28,6 +28,12 @@ public class ArtistsFragment extends ListFragment<Artist> {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        reloadData();
+    }
+
+    @Override
     protected ArrayList<Artist> loadData() {
         return getDbHelper().queryArtists(getArguments().getString(ARG_ORDER_BY));
     }

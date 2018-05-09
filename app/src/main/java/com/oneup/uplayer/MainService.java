@@ -27,9 +27,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-//TODO: Improve MainService impl, songIndex, time left calc, null checks, when notification is updated and when/how many times the ListView in PlaylistActivity gets updated, also after delete (from mediastore). getApplicationContext()
-//TODO: Update lists after service completes playing?
-
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     public static final String EXTRA_REQUEST_CODE = "com.oneup.extra.REQUEST_CODE";

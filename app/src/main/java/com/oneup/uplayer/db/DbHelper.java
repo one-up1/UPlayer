@@ -412,11 +412,9 @@ public class DbHelper extends SQLiteOpenHelper {
                                     song.getString(Song.TITLE) + "'");
                             break;
                         default:
-                            //FIXME: Restore duplicate song error after fixing media store
-                            break;
-                            /*throw new RuntimeException("Duplicate song: '" +
+                            throw new RuntimeException("Duplicate song: '" +
                                     song.getString(Song.ARTIST) + "' - '" +
-                                    song.getString(Song.TITLE) + "'");*/
+                                    song.getString(Song.TITLE) + "'");
                     }
                 }
                 updateArtistStats(db, null);

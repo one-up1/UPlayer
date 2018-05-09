@@ -31,7 +31,7 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.Set;
 
-//TODO: Review QueryFragment and statistics, starting of DateTimeActivity and getting value, also in EditSongActivity.
+//TODO: Review QueryFragment, starting of DateTimeActivity and getting value, also in EditSongActivity.
 
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {

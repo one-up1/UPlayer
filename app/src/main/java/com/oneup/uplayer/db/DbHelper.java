@@ -40,52 +40,8 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String TABLE_ARTISTS = "artists";
     private static final String TABLE_SONGS = "songs";
 
-    private static final String SQL_CREATE_ARTISTS =
-            "CREATE TABLE " + TABLE_ARTISTS + "(" +
-                    Artist._ID + " INTEGER PRIMARY KEY," +
-                    Artist.ARTIST + " TEXT," +
-                    Artist.LAST_SONG_ADDED + " INTEGER," +
-                    Artist.LAST_PLAYED + " INTEGER," +
-                    Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)";
-
-    private static final String SQL_CREATE_SONGS =
-            "CREATE TABLE " + TABLE_SONGS + "(" +
-                    Song._ID + " INTEGER PRIMARY KEY," +
-                    Song.TITLE + " TEXT," +
-                    Song.ARTIST_ID + " INTEGER," +
-                    Song.ARTIST + " INTEGER," +
-                    Song.DURATION + " INTEGER," +
-                    Song.YEAR + " INTEGER," +
-                    Song.ADDED + " INTEGER," +
-                    Song.TAG + " TEXT," +
-                    Song.BOOKMARKED + " INTEGER," +
-                    Song.LAST_PLAYED + " INTEGER," +
-                    Song.TIMES_PLAYED + " INTEGER DEFAULT 0)";
-
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
-
-    private static final String SQL_UPDATE_ARTISTS_STATS =
-            "UPDATE " + TABLE_ARTISTS + " SET " +
-                    Artist.LAST_SONG_ADDED +
-                    "=(SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS +
-                    " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
-
-                    Artist.LAST_PLAYED +
-                    "=(SELECT MAX(" + Song.LAST_PLAYED + ") FROM " + TABLE_SONGS +
-                    " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
-
-                    Artist.TIMES_PLAYED +
-                    "=(SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS +
-                    " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")";
-
-    private static final String SQL_UPDATE_ARTIST_STATS =
-            SQL_UPDATE_ARTISTS_STATS + " WHERE " + Artist._ID + "=?";
-
-    private static final String SQL_BOOKMARK_SONG =
-            "UPDATE " + TABLE_SONGS + " SET " +
-                    Song.BOOKMARKED + "=CASE WHEN " +
-                    Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
-                    "WHERE " + Song._ID + "=?";
+    private static final String SQL_WHERE_ID_IS = " WHERE " + SQL_ID_IS;
 
     private static final String SQL_QUERY_SONG_COUNT =
             "SELECT COUNT(*) FROM " + TABLE_SONGS;
@@ -124,8 +80,26 @@ public class DbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "DbHelper.onCreate()");
-        db.execSQL(SQL_CREATE_ARTISTS);
-        db.execSQL(SQL_CREATE_SONGS);
+
+        db.execSQL("CREATE TABLE " + TABLE_ARTISTS + "(" +
+                Artist._ID + " INTEGER PRIMARY KEY," +
+                Artist.ARTIST + " TEXT," +
+                Artist.LAST_SONG_ADDED + " INTEGER," +
+                Artist.LAST_PLAYED + " INTEGER," +
+                Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)");
+
+        db.execSQL("CREATE TABLE " + TABLE_SONGS + "(" +
+                Song._ID + " INTEGER PRIMARY KEY," +
+                Song.TITLE + " TEXT," +
+                Song.ARTIST_ID + " INTEGER," +
+                Song.ARTIST + " INTEGER," +
+                Song.DURATION + " INTEGER," +
+                Song.YEAR + " INTEGER," +
+                Song.ADDED + " INTEGER," +
+                Song.TAG + " TEXT," +
+                Song.BOOKMARKED + " INTEGER," +
+                Song.LAST_PLAYED + " INTEGER," +
+                Song.TIMES_PLAYED + " INTEGER DEFAULT 0)");
     }
 
     @Override
@@ -245,7 +219,12 @@ public class DbHelper extends SQLiteOpenHelper {
     public void bookmarkSong(Song song) {
         Log.d(TAG, "DbHelper.bookmarkSong(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
-            db.execSQL(SQL_BOOKMARK_SONG, new Object[]{Calendar.currentTime(), song.getId()});
+            db.execSQL("UPDATE " + TABLE_SONGS + " SET " +
+                            Song.BOOKMARKED + "=CASE WHEN " +
+                            Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
+                            SQL_WHERE_ID_IS,
+                    new Object[]{Calendar.currentTime(), song.getId()});
+
             song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED, song.getId()));
         }
     }
@@ -291,6 +270,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public Stats queryStats(Artist artist) {
+        //TODO: Improve (artist) statistics and fix division by zero.
         Log.d(TAG, "DbOpenHelper.queryStats(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             Stats stats = new Stats();
@@ -358,8 +338,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 // Update artists when songs have been inserted or deleted.
                 if (resSongs.rowsInserted > 0 || resSongs.rowsDeleted > 0) {
-                    db.execSQL(SQL_UPDATE_ARTISTS_STATS);
-                    Log.d(TAG, "Artist stats updated");
+                    updateArtistStats(db, null);
                 }
 
                 db.setTransactionSuccessful();
@@ -451,15 +430,15 @@ public class DbHelper extends SQLiteOpenHelper {
                                     song.getString(Song.TITLE) + "'");*/
                     }
                 }
-
-                db.execSQL(SQL_UPDATE_ARTISTS_STATS);
-                Log.d(TAG, songs.length() + " songs restored");
+                updateArtistStats(db, null);
 
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
             }
         }
+
+        Log.d(TAG, songs.length() + " songs restored");
     }
 
     public static String[] getWhereArgs(long id) {
@@ -543,14 +522,32 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static void updateArtistStats(SQLiteDatabase db, Song song) {
         Log.d(TAG, "DbHelper.updateArtistStats(" + song + ")");
-        db.execSQL(SQL_UPDATE_ARTIST_STATS, new Object[]{song.getArtistId()});
+
+        String sql = "UPDATE " + TABLE_ARTISTS + " SET " +
+                Artist.LAST_SONG_ADDED +
+                "=(SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS +
+                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
+
+                Artist.LAST_PLAYED +
+                "=(SELECT MAX(" + Song.LAST_PLAYED + ") FROM " + TABLE_SONGS +
+                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
+
+                Artist.TIMES_PLAYED +
+                "=(SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS +
+                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")";
+
+        if (song == null) {
+            db.execSQL(sql);
+        } else {
+            db.execSQL(sql + SQL_WHERE_ID_IS, new Object[]{song.getArtistId()});
+        }
     }
 
     private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
         db.execSQL("UPDATE " + table + " SET " +
                         PlayedColumns.LAST_PLAYED + "=?," +
-                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1 " +
-                        "WHERE " + SQL_ID_IS,
+                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1" +
+                        SQL_WHERE_ID_IS,
                 new Object[]{time, id});
     }
 

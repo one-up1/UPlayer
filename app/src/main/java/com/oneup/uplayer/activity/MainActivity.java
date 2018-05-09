@@ -19,8 +19,6 @@ import com.oneup.uplayer.fragment.ListFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: When/how fragments are recreated/reloaded. Android auto reload fragments when switching to tab more than 1 tab away.
-
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
 
@@ -29,15 +27,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "MainActivity.onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(TAG, "MainActivity.onCreate()");
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        // Set up the ViewPager with the sections adapter.
         viewPager = findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
         viewPager.setCurrentItem(3);
@@ -48,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
                 PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Requesting permissions");
+            Log.d(TAG, "Requesting WRITE_EXTERNAL_STORAGE permission");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
     }
@@ -65,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
         Log.d(TAG, "MainActivity.onTabReselected(" + tab.getPosition() + ")");
+
+        // Reverse sort order when a ListFragment tab is reselected.
         Fragment fragment = sectionsPagerAdapter.getItem(tab.getPosition());
         if (fragment instanceof ListFragment) {
             ((ListFragment) fragment).reverseSortOrder();

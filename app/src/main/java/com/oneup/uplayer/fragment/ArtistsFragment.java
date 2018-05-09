@@ -82,7 +82,6 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 getDbHelper().queryArtist(artist);
                 Stats stats = getDbHelper().queryStats(artist);
 
-                //TODO: Artist stats. Avg prc per artist of total songs, division by 0 stats.getSongPlayed() ?
                 Util.showInfoDialog(getActivity(), artist.getArtist(), R.string.artist_message,
                         artist.getLastSongAdded() == 0 ? getString(R.string.na) :
                                 Util.formatDateTimeAgo(artist.getLastSongAdded()),

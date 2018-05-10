@@ -25,7 +25,6 @@ import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
-import com.oneup.uplayer.db.Stats;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
@@ -302,22 +301,12 @@ public class QueryFragment extends Fragment implements
             });
             tagsDialog.show();
         } else if (v == bStatistics) {
-            Stats stats = dbHelper.queryStats(null);
-            Util.showInfoDialog(getActivity(), R.string.statistics, R.string.statistics_message,
-                    stats.getSongCount(), Util.formatDuration(stats.getSongsDuration()),
-                    stats.getArtistCount(), Math.round(
-                            (double) stats.getSongCount() / stats.getArtistCount()),
-                    stats.getSongsPlayed(), Util.formatPercent(
-                            (double) stats.getSongsPlayed() / stats.getSongCount()),
-                    stats.getSongsUnplayed(), Util.formatPercent(
-                            (double) stats.getSongsUnplayed() / stats.getSongCount()),
-                    stats.getSongsTagged(), Util.formatPercent(
-                            (double) stats.getSongsTagged() / stats.getSongCount()),
-                    stats.getSongsUntagged(), Util.formatPercent(
-                            (double) stats.getSongsUntagged() / stats.getSongCount()),
-                    stats.getTimesPlayed(), Util.formatDuration(stats.getPlayedDuration()),
-                    Math.round((double) stats.getTimesPlayed() / stats.getSongsPlayed()),
-                    Util.formatDuration(stats.getPlayedDuration() / stats.getSongsPlayed()));
+            try {
+                dbHelper.queryStats(null).showDialog(getActivity(), null);
+            } catch (Exception ex) {
+                Log.e(TAG, "Error querying stats", ex);
+                Util.showErrorDialog(getActivity(), ex);
+            }
         } else if (v == bRestorePlaylist) {
             getActivity().startService(new Intent(getActivity(), MainService.class)
                     .putExtra(MainService.EXTRA_REQUEST_CODE,

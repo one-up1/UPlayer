@@ -145,8 +145,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
                                     Toast.makeText(getActivity(), R.string.song_deleted,
                                             Toast.LENGTH_SHORT).show();
-                                    reloadData();
                                     onSongRemoved(position);
+                                    reloadData();
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error deleting song", ex);
                                     Util.showErrorDialog(getActivity(), ex);

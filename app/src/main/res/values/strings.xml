@@ -98,4 +98,14 @@
     <string name="ok">OK</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
+
+    <string name="song_count">Song count:</string>
+    <string name="artist_count">Artist count: </string>
+    <string name="songs_played">Songs played:</string>
+    <string name="songs_unplayed">Songs unplayed:</string>
+    <string name="songs_tagged">Songs tagged:</string>
+    <string name="songs_untagged">Songs untagged:</string>
+    <string name="last_song_added">Last song added:</string>
+    <string name="avg_times_played">Avg times played:</string>
 </resources>

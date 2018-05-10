@@ -3,13 +3,13 @@ package com.oneup.uplayer.fragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Artist;
-import com.oneup.uplayer.db.Stats;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
@@ -18,6 +18,8 @@ public class ArtistsFragment extends ListFragment<Artist> {
     public static final int INFO_LAST_SONG_ADDED = 1; //TODO: Only use these and no orderBy and songsOrderBy?
     public static final int INFO_LAST_PLAYED = 2;
     public static final int INFO_TIMES_PLAYED = 3;
+
+    private static final String TAG = "UPlayer";
 
     private static final String ARG_ORDER_BY = "order_by";
     private static final String ARG_SONGS_ORDER_BY = "songs_order_by";
@@ -85,27 +87,13 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected void onContextItemSelected(int itemId, int position, Artist artist) {
         switch (itemId) {
             case R.id.info:
-                getDbHelper().queryArtist(artist);
-                Stats stats = getDbHelper().queryStats(artist);
-
-                Util.showInfoDialog(getActivity(), artist.getArtist(), R.string.artist_message,
-                        stats.getSongCount(), Util.formatDuration(stats.getSongsDuration()),
-                        stats.getSongsPlayed(), Util.formatPercent(
-                                (double) stats.getSongsPlayed() / stats.getSongCount()),
-                        stats.getSongsUnplayed(), Util.formatPercent(
-                                (double) stats.getSongsUnplayed() / stats.getSongCount()),
-                        stats.getSongsTagged(), Util.formatPercent(
-                                (double) stats.getSongsTagged() / stats.getSongCount()),
-                        stats.getSongsUntagged(), Util.formatPercent(
-                                (double) stats.getSongsUntagged() / stats.getSongCount()),
-                        artist.getLastSongAdded() == 0 ? getString(R.string.na) :
-                                Util.formatDateTimeAgo(artist.getLastSongAdded()),
-                        artist.getLastPlayed() == 0 ?
-                                getString(R.string.na) :
-                                Util.formatDateTimeAgo(artist.getLastPlayed()),
-                        artist.getTimesPlayed(), Util.formatDuration(stats.getPlayedDuration()),
-                        Math.round((double) artist.getTimesPlayed() / stats.getSongsPlayed()),
-                        Util.formatDuration(stats.getPlayedDuration() / stats.getSongsPlayed()));
+                try {
+                    getDbHelper().queryArtist(artist);
+                    getDbHelper().queryStats(artist).showDialog(getActivity(), artist);
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error querying artist stats", ex);
+                    Util.showErrorDialog(getActivity(), ex);
+                }
                 break;
         }
     }

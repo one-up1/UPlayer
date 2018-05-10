@@ -254,28 +254,20 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public Stats queryStats(Artist artist) {
-        //TODO: Improve (artist) statistics and fix division by zero, catch exceptions on query.
         Log.d(TAG, "DbHelper.queryStats(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             Stats stats = new Stats();
             
-            String[] artistIdWhereArgs;
-            if (artist == null) {
-                stats.setArtistCount(queryInt(db,
-                        "SELECT COUNT(*) FROM " + TABLE_ARTISTS, null));
-
-                stats.setTimesPlayed(queryInt(db, addArtistIdWhereClause(
-                        "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS,
-                        null, false), null));
-
-                artistIdWhereArgs = null;
-            } else {
-                artistIdWhereArgs = getWhereArgs(artist.getId());
-            }
+            String[] artistIdWhereArgs = artist == null ? null : getWhereArgs(artist.getId());
 
             stats.setSongCount(queryInt(db, addArtistIdWhereClause(
                     "SELECT COUNT(*) FROM " + TABLE_SONGS,
                     artist, false), artistIdWhereArgs));
+
+            if (artist == null) {
+                stats.setArtistCount(queryInt(db,
+                        "SELECT COUNT(*) FROM " + TABLE_ARTISTS, null));
+            }
 
             stats.setSongsDuration(queryLong(db, addArtistIdWhereClause(
                     "SELECT SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS, artist, false),
@@ -296,6 +288,11 @@ public class DbHelper extends SQLiteOpenHelper {
             stats.setSongsUntagged(queryInt(db, addArtistIdWhereClause(
                     "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NULL",
                     artist, true), artistIdWhereArgs));
+
+            stats.setTimesPlayed(artist == null ? queryInt(db, addArtistIdWhereClause(
+                    "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS,
+                    null, false), null)
+                    : artist.getTimesPlayed());
 
             stats.setPlayedDuration(queryLong(db, addArtistIdWhereClause(
                     "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED +

@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
 
-//TODO: MainReceiver, where to store preferences?
+//TODO: MainReceiver, where to store preferences? Sometimes receiving erroneously?
 
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";

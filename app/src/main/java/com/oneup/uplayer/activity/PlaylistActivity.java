@@ -73,7 +73,6 @@ public class PlaylistActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             Log.d(TAG, "PlaylistFragment.onCreate()");
 
-            setViewArtistOrderBy(Song.TITLE);
             getActivity().bindService(new Intent(getActivity(), MainService.class),
                     serviceConnection, Context.BIND_AUTO_CREATE);
         }

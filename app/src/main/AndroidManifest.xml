@@ -27,7 +27,7 @@
 
         <activity
             android:name=".activity.PlaylistActivity"
-            android:launchMode = "singleInstance" />
+            android:launchMode="singleInstance" />
 
         <activity
             android:name=".activity.EditSongActivity"

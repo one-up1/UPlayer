@@ -73,8 +73,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
         switch (itemId) {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
-                        .putExtras(SongsFragment.getArguments(
-                                song.getArtistId(),
+                        .putExtras(SongsFragment.getArguments(song.getArtistId(),
                                 viewArtistOrderBy == null ? Song.TITLE : viewArtistOrderBy)));
                 break;
             case R.id.edit:
@@ -132,8 +131,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                     resolver.update(uri, values, null, null);
 
                                     // Delete song from MediaStore and database.
-                                    int res = resolver.delete(uri, null, null);
-                                    switch (res) {
+                                    int rowsAffected = resolver.delete(uri, null, null);
+                                    switch (rowsAffected) {
                                         case 0:
                                             throw new RuntimeException("Song not found");
                                         case 1:

@@ -1,6 +1,7 @@
 package com.oneup.uplayer.fragment;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -323,21 +324,76 @@ public class QueryFragment extends Fragment implements
                     .putExtra(MainService.EXTRA_REQUEST_CODE,
                             MainService.REQUEST_RESTORE_PLAYLIST));
         } else if (v == bSyncDatabase) {
-            //TODO: Sync and backup in new thread with ProgressDialog, and reload lists.
-            try {
-                dbHelper.syncWithMediaStore(getActivity());
-            } catch (Exception ex) {
-                Log.e(TAG, "Error syncing database", ex);
-                Util.showErrorDialog(getActivity(), ex);
-            }
+            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                    getString(R.string.app_name),
+                    getString(R.string.synchronizing_database), true);
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        final DbHelper.SyncResult[] results =
+                                dbHelper.syncWithMediaStore(getActivity());
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Util.showInfoDialog(getActivity(), R.string.sync_completed,
+                                        R.string.sync_completed_message,
+                                        results[0].getRowCount(), results[0].getRowsIgnored(),
+                                        results[0].getRowsInserted(),
+                                        results[0].getRowsUpdated(), results[0].getRowsDeleted(),
+                                        results[1].getRowCount(), results[1].getRowsIgnored(),
+                                        results[1].getRowsInserted(),
+                                        results[1].getRowsUpdated(), results[1].getRowsDeleted());
+                            }
+                        });
+                    } catch (final Exception ex) {
+                        Log.e(TAG, "Error synchronizing database", ex);
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Util.showErrorDialog(getActivity(), ex);
+                            }
+                        });
+                    } finally {
+                        progressDialog.dismiss();
+                    }
+                }
+            }).start();
         } else if (v == bBackup) {
-            try {
-                dbHelper.backup();
-                Toast.makeText(getActivity(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
-            } catch (Exception ex) {
-                Log.e(TAG, "Error running backup", ex);
-                Util.showErrorDialog(getActivity(), ex);
-            }
+            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                    getString(R.string.app_name),
+                    getString(R.string.running_backup), true);
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        dbHelper.backup();
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(), R.string.backup_completed,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch (final Exception ex) {
+                        Log.e(TAG, "Error running backup", ex);
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Util.showErrorDialog(getActivity(), ex);
+                            }
+                        });
+                    } finally {
+                        progressDialog.dismiss();
+                    }
+                }
+            }).start();
         }
     }
 
@@ -363,14 +419,38 @@ public class QueryFragment extends Fragment implements
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            try {
-                                dbHelper.restoreBackup();
-                                Toast.makeText(getActivity(), R.string.backup_restored,
-                                        Toast.LENGTH_SHORT).show();
-                            } catch (Exception ex) {
-                                Log.e(TAG, "Error restoring backup", ex);
-                                Util.showErrorDialog(getActivity(), ex);
-                            }
+                            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                                    getString(R.string.app_name),
+                                    getString(R.string.restoring_backup), true);
+                            new Thread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    try {
+                                        dbHelper.restoreBackup();
+                                        getActivity().runOnUiThread(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getActivity(),
+                                                        R.string.backup_restored,
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } catch (final Exception ex) {
+                                        Log.e(TAG, "Error restoring backup", ex);
+                                        getActivity().runOnUiThread(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                Util.showErrorDialog(getActivity(), ex);
+                                            }
+                                        });
+                                    } finally {
+                                        progressDialog.dismiss();
+                                    }
+                                }
+                            }).start();
                         }
                     })
                     .setNegativeButton(R.string.no, null)
@@ -512,8 +592,7 @@ public class QueryFragment extends Fragment implements
         }
 
         startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(
-                        selection, null, orderBy)));
+                .putExtras(SongsFragment.getArguments(selection, null, orderBy)));
 
         preferences.apply();
     }

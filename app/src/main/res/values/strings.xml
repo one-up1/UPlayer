@@ -36,14 +36,11 @@
     <string name="statistics_message">Song count: %1$d (%2$s)\nArtist count: %3$d (avg %4$d songs)\nSongs played: %5$d (%6$s)\nSongs unplayed: %7$d (%8$s)\nSongs tagged: %9$d (%10$s)\nSongs untagged: %11$d (%12$s)\nTimes played: %13$d (%14$s)\nAvg times played: %15$d (%16$s)</string>
     <string name="restore_playlist">Restore playlist</string>
     <string name="sync_database">Sync database</string>
-    <string name="synchronizing_database">Synchronizing database&#8230;</string>
     <string name="sync_completed">Sync completed</string>
     <string name="sync_completed_message">%1$d artists (%2$d ignored)\n%3$d inserted, %4$d updated, %5$d deleted\n\n%6$d songs (%7$d ignored)\n%8$d inserted, %9$d updated, %10$d deleted</string>
     <string name="backup">Backup&#8230;</string>
-    <string name="running_backup">Running backup&#8230;</string>
     <string name="backup_completed">Backup completed</string>
     <string name="restore_backup_confirm">Restore backup?</string>
-    <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
 
     <string name="info">Info</string>

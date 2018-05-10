@@ -1,7 +1,6 @@
 package com.oneup.uplayer.fragment;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -324,9 +323,6 @@ public class QueryFragment extends Fragment implements
                     .putExtra(MainService.EXTRA_REQUEST_CODE,
                             MainService.REQUEST_RESTORE_PLAYLIST));
         } else if (v == bSyncDatabase) {
-            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                    getString(R.string.app_name),
-                    getString(R.string.synchronizing_database), true);
             new Thread(new Runnable() {
 
                 @Override
@@ -357,15 +353,10 @@ public class QueryFragment extends Fragment implements
                                 Util.showErrorDialog(getActivity(), ex);
                             }
                         });
-                    } finally {
-                        progressDialog.dismiss();
                     }
                 }
             }).start();
         } else if (v == bBackup) {
-            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                    getString(R.string.app_name),
-                    getString(R.string.running_backup), true);
             new Thread(new Runnable() {
 
                 @Override
@@ -389,8 +380,6 @@ public class QueryFragment extends Fragment implements
                                 Util.showErrorDialog(getActivity(), ex);
                             }
                         });
-                    } finally {
-                        progressDialog.dismiss();
                     }
                 }
             }).start();
@@ -419,9 +408,6 @@ public class QueryFragment extends Fragment implements
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                                    getString(R.string.app_name),
-                                    getString(R.string.restoring_backup), true);
                             new Thread(new Runnable() {
 
                                 @Override
@@ -446,8 +432,6 @@ public class QueryFragment extends Fragment implements
                                                 Util.showErrorDialog(getActivity(), ex);
                                             }
                                         });
-                                    } finally {
-                                        progressDialog.dismiss();
                                     }
                                 }
                             }).start();

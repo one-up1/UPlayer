@@ -66,7 +66,7 @@ public class Stats {
                 .setPositiveButton(R.string.ok, null)
                 .show();
 
-        //TODO: (artist) stats, plurals, string resources, fix division by zero, catch exceptions on query.
+        //TODO: (artist) stats, plurals, string resources, fix division by zero.
         //Util.formatDateTime() auto returns NA when 0?
         //Query unplayed/untagged or just total - played?
         //Dialog layout, padding, etc.
@@ -118,7 +118,7 @@ public class Stats {
     private static void addDialogColumn(Context context, GridLayout grid, String text) {
         TextView view = new TextView(context);
         view.setText(text);
-        view.setTextAppearance(android.R.style.TextAppearance_Medium);
+        view.setTextAppearance(android.R.style.TextAppearance_Theme_Dialog);
         view.setPadding(10, 10, 10, 10);
         grid.addView(view);
     }

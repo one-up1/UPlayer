@@ -192,12 +192,12 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                db.execSQL("UPDATE " + TABLE_SONGS + " SET " +
+                update(db, "UPDATE " + TABLE_SONGS + " SET " +
                                 Song.BOOKMARKED + "=CASE WHEN " +
                                 Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
                                 SQL_WHERE_ID_IS,
-                        new Object[]{Calendar.currentTime(), song.getId()});
-                verifyUpdate(db, TABLE_SONGS, song.getId());
+                        new Object[]{Calendar.currentTime(), song.getId()},
+                        TABLE_SONGS, song.getId());
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -265,13 +265,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     artist, false), artistIdWhereArgs));
 
             if (artist == null) {
-                stats.setArtistCount(queryInt(db,
-                        "SELECT COUNT(*) FROM " + TABLE_ARTISTS, null));
+                stats.setArtistCount(queryInt(db, "SELECT COUNT(*) FROM " + TABLE_ARTISTS, null));
             }
 
             stats.setSongsDuration(queryLong(db, addArtistIdWhereClause(
-                    "SELECT SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS, artist, false),
-                    artistIdWhereArgs));
+                    "SELECT SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS,
+                    artist, false), artistIdWhereArgs));
 
             stats.setSongsPlayed(queryInt(db, addArtistIdWhereClause(
                     "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + ">0",
@@ -360,14 +359,14 @@ public class DbHelper extends SQLiteOpenHelper {
                     null, null, null, null, null)) {
                 while (c.moveToNext()) {
                     JSONObject song = new JSONObject();
-                    putValueFromCursor(c, 0, song, Song.TITLE);
-                    putValueFromCursor(c, 1, song, Song.ARTIST);
-                    putValueFromCursor(c, 2, song, Song.YEAR);
-                    putValueFromCursor(c, 3, song, Song.ADDED);
-                    putValueFromCursor(c, 4, song, Song.TAG);
-                    putValueFromCursor(c, 5, song, Song.BOOKMARKED);
-                    putValueFromCursor(c, 6, song, Song.LAST_PLAYED);
-                    putValueFromCursor(c, 7, song, Song.TIMES_PLAYED);
+                    putValue(c, 0, song, Song.TITLE);
+                    putValue(c, 1, song, Song.ARTIST);
+                    putValue(c, 2, song, Song.YEAR);
+                    putValue(c, 3, song, Song.ADDED);
+                    putValue(c, 4, song, Song.TAG);
+                    putValue(c, 5, song, Song.BOOKMARKED);
+                    putValue(c, 6, song, Song.LAST_PLAYED);
+                    putValue(c, 7, song, Song.TIMES_PLAYED);
                     songs.put(song);
                 }
             }
@@ -400,12 +399,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     // Put values to update from JSONObject.
                     JSONObject song = songs.getJSONObject(index);
                     ContentValues values = new ContentValues();
-                    putValueFromJSONObject(song, values, Song.YEAR);
-                    putValueFromJSONObject(song, values, Song.ADDED);
-                    putValueFromJSONObject(song, values, Song.TAG);
-                    putValueFromJSONObject(song, values, Song.BOOKMARKED);
-                    putValueFromJSONObject(song, values, Song.LAST_PLAYED);
-                    putValueFromJSONObject(song, values, Song.TIMES_PLAYED);
+                    putValue(song, values, Song.YEAR);
+                    putValue(song, values, Song.ADDED);
+                    putValue(song, values, Song.TAG);
+                    putValue(song, values, Song.BOOKMARKED);
+                    putValue(song, values, Song.LAST_PLAYED);
+                    putValue(song, values, Song.TIMES_PLAYED);
 
                     // Update row and make sure 1 row is updated.
                     switch (db.update(TABLE_SONGS, values,
@@ -439,6 +438,19 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public static String[] getWhereArgs(long id) {
         return new String[]{Long.toString(id)};
+    }
+
+    private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
+        update(db, "UPDATE " + table + " SET " +
+                        PlayedColumns.LAST_PLAYED + "=?," +
+                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1" +
+                        SQL_WHERE_ID_IS,
+                new Object[]{time, id}, table, id);
+    }
+
+    private static String addArtistIdWhereClause(String sql, Artist artist, boolean and) {
+        return artist == null ? sql : sql + " " +
+                (and ? "AND" : "WHERE") + " " + Song.ARTIST_ID + "=?";
     }
 
     private static SyncResult syncTable(Context context, Uri contentUri,
@@ -483,12 +495,12 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 // Put update column values.
                 ContentValues values = new ContentValues();
-                putValuesFromCursor(c, columns, values, updateColumns);
+                putValues(c, columns, values, updateColumns);
 
                 // Update or insert row if it doesn't exist.
                 if (update(db, table, values, id, false) == 0) {
                     values.put(BaseColumns._ID, id);
-                    putValuesFromCursor(c, columns, values, insertColumns);
+                    putValues(c, columns, values, insertColumns);
                     if (timeColumn != null) {
                         values.put(timeColumn, time);
                     }
@@ -521,6 +533,61 @@ public class DbHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    private static void putValues(Cursor c, String[] columns,
+                                  ContentValues values, int[] putColumns) {
+        // Put all columns when putColumns is null or only the specified column indices.
+        for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
+            int column = putColumns == null ? i : putColumns[i];
+            switch (c.getType(column)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    values.putNull(columns[column]);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    values.put(columns[column], c.getLong(column));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    values.put(columns[column], c.getString(column));
+                    break;
+                default:
+                    throw new SQLiteException("Invalid type");
+            }
+        }
+    }
+
+    private static void putValue(Cursor c, int column, JSONObject obj, String key)
+            throws JSONException {
+        switch (c.getType(column)) {
+            case Cursor.FIELD_TYPE_NULL:
+                break;
+            case Cursor.FIELD_TYPE_INTEGER:
+                obj.put(key, c.getLong(column));
+                break;
+            case Cursor.FIELD_TYPE_STRING:
+                obj.put(key, c.getString(column));
+                break;
+            default:
+                throw new SQLiteException("Invalid type");
+        }
+    }
+
+    private static void putValue(JSONObject obj, ContentValues values, String key)
+            throws JSONException {
+        if (obj.has(key)) {
+            Object value = obj.get(key);
+            if (value instanceof Integer) {
+                values.put(key, (Integer) value);
+            } else if (value instanceof Long) {
+                values.put(key, (Long) value);
+            } else if (value instanceof String) {
+                values.put(key, (String) value);
+            } else {
+                throw new SQLiteException("Invalid type");
+            }
+        } else {
+            values.putNull(key);
+        }
+    }
+
     private static void updateArtistStats(SQLiteDatabase db, Song song) {
         Log.d(TAG, "DbHelper.updateArtistStats(" + song + ")");
 
@@ -540,22 +607,9 @@ public class DbHelper extends SQLiteOpenHelper {
         if (song == null) {
             db.execSQL(sql);
         } else {
-            db.execSQL(sql + SQL_WHERE_ID_IS, new Object[]{song.getArtistId()});
+            update(db, sql + SQL_WHERE_ID_IS, new Object[]{song.getArtistId()},
+                    TABLE_ARTISTS, song.getArtistId());
         }
-    }
-
-    private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
-        db.execSQL("UPDATE " + table + " SET " +
-                        PlayedColumns.LAST_PLAYED + "=?," +
-                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1" +
-                        SQL_WHERE_ID_IS,
-                new Object[]{time, id});
-        verifyUpdate(db, table, id);
-    }
-
-    private static String addArtistIdWhereClause(String sql, Artist artist, boolean and) {
-        return artist == null ? sql : sql + " " +
-                (and ? "AND" : "WHERE") + " " + Song.ARTIST_ID + "=?";
     }
 
     private static Cursor query(SQLiteDatabase db, String table, String[] columns, long id) {
@@ -590,6 +644,14 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    private static void putValue(ContentValues values, String key, long value) {
+        if (value == 0) {
+            values.putNull(key);
+        } else {
+            values.put(key, value);
+        }
+    }
+
     private static int update(SQLiteDatabase db, String table, ContentValues values, long id,
                               boolean verify) {
         int rowsAffected = db.update(table, values, SQL_ID_IS, getWhereArgs(id));
@@ -597,6 +659,12 @@ public class DbHelper extends SQLiteOpenHelper {
             verifyUpdate(rowsAffected, table, id);
         }
         return rowsAffected;
+    }
+
+    private static void update(SQLiteDatabase db, String sql, Object[] bindArgs,
+                               String table, long id) {
+        db.execSQL(sql, bindArgs);
+        verifyUpdate(queryInt(db, "SELECT changes()", null), table, id);
     }
 
     private static void delete(SQLiteDatabase db, String table, long id) {
@@ -612,73 +680,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 break;
             default:
                 throw new SQLiteException("Duplicate " + table + " row: " + id);
-        }
-    }
-
-    private static void verifyUpdate(SQLiteDatabase db, String table, long id) {
-        verifyUpdate(queryInt(db, "SELECT changes()", null), table, id);
-    }
-
-    private static void putValue(ContentValues values, String key, long value) {
-        if (value == 0) {
-            values.putNull(key);
-        } else {
-            values.put(key, value);
-        }
-    }
-
-    private static void putValuesFromCursor(Cursor c, String[] columns,
-                                            ContentValues values, int[] putColumns) {
-        // Put all columns when putColumns is null or only the specified column indices.
-        for (int i = 0; i < (putColumns == null ? columns.length : putColumns.length); i++) {
-            int column = putColumns == null ? i : putColumns[i];
-            switch (c.getType(column)) {
-                case Cursor.FIELD_TYPE_NULL:
-                    values.putNull(columns[column]);
-                    break;
-                case Cursor.FIELD_TYPE_INTEGER:
-                    values.put(columns[column], c.getLong(column));
-                    break;
-                case Cursor.FIELD_TYPE_STRING:
-                    values.put(columns[column], c.getString(column));
-                    break;
-                default:
-                    throw new SQLiteException("Invalid type");
-            }
-        }
-    }
-
-    private static void putValueFromCursor(Cursor c, int column, JSONObject obj, String key)
-            throws JSONException {
-        switch (c.getType(column)) {
-            case Cursor.FIELD_TYPE_NULL:
-                break;
-            case Cursor.FIELD_TYPE_INTEGER:
-                obj.put(key, c.getLong(column));
-                break;
-            case Cursor.FIELD_TYPE_STRING:
-                obj.put(key, c.getString(column));
-                break;
-            default:
-                throw new SQLiteException("Invalid type");
-        }
-    }
-
-    private static void putValueFromJSONObject(JSONObject obj, ContentValues values, String key)
-            throws JSONException {
-        if (obj.has(key)) {
-            Object value = obj.get(key);
-            if (value instanceof Integer) {
-                values.put(key, (Integer) value);
-            } else if (value instanceof Long) {
-                values.put(key, (Long) value);
-            } else if (value instanceof String) {
-                values.put(key, (String) value);
-            } else {
-                throw new SQLiteException("Invalid type");
-            }
-        } else {
-            values.putNull(key);
         }
     }
 

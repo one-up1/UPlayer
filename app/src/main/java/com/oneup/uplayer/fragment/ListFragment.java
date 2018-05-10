@@ -96,6 +96,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
             listAdapter.notifyDataSetChanged();
         }
         sortOrderReversed = !sortOrderReversed;
+        //TODO: No sortOrderReversed, reload data?
     }
 
     protected void reloadData() {

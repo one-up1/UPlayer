@@ -36,10 +36,16 @@ public abstract class SongsListFragment extends ListFragment<Song> {
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_EDIT_SONG:
-                    Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
-                    getDbHelper().updateSong(song);
-                    Toast.makeText(getActivity(), R.string.song_updated, Toast.LENGTH_SHORT).show();
-                    // onResume() is called after onActivityResult().
+                    try {
+                        getDbHelper().updateSong((Song)
+                                data.getParcelableExtra(EditSongActivity.EXTRA_SONG));
+                        Toast.makeText(getActivity(), R.string.song_updated,
+                                Toast.LENGTH_SHORT).show();
+                        // onResume() is called after onActivityResult().
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error updating song", ex);
+                        Util.showErrorDialog(getActivity(), ex);
+                    }
                     break;
             }
         }
@@ -72,24 +78,39 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                 viewArtistOrderBy == null ? Song.TITLE : viewArtistOrderBy)));
                 break;
             case R.id.edit:
-                getDbHelper().querySong(song);
-                startActivityForResult(new Intent(getActivity(), EditSongActivity.class)
-                                .putExtra(EditSongActivity.EXTRA_SONG, song),
-                        REQUEST_EDIT_SONG);
+                try {
+                    getDbHelper().querySong(song);
+                    startActivityForResult(new Intent(getActivity(), EditSongActivity.class)
+                                    .putExtra(EditSongActivity.EXTRA_SONG, song),
+                            REQUEST_EDIT_SONG);
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error querying song", ex);
+                    Util.showErrorDialog(getActivity(), ex);
+                }
                 break;
             case R.id.bookmark:
-                getDbHelper().bookmarkSong(song);
-                Toast.makeText(getActivity(), song.getBookmarked() > 0 ?
-                                R.string.bookmark_set : R.string.bookmark_cleared,
-                        Toast.LENGTH_SHORT).show();
-                reloadData();
+                try {
+                    getDbHelper().bookmarkSong(song);
+                    Toast.makeText(getActivity(), song.getBookmarked() > 0 ?
+                                    R.string.bookmark_set : R.string.bookmark_cleared,
+                            Toast.LENGTH_SHORT).show();
+                    reloadData();
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error bookmarking song", ex);
+                    Util.showErrorDialog(getActivity(), ex);
+                }
                 break;
             case R.id.mark_played:
-                getDbHelper().updateSongPlayed(song);
-                Toast.makeText(getActivity(), getString(
-                        R.string.times_played, song.getTimesPlayed()),
-                        Toast.LENGTH_SHORT).show();
-                reloadData();
+                try {
+                    getDbHelper().updateSongPlayed(song);
+                    Toast.makeText(getActivity(), getString(
+                            R.string.times_played, song.getTimesPlayed()),
+                            Toast.LENGTH_SHORT).show();
+                    reloadData();
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error updating song played", ex);
+                    Util.showErrorDialog(getActivity(), ex);
+                }
                 break;
             case R.id.delete:
                 new AlertDialog.Builder(getActivity())
@@ -100,24 +121,37 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Log.d(TAG, "Deleting song: " + song);
-                                ContentResolver resolver = getActivity().getContentResolver();
-                                Uri uri = song.getContentUri();
+                                Log.d(TAG, "Deleting song: " + song + " (" + song.getId() + ")");
+                                try {
+                                    ContentResolver resolver = getActivity().getContentResolver();
+                                    Uri uri = song.getContentUri();
 
-                                // Change type to image, otherwise nothing will be deleted.
-                                ContentValues values = new ContentValues();
-                                values.put("media_type", 1);
-                                resolver.update(uri, values, null, null);
+                                    // Change type to image, otherwise nothing will be deleted.
+                                    ContentValues values = new ContentValues();
+                                    values.put("media_type", 1);
+                                    resolver.update(uri, values, null, null);
 
-                                // Delete song from MediaStore and database.
-                                Log.d(TAG, resolver.delete(uri, null, null) +
-                                        " songs deleted from MediaStore");
-                                getDbHelper().deleteSong(song);
+                                    // Delete song from MediaStore and database.
+                                    int res = resolver.delete(uri, null, null);
+                                    switch (res) {
+                                        case 0:
+                                            throw new RuntimeException("Song not found");
+                                        case 1:
+                                            Log.d(TAG, "Song deleted from MediaStore");
+                                            break;
+                                        default:
+                                            throw new RuntimeException("Duplicate song");
+                                    }
+                                    getDbHelper().deleteSong(song);
 
-                                Toast.makeText(getActivity(), R.string.song_deleted,
-                                        Toast.LENGTH_SHORT).show();
-                                reloadData();
-                                onSongRemoved(position);
+                                    Toast.makeText(getActivity(), R.string.song_deleted,
+                                            Toast.LENGTH_SHORT).show();
+                                    reloadData();
+                                    onSongRemoved(position);
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Error deleting song", ex);
+                                    Util.showErrorDialog(getActivity(), ex);
+                                }
                             }
                         })
                         .setNegativeButton(R.string.no, null)

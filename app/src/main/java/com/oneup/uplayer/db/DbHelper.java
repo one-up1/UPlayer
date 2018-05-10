@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -28,8 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-//TODO: Check rows affected and moveToFirst() result.
 
 public class DbHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -154,7 +153,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public List<String> querySongTags() {
-        Log.d(TAG, "DbOpenHelper.querySongTags()");
+        Log.d(TAG, "DbHelper.querySongTags()");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, TABLE_SONGS, new String[]{Song.TAG},
                     Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
@@ -179,7 +178,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 values.put(Song.TAG, song.getTag());
                 putValue(values, Song.BOOKMARKED, song.getBookmarked());
 
-                update(db, TABLE_SONGS, values, song.getId());
+                update(db, TABLE_SONGS, values, song.getId(), true);
                 updateArtistStats(db, song);
 
                 db.setTransactionSuccessful();
@@ -192,12 +191,18 @@ public class DbHelper extends SQLiteOpenHelper {
     public void bookmarkSong(Song song) {
         Log.d(TAG, "DbHelper.bookmarkSong(" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
-            db.execSQL("UPDATE " + TABLE_SONGS + " SET " +
-                            Song.BOOKMARKED + "=CASE WHEN " +
-                            Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
-                            SQL_WHERE_ID_IS,
-                    new Object[]{Calendar.currentTime(), song.getId()});
-
+            db.beginTransaction();
+            try {
+                db.execSQL("UPDATE " + TABLE_SONGS + " SET " +
+                                Song.BOOKMARKED + "=CASE WHEN " +
+                                Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
+                                SQL_WHERE_ID_IS,
+                        new Object[]{Calendar.currentTime(), song.getId()});
+                verifyUpdate(db, TABLE_SONGS, song.getId());
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
             song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED, song.getId()));
         }
     }
@@ -228,11 +233,18 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 delete(db, TABLE_SONGS, song.getId());
 
-                if (db.delete(TABLE_ARTISTS, Artist._ID + " NOT IN (SELECT " + Song.ARTIST_ID +
-                        " FROM " + TABLE_SONGS + ")", null) == 0) {
-                    updateArtistStats(db, song);
-                } else {
-                    Log.d(TAG, "Deleted artist: " + song.getArtist());
+                // Delete artists with no songs. If nothing is deleted, the artist still exists and
+                // the artist stats should be updated. Make sure only 1 artist is deleted otherwise.
+                switch (db.delete(TABLE_ARTISTS, Artist._ID + " NOT IN (SELECT " + Song.ARTIST_ID +
+                        " FROM " + TABLE_SONGS + ")", null)) {
+                    case 0:
+                        updateArtistStats(db, song);
+                        break;
+                    case 1:
+                        Log.d(TAG, "Deleted artist: " + song.getArtist());
+                        break;
+                    default:
+                        throw new SQLiteException("Multiple artists deleted");
                 }
 
                 db.setTransactionSuccessful();
@@ -243,8 +255,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public Stats queryStats(Artist artist) {
-        //TODO: Improve (artist) statistics and fix division by zero.
-        Log.d(TAG, "DbOpenHelper.queryStats(" + artist + ")");
+        //TODO: Improve (artist) statistics and fix division by zero, catch exceptions on query.
+        Log.d(TAG, "DbHelper.queryStats(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             Stats stats = new Stats();
             
@@ -296,6 +308,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void syncWithMediaStore(Context context) throws IOException {
+        Log.d(TAG, "DbHelper.syncWithMediaStore()");
+
         // Read artist ignore file.
         List<String> artistIgnore = new ArrayList<>();
         if (ARTIST_IGNORE_FILE.exists()) {
@@ -309,6 +323,7 @@ public class DbHelper extends SQLiteOpenHelper {
         }
         Log.d(TAG, artistIgnore.size() + " artists on ignore list");
 
+        // Sync artists and songs tables.
         SyncResult resArtists, resSongs;
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
@@ -344,6 +359,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void backup() throws JSONException, IOException {
+        Log.d(TAG, "DbHelper.backup()");
         JSONArray songs = new JSONArray();
 
         // Put songs table in JSONArray.
@@ -376,6 +392,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void restoreBackup() throws IOException, JSONException {
+        Log.d(TAG, "DbHelper.restoreBackup()");
+
         // Read JSONArray from file.
         JSONArray songs;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -403,7 +421,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?", new String[]{
                             song.getString(Song.TITLE), song.getString(Song.ARTIST)})) {
                         case 0:
-                            throw new RuntimeException("Song not found: '" +
+                            throw new SQLiteException("Song not found: '" +
                                     song.getString(Song.ARTIST) + "' - '" +
                                     song.getString(Song.TITLE) + "'");
                         case 1:
@@ -412,7 +430,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                     song.getString(Song.TITLE) + "'");
                             break;
                         default:
-                            throw new RuntimeException("Duplicate song: '" +
+                            throw new SQLiteException("Duplicate song: '" +
                                     song.getString(Song.ARTIST) + "' - '" +
                                     song.getString(Song.TITLE) + "'");
                     }
@@ -438,8 +456,10 @@ public class DbHelper extends SQLiteOpenHelper {
                                         int ignoreColumn, List<String> ignoreValues,
                                         int refIdColumn, List<Long> refIds,
                                         String timeColumn, long time) {
+        Log.d(TAG, "DbHelper.syncTable(" + table + ")");
         SyncResult res = new SyncResult();
 
+        // Insert/update rows from the MediaStore into the database.
         try (Cursor c = context.getContentResolver().query(contentUri, columns, null, null, null)) {
             if (c == null) {
                 throw new RuntimeException("No MediaStore cursor");
@@ -475,7 +495,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 putValuesFromCursor(c, columns, values, updateColumns);
 
                 // Update or insert row if it doesn't exist.
-                if (update(db, table, values, id) == 0) {
+                if (update(db, table, values, id, false) == 0) {
                     values.put(BaseColumns._ID, id);
                     putValuesFromCursor(c, columns, values, insertColumns);
                     if (timeColumn != null) {
@@ -492,13 +512,13 @@ public class DbHelper extends SQLiteOpenHelper {
             }
         }
 
+        // Delete rows from the database that don't exist in the MediaStore.
         try (Cursor c = db.query(table, new String[]{BaseColumns._ID},
                 null, null, null, null, null)) {
             while (c.moveToNext()) {
                 long id = c.getLong(0);
                 if (!res.ids.contains(id)) {
                     delete(db, table, id);
-                    Log.d(TAG, table + " row deleted: " + id);
                     res.rowsDeleted++;
                 }
             }
@@ -536,6 +556,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1" +
                         SQL_WHERE_ID_IS,
                 new Object[]{time, id});
+        verifyUpdate(db, table, id);
     }
 
     private static String addArtistIdWhereClause(String sql, Artist artist, boolean and) {
@@ -575,12 +596,33 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    private static int update(SQLiteDatabase db, String table, ContentValues values, long id) {
-        return db.update(table, values, SQL_ID_IS, getWhereArgs(id));
+    private static int update(SQLiteDatabase db, String table, ContentValues values, long id,
+                              boolean verify) {
+        int res = db.update(table, values, SQL_ID_IS, getWhereArgs(id));
+        if (verify) {
+            verifyUpdate(res, table, id);
+        }
+        return res;
     }
 
-    private static int delete(SQLiteDatabase db, String table, long id) {
-        return db.delete(table, SQL_ID_IS, getWhereArgs(id));
+    private static void delete(SQLiteDatabase db, String table, long id) {
+        verifyUpdate(db.delete(table, SQL_ID_IS, getWhereArgs(id)), table, id);
+    }
+
+    private static void verifyUpdate(int rowsAffected, String table, long id) {
+        switch (rowsAffected) {
+            case 0:
+                throw new SQLiteException(table + " row not found: " + id);
+            case 1:
+                Log.d(TAG, table + " row affected: " + id);
+                break;
+            default:
+                throw new SQLiteException("Duplicate " + table + " row: " + id);
+        }
+    }
+
+    private static void verifyUpdate(SQLiteDatabase db, String table, long id) {
+        verifyUpdate(queryInt(db, "SELECT changes()", null), table, id);
     }
 
     private static void putValue(ContentValues values, String key, long value) {
@@ -607,7 +649,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     values.put(columns[column], c.getString(column));
                     break;
                 default:
-                    throw new RuntimeException("Invalid type");
+                    throw new SQLiteException("Invalid type");
             }
         }
     }
@@ -624,7 +666,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 obj.put(key, c.getString(column));
                 break;
             default:
-                throw new RuntimeException("Invalid type");
+                throw new SQLiteException("Invalid type");
         }
     }
 
@@ -639,7 +681,7 @@ public class DbHelper extends SQLiteOpenHelper {
             } else if (value instanceof String) {
                 values.put(key, (String) value);
             } else {
-                throw new RuntimeException("Invalid type");
+                throw new SQLiteException("Invalid type");
             }
         } else {
             values.putNull(key);

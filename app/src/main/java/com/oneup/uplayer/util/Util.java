@@ -69,7 +69,7 @@ public class Util {
 
     public static void showErrorDialog(Context context, Exception ex) {
         new AlertDialog.Builder(context)
-                .setTitle(R.string.error)
+                .setTitle(ex.getClass().getSimpleName())
                 .setMessage(ex.getMessage())
                 .setPositiveButton(R.string.ok, null)
                 .show();

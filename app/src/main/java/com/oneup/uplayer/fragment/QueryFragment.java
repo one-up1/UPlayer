@@ -31,8 +31,6 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.Set;
 
-//TODO: Review QueryFragment, starting of DateTimeActivity and getting value, also in EditSongActivity.
-
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
@@ -326,7 +324,6 @@ public class QueryFragment extends Fragment implements
                             MainService.REQUEST_RESTORE_PLAYLIST));
         } else if (v == bSyncDatabase) {
             //TODO: Sync and backup in new thread with ProgressDialog, and reload lists.
-            Log.d(TAG, "Syncing database");
             try {
                 dbHelper.syncWithMediaStore(getActivity());
             } catch (Exception ex) {
@@ -334,7 +331,6 @@ public class QueryFragment extends Fragment implements
                 Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bBackup) {
-            Log.d(TAG, "Running backup");
             try {
                 dbHelper.backup();
                 Toast.makeText(getActivity(), R.string.backup_completed, Toast.LENGTH_SHORT).show();
@@ -371,7 +367,6 @@ public class QueryFragment extends Fragment implements
                                 dbHelper.restoreBackup();
                                 Toast.makeText(getActivity(), R.string.backup_restored,
                                         Toast.LENGTH_SHORT).show();
-                                //((MainActivity) getActivity()).notifyDataSetChanged();
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error restoring backup", ex);
                                 Util.showErrorDialog(getActivity(), ex);

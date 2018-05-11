@@ -2,7 +2,9 @@ package com.oneup.uplayer.db;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.GridLayout;
+import android.util.TypedValue;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
@@ -69,8 +71,6 @@ public class Stats {
                 .setPositiveButton(R.string.ok, null)
                 .show();
 
-        //TODO: Statistics dialog layout.
-
         GridLayout grid = dialog.findViewById(R.id.grid);
 
         addDialogRow(context, grid, R.string.stats_song_count, songCount +
@@ -124,9 +124,11 @@ public class Stats {
 
     private static void addDialogColumn(Context context, GridLayout grid, String text) {
         TextView view = new TextView(context);
-        view.setPadding(10, 10, 10, 10);
+        int padding = context.getResources().getDimensionPixelSize(R.dimen.dialog_text_padding);
+        view.setPadding(padding, padding, padding, padding);
         view.setText(text);
-        view.setTextAppearance(android.R.style.TextAppearance_Theme_Dialog);
+        view.setTextColor(Color.BLACK);
+        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         grid.addView(view);
     }
 }

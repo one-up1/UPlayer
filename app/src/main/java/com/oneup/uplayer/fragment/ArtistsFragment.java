@@ -15,7 +15,7 @@ import com.oneup.uplayer.util.Util;
 import java.util.ArrayList;
 
 public class ArtistsFragment extends ListFragment<Artist> {
-    public static final int INFO_LAST_SONG_ADDED = 1; //TODO: Only use these and no orderBy and songsOrderBy?
+    public static final int INFO_LAST_ADDED = 1; //TODO: Only use these and no orderBy and songsOrderBy?
     public static final int INFO_LAST_PLAYED = 2;
     public static final int INFO_TIMES_PLAYED = 3;
 
@@ -51,9 +51,9 @@ public class ArtistsFragment extends ListFragment<Artist> {
         //TODO: Artist info in ListView.
         String info;
         switch (getArguments().getInt(ARG_INFO)) {
-            case INFO_LAST_SONG_ADDED:
-                info = artist.getLastSongAdded() == 0 ? null :
-                        Util.formatTimeAgo(artist.getLastSongAdded());
+            case INFO_LAST_ADDED:
+                info = artist.getLastAdded() == 0 ? null
+                        : Util.formatTimeAgo(artist.getLastAdded());
                 break;
             case INFO_LAST_PLAYED:
                 info = artist.getLastPlayed() == 0 ? null :
@@ -89,7 +89,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
             case R.id.info:
                 try {
                     getDbHelper().queryArtist(artist);
-                    getDbHelper().queryStats(artist).showDialog(getActivity(), artist);
+                    getDbHelper().queryStats(artist).showDialog(getActivity(), artist.getArtist());
                 } catch (Exception ex) {
                     Log.e(TAG, "Error querying artist stats", ex);
                     Util.showErrorDialog(getActivity(), ex);

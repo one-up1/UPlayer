@@ -21,10 +21,12 @@ public class Util {
     private static final DateFormat DATE_TIME_FORMAT_WEEKDAY =
             new SimpleDateFormat("E dd-MM-yyyy HH:mm");
     private static final NumberFormat TIME_NUMBER_FORMAT = NumberFormat.getInstance();
+    private static final NumberFormat FRACTION_FORMAT = NumberFormat.getInstance();
     private static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
 
     static {
         TIME_NUMBER_FORMAT.setMinimumIntegerDigits(2);
+        FRACTION_FORMAT.setMaximumFractionDigits(1);
         PERCENT_FORMAT.setMaximumFractionDigits(1);
     }
 
@@ -34,11 +36,12 @@ public class Util {
     }
 
     public static String formatDateTime(long seconds) {
-        return formatDateTime(DATE_TIME_FORMAT, seconds);
+        return formatDateTime(seconds, DATE_TIME_FORMAT);
     }
 
     public static String formatDateTimeAgo(long seconds) {
-        return formatDateTime(DATE_TIME_FORMAT_WEEKDAY, seconds) + "\n" + formatTimeAgo(seconds);
+        return formatDateTime(seconds, DATE_TIME_FORMAT_WEEKDAY) +
+                "\n" + formatTimeAgo(seconds);
     }
 
     public static String formatTimeAgo(long seconds) {
@@ -49,8 +52,12 @@ public class Util {
         return formatDuration(TimeUnit.MILLISECONDS.toSeconds(millis), true);
     }
 
-    public static String formatPercent(double number) {
-        return PERCENT_FORMAT.format(number);
+    public static String formatFraction(long value, long total) {
+        return formatFraction(value, total, FRACTION_FORMAT);
+    }
+
+    public static String formatPercent(long value, long total) {
+        return formatFraction(value, total, PERCENT_FORMAT);
     }
 
     public static void showInfoDialog(Context context, int titleResId,
@@ -83,7 +90,7 @@ public class Util {
         }
     }
 
-    private static String formatDateTime(DateFormat format, long seconds) {
+    private static String formatDateTime(long seconds, DateFormat format) {
         return format.format(TimeUnit.SECONDS.toMillis(seconds));
     }
 
@@ -116,5 +123,9 @@ public class Util {
         }
 
         return s;
+    }
+
+    private static String formatFraction(long value, long total, NumberFormat format) {
+        return format.format((double) value / total);
     }
 }

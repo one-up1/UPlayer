@@ -16,6 +16,8 @@ public class Stats {
     private int songsUnplayed;
     private int songsTagged;
     private int songsUntagged;
+    private long lastAdded;
+    private long lastPlayed;
     private int timesPlayed;
     private long playedDuration;
 
@@ -36,18 +38,20 @@ public class Stats {
 
     void setSongsPlayed(int songsPlayed) {
         this.songsPlayed = songsPlayed;
-    }
-
-    void setSongsUnplayed(int songsUnplayed) {
-        this.songsUnplayed = songsUnplayed;
+        songsUnplayed = songCount - songsPlayed;
     }
 
     void setSongsTagged(int songsTagged) {
         this.songsTagged = songsTagged;
+        songsUntagged = songCount - songsTagged;
     }
 
-    void setSongsUntagged(int songsUntagged) {
-        this.songsUntagged = songsUntagged;
+    void setLastAdded(long lastAdded) {
+        this.lastAdded = lastAdded;
+    }
+
+    void setLastPlayed(long lastPlayed) {
+        this.lastPlayed = lastPlayed;
     }
 
     void setTimesPlayed(int timesPlayed) {
@@ -58,56 +62,59 @@ public class Stats {
         this.playedDuration = playedDuration;
     }
 
-    public void showDialog(Context context, Artist artist) {
+    public void showDialog(Context context, String title) {
         AlertDialog dialog = new AlertDialog.Builder(context)
-                .setTitle(artist == null ?
-                        context.getString(R.string.statistics) : artist.getArtist())
+                .setTitle(title)
                 .setView(R.layout.dialog_stats)
                 .setPositiveButton(R.string.ok, null)
                 .show();
 
-        //TODO: (artist) stats, plurals, string resources, fix division by zero.
-        //Util.formatDateTime() auto returns NA when 0?
-        //Query unplayed/untagged or just total - played?
-        //Dialog layout, padding, etc.
+        //TODO: Statistics dialog layout.
 
         GridLayout grid = dialog.findViewById(R.id.grid);
 
-        addDialogRow(context, grid, R.string.song_count, songCount +
+        addDialogRow(context, grid, R.string.stats_song_count, songCount +
                 " (" + Util.formatDuration(songsDuration) + ")");
 
-        if (artist == null) {
-            int avgSongs = (int) Math.round((double) songCount / artistCount);
-            addDialogRow(context, grid, R.string.artist_count, artistCount +
-                    " (avg " + avgSongs + " songs)");
+        if (artistCount > 0) {
+            addDialogRow(context, grid, R.string.stats_artist_count, artistCount +
+                    " (avg " + Util.formatFraction(songCount, artistCount) + " songs)");
         }
 
-        addDialogRow(context, grid, R.string.songs_played, songsPlayed +
-                " (" + Util.formatPercent((double) songsPlayed / songCount) + ")");
+        if (songCount > 0) {
+            addDialogRow(context, grid, R.string.stats_songs_played, songsPlayed +
+                    " (" + Util.formatPercent(songsPlayed, songCount) + ")");
 
-        addDialogRow(context, grid, R.string.songs_unplayed, songsUnplayed +
-                " (" + Util.formatPercent((double) songsUnplayed / songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_songs_unplayed, songsUnplayed +
+                    " (" + Util.formatPercent(songsUnplayed, songCount) + ")");
 
-        addDialogRow(context, grid, R.string.songs_tagged, songsTagged +
-                " (" + Util.formatPercent((double) songsTagged / songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_songs_tagged, songsTagged +
+                    " (" + Util.formatPercent(songsTagged, songCount) + ")");
 
-        addDialogRow(context, grid, R.string.songs_untagged, songsUntagged +
-                " (" + Util.formatPercent((double) songsUntagged / songCount) + ")");
-
-        if (artist != null) {
-            addDialogRow(context, grid, R.string.last_song_added,
-                    Util.formatDateTimeAgo(artist.getLastSongAdded()));
-
-            addDialogRow(context, grid, R.string.edit_last_played,
-                    Util.formatDateTimeAgo(artist.getLastPlayed()));
+            addDialogRow(context, grid, R.string.stats_songs_untagged, songsUntagged +
+                    " (" + Util.formatPercent(songsUntagged, songCount) + ")");
         }
 
-        addDialogRow(context, grid, R.string.edit_times_played, timesPlayed +
-                " (" + Util.formatDuration(playedDuration) + ")");
+        if (lastAdded > 0) {
+            addDialogRow(context, grid, R.string.stats_last_added,
+                    Util.formatDateTimeAgo(lastAdded));
+        }
 
-        addDialogRow(context, grid, R.string.avg_times_played,
-                Math.round((double) timesPlayed / playedDuration) +
-                        " (" + Util.formatDuration(playedDuration / songsPlayed));
+        if (lastPlayed > 0) {
+            addDialogRow(context, grid, R.string.stats_last_played,
+                    Util.formatDateTimeAgo(lastPlayed));
+        }
+
+        if (timesPlayed > 0) {
+            addDialogRow(context, grid, R.string.stats_times_played, timesPlayed +
+                    " (" + Util.formatDuration(playedDuration) + ")");
+        }
+
+        if (songsPlayed > 0) {
+            addDialogRow(context, grid, R.string.stats_avg_times_played,
+                    Util.formatFraction(timesPlayed, songsPlayed) +
+                    " (" + Util.formatDuration(playedDuration / songsPlayed) + ")");
+        }
     }
 
     private static void addDialogRow(Context context, GridLayout grid, int labelId, Object value) {
@@ -117,9 +124,9 @@ public class Stats {
 
     private static void addDialogColumn(Context context, GridLayout grid, String text) {
         TextView view = new TextView(context);
+        view.setPadding(10, 10, 10, 10);
         view.setText(text);
         view.setTextAppearance(android.R.style.TextAppearance_Theme_Dialog);
-        view.setPadding(10, 10, 10, 10);
         grid.addView(view);
     }
 }

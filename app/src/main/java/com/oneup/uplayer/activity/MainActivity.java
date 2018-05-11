@@ -99,9 +99,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 2:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
-                                Artist.LAST_SONG_ADDED + " DESC," + Artist.ARTIST,
+                                Artist.LAST_ADDED + " DESC," + Artist.ARTIST,
                                 Song.ADDED + " DESC," + Song.TITLE,
-                                ArtistsFragment.INFO_LAST_SONG_ADDED);
+                                ArtistsFragment.INFO_LAST_ADDED);
                     }
                     return lastAddedFragment;
                 case 3:

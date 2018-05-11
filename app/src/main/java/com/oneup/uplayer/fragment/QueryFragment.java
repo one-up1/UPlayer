@@ -302,7 +302,7 @@ public class QueryFragment extends Fragment implements
             tagsDialog.show();
         } else if (v == bStatistics) {
             try {
-                dbHelper.queryStats(null).showDialog(getActivity(), null);
+                dbHelper.queryStats(null).showDialog(getActivity(), getString(R.string.statistics));
             } catch (Exception ex) {
                 Log.e(TAG, "Error querying stats", ex);
                 Util.showErrorDialog(getActivity(), ex);

@@ -8,7 +8,7 @@ public class Artist implements Parcelable,
         BaseColumns, DbHelper.ArtistColumns, DbHelper.PlayedColumns {
     private long id;
     private String artist;
-    private long lastSongAdded;
+    private long lastAdded;
     private long lastPlayed;
     private int timesPlayed;
 
@@ -26,7 +26,7 @@ public class Artist implements Parcelable,
     public void writeToParcel(Parcel out, int flags) {
         out.writeLong(id);
         out.writeString(artist);
-        out.writeLong(lastSongAdded);
+        out.writeLong(lastAdded);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
     }
@@ -47,12 +47,12 @@ public class Artist implements Parcelable,
         this.artist = artist;
     }
 
-    public long getLastSongAdded() {
-        return lastSongAdded;
+    public long getLastAdded() {
+        return lastAdded;
     }
 
-    public void setLastSongAdded(long lastSongAdded) {
-        this.lastSongAdded = lastSongAdded;
+    public void setLastAdded(long lastAdded) {
+        this.lastAdded = lastAdded;
     }
 
     public long getLastPlayed() {
@@ -78,7 +78,7 @@ public class Artist implements Parcelable,
             Artist artist = new Artist();
             artist.id = in.readLong();
             artist.artist = in.readString();
-            artist.lastSongAdded = in.readLong();
+            artist.lastAdded = in.readLong();
             artist.lastPlayed = in.readLong();
             artist.timesPlayed = in.readInt();
             return artist;

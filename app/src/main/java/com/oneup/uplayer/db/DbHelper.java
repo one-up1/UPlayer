@@ -116,7 +116,8 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.querySongs(" + selection + ",'" + orderBy + "')");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
-                            Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.TIMES_PLAYED},
+                            Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.ADDED,
+                            Song.LAST_PLAYED, Song.TIMES_PLAYED},
                     selection, selectionArgs, null, null, orderBy)) {
                 ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
@@ -126,7 +127,9 @@ public class DbHelper extends SQLiteOpenHelper {
                     song.setArtistId(c.getLong(2));
                     song.setArtist(c.getString(3));
                     song.setDuration(c.getLong(4));
-                    song.setTimesPlayed(c.getInt(5));
+                    song.setAdded(c.getLong(5));
+                    song.setLastPlayed(c.getLong(6));
+                    song.setTimesPlayed(c.getInt(7));
                     songs.add(song);
                 }
                 Log.d(TAG, songs.size() + " songs queried");

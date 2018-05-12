@@ -3,22 +3,37 @@ package com.oneup.uplayer.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
 public class SongsFragment extends SongsListFragment {
+    public static final int ORDER_BY_ARTIST = 4;
+    public static final int ORDER_BY_DURATION = 5;
+    public static final int ORDER_BY_YEAR = 6;
+    public static final int ORDER_BY_TAG = 7;
+    public static final int ORDER_BY_BOOKMARKED = 8;
+
     private static final String TAG = "UPlayer";
 
     private static final String ARG_ARTIST_ID = "artist_id";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTION_ARGS = "selection_args";
+
+    private long artistId;
+    private String selection;
+    private String[] selectionArgs;
 
     public SongsFragment() {
         super(R.layout.list_item_song);
@@ -28,10 +43,16 @@ public class SongsFragment extends SongsListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().getLong(ARG_ARTIST_ID) == 0) {
-            setViewArtistOrderBy(
-                    getArguments().getString(ListFragment.ARG_ORDER_BY),
-                    getArguments().getString(ListFragment.ARG_ORDER_BY_DESC));
+        Bundle args = getArguments();
+        if (args != null) {
+            artistId = args.getLong(ARG_ARTIST_ID);
+            if (artistId == 0) {
+                selection = args.getString(ARG_SELECTION);
+                selectionArgs = args.getStringArray(ARG_SELECTION_ARGS);
+            } else {
+                selection = Song.ARTIST_ID + "=?";
+                selectionArgs = DbHelper.getWhereArgs(artistId);
+            }
         }
     }
 
@@ -42,23 +63,100 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.getItem(0).setVisible(artistId == 0);
+    }
+
+    @Override
     protected ArrayList<Song> loadData() {
-        long artistId = getArguments().getLong(ARG_ARTIST_ID);
-        String selection;
-        String[] selectionArgs;
-        if (artistId == 0) {
-            selection = getArguments().getString(ARG_SELECTION);
-            selectionArgs = getArguments().getStringArray(ARG_SELECTION_ARGS);
-        } else {
-            selection = Song.ARTIST_ID + "=?";
-            selectionArgs = DbHelper.getWhereArgs(artistId);
+        String orderBy;
+        switch (getOrderBy()) {
+            case ORDER_BY_ADDED:
+                orderBy = getOrderBy(Song.ADDED);
+                break;
+            case ORDER_BY_LAST_PLAYED:
+                orderBy = getOrderBy(Song.LAST_PLAYED);
+                break;
+            case ORDER_BY_TIMES_PLAYED:
+                orderBy = getOrderBy(Song.TIMES_PLAYED);
+                break;
+            case ORDER_BY_ARTIST:
+                orderBy = getOrderBy(Song.ARTIST);
+                break;
+            case ORDER_BY_DURATION:
+                orderBy = getOrderBy(Song.DURATION);
+                break;
+            case ORDER_BY_YEAR:
+                orderBy = getOrderBy(Song.YEAR);
+                break;
+            case ORDER_BY_TAG:
+                orderBy = getOrderBy(Song.TAG);
+                break;
+            case ORDER_BY_BOOKMARKED:
+                orderBy = getOrderBy(Song.BOOKMARKED);
+                break;
+            default:
+                orderBy = null;
+                break;
         }
-        return getDbHelper().querySongs(selection, selectionArgs, getOrderBy());
+
+        if (orderBy == null) {
+            orderBy = getOrderBy(Song.TITLE);
+        } else {
+            orderBy += "," + Song.TITLE;
+        }
+
+        return getDbHelper().querySongs(selection, selectionArgs, orderBy);
     }
 
     @Override
     protected void setListItemViews(View rootView, int position, Song song) {
         super.setListItemViews(rootView, position, song);
+
+        // Get info text.
+        String info;
+        switch (getOrderBy()) {
+            case ORDER_BY_ADDED:
+                info = song.getAdded() == 0 ? null
+                        : Util.formatTimeAgo(song.getAdded());
+                break;
+            case ORDER_BY_LAST_PLAYED:
+                info = song.getLastPlayed() == 0 ? null
+                        : Util.formatTimeAgo(song.getLastPlayed());
+                break;
+            case ORDER_BY_TIMES_PLAYED:
+                info = song.getTimesPlayed() == 0 ? null
+                        : Integer.toString(song.getTimesPlayed());
+                break;
+            case ORDER_BY_DURATION:
+                info = Util.formatDuration(song.getDuration());
+                break;
+            case ORDER_BY_YEAR:
+                info = Integer.toString(song.getYear());
+                break;
+            case ORDER_BY_TAG:
+                info = song.getTag();
+                break;
+            case ORDER_BY_BOOKMARKED:
+                info = song.getBookmarked() == 0 ? null
+                        : Util.formatTimeAgo(song.getBookmarked());
+                break;
+            default:
+                info = null;
+                break;
+        }
+
+        // Set info text or hide the view when no info is available.
+        TextView tvInfo = rootView.findViewById(R.id.tvInfo);
+        if (info == null) {
+            tvInfo.setVisibility(View.GONE);
+        } else {
+            tvInfo.setText(info);
+            tvInfo.setVisibility(View.VISIBLE);
+        }
+
         setListItemButton(rootView, R.id.ibPlayNext, song);
         setListItemButton(rootView, R.id.ibPlayLast, song);
     }
@@ -95,7 +193,7 @@ public class SongsFragment extends SongsListFragment {
     }
 
     public static SongsFragment newInstance(String selection, String[] selectionArgs,
-                                            String orderBy, String orderByDesc) {
+                                            int orderBy, boolean orderByDesc) {
         return newInstance(getArguments(selection, selectionArgs, orderBy, orderByDesc));
     }
 
@@ -105,21 +203,21 @@ public class SongsFragment extends SongsListFragment {
         return fragment;
     }
 
-    public static Bundle getArguments(long artistId, String orderBy, String orderByDesc) {
+    public static Bundle getArguments(long artistId, int orderBy, boolean orderByDesc) {
         Bundle args = new Bundle();
         args.putLong(ARG_ARTIST_ID, artistId);
-        args.putString(ListFragment.ARG_ORDER_BY, orderBy);
-        args.putString(ListFragment.ARG_ORDER_BY_DESC, orderByDesc);
+        args.putInt(ARG_ORDER_BY, orderBy);
+        args.putBoolean(ARG_ORDER_BY_DESC, orderByDesc);
         return args;
     }
 
     public static Bundle getArguments(String selection, String[] selectionArgs,
-                                      String orderBy, String orderByDesc) {
+                                      int orderBy, boolean orderByDesc) {
         Bundle args = new Bundle();
         args.putString(ARG_SELECTION, selection);
         args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
-        args.putString(ListFragment.ARG_ORDER_BY, orderBy);
-        args.putString(ListFragment.ARG_ORDER_BY_DESC, orderByDesc);
+        args.putInt(ARG_ORDER_BY, orderBy);
+        args.putBoolean(ARG_ORDER_BY_DESC, orderByDesc);
         return args;
     }
 }

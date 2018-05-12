@@ -25,9 +25,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     private static final int REQUEST_EDIT_SONG = 1;
 
-    private String viewArtistOrderBy;
-    private String viewArtistOrderByDesc;
-
     public SongsListFragment(int listItemResource) {
         super(listItemResource);
     }
@@ -36,7 +33,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
-        menu.getItem(0).setVisible(viewArtistOrderBy != null);
     }
 
     @Override
@@ -83,7 +79,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(song.getArtistId(),
-                                viewArtistOrderBy, viewArtistOrderByDesc)));
+                                getOrderBy(), isOrderByDesc())));
                 break;
             case R.id.edit:
                 try {
@@ -166,11 +162,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                         .show();
                 break;
         }
-    }
-
-    protected void setViewArtistOrderBy(String viewArtistOrderBy, String viewArtistOrderByDesc) {
-        this.viewArtistOrderBy = viewArtistOrderBy;
-        this.viewArtistOrderByDesc = viewArtistOrderByDesc;
     }
 
     protected void onSongRemoved(int position) {

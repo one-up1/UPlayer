@@ -1,7 +1,6 @@
 package com.oneup.uplayer.activity;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -72,10 +71,9 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             Log.d(TAG, "PlaylistFragment.onCreate()");
             super.onCreate(savedInstanceState);
-            setViewArtistOrderBy(Song.TITLE, Song.TITLE + " DESC");
 
             getActivity().bindService(new Intent(getActivity(), MainService.class),
-                    serviceConnection, Context.BIND_AUTO_CREATE);
+                    serviceConnection, BIND_AUTO_CREATE);
         }
 
         @Override

@@ -21,15 +21,14 @@
     <string name="max_times_played">Max times played&#8230;</string>
     <string-array name="order_by">
         <item />
-        <item>Title</item>
+        <item>Added</item>
+        <item>Last played</item>
+        <item>Times played</item>
         <item>Artist</item>
         <item>Duration</item>
         <item>Year</item>
-        <item>Added</item>
         <item>Tag</item>
         <item>Bookmarked</item>
-        <item>Last played</item>
-        <item>Times played</item>
     </string-array>
     <string name="desc">Desc</string>
     <string name="tags">Tags&#8230;</string>

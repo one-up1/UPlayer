@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.ListFragment;
@@ -93,48 +92,30 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (bookmarksFragment == null) {
                         bookmarksFragment = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                Song.BOOKMARKED + " DESC," + Song.TITLE,
-                                Song.BOOKMARKED + "," + Song.TITLE + " DESC");
+                                SongsFragment.ORDER_BY_BOOKMARKED, true);
                     }
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
-                                Artist.LAST_ADDED + " DESC," + Artist.ARTIST,
-                                Artist.LAST_ADDED + "," + Artist.ARTIST + " DESC",
-                                Song.ADDED + " DESC," + Song.TITLE,
-                                Song.ADDED + "," + Song.TITLE + " DESC",
-                                ArtistsFragment.INFO_LAST_ADDED);
+                                ArtistsFragment.ORDER_BY_ADDED, true);
                     }
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(
-                                Artist.ARTIST,
-                                Artist.ARTIST + " DESC",
-                                Song.TITLE,
-                                Song.TITLE + " DESC",
-                                0);
+                        artistsFragment = ArtistsFragment.newInstance(0, false);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(
-                                Artist.LAST_PLAYED + " DESC",
-                                Artist.LAST_PLAYED,
-                                Song.LAST_PLAYED + " DESC",
-                                Song.LAST_PLAYED,
-                                ArtistsFragment.INFO_LAST_PLAYED);
+                                ArtistsFragment.ORDER_BY_LAST_PLAYED, true);
                     }
                     return lastPlayedFragment;
                 case 5:
                     if (mostPlayedFragment == null) {
                         mostPlayedFragment = ArtistsFragment.newInstance(
-                                Artist.TIMES_PLAYED + " DESC," + Artist.ARTIST,
-                                Artist.TIMES_PLAYED + "," + Artist.ARTIST + " DESC",
-                                Song.TIMES_PLAYED + " DESC," + Song.TITLE,
-                                Song.TIMES_PLAYED + "," + Song.TITLE + " DESC",
-                                ArtistsFragment.INFO_TIMES_PLAYED);
+                                ArtistsFragment.ORDER_BY_TIMES_PLAYED, true);
                     }
                     return mostPlayedFragment;
                 default:

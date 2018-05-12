@@ -22,37 +22,57 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/list_item_text"
-            android:textSize="@dimen/list_item_text_large" />
+            android:textSize="@dimen/list_item_text_large"
+            android:text="title" />
 
-        <TextView
-            android:id="@+id/tvArtist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/list_item_text"
-            android:textSize="@dimen/list_item_text_small" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tvArtist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/list_item_text"
+                android:textSize="@dimen/list_item_text_small"
+                android:text="Artist" />
+
+            <TextView
+                android:id="@+id/tvInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/list_item_info_padding_start"
+                android:paddingEnd="@dimen/list_item_info_padding_start"
+                android:gravity="end"
+                android:textColor="@color/list_item_text"
+                android:textSize="@dimen/list_item_text_small"
+                android:text="info" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/ibPlayNext"
-            android:layout_width="@dimen/list_item_button_width"
-            android:layout_height="@dimen/list_item_button_height"
+            android:layout_width="@dimen/list_item_button_width_large"
+            android:layout_height="@dimen/list_item_button_height_large"
+            android:background="@android:color/transparent"
             android:src="@drawable/ic_play_next"
             android:contentDescription="@string/play_next" />
 
         <ImageButton
             android:id="@+id/ibPlayLast"
-            android:layout_width="@dimen/list_item_button_width"
-            android:layout_height="@dimen/list_item_button_height"
-            android:layout_toEndOf="@id/ibPlayNext"
+            android:layout_width="@dimen/list_item_button_width_large"
+            android:layout_height="@dimen/list_item_button_height_large"
+            android:background="@android:color/transparent"
             android:src="@drawable/ic_play_last"
             android:contentDescription="@string/play_last" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>

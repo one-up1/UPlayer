@@ -19,19 +19,23 @@ import java.util.ArrayList;
 
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements View.OnClickListener {
+    public static final int ORDER_BY_ADDED = 1;
+    public static final int ORDER_BY_LAST_PLAYED = 2;
+    public static final int ORDER_BY_TIMES_PLAYED = 3;
+
     protected static final String ARG_ORDER_BY = "order_by";
     protected static final String ARG_ORDER_BY_DESC = "order_by_desc";
 
     private static final String TAG = "UPlayer";
 
-    private DbHelper dbHelper;
-
     private int listItemResource;
+
+    private DbHelper dbHelper;
+    protected int orderBy;
+    protected boolean orderByDesc;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
-
-    private boolean orderByDesc;
 
     public ListFragment(int listItemResource) {
         this.listItemResource = listItemResource;
@@ -41,6 +45,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dbHelper = new DbHelper(getActivity());
+
+        Bundle args = getArguments();
+        if (args != null) {
+            orderBy = args.getInt(ARG_ORDER_BY);
+            orderByDesc = args.getBoolean(ARG_ORDER_BY_DESC);
+        }
     }
 
     @Override
@@ -140,12 +150,24 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return dbHelper;
     }
 
-    protected ArrayList<T> getData() {
-        return data;
+    protected int getOrderBy() {
+        return orderBy;
     }
 
-    protected String getOrderBy() {
-        return getArguments().getString(orderByDesc ? ARG_ORDER_BY_DESC : ARG_ORDER_BY);
+    protected boolean isOrderByDesc() {
+        return orderByDesc;
+    }
+
+    protected String getOrderBy(String s) {
+        if (orderByDesc) {
+            s += " DESC";
+        }
+        Log.d(TAG, "s=" + s);
+        return s;
+    }
+
+    protected ArrayList<T> getData() {
+        return data;
     }
 
     protected abstract ArrayList<T> loadData();

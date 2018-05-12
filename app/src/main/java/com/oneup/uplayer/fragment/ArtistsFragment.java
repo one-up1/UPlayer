@@ -16,16 +16,7 @@ import com.oneup.uplayer.util.Util;
 import java.util.ArrayList;
 
 public class ArtistsFragment extends ListFragment<Artist> {
-    //TODO: Only use INFO constant and no orderBy/songsOrderBy? Also display info in SongsListViews?
-    public static final int INFO_LAST_ADDED = 1;
-    public static final int INFO_LAST_PLAYED = 2;
-    public static final int INFO_TIMES_PLAYED = 3;
-
     private static final String TAG = "UPlayer";
-
-    private static final String ARG_SONGS_ORDER_BY = "songs_order_by";
-    private static final String ARG_SONGS_ORDER_BY_DESC = "songs_order_by_desc";
-    private static final String ARG_INFO = "info";
 
     public ArtistsFragment() {
         super(R.layout.list_item_artist);
@@ -45,7 +36,29 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected ArrayList<Artist> loadData() {
-        return getDbHelper().queryArtists(getOrderBy());
+        String orderBy;
+        switch (getOrderBy()) {
+            case ORDER_BY_ADDED:
+                orderBy = getOrderBy(Artist.LAST_ADDED);
+                break;
+            case ORDER_BY_LAST_PLAYED:
+                orderBy = getOrderBy(Artist.LAST_PLAYED);
+                break;
+            case ORDER_BY_TIMES_PLAYED:
+                orderBy = getOrderBy(Artist.TIMES_PLAYED);
+                break;
+            default:
+                orderBy = null;
+                break;
+        }
+
+        if (orderBy == null) {
+            orderBy = getOrderBy(Artist.ARTIST);
+        } else {
+            orderBy += "," + Artist.ARTIST;
+        }
+
+        return getDbHelper().queryArtists(orderBy);
     }
 
     @Override
@@ -57,16 +70,16 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
         // Get info text.
         String info;
-        switch (getArguments().getInt(ARG_INFO)) {
-            case INFO_LAST_ADDED:
+        switch (getOrderBy()) {
+            case ORDER_BY_ADDED:
                 info = artist.getLastAdded() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastAdded());
                 break;
-            case INFO_LAST_PLAYED:
+            case ORDER_BY_LAST_PLAYED:
                 info = artist.getLastPlayed() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastPlayed());
                 break;
-            case INFO_TIMES_PLAYED:
+            case ORDER_BY_TIMES_PLAYED:
                 info = artist.getTimesPlayed() == 0 ? null
                         : Integer.toString(artist.getTimesPlayed());
                 break;
@@ -89,8 +102,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected void onListItemClick(int position, Artist artist) {
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(artist.getId(),
-                        getArguments().getString(ARG_SONGS_ORDER_BY),
-                        getArguments().getString(ARG_SONGS_ORDER_BY_DESC))));
+                        getOrderBy(), isOrderByDesc())));
     }
 
     @Override
@@ -108,16 +120,11 @@ public class ArtistsFragment extends ListFragment<Artist> {
         }
     }
 
-    public static ArtistsFragment newInstance(String orderBy, String orderByDesc,
-                                              String songsOrderBy, String songsOrderByDesc,
-                                              int info) {
+    public static ArtistsFragment newInstance(int orderBy, boolean orderByDesc) {
         ArtistsFragment fragment = new ArtistsFragment();
         Bundle args = new Bundle();
-        args.putString(ListFragment.ARG_ORDER_BY, orderBy);
-        args.putString(ListFragment.ARG_ORDER_BY_DESC, orderByDesc);
-        args.putString(ARG_SONGS_ORDER_BY, songsOrderBy);
-        args.putString(ARG_SONGS_ORDER_BY_DESC, songsOrderByDesc);
-        args.putInt(ARG_INFO, info);
+        args.putInt(ARG_ORDER_BY, orderBy);
+        args.putBoolean(ARG_ORDER_BY_DESC, orderByDesc);
         fragment.setArguments(args);
         return fragment;
     }

@@ -11,6 +11,17 @@
 
     <dimen name="edit_time_number_width">30dp</dimen>
 
+    <!-- List item dimensions -->
+    <dimen name="list_item_padding_start">14dp</dimen>
+    <dimen name="list_item_padding_end">4dp</dimen>
+    <dimen name="list_item_height">36dp</dimen>
+    <dimen name="list_item_text_large">14sp</dimen>
+    <dimen name="list_item_text_small">12sp</dimen>
+    <dimen name="list_item_button_width">42dp</dimen>
+    <dimen name="list_item_button_height">42dp</dimen>
+    <dimen name="list_item_button_width_playlist_move">18dp</dimen>
+    <dimen name="list_item_button_height_playlist_move">18dp</dimen>
+
     <dimen name="dialog_text_padding">5dp</dimen>
 
 </resources>

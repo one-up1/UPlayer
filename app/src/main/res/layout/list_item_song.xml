@@ -5,9 +5,9 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:paddingStart="@dimen/list_item_padding_start"
+    android:paddingEnd="@dimen/list_item_padding_end"
+    android:minHeight="@dimen/list_item_height"
     android:descendantFocusability="blocksDescendants"
     android:baselineAligned="false">
 
@@ -21,12 +21,15 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp" />
+            android:textColor="@color/list_item_text"
+            android:textSize="@dimen/list_item_text_large" />
 
         <TextView
             android:id="@+id/tvArtist"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="@color/list_item_text"
+            android:textSize="@dimen/list_item_text_small" />
 
     </LinearLayout>
 
@@ -37,15 +40,15 @@
 
         <ImageButton
             android:id="@+id/ibPlayNext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/list_item_button_width"
+            android:layout_height="@dimen/list_item_button_height"
             android:src="@drawable/ic_play_next"
             android:contentDescription="@string/play_next" />
 
         <ImageButton
             android:id="@+id/ibPlayLast"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/list_item_button_width"
+            android:layout_height="@dimen/list_item_button_height"
             android:layout_toEndOf="@id/ibPlayNext"
             android:src="@drawable/ic_play_last"
             android:contentDescription="@string/play_last" />

@@ -5,9 +5,9 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:paddingStart="@dimen/list_item_padding_start"
+    android:paddingEnd="@dimen/list_item_padding_end"
+    android:minHeight="@dimen/list_item_height"
     android:baselineAligned="false">
 
     <TextView
@@ -15,11 +15,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+        android:textColor="@color/list_item_text"
+        android:textSize="@dimen/list_item_text_large" />
 
     <TextView
         android:id="@+id/tvInfo"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textColor="@color/list_item_text"
+        android:textSize="@dimen/list_item_text_small" />
 
 </LinearLayout>

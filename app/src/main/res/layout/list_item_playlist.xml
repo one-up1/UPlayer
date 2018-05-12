@@ -5,9 +5,9 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:paddingStart="@dimen/list_item_padding_start"
+    android:paddingEnd="@dimen/list_item_padding_end"
+    android:minHeight="@dimen/list_item_height"
     android:descendantFocusability="blocksDescendants"
     android:baselineAligned="false">
 
@@ -21,12 +21,15 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp" />
+            android:textColor="@color/list_item_text"
+            android:textSize="@dimen/list_item_text_large" />
 
         <TextView
             android:id="@+id/tvArtist"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="@color/list_item_text"
+            android:textSize="@dimen/list_item_text_small" />
 
     </LinearLayout>
 
@@ -37,24 +40,24 @@
 
         <ImageButton
             android:id="@+id/ibMoveUp"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
+            android:layout_width="@dimen/list_item_button_width_playlist_move"
+            android:layout_height="@dimen/list_item_button_height_playlist_move"
             android:layout_alignParentTop="true"
             android:src="@drawable/ic_move_up"
             android:contentDescription="@string/move_up" />
 
         <ImageButton
             android:id="@+id/ibMoveDown"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
+            android:layout_width="@dimen/list_item_button_width_playlist_move"
+            android:layout_height="@dimen/list_item_button_height_playlist_move"
             android:layout_alignParentBottom="true"
             android:src="@drawable/ic_move_down"
             android:contentDescription="@string/move_down" />
 
         <ImageButton
             android:id="@+id/ibRemove"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/list_item_button_width"
+            android:layout_height="@dimen/list_item_button_height"
             android:layout_toEndOf="@+id/ibMoveUp"
             android:src="@drawable/ic_remove"
             android:contentDescription="@string/remove" />

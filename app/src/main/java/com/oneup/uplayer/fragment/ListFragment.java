@@ -3,7 +3,6 @@ package com.oneup.uplayer.fragment;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,25 +16,25 @@ import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements View.OnClickListener {
+    protected static final String ARG_ORDER_BY = "order_by";
+    protected static final String ARG_ORDER_BY_DESC = "order_by_desc";
+
     private static final String TAG = "UPlayer";
 
     private DbHelper dbHelper;
 
     private int listItemResource;
-    private int contextMenuResource;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
 
-    private boolean sortOrderReversed;
+    private boolean orderByDesc;
 
-    public ListFragment(int listItemResource, int contextMenuResource) {
+    public ListFragment(int listItemResource) {
         this.listItemResource = listItemResource;
-        this.contextMenuResource = contextMenuResource;
     }
 
     @Override
@@ -48,12 +47,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         registerForContextMenu(getListView());
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-        getActivity().getMenuInflater().inflate(contextMenuResource, menu);
     }
 
     @Override
@@ -90,22 +83,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     public void reverseSortOrder() {
         Log.d(TAG, "ListFragment.reverseSortOrder()");
-        if (data != null) {
-            Log.d(TAG, "Reversing sort order");
-            Collections.reverse(data);
-            listAdapter.notifyDataSetChanged();
-        }
-        sortOrderReversed = !sortOrderReversed;
-        //TODO: No sortOrderReversed, reload data?
+        orderByDesc = !orderByDesc;
+        reloadData();
     }
 
     protected void reloadData() {
         data = loadData();
-
-        if (sortOrderReversed) {
-            Log.d(TAG, "Reversing sort order");
-            Collections.reverse(data);
-        }
 
         if (listAdapter == null) {
             listAdapter = new ListAdapter();
@@ -159,6 +142,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected ArrayList<T> getData() {
         return data;
+    }
+
+    protected String getOrderBy() {
+        return getArguments().getString(orderByDesc ? ARG_ORDER_BY_DESC : ARG_ORDER_BY);
     }
 
     protected abstract ArrayList<T> loadData();

@@ -19,12 +19,6 @@ public class SongsFragment extends SongsListFragment {
     private static final String ARG_ARTIST_ID = "artist_id";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTION_ARGS = "selection_args";
-    private static final String ARG_ORDER_BY = "order_by";
-
-    private long artistId;
-    private String selection;
-    private String[] selectionArgs;
-    private String orderBy;
 
     public SongsFragment() {
         super(R.layout.list_item_song);
@@ -34,18 +28,10 @@ public class SongsFragment extends SongsListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        artistId = getArguments().getLong(ARG_ARTIST_ID);
-        if (artistId == 0) {
-            selection = getArguments().getString(ARG_SELECTION);
-            selectionArgs = getArguments().getStringArray(ARG_SELECTION_ARGS);
-        } else {
-            selection = Song.ARTIST_ID + "=?";
-            selectionArgs = DbHelper.getWhereArgs(artistId);
-        }
-        orderBy = getArguments().getString(ARG_ORDER_BY);
-
-        if (artistId == 0) {
-            setViewArtistOrderBy(orderBy);
+        if (getArguments().getLong(ARG_ARTIST_ID) == 0) {
+            setViewArtistOrderBy(
+                    getArguments().getString(ListFragment.ARG_ORDER_BY),
+                    getArguments().getString(ListFragment.ARG_ORDER_BY_DESC));
         }
     }
 
@@ -57,7 +43,17 @@ public class SongsFragment extends SongsListFragment {
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(selection, selectionArgs, orderBy);
+        long artistId = getArguments().getLong(ARG_ARTIST_ID);
+        String selection;
+        String[] selectionArgs;
+        if (artistId == 0) {
+            selection = getArguments().getString(ARG_SELECTION);
+            selectionArgs = getArguments().getStringArray(ARG_SELECTION_ARGS);
+        } else {
+            selection = Song.ARTIST_ID + "=?";
+            selectionArgs = DbHelper.getWhereArgs(artistId);
+        }
+        return getDbHelper().querySongs(selection, selectionArgs, getOrderBy());
     }
 
     @Override
@@ -99,8 +95,8 @@ public class SongsFragment extends SongsListFragment {
     }
 
     public static SongsFragment newInstance(String selection, String[] selectionArgs,
-                                            String orderBy) {
-        return newInstance(getArguments(selection, selectionArgs, orderBy));
+                                            String orderBy, String orderByDesc) {
+        return newInstance(getArguments(selection, selectionArgs, orderBy, orderByDesc));
     }
 
     public static SongsFragment newInstance(Bundle args) {
@@ -109,18 +105,21 @@ public class SongsFragment extends SongsListFragment {
         return fragment;
     }
 
-    public static Bundle getArguments(long artistId, String orderBy) {
+    public static Bundle getArguments(long artistId, String orderBy, String orderByDesc) {
         Bundle args = new Bundle();
         args.putLong(ARG_ARTIST_ID, artistId);
-        args.putString(ARG_ORDER_BY, orderBy);
+        args.putString(ListFragment.ARG_ORDER_BY, orderBy);
+        args.putString(ListFragment.ARG_ORDER_BY_DESC, orderByDesc);
         return args;
     }
 
-    public static Bundle getArguments(String selection, String[] selectionArgs, String orderBy) {
+    public static Bundle getArguments(String selection, String[] selectionArgs,
+                                      String orderBy, String orderByDesc) {
         Bundle args = new Bundle();
         args.putString(ARG_SELECTION, selection);
         args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
-        args.putString(ARG_ORDER_BY, orderBy);
+        args.putString(ListFragment.ARG_ORDER_BY, orderBy);
+        args.putString(ListFragment.ARG_ORDER_BY_DESC, orderByDesc);
         return args;
     }
 }

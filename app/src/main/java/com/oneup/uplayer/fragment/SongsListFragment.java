@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,9 +26,17 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     private static final int REQUEST_EDIT_SONG = 1;
 
     private String viewArtistOrderBy;
+    private String viewArtistOrderByDesc;
 
     public SongsListFragment(int listItemResource) {
-        super(listItemResource, R.menu.list_item_song);
+        super(listItemResource);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
+        menu.getItem(0).setVisible(viewArtistOrderBy != null);
     }
 
     @Override
@@ -74,7 +83,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(song.getArtistId(),
-                                viewArtistOrderBy == null ? Song.TITLE : viewArtistOrderBy)));
+                                viewArtistOrderBy, viewArtistOrderByDesc)));
                 break;
             case R.id.edit:
                 try {
@@ -159,8 +168,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
         }
     }
 
-    protected void setViewArtistOrderBy(String viewArtistOrderBy) {
+    protected void setViewArtistOrderBy(String viewArtistOrderBy, String viewArtistOrderByDesc) {
         this.viewArtistOrderBy = viewArtistOrderBy;
+        this.viewArtistOrderByDesc = viewArtistOrderByDesc;
     }
 
     protected void onSongRemoved(int position) {

@@ -30,8 +30,8 @@ public class PlaylistActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         Log.d(TAG, "PlaylistActivity.onCreate()");
+        super.onCreate(savedInstanceState);
 
         FrameLayout container = new FrameLayout(this);
         container.setId(R.id.container);
@@ -70,8 +70,9 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
             Log.d(TAG, "PlaylistFragment.onCreate()");
+            super.onCreate(savedInstanceState);
+            setViewArtistOrderBy(Song.TITLE, Song.TITLE + " DESC");
 
             getActivity().bindService(new Intent(getActivity(), MainService.class),
                     serviceConnection, Context.BIND_AUTO_CREATE);

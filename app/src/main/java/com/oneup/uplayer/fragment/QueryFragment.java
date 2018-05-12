@@ -453,7 +453,7 @@ public class QueryFragment extends Fragment implements
     private void query(Set<String> tags) {
         SharedPreferences.Editor preferences = this.preferences.edit();
 
-        String selection = null, orderBy = null;
+        String selection = null, orderBy = null, orderByDesc = null;
 
         String title = etTitle.getString();
         preferences.putString(PREF_TITLE, title);
@@ -536,36 +536,44 @@ public class QueryFragment extends Fragment implements
         preferences.putInt(PREF_ORDER_BY, orderByColumn);
         switch (orderByColumn) {
             case 1:
-                orderBy = Song.TITLE;
+                orderBy = orderByDesc = Song.TITLE;
                 break;
             case 2:
-                orderBy = Song.ARTIST;
+                orderBy = orderByDesc = Song.ARTIST;
                 break;
             case 3:
-                orderBy = Song.YEAR;
+                orderBy = orderByDesc = Song.YEAR;
                 break;
             case 4:
-                orderBy = Song.ADDED;
+                orderBy = orderByDesc = Song.ADDED;
                 break;
             case 5:
-                orderBy = Song.LAST_PLAYED;
+                orderBy = orderByDesc = Song.LAST_PLAYED;
                 break;
             case 6:
-                orderBy = Song.TIMES_PLAYED;
+                orderBy = orderByDesc = Song.TIMES_PLAYED;
                 break;
         }
 
-        boolean orderByDesc = cbOrderByDesc.isChecked();
-        preferences.putBoolean(PREF_ORDER_BY_DESC, orderByDesc);
+        boolean isOrderByDesc = cbOrderByDesc.isChecked();
+        preferences.putBoolean(PREF_ORDER_BY_DESC, isOrderByDesc);
         if (orderBy != null) {
-            if (orderByDesc) {
+            if (isOrderByDesc) {
                 orderBy += " DESC";
+            } else {
+                orderByDesc += " DESC";
             }
             orderBy += "," + Song.TITLE;
+            orderByDesc += "," + Song.TITLE;
+            if (isOrderByDesc) {
+                orderBy += " DESC";
+            } else {
+                orderByDesc += " DESC";
+            }
         }
 
         startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(selection, null, orderBy)));
+                .putExtras(SongsFragment.getArguments(selection, null, orderBy, orderByDesc)));
 
         preferences.apply();
     }

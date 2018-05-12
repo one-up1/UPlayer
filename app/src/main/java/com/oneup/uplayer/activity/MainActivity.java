@@ -93,28 +93,37 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (bookmarksFragment == null) {
                         bookmarksFragment = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                Song.BOOKMARKED + " DESC," + Song.TITLE);
+                                Song.BOOKMARKED + " DESC," + Song.TITLE,
+                                Song.BOOKMARKED + "," + Song.TITLE + " DESC");
                     }
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
                                 Artist.LAST_ADDED + " DESC," + Artist.ARTIST,
+                                Artist.LAST_ADDED + "," + Artist.ARTIST + " DESC",
                                 Song.ADDED + " DESC," + Song.TITLE,
+                                Song.ADDED + "," + Song.TITLE + " DESC",
                                 ArtistsFragment.INFO_LAST_ADDED);
                     }
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
                         artistsFragment = ArtistsFragment.newInstance(
-                                Artist.ARTIST, Song.TITLE, 0);
+                                Artist.ARTIST,
+                                Artist.ARTIST + " DESC",
+                                Song.TITLE,
+                                Song.TITLE + " DESC",
+                                0);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(
-                                Artist.LAST_PLAYED + " DESC," + Artist.ARTIST,
-                                Song.LAST_PLAYED + " DESC," + Song.TITLE,
+                                Artist.LAST_PLAYED + " DESC",
+                                Artist.LAST_PLAYED,
+                                Song.LAST_PLAYED + " DESC",
+                                Song.LAST_PLAYED,
                                 ArtistsFragment.INFO_LAST_PLAYED);
                     }
                     return lastPlayedFragment;
@@ -122,7 +131,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (mostPlayedFragment == null) {
                         mostPlayedFragment = ArtistsFragment.newInstance(
                                 Artist.TIMES_PLAYED + " DESC," + Artist.ARTIST,
+                                Artist.TIMES_PLAYED + "," + Artist.ARTIST + " DESC",
                                 Song.TIMES_PLAYED + " DESC," + Song.TITLE,
+                                Song.TIMES_PLAYED + "," + Song.TITLE + " DESC",
                                 ArtistsFragment.INFO_TIMES_PLAYED);
                     }
                     return mostPlayedFragment;

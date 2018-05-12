@@ -80,8 +80,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList<Artist> queryArtists(String orderBy) {
         Log.d(TAG, "DbHelper.queryArtists('" + orderBy + "')");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_ARTISTS, new String[]{Artist._ID, Artist.ARTIST,
-                            Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+            try (Cursor c = db.query(TABLE_ARTISTS, null,
                     null, null, null, null, orderBy)) {
                 ArrayList<Artist> artists = new ArrayList<>();
                 while (c.moveToNext()) {
@@ -115,9 +114,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
         Log.d(TAG, "DbHelper.querySongs(" + selection + ",'" + orderBy + "')");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
-                            Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.ADDED,
-                            Song.LAST_PLAYED, Song.TIMES_PLAYED},
+            try (Cursor c = db.query(TABLE_SONGS, null,
                     selection, selectionArgs, null, null, orderBy)) {
                 ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
@@ -127,9 +124,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     song.setArtistId(c.getLong(2));
                     song.setArtist(c.getString(3));
                     song.setDuration(c.getLong(4));
-                    song.setAdded(c.getLong(5));
-                    song.setLastPlayed(c.getLong(6));
-                    song.setTimesPlayed(c.getInt(7));
+                    song.setYear(c.getInt(5));
+                    song.setAdded(c.getLong(6));
+                    song.setTag(c.getString(7));
+                    song.setBookmarked(c.getLong(8));
+                    song.setLastPlayed(c.getLong(9));
+                    song.setTimesPlayed(c.getInt(10));
                     songs.add(song);
                 }
                 Log.d(TAG, songs.size() + " songs queried");

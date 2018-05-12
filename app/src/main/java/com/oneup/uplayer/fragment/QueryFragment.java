@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.ArraySet;
@@ -29,6 +30,8 @@ import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
 import java.util.Set;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
@@ -81,27 +84,35 @@ public class QueryFragment extends Fragment implements
     private long maxLastPlayed;
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        dbHelper = new DbHelper(getActivity());
+        preferences = getActivity().getPreferences(MODE_PRIVATE);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "QueryFragment.onCreateView()");
-
-        dbHelper = new DbHelper(getActivity());
-        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         View rootView = inflater.inflate(R.layout.fragment_query, container, false);
 
         etTitle = rootView.findViewById(R.id.etTitle);
-        setEditTextString(etTitle, PREF_TITLE);
+        etTitle.setText(preferences.getString(PREF_TITLE, ""));
 
         etArtist = rootView.findViewById(R.id.etArtist);
-        setEditTextString(etArtist, PREF_ARTIST);
+        etArtist.setText(preferences.getString(PREF_ARTIST, ""));
+
+        etMinYear = rootView.findViewById(R.id.etMinYear);
+        etMinYear.setText(preferences.getString(PREF_MIN_YEAR, ""));
+
+        etMaxYear = rootView.findViewById(R.id.etMaxYear);
+        etMaxYear.setText(preferences.getString(PREF_MAX_YEAR, ""));
 
         bMinAdded = rootView.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
         bMinAdded.setOnLongClickListener(this);
-        if (minAdded == 0) {
-            minAdded = preferences.getLong(PREF_MIN_ADDED, 0);
-        }
+        minAdded = preferences.getLong(PREF_MIN_ADDED, 0);
         if (minAdded > 0) {
             bMinAdded.setText(Util.formatDateTime(minAdded));
         }
@@ -109,25 +120,15 @@ public class QueryFragment extends Fragment implements
         bMaxAdded = rootView.findViewById(R.id.bMaxAdded);
         bMaxAdded.setOnClickListener(this);
         bMaxAdded.setOnLongClickListener(this);
-        if (maxAdded == 0) {
-            maxAdded = preferences.getLong(PREF_MAX_ADDED, 0);
-        }
+        maxAdded = preferences.getLong(PREF_MAX_ADDED, 0);
         if (maxAdded > 0) {
             bMaxAdded.setText(Util.formatDateTime(maxAdded));
         }
 
-        etMinYear = rootView.findViewById(R.id.etMinYear);
-        setEditTextString(etMinYear, PREF_MIN_YEAR);
-
-        etMaxYear = rootView.findViewById(R.id.etMaxYear);
-        setEditTextString(etMaxYear, PREF_MAX_YEAR);
-
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         bMinLastPlayed.setOnLongClickListener(this);
-        if (minLastPlayed == 0) {
-            minLastPlayed = preferences.getLong(PREF_MIN_LAST_PLAYED, 0);
-        }
+        minLastPlayed = preferences.getLong(PREF_MIN_LAST_PLAYED, 0);
         if (minLastPlayed > 0) {
             bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
         }
@@ -135,24 +136,22 @@ public class QueryFragment extends Fragment implements
         bMaxLastPlayed = rootView.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
-        if (maxLastPlayed == 0) {
-            maxLastPlayed = preferences.getLong(PREF_MAX_LAST_PLAYED, 0);
-        }
+        maxLastPlayed = preferences.getLong(PREF_MAX_LAST_PLAYED, 0);
         if (maxLastPlayed > 0) {
             bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
         }
 
         etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
-        setEditTextString(etMinTimesPlayed, PREF_MIN_TIMES_PLAYED);
+        etMinTimesPlayed.setText(preferences.getString(PREF_MIN_TIMES_PLAYED, ""));
 
         etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
-        setEditTextString(etMaxTimesPlayed, PREF_MAX_TIMES_PLAYED);
+        etMaxTimesPlayed.setText(preferences.getString(PREF_MAX_TIMES_PLAYED, ""));
 
         sOrderBy = rootView.findViewById(R.id.sOrderBy);
-        setSpinnerSelection(sOrderBy, PREF_ORDER_BY);
+        sOrderBy.setSelection(preferences.getInt(PREF_ORDER_BY, 0));
 
         cbOrderByDesc = rootView.findViewById(R.id.cbOrderByDesc);
-        setCheckBoxChecked(cbOrderByDesc, PREF_ORDER_BY_DESC);
+        cbOrderByDesc.setChecked(preferences.getBoolean(PREF_ORDER_BY_DESC, false));
 
         bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
@@ -179,7 +178,6 @@ public class QueryFragment extends Fragment implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "QueryFragment.onActivityResult(" + requestCode + ", " + resultCode + ")");
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_SELECT_MIN_ADDED:
@@ -204,7 +202,21 @@ public class QueryFragment extends Fragment implements
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "QueryFragment.onDestroy()");
+        preferences.edit()
+                .putString(PREF_TITLE, etTitle.getString())
+                .putString(PREF_ARTIST, etArtist.getString())
+                .putString(PREF_MIN_YEAR, etMinYear.getString())
+                .putString(PREF_MAX_YEAR, etMaxYear.getString())
+                .putLong(PREF_MIN_ADDED, minAdded)
+                .putLong(PREF_MAX_ADDED, maxAdded)
+                .putString(PREF_MIN_TIMES_PLAYED, etMinTimesPlayed.getString())
+                .putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString())
+                .putLong(PREF_MIN_LAST_PLAYED, minLastPlayed)
+                .putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed)
+                .putInt(PREF_ORDER_BY, sOrderBy.getSelectedItemPosition())
+                .putBoolean(PREF_ORDER_BY_DESC, cbOrderByDesc.isChecked())
+                .apply();
+        
         if (dbHelper != null) {
             dbHelper.close();
         }
@@ -432,88 +444,56 @@ public class QueryFragment extends Fragment implements
         return true;
     }
 
-    private void setSpinnerSelection(Spinner view, String preferencesKey) {
-        if (preferences.contains(preferencesKey)) {
-            view.setSelection(preferences.getInt(preferencesKey, 0));
-        }
-    }
-
-    private void setEditTextString(EditText view, String preferencesKey) {
-        if (preferences.contains(preferencesKey)) {
-            view.setString(preferences.getString(preferencesKey, null));
-        }
-    }
-
-    private void setCheckBoxChecked(CheckBox view, String preferencesKey) {
-        if (preferences.contains(preferencesKey)) {
-            view.setChecked(preferences.getBoolean(preferencesKey, false));
-        }
-    }
-
     private void query(Set<String> tags) {
-        SharedPreferences.Editor preferences = this.preferences.edit();
-
         String selection = null;
 
         String title = etTitle.getString();
-        preferences.putString(PREF_TITLE, title);
         if (title.length() > 0) {
             selection = Song.TITLE + " LIKE '%" + title + "%'";
         }
 
         String artist = etArtist.getString();
-        preferences.putString(PREF_ARTIST, artist);
         if (artist.length() > 0) {
             selection = appendSelection(selection, Song.ARTIST + " LIKE '%" + artist + "%'");
         }
 
         String minYear = etMinYear.getString();
-        preferences.putString(PREF_MIN_YEAR, minYear);
         if (minYear.length() > 0) {
             selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
         }
 
         String maxYear = etMaxYear.getString();
-        preferences.putString(PREF_MAX_YEAR, maxYear);
         if (maxYear.length() > 0) {
             selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
         }
-
-        preferences.putLong(PREF_MIN_ADDED, minAdded);
+        
         if (minAdded > 0) {
             selection = appendSelection(selection, Song.ADDED + ">=" + minAdded);
         }
-
-        preferences.putLong(PREF_MAX_ADDED, maxAdded);
+        
         if (maxAdded > 0) {
             selection = appendSelection(selection, Song.ADDED + "<=" + maxAdded);
         }
-
-        preferences.putLong(PREF_MIN_LAST_PLAYED, minLastPlayed);
+        
         if (minLastPlayed > 0) {
             selection = appendSelection(selection, Song.LAST_PLAYED + ">=" + minLastPlayed);
         }
-
-        preferences.putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed);
+        
         if (maxLastPlayed > 0) {
             selection = appendSelection(selection, Song.LAST_PLAYED + "<=" + maxLastPlayed);
         }
 
         String minTimesPlayed = etMinTimesPlayed.getString();
-        preferences.putString(PREF_MIN_TIMES_PLAYED, minTimesPlayed);
         if (minTimesPlayed.length() > 0) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + ">=" + minTimesPlayed);
         }
 
         String maxTimesPlayed = etMaxTimesPlayed.getString();
-        preferences.putString(PREF_MAX_TIMES_PLAYED, maxTimesPlayed);
         if (maxTimesPlayed.length() > 0) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
         }
 
         if (tags != null) {
-            preferences.putStringSet(PREF_TAGS, tags);
-
             String tagSelection;
             if (tags.size() == 0) {
                 tagSelection = "IS NULL";
@@ -528,20 +508,15 @@ public class QueryFragment extends Fragment implements
                 sbTags.append(')');
                 tagSelection = "IN" + sbTags;
             }
-            selection = appendSelection(selection,
-                    Song.TAG + " " + tagSelection);
+            selection = appendSelection(selection, Song.TAG + " " + tagSelection);
+
+            preferences.edit().putStringSet(PREF_TAGS, tags).apply();
         }
-
-        int orderBy = sOrderBy.getSelectedItemPosition();
-        preferences.putInt(PREF_ORDER_BY, orderBy);
-
-        boolean orderByDesc = cbOrderByDesc.isChecked();
-        preferences.putBoolean(PREF_ORDER_BY_DESC, orderByDesc);
-
+        
         startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(selection, null, orderBy, orderByDesc)));
-
-        preferences.apply();
+                .putExtras(SongsFragment.getArguments(selection, null,
+                        sOrderBy.getSelectedItemPosition(),
+                        cbOrderByDesc.isChecked())));
     }
 
     public static QueryFragment newInstance() {

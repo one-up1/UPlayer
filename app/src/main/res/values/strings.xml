@@ -23,8 +23,11 @@
         <item />
         <item>Title</item>
         <item>Artist</item>
+        <item>Duration</item>
         <item>Year</item>
         <item>Added</item>
+        <item>Tag</item>
+        <item>Bookmarked</item>
         <item>Last played</item>
         <item>Times played</item>
     </string-array>

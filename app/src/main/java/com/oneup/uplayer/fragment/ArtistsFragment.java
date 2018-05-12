@@ -16,7 +16,8 @@ import com.oneup.uplayer.util.Util;
 import java.util.ArrayList;
 
 public class ArtistsFragment extends ListFragment<Artist> {
-    public static final int INFO_LAST_ADDED = 1; //TODO: Only use these and no orderBy and songsOrderBy?
+    //TODO: Only use INFO constant and no orderBy/songsOrderBy? Also display info in SongsListViews?
+    public static final int INFO_LAST_ADDED = 1;
     public static final int INFO_LAST_PLAYED = 2;
     public static final int INFO_TIMES_PLAYED = 3;
 
@@ -49,13 +50,12 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected void setListItemViews(View rootView, int position, Artist artist) {
-        // Set artist.
+        // Set artist name.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
         tvArtist.setTextColor(artist.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
         tvArtist.setText(artist.getArtist());
 
-        // Get info.
-        //TODO: Artist info in ListView.
+        // Get info text.
         String info;
         switch (getArguments().getInt(ARG_INFO)) {
             case INFO_LAST_ADDED:
@@ -63,17 +63,19 @@ public class ArtistsFragment extends ListFragment<Artist> {
                         : Util.formatTimeAgo(artist.getLastAdded());
                 break;
             case INFO_LAST_PLAYED:
-                info = artist.getLastPlayed() == 0 ? null :
-                        Util.formatTimeAgo(artist.getLastPlayed());
+                info = artist.getLastPlayed() == 0 ? null
+                        : Util.formatTimeAgo(artist.getLastPlayed());
                 break;
             case INFO_TIMES_PLAYED:
-                info = Integer.toString(artist.getTimesPlayed());
+                info = artist.getTimesPlayed() == 0 ? null
+                        : Integer.toString(artist.getTimesPlayed());
                 break;
             default:
                 info = null;
+                break;
         }
 
-        // Hide or set info.
+        // Set info or hide the view when no info is available.
         TextView tvInfo = rootView.findViewById(R.id.tvInfo);
         if (info == null) {
             tvInfo.setVisibility(View.GONE);

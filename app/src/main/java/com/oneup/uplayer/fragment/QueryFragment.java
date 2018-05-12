@@ -542,15 +542,24 @@ public class QueryFragment extends Fragment implements
                 orderBy = orderByDesc = Song.ARTIST;
                 break;
             case 3:
-                orderBy = orderByDesc = Song.YEAR;
+                orderBy = orderByDesc = Song.DURATION;
                 break;
             case 4:
-                orderBy = orderByDesc = Song.ADDED;
+                orderBy = orderByDesc = Song.YEAR;
                 break;
             case 5:
-                orderBy = orderByDesc = Song.LAST_PLAYED;
+                orderBy = orderByDesc = Song.ADDED;
                 break;
             case 6:
+                orderBy = orderByDesc = Song.TAG;
+                break;
+            case 7:
+                orderBy = orderByDesc = Song.BOOKMARKED;
+                break;
+            case 8:
+                orderBy = orderByDesc = Song.LAST_PLAYED;
+                break;
+            case 9:
                 orderBy = orderByDesc = Song.TIMES_PLAYED;
                 break;
         }

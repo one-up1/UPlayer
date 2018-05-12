@@ -78,7 +78,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Artist> queryArtists(String orderBy) {
-        Log.d(TAG, "DbHelper.queryArtists(" + orderBy + ")");
+        Log.d(TAG, "DbHelper.queryArtists('" + orderBy + "')");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_ARTISTS, new String[]{Artist._ID, Artist.ARTIST,
                             Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
@@ -113,7 +113,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
-        Log.d(TAG, "DbHelper.querySongs(" + selection + "," + orderBy + ")");
+        Log.d(TAG, "DbHelper.querySongs(" + selection + ",'" + orderBy + "')");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
                             Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.TIMES_PLAYED},

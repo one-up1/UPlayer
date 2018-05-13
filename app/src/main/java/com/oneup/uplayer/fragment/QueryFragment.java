@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +17,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -32,6 +30,8 @@ import com.oneup.uplayer.widget.EditText;
 import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
+
+//TODO: Update lists after syncing database or restoring backup
 
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
@@ -320,43 +320,51 @@ public class QueryFragment extends Fragment implements
                 Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bRestorePlaylist) {
-            getActivity().startService(new Intent(getActivity(), MainService.class)
-                    .putExtra(MainService.EXTRA_REQUEST_CODE,
-                            MainService.REQUEST_RESTORE_PLAYLIST));
+            //TODO: Only show restore playlist confirm when service is running.
+            Util.showConfirmDialog(getActivity(), R.string.restore_playlist_confirm,
+                    new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            getActivity().startService(new Intent(getActivity(), MainService.class)
+                                    .putExtra(MainService.EXTRA_REQUEST_CODE,
+                                            MainService.REQUEST_RESTORE_PLAYLIST));
+                        }
+                    });
         } else if (v == bSyncDatabase) {
-            new Thread(new Runnable() {
+            Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
+                    new DialogInterface.OnClickListener() {
 
-                @Override
-                public void run() {
-                    try {
-                        final DbHelper.SyncResult[] results =
-                                dbHelper.syncWithMediaStore(getActivity());
-                        getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //TODO: Refresh MediaStore before syncing database
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        DbHelper.SyncResult[] results =
+                                                dbHelper.syncWithMediaStore(getActivity());
 
-                            @Override
-                            public void run() {
-                                Util.showInfoDialog(getActivity(), R.string.sync_completed,
-                                        R.string.sync_completed_message,
-                                        results[0].getRowCount(), results[0].getRowsIgnored(),
-                                        results[0].getRowsInserted(),
-                                        results[0].getRowsUpdated(), results[0].getRowsDeleted(),
-                                        results[1].getRowCount(), results[1].getRowsIgnored(),
-                                        results[1].getRowsInserted(),
-                                        results[1].getRowsUpdated(), results[1].getRowsDeleted());
-                            }
-                        });
-                    } catch (final Exception ex) {
-                        Log.e(TAG, "Error synchronizing database", ex);
-                        getActivity().runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Util.showErrorDialog(getActivity(), ex);
-                            }
-                        });
-                    }
-                }
-            }).start();
+                                        Util.showInfoDialog(getActivity(), R.string.sync_completed,
+                                                R.string.sync_completed_message,
+                                                results[0].getRowCount(),
+                                                results[0].getRowsIgnored(),
+                                                results[0].getRowsInserted(),
+                                                results[0].getRowsUpdated(),
+                                                results[0].getRowsDeleted(),
+                                                results[1].getRowCount(),
+                                                results[1].getRowsIgnored(),
+                                                results[1].getRowsInserted(),
+                                                results[1].getRowsUpdated(),
+                                                results[1].getRowsDeleted());
+                                    } catch (Exception ex) {
+                                        Log.e(TAG, "Error synchronizing database", ex);
+                                        Util.showErrorDialog(getActivity(), ex);
+                                    }
+                                }
+                            }).start();
+                        }
+                    });
         } else if (v == bBackup) {
             new Thread(new Runnable() {
 
@@ -364,23 +372,10 @@ public class QueryFragment extends Fragment implements
                 public void run() {
                     try {
                         dbHelper.backup();
-                        getActivity().runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Toast.makeText(getActivity(), R.string.backup_completed,
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    } catch (final Exception ex) {
+                        Util.showToast(getActivity(), R.string.backup_completed);
+                    } catch (Exception ex) {
                         Log.e(TAG, "Error running backup", ex);
-                        getActivity().runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Util.showErrorDialog(getActivity(), ex);
-                            }
-                        });
+                        Util.showErrorDialog(getActivity(), ex);
                     }
                 }
             }).start();
@@ -402,11 +397,9 @@ public class QueryFragment extends Fragment implements
             maxLastPlayed = 0;
             bMaxLastPlayed.setText(R.string.max_last_played);
         } else if (v == bBackup) {
-            new AlertDialog.Builder(getActivity())
-                    .setIcon(R.drawable.ic_dialog_warning)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.restore_backup_confirm)
-                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            Util.showConfirmDialog(getActivity(), R.string.restore_backup_confirm,
+                    new DialogInterface.OnClickListener() {
+
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             new Thread(new Runnable() {
@@ -415,31 +408,15 @@ public class QueryFragment extends Fragment implements
                                 public void run() {
                                     try {
                                         dbHelper.restoreBackup();
-                                        getActivity().runOnUiThread(new Runnable() {
-
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(getActivity(),
-                                                        R.string.backup_restored,
-                                                        Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    } catch (final Exception ex) {
+                                        Util.showToast(getActivity(), R.string.backup_restored);
+                                    } catch (Exception ex) {
                                         Log.e(TAG, "Error restoring backup", ex);
-                                        getActivity().runOnUiThread(new Runnable() {
-
-                                            @Override
-                                            public void run() {
-                                                Util.showErrorDialog(getActivity(), ex);
-                                            }
-                                        });
+                                        Util.showErrorDialog(getActivity(), ex);
                                     }
                                 }
                             }).start();
                         }
-                    })
-                    .setNegativeButton(R.string.no, null)
-                    .show();
+                    });
         }
         return true;
     }

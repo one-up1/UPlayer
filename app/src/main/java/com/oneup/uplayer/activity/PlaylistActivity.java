@@ -60,7 +60,7 @@ public class PlaylistActivity extends AppCompatActivity {
     }
 
     public static class PlaylistFragment extends SongsListFragment
-            implements MainService.OnSongIndexChangedListener {
+            implements MainService.OnDataChangedListener {
         private MainService mainService;
 
         public PlaylistFragment() {
@@ -80,7 +80,7 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onDestroy() {
             if (mainService != null) {
                 Log.d(TAG, "Unbinding service");
-                mainService.setOnSongIndexChangedListener(null);
+                mainService.setOnDataChangedListener(null);
                 getActivity().unbindService(serviceConnection);
                 mainService = null;
             }
@@ -89,13 +89,14 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onSongIndexChanged() {
-            Log.d(TAG, "PlaylistActivity.onSongIndexChanged()");
+        public void onDataChanged() {
+            Log.d(TAG, "PlaylistFragment.onDataChanged()");
             notifyDataSetChanged();
         }
 
         @Override
         protected ArrayList<Song> loadData() {
+            Log.d(TAG, "PlaylistFragment.loadData()");
             return mainService.getSongs();
         }
 
@@ -134,26 +135,25 @@ public class PlaylistActivity extends AppCompatActivity {
                     break;
                 case R.id.ibRemove:
                     onSongRemoved(index);
-                    setActivityTitle();
                     break;
             }
         }
 
         @Override
         protected void onSongRemoved(int index) {
-            Log.d(TAG, "PlaylistActivity.onSongRemoved(" + index + ")");
+            Log.d(TAG, "PlaylistFragment.onSongRemoved(" + index + ")");
             if (mainService != null) {
                 mainService.removeSong(index);
             }
         }
 
         private void moveSong(int position, int i) {
-            if (mainService != null && mainService.moveSong(position, i)) {
-                notifyDataSetChanged();
+            if (mainService != null) {
+                mainService.moveSong(position, i);
             }
         }
 
-        public static PlaylistFragment newInstance() {
+        private static PlaylistFragment newInstance() {
             return new PlaylistFragment();
         }
 
@@ -168,7 +168,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                 MainService.MainBinder binder = (MainService.MainBinder) service;
                 mainService = binder.getService();
-                mainService.setOnSongIndexChangedListener(PlaylistFragment.this);
+                mainService.setOnDataChangedListener(PlaylistFragment.this);
 
                 reloadData();
                 setSelection(mainService.getSongIndex());
@@ -178,7 +178,7 @@ public class PlaylistActivity extends AppCompatActivity {
             public void onServiceDisconnected(ComponentName name) {
                 Log.d(TAG, "PlaylistFragment.onServiceDisconnected()");
                 if (mainService != null) {
-                    mainService.setOnSongIndexChangedListener(null);
+                    mainService.setOnDataChangedListener(null);
                     mainService = null;
                 }
             }

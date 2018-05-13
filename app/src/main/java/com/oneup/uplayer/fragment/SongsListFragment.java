@@ -1,6 +1,5 @@
 package com.oneup.uplayer.fragment;
 
-import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -12,7 +11,6 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
@@ -25,7 +23,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     private static final int REQUEST_EDIT_SONG = 1;
 
-    public SongsListFragment(int listItemResource) {
+    protected SongsListFragment(int listItemResource) {
         super(listItemResource);
     }
 
@@ -44,9 +42,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     try {
                         getDbHelper().updateSong((Song)
                                 data.getParcelableExtra(EditSongActivity.EXTRA_SONG));
-                        Toast.makeText(getActivity(), R.string.song_updated,
-                                Toast.LENGTH_SHORT).show();
-                        // onResume() is called after onActivityResult().
+                        Util.showToast(getActivity(), R.string.song_updated);
+                        // UI will update in onResume().
                     } catch (Exception ex) {
                         Log.e(TAG, "Error updating song", ex);
                         Util.showErrorDialog(getActivity(), ex);
@@ -58,9 +55,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     @Override
     protected String getActivityTitle() {
-        return getResources().getQuantityString(R.plurals.song_count_duration,
-                getData().size(), getData().size(),
-                Util.formatDuration(Song.getDuration(getData(), 0)));
+        return Util.getCountString(getActivity(), R.plurals.songs, getData().size())
+                + ", " + Util.formatDuration(Song.getDuration(getData(), 0));
     }
 
     @Override
@@ -95,9 +91,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.bookmark:
                 try {
                     getDbHelper().bookmarkSong(song);
-                    Toast.makeText(getActivity(), song.getBookmarked() > 0 ?
-                                    R.string.bookmark_set : R.string.bookmark_cleared,
-                            Toast.LENGTH_SHORT).show();
+                    Util.showToast(getActivity(), song.getBookmarked() > 0 ?
+                                    R.string.bookmark_set : R.string.bookmark_cleared);
                     reloadData();
                 } catch (Exception ex) {
                     Log.e(TAG, "Error bookmarking song", ex);
@@ -107,9 +102,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.mark_played:
                 try {
                     getDbHelper().updateSongPlayed(song);
-                    Toast.makeText(getActivity(), getString(
-                            R.string.times_played, song.getTimesPlayed()),
-                            Toast.LENGTH_SHORT).show();
+                    Util.showToast(getActivity(), R.string.times_played, song.getTimesPlayed());
                     reloadData();
                 } catch (Exception ex) {
                     Log.e(TAG, "Error updating song played", ex);
@@ -117,11 +110,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 }
                 break;
             case R.id.delete:
-                new AlertDialog.Builder(getActivity())
-                        .setIcon(R.drawable.ic_dialog_warning)
-                        .setTitle(R.string.delete_song)
-                        .setMessage(getString(R.string.delete_confirm, song.getTitle()))
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                Util.showConfirmDialog(getActivity(),
+                        getString(R.string.delete_confirm, song.getArtist(), song.getTitle()),
+                        new DialogInterface.OnClickListener() {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -148,22 +139,21 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                     }
                                     getDbHelper().deleteSong(song);
 
-                                    Toast.makeText(getActivity(), R.string.song_deleted,
-                                            Toast.LENGTH_SHORT).show();
+                                    Util.showToast(getActivity(), R.string.song_deleted);
                                     onSongRemoved(position);
-                                    reloadData();
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error deleting song", ex);
                                     Util.showErrorDialog(getActivity(), ex);
                                 }
                             }
-                        })
-                        .setNegativeButton(R.string.no, null)
-                        .show();
+                        });
                 break;
         }
     }
 
     protected void onSongRemoved(int position) {
+        Log.d(TAG, "SongsListFragment.onSongRemoved(" + position + ")");
+        getData().remove(position);
+        notifyDataSetChanged();
     }
 }

@@ -35,9 +35,10 @@
     <string name="none">None</string>
     <string name="all">All</string>
     <string name="statistics">Statistics</string>
-    <string name="statistics_message">Song count: %1$d (%2$s)\nArtist count: %3$d (avg %4$d songs)\nSongs played: %5$d (%6$s)\nSongs unplayed: %7$d (%8$s)\nSongs tagged: %9$d (%10$s)\nSongs untagged: %11$d (%12$s)\nTimes played: %13$d (%14$s)\nAvg times played: %15$d (%16$s)</string>
     <string name="restore_playlist">Restore playlist</string>
+    <string name="restore_playlist_confirm">Restore playlist?</string>
     <string name="sync_database">Sync database</string>
+    <string name="sync_database_confirm">Sync database?</string>
     <string name="sync_completed">Sync completed</string>
     <string name="sync_completed_message">%1$d artists (%2$d ignored)\n%3$d inserted, %4$d updated, %5$d deleted\n\n%6$d songs (%7$d ignored)\n%8$d inserted, %9$d updated, %10$d deleted</string>
     <string name="backup">Backup&#8230;</string>
@@ -46,9 +47,6 @@
     <string name="backup_restored">Backup restored</string>
 
     <string name="info">Info</string>
-    <string name="artist_message">Song count: %1$d (%2$s)\nSongs played: %3$d (%4$s)\nSongs unplayed: %5$d (%6$s)\nSongs tagged: %7$d (%8$s)\nSongs untagged: %9$d (%10$s)\nLast song added: %11$s\nLast played: %12$s\nTimes played: %13$d (%14$s)\nAvg times played: %15$d (%16$s)</string>
-    <string name="na">N/A</string>
-
     <string name="play_next">Play next</string>
     <string name="playing_next">Playing next: %1$s</string>
     <string name="play_last">Play last</string>
@@ -83,8 +81,7 @@
     <string name="times_played">Times played: %1$d</string>
 
     <string name="delete">Delete</string>
-    <string name="delete_song">Delete song</string>
-    <string name="delete_confirm">Delete %1$s?</string>
+    <string name="delete_confirm">Delete \'%1$s - %2$s\'?</string>
     <string name="song_deleted">Song deleted</string>
 
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
@@ -92,15 +89,6 @@
     <string name="play_pause">Play/Pause</string>
     <string name="next">Next</string>
     <string name="stop">Stop</string>
-
-    <plurals name="song_count_duration">
-        <item quantity="one">%1$d song, %2$s</item>
-        <item quantity="other">%1$d songs, %2$s</item>
-    </plurals>
-    <string name="ok">OK</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-
 
     <string name="stats_song_count">Song count:</string>
     <string name="stats_artist_count">Artist count: </string>
@@ -112,4 +100,13 @@
     <string name="stats_last_played">Last played:</string>
     <string name="stats_times_played">Times played:</string>
     <string name="stats_avg_times_played">Avg times played:</string>
+
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <plurals name="songs">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
 </resources>

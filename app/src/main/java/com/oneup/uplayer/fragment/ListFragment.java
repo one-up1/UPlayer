@@ -31,8 +31,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private int listItemResource;
 
     private DbHelper dbHelper;
-    protected int orderBy;
-    protected boolean orderByDesc;
+    private int orderBy;
+    private boolean orderByDesc;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
@@ -110,17 +110,13 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         setActivityTitle();
     }
 
+    protected abstract ArrayList<T> loadData();
+
     protected void notifyDataSetChanged() {
         Log.d(TAG, "ListFragment.notifyDataSetChanged()");
+        setActivityTitle();
         if (listAdapter != null) {
             listAdapter.notifyDataSetChanged();
-        }
-    }
-
-    protected void setActivityTitle() {
-        Activity activity = getActivity();
-        if (activity != null && !(activity instanceof MainActivity)) {
-            activity.setTitle(getActivityTitle());
         }
     }
 
@@ -162,7 +158,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         if (orderByDesc) {
             s += " DESC";
         }
-        Log.d(TAG, "s=" + s);
         return s;
     }
 
@@ -170,7 +165,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return data;
     }
 
-    protected abstract ArrayList<T> loadData();
+    private void setActivityTitle() {
+        Activity activity = getActivity();
+        if (activity != null && !(activity instanceof MainActivity)) {
+            activity.setTitle(getActivityTitle());
+        }
+    }
 
     private class ListAdapter extends BaseAdapter {
         private LayoutInflater layoutInflater;

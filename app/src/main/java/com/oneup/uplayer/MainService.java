@@ -27,6 +27,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+//TODO: MainService impl and controlling from PlaylistActivity.
+//TODO: songIndex, time left calc, null checks, which preferences to use.
+
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
     public static final String EXTRA_REQUEST_CODE = "com.oneup.extra.REQUEST_CODE";
@@ -59,8 +62,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private final IBinder mainBinder = new MainBinder();
 
-    private SharedPreferences preferences;
     private DbHelper dbHelper;
+    private SharedPreferences preferences;
 
     private MediaPlayer player;
     private int volume;
@@ -74,7 +77,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private boolean prepared;
 
     private MainReceiver mainReceiver;
-    private OnSongIndexChangedListener onSongIndexChangedListener;
+    private OnDataChangedListener onDataChangedListener;
 
     @Nullable
     @Override
@@ -127,7 +130,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "MainService.onStartCommand()");
         if (intent == null) {
-            Log.wtf(TAG, "No intent");
+            Log.e(TAG, "No intent");
             return START_STICKY;
         }
 
@@ -215,14 +218,31 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         player.start();
 
-        Song song = songs.get(songIndex);
-        notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
-        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
-        updatePlaylistPosition();
         notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_pause);
-        startForeground(1, notification);
+        updateViews();
 
         prepared = true;
+    }
+
+    private void updateViews() {
+        Log.d(TAG, "MainService.updateViews()");
+        Song song = songs.get(songIndex);
+
+        notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
+        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+
+        String left = Util.formatDuration(Song.getDuration(songs, songIndex));
+        if (songIndex < songs.size() - 1) {
+            left += " / " + Util.formatDuration(Song.getDuration(songs, songIndex + 1));
+        }
+        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+                R.string.playlist_position, songIndex + 1, songs.size(), left));
+
+        startForeground(1, notification);
+
+        if (onDataChangedListener != null) {
+            onDataChangedListener.onDataChanged();
+        }
     }
 
     @Override
@@ -244,7 +264,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
         prepared = false;
 
-        //FIXME: onCompletion not always called or position 0?
+        //FIXME: onCompletion not always called or position 0? Only in emulator?
         if (player.getCurrentPosition() == 0) {
             Log.d(TAG, "Current position is 0");
         } else {
@@ -287,19 +307,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
     }
 
-    private void updatePlaylistPosition() {
-        String left = Util.formatDuration(Song.getDuration(songs, songIndex));
-        if (songIndex < songs.size() - 1) {
-            left += " / " + Util.formatDuration(Song.getDuration(songs, songIndex + 1));
-        }
-        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
-                R.string.playlist_position, songIndex + 1, songs.size(), left));
-
-        if (onSongIndexChangedListener != null) {
-            onSongIndexChangedListener.onSongIndexChanged();
-        }
-    }
-
     private void addSong(Song song, boolean next) {
         Log.d(TAG, "MainService.addSong(" + song + ", " + next + ")");
         if (songs == null) {
@@ -315,8 +322,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         // last song if we are not. This will cause the added song to be played immediately, if it
         // is the first song or is being added to a playlist of which the last song has completed.
         if (prepared) {
-            updatePlaylistPosition();
-            startForeground(1, notification);
+            updateViews();
         } else {
             songIndex = songs.size() - 1;
             play();
@@ -411,6 +417,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void restorePlaylist() {
+        //TODO: Save current playlist after restoring so restore can be undone?
         try {
             JSONArray playlistSongs = new JSONArray(preferences.getString(PREF_SONGS, null));
             songs = new ArrayList<>();
@@ -450,9 +457,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         stopSelf();
     }
 
-    public void setOnSongIndexChangedListener(
-            OnSongIndexChangedListener onSongIndexChangedListener) {
-        this.onSongIndexChangedListener = onSongIndexChangedListener;
+    public void setOnDataChangedListener(OnDataChangedListener onDataChangedListener) {
+        this.onDataChangedListener = onDataChangedListener;
     }
 
     public ArrayList<Song> getSongs() {
@@ -469,36 +475,26 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         play();
     }
 
-    public boolean moveSong(int index, int i) {
+    public void moveSong(int index, int i) {
         Log.d(TAG, "MainService.moveSong(" + index + "," + i + ")");
         int newIndex = index + i;
         Log.d(TAG, "index=" + index + ", newIndex=" + newIndex + ", songIndex=" + songIndex);
         if (newIndex >= 0 && newIndex < songs.size()) {
             songs.add(newIndex, songs.remove(index));
             if (index == songIndex) {
-                songIndexChanged(newIndex);
+                songIndex = newIndex;
             } else if (newIndex == songIndex) {
-                songIndexChanged(index);
+                songIndex = index;
             }
-            return true;
-        } else {
-            return false;
+
+            updateViews();
         }
-    }
-
-    private void songIndexChanged(int newIndex) {
-        Log.d(TAG, "onSongIndexChanged(" + newIndex + ")");
-        songIndex = newIndex;
-
-        updatePlaylistPosition();
-        startForeground(1, notification);
     }
 
     public void removeSong(int index) {
         Log.d(TAG, "MainService.removeSong(" + index + ")");
         if (songs.size() > 1) {
             songs.remove(index);
-
             if (index < songIndex) {
                 songIndex--;
             } else if (index == songIndex) {
@@ -507,9 +503,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 }
                 play();
             }
-
-            updatePlaylistPosition();
-            startForeground(1, notification);
+            updateViews();
         } else {
             stop();
         }
@@ -521,7 +515,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public interface OnSongIndexChangedListener {
-        void onSongIndexChanged();
+    public interface OnDataChangedListener {
+        void onDataChanged();
     }
 }

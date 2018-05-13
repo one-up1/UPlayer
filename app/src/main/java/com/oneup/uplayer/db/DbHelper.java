@@ -418,16 +418,16 @@ public class DbHelper extends SQLiteOpenHelper {
                             song.getString(Song.TITLE), song.getString(Song.ARTIST)})) {
                         case 0:
                             throw new SQLiteException("Song not found: '" +
-                                    song.getString(Song.ARTIST) + "' - '" +
+                                    song.getString(Song.ARTIST) + " - " +
                                     song.getString(Song.TITLE) + "'");
                         case 1:
                             Log.d(TAG, "Song updated: '" +
-                                    song.getString(Song.ARTIST) + "' - '" +
+                                    song.getString(Song.ARTIST) + " - " +
                                     song.getString(Song.TITLE) + "'");
                             break;
                         default:
                             throw new SQLiteException("Duplicate song: '" +
-                                    song.getString(Song.ARTIST) + "' - '" +
+                                    song.getString(Song.ARTIST) + " - " +
                                     song.getString(Song.TITLE) + "'");
                     }
                 }

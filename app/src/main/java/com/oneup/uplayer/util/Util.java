@@ -1,11 +1,14 @@
 package com.oneup.uplayer.util;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Environment;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 
@@ -24,6 +27,8 @@ public class Util {
     private static final NumberFormat FRACTION_FORMAT = NumberFormat.getInstance();
     private static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
 
+    private static Toast toast;
+
     static {
         TIME_NUMBER_FORMAT.setMinimumIntegerDigits(2);
         FRACTION_FORMAT.setMaximumFractionDigits(1);
@@ -33,6 +38,55 @@ public class Util {
     public static File getMusicFile(String name) {
         return new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC), name);
+    }
+
+    public static void showToast(final Activity context, final int resId,
+                                 final Object... formatArgs) {
+        context.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                // Cancel any previous toast. This will prevent many toasts from displaying for a
+                // long time when repeatingly pressing buttons that show toasts like play next/last.
+                if (toast != null) {
+                    toast.cancel();
+                }
+
+                toast = Toast.makeText(context,
+                        context.getString(resId, formatArgs),
+                        Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
+    }
+
+    public static void showConfirmDialog(Context context, int messageId,
+                                         DialogInterface.OnClickListener listener) {
+        showConfirmDialog(context, context.getString(messageId), listener);
+    }
+
+    public static void showConfirmDialog(Context context, String message,
+                                         DialogInterface.OnClickListener listener) {
+        new AlertDialog.Builder(context)
+                .setIcon(R.drawable.ic_dialog_warning)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, listener)
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    public static void showInfoDialog(Activity context, int titleId,
+                                  int messageId, Object... formatArgs) {
+        showDialog(context, R.drawable.ic_dialog_info,
+                context.getString(titleId),
+                context.getString(messageId, formatArgs));
+    }
+
+    public static void showErrorDialog(Activity context, Exception ex) {
+        showDialog(context, R.drawable.ic_dialog_error,
+                ex.getClass().getSimpleName(),
+                ex.getMessage());
     }
 
     public static String formatDateTime(long seconds) {
@@ -60,26 +114,8 @@ public class Util {
         return formatFraction(value, total, PERCENT_FORMAT);
     }
 
-    public static void showInfoDialog(Context context, int titleResId,
-                                      int messageResId, Object... messageFormatArgs) {
-        showInfoDialog(context, context.getString(titleResId), messageResId, messageFormatArgs);
-    }
-
-    public static void showInfoDialog(Context context, String title,
-                                      int messageResId, Object... messageFormatArgs) {
-        new AlertDialog.Builder(context)
-                .setTitle(title)
-                .setMessage(context.getString(messageResId, messageFormatArgs))
-                .setPositiveButton(R.string.ok, null)
-                .show();
-    }
-
-    public static void showErrorDialog(Context context, Exception ex) {
-        new AlertDialog.Builder(context)
-                .setTitle(ex.getClass().getSimpleName())
-                .setMessage(ex.getMessage())
-                .setPositiveButton(R.string.ok, null)
-                .show();
+    public static String getCountString(Context context, int id, int quantity) {
+        return context.getResources().getQuantityString(id, quantity, quantity);
     }
 
     public static void hideSoftInput(Context context, View view) {
@@ -90,6 +126,22 @@ public class Util {
         }
     }
 
+    private static void showDialog(final Activity context, final int iconId,
+                                   final String title, final String message) {
+        context.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                new AlertDialog.Builder(context)
+                        .setIcon(iconId)
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setPositiveButton(R.string.ok, null)
+                        .show();
+            }
+        });
+    }
+
     private static String formatDateTime(long seconds, DateFormat format) {
         return format.format(TimeUnit.SECONDS.toMillis(seconds));
     }
@@ -97,17 +149,24 @@ public class Util {
     private static String formatDuration(long seconds, boolean showSeconds) {
         String s = "";
 
+        // Process years.
+        long years = TimeUnit.SECONDS.toDays(seconds) / 365;
+        if (years > 0) {
+            s += years + "y ";
+            seconds -= TimeUnit.DAYS.toSeconds(years * 365);
+        }
+
         // Process weeks.
         long weeks = TimeUnit.SECONDS.toDays(seconds) / 7;
         if (weeks > 0) {
-            s += Long.toString(weeks) + "w ";
+            s += weeks + "w ";
             seconds -= TimeUnit.DAYS.toSeconds(weeks * 7);
         }
 
         // Process days.
         long days = TimeUnit.SECONDS.toDays(seconds);
         if (days > 0) {
-            s += Long.toString(days) + "d ";
+            s += days + "d ";
             seconds -= TimeUnit.DAYS.toSeconds(days);
         }
 

@@ -4,11 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -18,18 +15,20 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-public class SongsFragment extends SongsListFragment {
-    public static final int ORDER_BY_ARTIST = 4;
-    public static final int ORDER_BY_DURATION = 5;
-    public static final int ORDER_BY_YEAR = 6;
-    public static final int ORDER_BY_TAG = 7;
-    public static final int ORDER_BY_BOOKMARKED = 8;
+//TODO: Base method for getting/setting orderBy/info?
 
+public class SongsFragment extends SongsListFragment {
     private static final String TAG = "UPlayer";
 
     private static final String ARG_ARTIST_ID = "artist_id";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTION_ARGS = "selection_args";
+
+    private static final int ORDER_BY_ARTIST = 4;
+    private static final int ORDER_BY_DURATION = 5;
+    private static final int ORDER_BY_YEAR = 6;
+    private static final int ORDER_BY_TAG = 7;
+    private static final int ORDER_BY_BOOKMARKED = 8;
 
     private long artistId;
     private String selection;
@@ -178,16 +177,14 @@ public class SongsFragment extends SongsListFragment {
                 getActivity().startService(new Intent(getActivity(), MainService.class)
                         .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
                         .putExtra(MainService.EXTRA_SONG, song));
-                Toast.makeText(getActivity(), getString(R.string.playing_next, song),
-                        Toast.LENGTH_SHORT).show();
+                Util.showToast(getActivity(), R.string.playing_next, song);
                 break;
             case R.id.ibPlayLast:
                 Log.d(TAG, "Playing last: " + song);
                 getActivity().startService(new Intent(getActivity(), MainService.class)
                         .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
                         .putExtra(MainService.EXTRA_SONG, song));
-                Toast.makeText(getActivity(), getString(R.string.playing_last, song),
-                        Toast.LENGTH_SHORT).show();
+                Util.showToast(getActivity(), R.string.playing_last, song);
                 break;
         }
     }

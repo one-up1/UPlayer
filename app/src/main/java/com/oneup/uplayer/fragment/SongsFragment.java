@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
-import android.widget.TextView;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -15,15 +14,7 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-//TODO: Base method for getting/setting orderBy/info?
-
 public class SongsFragment extends SongsListFragment {
-    public static final int ORDER_BY_ARTIST = 4;
-    public static final int ORDER_BY_DURATION = 5;
-    public static final int ORDER_BY_YEAR = 6;
-    public static final int ORDER_BY_TAG = 7;
-    public static final int ORDER_BY_BOOKMARKED = 8;
-
     private static final String TAG = "UPlayer";
 
     private static final String ARG_ARTIST_ID = "artist_id";
@@ -70,94 +61,42 @@ public class SongsFragment extends SongsListFragment {
 
     @Override
     protected ArrayList<Song> loadData() {
-        String orderBy;
-        switch (getOrderBy()) {
-            case ORDER_BY_ADDED:
-                orderBy = getOrderBy(Song.ADDED);
-                break;
-            case ORDER_BY_LAST_PLAYED:
-                orderBy = getOrderBy(Song.LAST_PLAYED);
-                break;
-            case ORDER_BY_TIMES_PLAYED:
-                orderBy = getOrderBy(Song.TIMES_PLAYED);
-                break;
-            case ORDER_BY_ARTIST:
-                orderBy = getOrderBy(Song.ARTIST);
-                break;
-            case ORDER_BY_DURATION:
-                orderBy = getOrderBy(Song.DURATION);
-                break;
-            case ORDER_BY_YEAR:
-                orderBy = getOrderBy(Song.YEAR);
-                break;
-            case ORDER_BY_TAG:
-                orderBy = getOrderBy(Song.TAG);
-                break;
-            case ORDER_BY_BOOKMARKED:
-                orderBy = getOrderBy(Song.BOOKMARKED);
-                break;
-            default:
-                orderBy = null;
-                break;
-        }
-
-        if (orderBy == null) {
-            orderBy = getOrderBy(Song.TITLE);
-        } else {
-            orderBy += "," + Song.TITLE;
-        }
-
-        return getDbHelper().querySongs(selection, selectionArgs, orderBy);
+        return getDbHelper().querySongs(selection, selectionArgs, getOrderBy(Song.TITLE));
     }
 
     @Override
     protected void setListItemViews(View rootView, int position, Song song) {
         super.setListItemViews(rootView, position, song);
 
-        // Get info text.
-        String info;
-        switch (getOrderBy()) {
-            case ORDER_BY_ADDED:
-                info = song.getAdded() == 0 ? null
-                        : Util.formatTimeAgo(song.getAdded());
-                break;
-            case ORDER_BY_LAST_PLAYED:
-                info = song.getLastPlayed() == 0 ? null
-                        : Util.formatTimeAgo(song.getLastPlayed());
-                break;
-            case ORDER_BY_TIMES_PLAYED:
-                info = song.getTimesPlayed() == 0 ? null
-                        : Integer.toString(song.getTimesPlayed());
-                break;
-            case ORDER_BY_DURATION:
-                info = Util.formatDuration(song.getDuration());
-                break;
-            case ORDER_BY_YEAR:
-                info = Integer.toString(song.getYear());
-                break;
-            case ORDER_BY_TAG:
-                info = song.getTag();
-                break;
-            case ORDER_BY_BOOKMARKED:
-                info = song.getBookmarked() == 0 ? null
-                        : Util.formatTimeAgo(song.getBookmarked());
-                break;
-            default:
-                info = null;
-                break;
-        }
-
-        // Set info text or hide the view when no info is available.
-        TextView tvInfo = rootView.findViewById(R.id.tvInfo);
-        if (info == null) {
-            tvInfo.setVisibility(View.GONE);
-        } else {
-            tvInfo.setText(info);
-            tvInfo.setVisibility(View.VISIBLE);
-        }
-
+        // Set play next and play last buttons.
         setListItemButton(rootView, R.id.ibPlayNext, song);
         setListItemButton(rootView, R.id.ibPlayLast, song);
+    }
+
+    @Override
+    protected String getInfoText(Song song) {
+        switch (getSortColumn()) {
+            case Song.ADDED:
+                return song.getAdded() == 0 ? null
+                        : Util.formatTimeAgo(song.getAdded());
+            case Song.LAST_PLAYED:
+                return song.getLastPlayed() == 0 ? null
+                        : Util.formatTimeAgo(song.getLastPlayed());
+            case Song.TIMES_PLAYED:
+                return song.getTimesPlayed() == 0 ? null
+                        : Integer.toString(song.getTimesPlayed());
+            case Song.DURATION:
+                return Util.formatDuration(song.getDuration());
+            case Song.YEAR:
+                return Integer.toString(song.getYear());
+            case Song.TAG:
+                return song.getTag();
+            case Song.BOOKMARKED:
+                return song.getBookmarked() == 0 ? null
+                        : Util.formatTimeAgo(song.getBookmarked());
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -190,8 +129,8 @@ public class SongsFragment extends SongsListFragment {
     }
 
     public static SongsFragment newInstance(String selection, String[] selectionArgs,
-                                            int orderBy, boolean orderByDesc) {
-        return newInstance(getArguments(selection, selectionArgs, orderBy, orderByDesc));
+                                            String sortColumn, boolean sortDesc) {
+        return newInstance(getArguments(selection, selectionArgs, sortColumn, sortDesc));
     }
 
     public static SongsFragment newInstance(Bundle args) {
@@ -200,21 +139,21 @@ public class SongsFragment extends SongsListFragment {
         return fragment;
     }
 
-    public static Bundle getArguments(long artistId, int orderBy, boolean orderByDesc) {
+    public static Bundle getArguments(long artistId, String sortColumn, boolean sortDesc) {
         Bundle args = new Bundle();
         args.putLong(ARG_ARTIST_ID, artistId);
-        args.putInt(ARG_ORDER_BY, orderBy);
-        args.putBoolean(ARG_ORDER_BY_DESC, orderByDesc);
+        args.putString(ARG_SORT_COLUMN, sortColumn);
+        args.putBoolean(ARG_SORT_DESC, sortDesc);
         return args;
     }
 
     public static Bundle getArguments(String selection, String[] selectionArgs,
-                                      int orderBy, boolean orderByDesc) {
+                                      String sortColumn, boolean sortDesc) {
         Bundle args = new Bundle();
         args.putString(ARG_SELECTION, selection);
         args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
-        args.putInt(ARG_ORDER_BY, orderBy);
-        args.putBoolean(ARG_ORDER_BY_DESC, orderByDesc);
+        args.putString(ARG_SORT_COLUMN, sortColumn);
+        args.putBoolean(ARG_SORT_DESC, sortDesc);
         return args;
     }
 }

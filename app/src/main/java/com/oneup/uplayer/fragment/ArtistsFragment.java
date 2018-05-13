@@ -18,8 +18,22 @@ import java.util.ArrayList;
 public class ArtistsFragment extends ListFragment<Artist> {
     private static final String TAG = "UPlayer";
 
+    private static final String ARG_SONGS_SORT_COLUMN = "songs_sort_column";
+
+    private String songsSortColumn;
+
     public ArtistsFragment() {
         super(R.layout.list_item_artist);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Bundle args = getArguments();
+        if (args != null) {
+            songsSortColumn = args.getString(ARG_SONGS_SORT_COLUMN);
+        }
     }
 
     @Override
@@ -36,65 +50,33 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected ArrayList<Artist> loadData() {
-        String orderBy;
-        switch (getOrderBy()) {
-            case ORDER_BY_ADDED:
-                orderBy = getOrderBy(Artist.LAST_ADDED);
-                break;
-            case ORDER_BY_LAST_PLAYED:
-                orderBy = getOrderBy(Artist.LAST_PLAYED);
-                break;
-            case ORDER_BY_TIMES_PLAYED:
-                orderBy = getOrderBy(Artist.TIMES_PLAYED);
-                break;
-            default:
-                orderBy = null;
-                break;
-        }
-
-        if (orderBy == null) {
-            orderBy = getOrderBy(Artist.ARTIST);
-        } else {
-            orderBy += "," + Artist.ARTIST;
-        }
-
-        return getDbHelper().queryArtists(orderBy);
+        return getDbHelper().queryArtists(getOrderBy(Artist.ARTIST));
     }
 
     @Override
     protected void setListItemViews(View rootView, int position, Artist artist) {
+        super.setListItemViews(rootView, position, artist);
+
         // Set artist name.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
         tvArtist.setTextColor(artist.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
         tvArtist.setText(artist.getArtist());
+    }
 
-        // Get info text.
-        String info;
-        switch (getOrderBy()) {
-            case ORDER_BY_ADDED:
-                info = artist.getLastAdded() == 0 ? null
+    @Override
+    protected String getInfoText(Artist artist) {
+        switch (getSortColumn()) {
+            case Artist.LAST_ADDED:
+                return artist.getLastAdded() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastAdded());
-                break;
-            case ORDER_BY_LAST_PLAYED:
-                info = artist.getLastPlayed() == 0 ? null
+            case Artist.LAST_PLAYED:
+                return artist.getLastPlayed() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastPlayed());
-                break;
-            case ORDER_BY_TIMES_PLAYED:
-                info = artist.getTimesPlayed() == 0 ? null
+            case Artist.TIMES_PLAYED:
+                return artist.getTimesPlayed() == 0 ? null
                         : Integer.toString(artist.getTimesPlayed());
-                break;
             default:
-                info = null;
-                break;
-        }
-
-        // Set info or hide the view when no info is available.
-        TextView tvInfo = rootView.findViewById(R.id.tvInfo);
-        if (info == null) {
-            tvInfo.setVisibility(View.GONE);
-        } else {
-            tvInfo.setText(info);
-            tvInfo.setVisibility(View.VISIBLE);
+                return null;
         }
     }
 
@@ -102,7 +84,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected void onListItemClick(int position, Artist artist) {
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(artist.getId(),
-                        getOrderBy(), isOrderByDesc())));
+                        songsSortColumn, isSortDesc())));
     }
 
     @Override
@@ -120,11 +102,13 @@ public class ArtistsFragment extends ListFragment<Artist> {
         }
     }
 
-    public static ArtistsFragment newInstance(int orderBy, boolean orderByDesc) {
+    public static ArtistsFragment newInstance(String sortColumn, String songsSortColumn,
+                                              boolean sortDesc) {
         ArtistsFragment fragment = new ArtistsFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_ORDER_BY, orderBy);
-        args.putBoolean(ARG_ORDER_BY_DESC, orderByDesc);
+        args.putString(ARG_SORT_COLUMN, sortColumn);
+        args.putString(ARG_SONGS_SORT_COLUMN, songsSortColumn);
+        args.putBoolean(ARG_SORT_DESC, sortDesc);
         fragment.setArguments(args);
         return fragment;
     }

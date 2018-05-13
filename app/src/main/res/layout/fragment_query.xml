@@ -89,14 +89,14 @@
         app:layout_columnWeight="1" />
 
     <Spinner
-        android:id="@+id/sOrderBy"
+        android:id="@+id/sSortColumn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:entries="@array/order_by"
+        android:entries="@array/sort_columns"
         app:layout_columnWeight="1" />
 
     <CheckBox
-        android:id="@+id/cbOrderByDesc"
+        android:id="@+id/cbSortDesc"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/desc"

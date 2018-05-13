@@ -61,10 +61,14 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     @Override
     protected void setListItemViews(View rootView, int position, Song song) {
+        super.setListItemViews(rootView, position, song);
+
+        // Set title.
         TextView tvTitle = rootView.findViewById(R.id.tvTitle);
         tvTitle.setText(song.getTitle());
         tvTitle.setTextColor(song.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
 
+        // Set artist.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
         tvArtist.setText(song.getArtist());
     }
@@ -75,7 +79,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(song.getArtistId(),
-                                getOrderBy(), isOrderByDesc())));
+                                getSortColumn(), isSortDesc())));
                 break;
             case R.id.edit:
                 try {

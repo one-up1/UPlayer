@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 //TODO: MainService impl and controlling from PlaylistActivity.
 //TODO: songIndex, time left calc, null checks, which preferences to use.
+//TODO: Save playlist to DB and ability to save multiple playlists.
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {

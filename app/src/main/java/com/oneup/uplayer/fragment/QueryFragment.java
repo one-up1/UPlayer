@@ -47,14 +47,19 @@ public class QueryFragment extends Fragment implements
     private static final String PREF_MAX_LAST_PLAYED = "max_last_played";
     private static final String PREF_MIN_TIMES_PLAYED = "min_times_played";
     private static final String PREF_MAX_TIMES_PLAYED = "max_times_played";
-    private static final String PREF_ORDER_BY = "order_by";
-    private static final String PREF_ORDER_BY_DESC = "order_by_desc";
+    private static final String PREF_SORT_COLUMN = "sort_column";
+    private static final String PREF_SORT_DESC = "sort_desc";
     private static final String PREF_TAGS = "tags";
 
     private static final int REQUEST_SELECT_MIN_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
+
+    private static final String[] SORT_COLUMNS = new String[] {
+            null, Song.ADDED, Song.LAST_PLAYED, Song.TIMES_PLAYED,
+            Song.ARTIST, Song.DURATION, Song.YEAR, Song.TAG, Song.BOOKMARKED,
+    };
 
     private DbHelper dbHelper;
     private SharedPreferences preferences;
@@ -69,8 +74,8 @@ public class QueryFragment extends Fragment implements
     private Button bMaxLastPlayed;
     private EditText etMinTimesPlayed;
     private EditText etMaxTimesPlayed;
-    private Spinner sOrderBy;
-    private CheckBox cbOrderByDesc;
+    private Spinner sSortColumn;
+    private CheckBox cbSortDesc;
     private Button bQuery;
     private Button bTags;
     private Button bStatistics;
@@ -147,11 +152,11 @@ public class QueryFragment extends Fragment implements
         etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
         etMaxTimesPlayed.setText(preferences.getString(PREF_MAX_TIMES_PLAYED, ""));
 
-        sOrderBy = rootView.findViewById(R.id.sOrderBy);
-        sOrderBy.setSelection(preferences.getInt(PREF_ORDER_BY, 0));
+        sSortColumn = rootView.findViewById(R.id.sSortColumn);
+        sSortColumn.setSelection(preferences.getInt(PREF_SORT_COLUMN, 0));
 
-        cbOrderByDesc = rootView.findViewById(R.id.cbOrderByDesc);
-        cbOrderByDesc.setChecked(preferences.getBoolean(PREF_ORDER_BY_DESC, false));
+        cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
+        cbSortDesc.setChecked(preferences.getBoolean(PREF_SORT_DESC, false));
 
         bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
@@ -213,8 +218,8 @@ public class QueryFragment extends Fragment implements
                 .putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString())
                 .putLong(PREF_MIN_LAST_PLAYED, minLastPlayed)
                 .putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed)
-                .putInt(PREF_ORDER_BY, sOrderBy.getSelectedItemPosition())
-                .putBoolean(PREF_ORDER_BY_DESC, cbOrderByDesc.isChecked())
+                .putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition())
+                .putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked())
                 .apply();
         
         if (dbHelper != null) {
@@ -492,8 +497,8 @@ public class QueryFragment extends Fragment implements
         
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(selection, null,
-                        sOrderBy.getSelectedItemPosition(),
-                        cbOrderByDesc.isChecked())));
+                        SORT_COLUMNS[sSortColumn.getSelectedItemPosition()],
+                        cbSortDesc.isChecked())));
     }
 
     public static QueryFragment newInstance() {

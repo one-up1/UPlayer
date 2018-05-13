@@ -11,7 +11,9 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.DbHelper;
 
@@ -19,20 +21,16 @@ import java.util.ArrayList;
 
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements View.OnClickListener {
-    public static final int ORDER_BY_ADDED = 1;
-    public static final int ORDER_BY_LAST_PLAYED = 2;
-    public static final int ORDER_BY_TIMES_PLAYED = 3;
-
-    protected static final String ARG_ORDER_BY = "order_by";
-    protected static final String ARG_ORDER_BY_DESC = "order_by_desc";
+    protected static final String ARG_SORT_COLUMN = "sort_column";
+    protected static final String ARG_SORT_DESC = "sort_desc";
 
     private static final String TAG = "UPlayer";
 
     private int listItemResource;
 
     private DbHelper dbHelper;
-    private int orderBy;
-    private boolean orderByDesc;
+    private String sortColumn;
+    private boolean sortDesc;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
@@ -48,8 +46,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
         Bundle args = getArguments();
         if (args != null) {
-            orderBy = args.getInt(ARG_ORDER_BY);
-            orderByDesc = args.getBoolean(ARG_ORDER_BY_DESC);
+            sortColumn = args.getString(ARG_SORT_COLUMN);
+            sortDesc = args.getBoolean(ARG_SORT_DESC);
         }
     }
 
@@ -93,7 +91,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     public void reverseSortOrder() {
         Log.d(TAG, "ListFragment.reverseSortOrder()");
-        orderByDesc = !orderByDesc;
+        sortDesc = !sortDesc;
         reloadData();
     }
 
@@ -110,8 +108,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         setActivityTitle();
     }
 
-    protected abstract ArrayList<T> loadData();
-
     protected void notifyDataSetChanged() {
         Log.d(TAG, "ListFragment.notifyDataSetChanged()");
         setActivityTitle();
@@ -120,11 +116,40 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
+    protected abstract ArrayList<T> loadData();
+
+    protected String getOrderBy(String defaultSortColumn) {
+        // Sort by the set sort column (if any) and the default sort column.
+        String orderBy = sortColumn == null ? defaultSortColumn : sortColumn;
+        if (sortDesc) {
+            orderBy += " DESC";
+        }
+        if (sortColumn != null) {
+            orderBy += "," + defaultSortColumn;
+        }
+        return orderBy;
+    }
+
     protected String getActivityTitle() {
         return null;
     }
 
     protected void setListItemViews(View rootView, int position, T item) {
+        // Set (or hide) info text if sort column is specified.
+        if (sortColumn != null) {
+            TextView tvInfo = rootView.findViewById(R.id.tvInfo);
+            String infoText = getInfoText(item);
+            if (infoText == null) {
+                tvInfo.setVisibility(View.GONE);
+            } else {
+                tvInfo.setText(infoText);
+                tvInfo.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    protected String getInfoText(T item) {
+        return null;
     }
 
     protected void setListItemButton(View rootView, int buttonId, T item) {
@@ -146,19 +171,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return dbHelper;
     }
 
-    protected int getOrderBy() {
-        return orderBy;
+    protected String getSortColumn() {
+        return sortColumn;
     }
 
-    protected boolean isOrderByDesc() {
-        return orderByDesc;
-    }
-
-    protected String getOrderBy(String s) {
-        if (orderByDesc) {
-            s += " DESC";
-        }
-        return s;
+    protected boolean isSortDesc() {
+        return sortDesc;
     }
 
     protected ArrayList<T> getData() {

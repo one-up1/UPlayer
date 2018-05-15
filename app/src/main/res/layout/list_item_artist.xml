@@ -17,7 +17,7 @@
         android:textSize="@dimen/list_item_text_large" />
 
     <TextView
-        android:id="@+id/tvInfo"
+        android:id="@+id/tvSortColumnValue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="@dimen/list_item_info_padding_start"

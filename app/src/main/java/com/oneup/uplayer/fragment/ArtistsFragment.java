@@ -50,7 +50,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected ArrayList<Artist> loadData() {
-        return getDbHelper().queryArtists(getOrderBy(Artist.ARTIST));
+        return getDbHelper().queryArtists(getOrderBy(new String[]{Artist.ARTIST}));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     }
 
     @Override
-    protected String getInfoText(Artist artist) {
+    protected String getSortColumnValue(Artist artist) {
         switch (getSortColumn()) {
             case Artist.LAST_ADDED:
                 return artist.getLastAdded() == 0 ? null

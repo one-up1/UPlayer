@@ -91,7 +91,6 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onUpdate() {
             Log.d(TAG, "PlaylistFragment.onUpdate()");
             notifyDataSetChanged();
-            //TODO: Updated when screen is off?
         }
 
         @Override

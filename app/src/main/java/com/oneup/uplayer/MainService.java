@@ -292,11 +292,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 if (player.isPlaying()) {
                     // Start playing the next song when the current song is removed, only when
                     // currently playing, or playback may start when removing songs while paused.
-                    play();//TODO: test
+                    play();
                 }
             }
             update();
-            Log.d(TAG, "index=" + songIndex);
         } else {
             stop();
         }

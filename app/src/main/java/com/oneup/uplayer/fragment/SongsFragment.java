@@ -61,7 +61,8 @@ public class SongsFragment extends SongsListFragment {
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(selection, selectionArgs, getOrderBy(Song.TITLE));
+        return getDbHelper().querySongs(selection, selectionArgs,
+                getOrderBy(new String[]{Song.ARTIST, Song.TITLE}));
     }
 
     @Override
@@ -74,7 +75,7 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
-    protected String getInfoText(Song song) {
+    protected String getSortColumnValue(Song song) {
         switch (getSortColumn()) {
             case Song.ADDED:
                 return song.getAdded() == 0 ? null

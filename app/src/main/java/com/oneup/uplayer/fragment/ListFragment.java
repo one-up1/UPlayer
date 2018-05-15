@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
@@ -30,7 +31,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     private DbHelper dbHelper;
     private String sortColumn;
-    private boolean sortDesc;
+    private boolean sortDesc, sortReversed;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
@@ -92,20 +93,25 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     public void reverseSortOrder() {
         Log.d(TAG, "ListFragment.reverseSortOrder()");
         sortDesc = !sortDesc;
+        sortReversed = !sortReversed;
         reloadData();
     }
 
     protected void reloadData() {
-        data = loadData();
+        try {
+            data = loadData();
 
-        if (listAdapter == null) {
-            listAdapter = new ListAdapter();
-            setListAdapter(listAdapter);
-        } else {
-            listAdapter.notifyDataSetChanged();
+            if (listAdapter == null) {
+                listAdapter = new ListAdapter();
+                setListAdapter(listAdapter);
+            } else {
+                listAdapter.notifyDataSetChanged();
+            }
+
+            setActivityTitle();
+        } catch (Exception ex) {
+            Util.showErrorDialog(getActivity(), ex);
         }
-
-        setActivityTitle();
     }
 
     protected void notifyDataSetChanged() {
@@ -118,16 +124,21 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected abstract ArrayList<T> loadData();
 
-    protected String getOrderBy(String defaultSortColumn) {
-        // Sort by the set sort column (if any) and the default sort column.
-        String orderBy = sortColumn == null ? defaultSortColumn : sortColumn;
+    protected String getOrderBy(String[] defaultSortColumns) {
+        int i = 0;
+        StringBuilder sb = new StringBuilder(sortColumn == null ?
+                defaultSortColumns[i++] : sortColumn);
         if (sortDesc) {
-            orderBy += " DESC";
+            sb.append(" DESC");
         }
-        if (sortColumn != null) {
-            orderBy += "," + defaultSortColumn;
+        for (; i < defaultSortColumns.length; i++) {
+            sb.append(',');
+            sb.append(defaultSortColumns[i]);
+            if (sortReversed) {
+                sb.append(" DESC");
+            }
         }
-        return orderBy;
+        return sb.toString();
     }
 
     protected String getActivityTitle() {
@@ -137,18 +148,18 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     protected void setListItemViews(View rootView, int position, T item) {
         // Set (or hide) info text if sort column is specified.
         if (sortColumn != null) {
-            TextView tvInfo = rootView.findViewById(R.id.tvInfo);
-            String infoText = getInfoText(item);
-            if (infoText == null) {
-                tvInfo.setVisibility(View.GONE);
+            TextView tvSortColumnValue = rootView.findViewById(R.id.tvSortColumnValue);
+            String sortColumnValue = getSortColumnValue(item);
+            if (sortColumnValue == null) {
+                tvSortColumnValue.setVisibility(View.GONE);
             } else {
-                tvInfo.setText(infoText);
-                tvInfo.setVisibility(View.VISIBLE);
+                tvSortColumnValue.setText(sortColumnValue);
+                tvSortColumnValue.setVisibility(View.VISIBLE);
             }
         }
     }
 
-    protected String getInfoText(T item) {
+    protected String getSortColumnValue(T item) {
         return null;
     }
 

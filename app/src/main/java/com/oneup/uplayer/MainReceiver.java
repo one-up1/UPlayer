@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
 
+//TODO: Test headset plugging.
+
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
 
@@ -19,24 +21,28 @@ public class MainReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "MainReceiver.onReceive()");
         this.context = context;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         String action = intent.getAction();
-        Log.d(TAG, "MainReceiver.onReceive(" + action + ")");
         if (action == null) {
+            Log.e(TAG, "No action");
             return;
         }
 
         switch (action) {
             case Intent.ACTION_HEADSET_PLUG:
-                onHeadsetPlug(intent.getIntExtra("state", -1));
+                headsetPlug(intent.getIntExtra("state", -1));
+                break;
+            default:
+                Log.e(TAG, "Invalid action: '" + action + "'");
                 break;
         }
     }
 
-    private void onHeadsetPlug(int state) {
-        Log.d(TAG, "MainReceiver.onHeadsetPlug(" + state + ")");
+    private void headsetPlug(int state) {
+        Log.d(TAG, "MainReceiver.headsetPlug(" + state + ")");
 
         int prevState = preferences.getInt(PREF_HEADSET_STATE, 0);
         Log.d(TAG, "prevState=" + prevState);

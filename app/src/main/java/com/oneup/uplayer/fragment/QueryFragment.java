@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.ArraySet;
@@ -89,7 +88,7 @@ public class QueryFragment extends Fragment implements
     private long maxLastPlayed;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         preferences = getActivity().getPreferences(MODE_PRIVATE);
@@ -99,7 +98,6 @@ public class QueryFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         View rootView = inflater.inflate(R.layout.fragment_query, container, false);
 
         etTitle = rootView.findViewById(R.id.etTitle);
@@ -332,8 +330,8 @@ public class QueryFragment extends Fragment implements
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             getActivity().startService(new Intent(getActivity(), MainService.class)
-                                    .putExtra(MainService.EXTRA_REQUEST_CODE,
-                                            MainService.REQUEST_RESTORE_PLAYLIST));
+                                    .putExtra(MainService.EXTRA_ACTION,
+                                            MainService.ACTION_RESTORE_PLAYLIST));
                         }
                     });
         } else if (v == bSyncDatabase) {

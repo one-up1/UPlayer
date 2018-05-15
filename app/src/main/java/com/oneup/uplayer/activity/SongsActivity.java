@@ -17,8 +17,8 @@ public class SongsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         Log.d(TAG, "SongsActivity.onCreate()");
+        super.onCreate(savedInstanceState);
 
         FrameLayout container = new FrameLayout(this);
         container.setId(R.id.container);

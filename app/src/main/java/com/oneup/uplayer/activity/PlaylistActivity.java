@@ -25,8 +25,6 @@ public class PlaylistActivity extends AppCompatActivity {
 
     private static PlaylistActivity instance;
 
-    private PlaylistFragment playlistFragment;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "PlaylistActivity.onCreate()");
@@ -37,8 +35,8 @@ public class PlaylistActivity extends AppCompatActivity {
         setContentView(container);
 
         if (savedInstanceState == null) {
-            playlistFragment = PlaylistFragment.newInstance();
-            getSupportFragmentManager().beginTransaction().add(R.id.container, playlistFragment)
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, PlaylistFragment.newInstance())
                     .commit();
         }
 
@@ -61,7 +59,7 @@ public class PlaylistActivity extends AppCompatActivity {
     }
 
     public static class PlaylistFragment extends SongsListFragment
-            implements MainService.OnDataChangedListener {
+            implements MainService.OnUpdateListener {
         private MainService mainService;
 
         public PlaylistFragment() {
@@ -81,7 +79,7 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onDestroy() {
             if (mainService != null) {
                 Log.d(TAG, "Unbinding service");
-                mainService.setOnDataChangedListener(null);
+                mainService.setOnUpdateListener(null);
                 getActivity().unbindService(serviceConnection);
                 mainService = null;
             }
@@ -90,9 +88,10 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onDataChanged() {
-            Log.d(TAG, "PlaylistFragment.onDataChanged()");
+        public void onUpdate() {
+            Log.d(TAG, "PlaylistFragment.onUpdate()");
             notifyDataSetChanged();
+            //TODO: Updated when screen is off?
         }
 
         @Override
@@ -129,10 +128,14 @@ public class PlaylistActivity extends AppCompatActivity {
             int index = getData().indexOf(song);
             switch (buttonId) {
                 case R.id.ibMoveUp:
-                    moveSong(index, -1);
+                    if (mainService != null) {
+                        mainService.moveSong(index, -1);
+                    }
                     break;
                 case R.id.ibMoveDown:
-                    moveSong(index, 1);
+                    if (mainService != null) {
+                        mainService.moveSong(index, 1);
+                    }
                     break;
                 case R.id.ibRemove:
                     onSongRemoved(index);
@@ -142,15 +145,9 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onSongRemoved(int index) {
-            Log.d(TAG, "PlaylistFragment.onSongRemoved(" + index + ")");
+            Log.d(TAG, "PlaylistFragment.onSongRemoved()");
             if (mainService != null) {
                 mainService.removeSong(index);
-            }
-        }
-
-        private void moveSong(int position, int i) {
-            if (mainService != null) {
-                mainService.moveSong(position, i);
             }
         }
 
@@ -169,7 +166,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                 MainService.MainBinder binder = (MainService.MainBinder) service;
                 mainService = binder.getService();
-                mainService.setOnDataChangedListener(PlaylistFragment.this);
+                mainService.setOnUpdateListener(PlaylistFragment.this);
 
                 reloadData();
                 setSelection(mainService.getSongIndex());
@@ -179,7 +176,7 @@ public class PlaylistActivity extends AppCompatActivity {
             public void onServiceDisconnected(ComponentName name) {
                 Log.d(TAG, "PlaylistFragment.onServiceDisconnected()");
                 if (mainService != null) {
-                    mainService.setOnDataChangedListener(null);
+                    mainService.setOnUpdateListener(null);
                     mainService = null;
                 }
             }

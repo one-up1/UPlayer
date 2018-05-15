@@ -103,7 +103,7 @@ public class SongsFragment extends SongsListFragment {
     protected void onListItemClick(int position, Song song) {
         Log.d(TAG, "Playing " + getData().size() + " songs, songIndex=" + position);
         getActivity().startService(new Intent(getActivity(), MainService.class)
-                .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_START)
+                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_START)
                 .putExtra(MainService.EXTRA_SONGS, getData())
                 .putExtra(MainService.EXTRA_SONG_INDEX, position));
     }
@@ -114,14 +114,14 @@ public class SongsFragment extends SongsListFragment {
             case R.id.ibPlayNext:
                 Log.d(TAG, "Playing next: " + song);
                 getActivity().startService(new Intent(getActivity(), MainService.class)
-                        .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_PLAY_NEXT)
+                        .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY_NEXT)
                         .putExtra(MainService.EXTRA_SONG, song));
                 Util.showToast(getActivity(), R.string.playing_next, song);
                 break;
             case R.id.ibPlayLast:
                 Log.d(TAG, "Playing last: " + song);
                 getActivity().startService(new Intent(getActivity(), MainService.class)
-                        .putExtra(MainService.EXTRA_REQUEST_CODE, MainService.REQUEST_PLAY_LAST)
+                        .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY_LAST)
                         .putExtra(MainService.EXTRA_SONG, song));
                 Util.showToast(getActivity(), R.string.playing_last, song);
                 break;

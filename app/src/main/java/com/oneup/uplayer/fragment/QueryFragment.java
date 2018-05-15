@@ -61,8 +61,8 @@ public class QueryFragment extends Fragment implements
             Song.ARTIST, Song.DURATION, Song.YEAR, Song.TAG, Song.BOOKMARKED,
     };
 
-    private DbHelper dbHelper;
     private SharedPreferences preferences;
+    private DbHelper dbHelper;
 
     private EditText etTitle;
     private EditText etArtist;
@@ -91,9 +91,9 @@ public class QueryFragment extends Fragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        dbHelper = new DbHelper(getActivity());
+
         preferences = getActivity().getPreferences(MODE_PRIVATE);
+        dbHelper = new DbHelper(getActivity());
     }
 
     @Override

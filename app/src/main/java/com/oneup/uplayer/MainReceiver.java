@@ -4,11 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
-
-//TODO: MainReceiver, where to store preferences? Sometimes receiving erroneously?
 
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
@@ -21,27 +20,31 @@ public class MainReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         this.context = context;
-        preferences = context.getSharedPreferences(TAG, 0);
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         String action = intent.getAction();
         Log.d(TAG, "MainReceiver.onReceive(" + action + ")");
+        if (action == null) {
+            return;
+        }
 
-        if (action != null && action.equals(Intent.ACTION_HEADSET_PLUG)) {
-            onHeadsetPlug(intent.getIntExtra("state", -1));
+        switch (action) {
+            case Intent.ACTION_HEADSET_PLUG:
+                onHeadsetPlug(intent.getIntExtra("state", -1));
+                break;
         }
     }
 
     private void onHeadsetPlug(int state) {
         Log.d(TAG, "MainReceiver.onHeadsetPlug(" + state + ")");
 
-        switch (state) {
-            case 0:
-                Log.d(TAG, "Headset unplugged");
-                if (preferences.getInt(PREF_HEADSET_STATE, 0) == 1) {
-                    PlaylistActivity.finishIfRunning();
-                    context.stopService(new Intent(context, MainService.class));
-                }
-                break;
+        int prevState = preferences.getInt(PREF_HEADSET_STATE, 0);
+        Log.d(TAG, "prevState=" + prevState);
+
+        // Stop playback when the headset is unplugged and was previously plugged in.
+        if (state == 0 && prevState == 1) {
+            PlaylistActivity.finishIfRunning();
+            context.stopService(new Intent(context, MainService.class));
         }
 
         preferences.edit().putInt(PREF_HEADSET_STATE, state).apply();

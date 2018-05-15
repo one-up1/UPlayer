@@ -186,9 +186,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent == sTag) {
-            String tag = tags.get(position);
-            if (!tag.isEmpty()) {
-                etTag.setText(tag);
+            if (position > 0) {
+                etTag.setText(tags.get(position));
                 sTag.setSelection(0);
             }
         }

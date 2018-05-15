@@ -53,6 +53,7 @@ public class PlaylistActivity extends AppCompatActivity {
     }
 
     public static void finishIfRunning() {
+        Log.d(TAG, "PlaylistActivity.finishIfRunning()");
         if (instance != null) {
             Log.d(TAG, "Finishing PlaylistActivity");
             instance.finish();

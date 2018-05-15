@@ -27,7 +27,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-//TODO: MainService impl and controlling from PlaylistActivity.
+//TODO: MainService impl and controlling from PlaylistActivity, stop() and finishIfRunning(), headset plug.
 //TODO: songIndex, time left calc, null checks, which preferences to use.
 //TODO: Save playlist to DB and ability to save multiple playlists.
 
@@ -63,8 +63,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private final IBinder mainBinder = new MainBinder();
 
-    private DbHelper dbHelper;
     private SharedPreferences preferences;
+    private DbHelper dbHelper;
 
     private MediaPlayer player;
     private int volume;
@@ -204,7 +204,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             dbHelper.close();
         }
 
-        PlaylistActivity.finishIfRunning();
         super.onDestroy();
     }
 
@@ -454,6 +453,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void stop() {
+        Log.d(TAG, "MainService.stop()");
         PlaylistActivity.finishIfRunning();
         stopSelf();
     }

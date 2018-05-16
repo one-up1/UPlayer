@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.db.DbHelper;
-import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
@@ -98,20 +97,16 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     protected void reloadData() {
-        try {
-            data = loadData();
+        data = loadData();
 
-            if (listAdapter == null) {
-                listAdapter = new ListAdapter();
-                setListAdapter(listAdapter);
-            } else {
-                listAdapter.notifyDataSetChanged();
-            }
-
-            setActivityTitle();
-        } catch (Exception ex) {
-            Util.showErrorDialog(getActivity(), ex);
+        if (listAdapter == null) {
+            listAdapter = new ListAdapter();
+            setListAdapter(listAdapter);
+        } else {
+            listAdapter.notifyDataSetChanged();
         }
+
+        setActivityTitle();
     }
 
     protected void notifyDataSetChanged() {

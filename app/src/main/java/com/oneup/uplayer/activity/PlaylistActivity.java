@@ -124,20 +124,16 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemButtonClick(int buttonId, Song song) {
-            int index = getData().indexOf(song);
+            int songIndex = getData().indexOf(song);
             switch (buttonId) {
                 case R.id.ibMoveUp:
-                    if (mainService != null) {
-                        mainService.moveSong(index, -1);
-                    }
+                    moveUp(songIndex);
                     break;
                 case R.id.ibMoveDown:
-                    if (mainService != null) {
-                        mainService.moveSong(index, 1);
-                    }
+                    moveDown(songIndex);
                     break;
                 case R.id.ibRemove:
-                    onSongRemoved(index);
+                    onSongRemoved(songIndex);
                     break;
             }
         }
@@ -146,7 +142,26 @@ public class PlaylistActivity extends AppCompatActivity {
         protected void onSongRemoved(int index) {
             Log.d(TAG, "PlaylistFragment.onSongRemoved()");
             if (mainService != null) {
-                mainService.removeSong(index);
+                if (mainService.getSongs().size() > 1) {
+                    mainService.removeSong(index);
+                } else {
+                    getActivity().finish();
+                    getActivity().stopService(new Intent(getActivity(), MainService.class));
+                }
+            }
+        }
+
+        private void moveUp(int songIndex) {
+            Log.d(TAG, "PlaylistFragment.moveUp(" + songIndex + ")");
+            if (mainService != null && songIndex > 0) {
+                mainService.moveSong(songIndex, songIndex - 1);
+            }
+        }
+
+        private void moveDown(int songIndex) {
+            Log.d(TAG, "PlaylistFragment.moveDown(" + songIndex + ")");
+            if (mainService != null && songIndex < mainService.getSongs().size() - 1) {
+                mainService.moveSong(songIndex, songIndex + 1);
             }
         }
 

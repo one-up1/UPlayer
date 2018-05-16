@@ -62,6 +62,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private DbHelper dbHelper;
 
     private MediaPlayer player;
+    private boolean prepared;
     private int volume;
     private int restorePosition;
 
@@ -73,7 +74,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private ArrayList<Song> songs;
     private int songIndex;
-    private boolean prepared;
 
     @Override
     public void onCreate() {
@@ -242,7 +242,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 next();
             } catch (Exception ex) {
                 Log.e(TAG, "Error updating song played", ex);
-                stopSelf();
+                stop();
             }
         }
     }
@@ -261,44 +261,40 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         play();
     }
 
-    public void moveSong(int index, int i) {
-        Log.d(TAG, "MainService.moveSong(" + index + "," + i + ")");
-        
-        int newIndex = index + i;
-        Log.d(TAG, "index=" + index + ", newIndex=" + newIndex + ", songIndex=" + songIndex);
-        
-        if (newIndex >= 0 && newIndex < songs.size()) {
-            songs.add(newIndex, songs.remove(index));
-            if (index == songIndex) {
-                songIndex = newIndex;
-            } else if (newIndex == songIndex) {
-                songIndex = index;
-            }
-            update();
-            Log.d(TAG, "index=" + songIndex);
+    public void moveSong(int index, int toIndex) {
+        Log.d(TAG, "MainService.moveSong(" + index + "," + toIndex + "), songIndex=" + songIndex);
+        songs.add(toIndex, songs.remove(index));
+
+        if (index == songIndex) {
+            songIndex = toIndex;
+        } else if (toIndex == songIndex) {
+            songIndex = index;
         }
+
+        Log.d(TAG, "songIndex=" + songIndex);
+        update();
     }
 
     public void removeSong(int index) {
-        Log.d(TAG, "MainService.removeSong(" + index + "), size=" + songs.size());
-        if (songs.size() > 1) {
-            songs.remove(index);
-            if (index < songIndex) {
+        Log.d(TAG, "MainService.removeSong(" + index + "), songIndex=" + songIndex +
+                ", size=" + songs.size());
+        songs.remove(index);
+
+        if (index < songIndex) {
+            songIndex--;
+        } else if (index == songIndex) {
+            if (index == songs.size()) {
                 songIndex--;
-            } else if (index == songIndex) {
-                if (index == songs.size()) {
-                    songIndex--;
-                }
-                if (player.isPlaying()) {
-                    // Start playing the next song when the current song is removed, only when
-                    // currently playing, or playback may start when removing songs while paused.
-                    play();
-                }
             }
-            update();
-        } else {
-            stop();
+            if (player.isPlaying()) {
+                // Start playing the next song when the current song is removed, only when
+                // currently playing, or playback may start when removing songs while paused.
+                play();
+            }
         }
+
+        Log.d(TAG, "songIndex=" + songIndex);
+        update();
     }
 
     public void setOnUpdateListener(OnUpdateListener onUpdateListener) {
@@ -428,7 +424,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.pause();
             ibSrcId = R.drawable.ic_play;
         } else {
-            //TODO: prepared not needed?
             if (prepared) {
                 Log.d(TAG, "Resuming");
                 player.start();
@@ -481,6 +476,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
     }
 
+    //TODO: Only set needed values in update() and method for setting button icons.
     private void update() {
         Log.d(TAG, "MainService.update()");
         Song song = songs.get(songIndex);
@@ -509,7 +505,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
-    //TODO: stop(), stopSelf(), onDestroy() and PlaylistActivity.finishIfRunning()
     private void stop() {
         Log.d(TAG, "MainService.stop()");
         PlaylistActivity.finishIfRunning();

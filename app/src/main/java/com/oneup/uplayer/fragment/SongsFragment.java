@@ -104,7 +104,7 @@ public class SongsFragment extends SongsListFragment {
     protected void onListItemClick(int position, Song song) {
         Log.d(TAG, "Playing " + getData().size() + " songs, songIndex=" + position);
         getActivity().startService(new Intent(getActivity(), MainService.class)
-                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_START)
+                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
                 .putExtra(MainService.EXTRA_SONGS, getData())
                 .putExtra(MainService.EXTRA_SONG_INDEX, position));
     }

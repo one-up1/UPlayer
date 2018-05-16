@@ -118,7 +118,7 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         protected void onListItemClick(int position, Song song) {
             if (mainService != null) {
-                mainService.setSongIndex(position);
+                mainService.play(position);
             }
         }
 
@@ -140,7 +140,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onSongRemoved(int index) {
-            Log.d(TAG, "PlaylistFragment.onSongRemoved()");
+            Log.d(TAG, "PlaylistFragment.onSongRemoved(" + index + ")");
             if (mainService != null) {
                 if (mainService.getSongs().size() > 1) {
                     mainService.removeSong(index);

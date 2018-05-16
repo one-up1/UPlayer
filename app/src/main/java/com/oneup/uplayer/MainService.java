@@ -33,7 +33,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final String EXTRA_SONG_INDEX = "com.oneup.extra.SONG_INDEX";
     public static final String EXTRA_SONG = "com.oneup.extra.SONG";
 
-    public static final int ACTION_START = 1;
+    public static final int ACTION_PLAY = 1;
     public static final int ACTION_PLAY_NEXT = 2;
     public static final int ACTION_PLAY_LAST = 3;
     public static final int ACTION_RESTORE_PLAYLIST = 4;
@@ -126,11 +126,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         int action = intent.getIntExtra(EXTRA_ACTION, 0);
         switch (action) {
-            case ACTION_START:
+            case ACTION_PLAY:
                 savePlaylist();
                 songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
-                songIndex = intent.getIntExtra(EXTRA_SONG_INDEX, 0);
-                play();
+                play(intent.getIntExtra(EXTRA_SONG_INDEX, 0));
                 break;
             case ACTION_PLAY_NEXT:
                 addSong((Song) intent.getParcelableExtra(EXTRA_SONG), true);
@@ -255,8 +254,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         return songIndex;
     }
 
-    public void setSongIndex(int songIndex) {
-        Log.d(TAG, "MainService.setSongIndex(" + songIndex + ")");
+    public void play(int songIndex) {
+        Log.d(TAG, "MainService.play(" + songIndex + ")");
         this.songIndex = songIndex;
         play();
     }
@@ -329,8 +328,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (prepared) {
             update();
         } else {
-            songIndex = songs.size() - 1;
-            play();
+            play(songs.size() - 1);
         }
     }
 
@@ -412,7 +410,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void previous() {
         Log.d(TAG, "MainService.previous()");
         if (songIndex > 0) {
-            setSongIndex(songIndex - 1);
+            play(songIndex - 1);
         }
     }
 
@@ -439,7 +437,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void next() {
         Log.d(TAG, "MainService.next()");
         if (songIndex < songs.size() - 1) {
-            setSongIndex(songIndex + 1);
+            play(songIndex + 1);
         }
     }
 

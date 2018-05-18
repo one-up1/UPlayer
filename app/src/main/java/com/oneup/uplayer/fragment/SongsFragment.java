@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.Spinner;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -26,7 +28,7 @@ public class SongsFragment extends SongsListFragment {
     private String[] selectionArgs;
 
     public SongsFragment() {
-        super(R.layout.list_item_song);
+        super(R.layout.list_item_song, R.id.llSorting, R.id.llSong);
     }
 
     @Override
@@ -61,13 +63,20 @@ public class SongsFragment extends SongsListFragment {
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(selection, selectionArgs,
-                getOrderBy(new String[]{Song.ARTIST, Song.TITLE}));
+        return getDbHelper().querySongs(selection, selectionArgs, getOrderBy());
     }
 
     @Override
-    protected void setListItemViews(View rootView, int position, Song song) {
-        super.setListItemViews(rootView, position, song);
+    protected void setListItemHeader(View rootView) {
+        Spinner sSortColumn = rootView.findViewById(R.id.sSortColumn);
+        CheckBox cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
+
+
+    }
+
+    @Override
+    protected void setListItemContent(View rootView, int position, Song song) {
+        super.setListItemContent(rootView, position, song);
 
         // Set play next and play last buttons.
         setListItemButton(rootView, R.id.ibPlayNext, song);
@@ -76,7 +85,7 @@ public class SongsFragment extends SongsListFragment {
 
     @Override
     protected String getSortColumnValue(Song song) {
-        switch (getSortColumn()) {
+        switch (getSortColumns()[0]) {
             case Song.ADDED:
                 return song.getAdded() == 0 ? null
                         : Util.formatTimeAgo(song.getAdded());
@@ -102,7 +111,7 @@ public class SongsFragment extends SongsListFragment {
 
     @Override
     protected void onListItemClick(int position, Song song) {
-        Log.d(TAG, "Playing " + getData().size() + " songs, songIndex=" + position);
+        Log.d(TAG, "Playing " + getCount() + " songs, songIndex=" + position);
         getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
                 .putExtra(MainService.EXTRA_SONGS, getData())
@@ -130,8 +139,8 @@ public class SongsFragment extends SongsListFragment {
     }
 
     public static SongsFragment newInstance(String selection, String[] selectionArgs,
-                                            String sortColumn, boolean sortDesc) {
-        return newInstance(getArguments(selection, selectionArgs, sortColumn, sortDesc));
+                                            String[] sortColumns, boolean sortDesc) {
+        return newInstance(getArguments(selection, selectionArgs, sortColumns, sortDesc));
     }
 
     public static SongsFragment newInstance(Bundle args) {
@@ -140,20 +149,20 @@ public class SongsFragment extends SongsListFragment {
         return fragment;
     }
 
-    public static Bundle getArguments(long artistId, String sortColumn, boolean sortDesc) {
+    public static Bundle getArguments(long artistId, String[] sortColumns, boolean sortDesc) {
         Bundle args = new Bundle();
         args.putLong(ARG_ARTIST_ID, artistId);
-        args.putString(ARG_SORT_COLUMN, sortColumn);
+        args.putStringArray(ARG_SORT_COLUMNS, sortColumns);
         args.putBoolean(ARG_SORT_DESC, sortDesc);
         return args;
     }
 
     public static Bundle getArguments(String selection, String[] selectionArgs,
-                                      String sortColumn, boolean sortDesc) {
+                                      String[] sortColumns, boolean sortDesc) {
         Bundle args = new Bundle();
         args.putString(ARG_SELECTION, selection);
         args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
-        args.putString(ARG_SORT_COLUMN, sortColumn);
+        args.putStringArray(ARG_SORT_COLUMNS, sortColumns);
         args.putBoolean(ARG_SORT_DESC, sortDesc);
         return args;
     }

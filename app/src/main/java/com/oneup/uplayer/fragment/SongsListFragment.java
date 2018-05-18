@@ -27,6 +27,11 @@ public abstract class SongsListFragment extends ListFragment<Song> {
         super(listItemResource);
     }
 
+    protected SongsListFragment(int listItemResource,
+                                int listItemHeaderId, int listItemContentId) {
+        super(listItemResource, listItemHeaderId, listItemContentId);
+    }
+
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
@@ -55,13 +60,13 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     @Override
     protected String getActivityTitle() {
-        return Util.getCountString(getActivity(), R.plurals.songs, getData().size())
+        return Util.getCountString(getActivity(), R.plurals.songs, getCount())
                 + ", " + Util.formatDuration(Song.getDuration(getData(), 0));
     }
 
     @Override
-    protected void setListItemViews(View rootView, int position, Song song) {
-        super.setListItemViews(rootView, position, song);
+    protected void setListItemContent(View rootView, int position, Song song) {
+        super.setListItemContent(rootView, position, song);
 
         // Set title.
         TextView tvTitle = rootView.findViewById(R.id.tvTitle);
@@ -79,7 +84,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(song.getArtistId(),
-                                getSortColumn(), isSortDesc())));
+                                new String[]{Song.TITLE}, false)));
                 break;
             case R.id.edit:
                 try {

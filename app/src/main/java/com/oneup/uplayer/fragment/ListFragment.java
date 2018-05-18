@@ -2,6 +2,7 @@ package com.oneup.uplayer.fragment;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -21,22 +22,31 @@ import java.util.ArrayList;
 
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements View.OnClickListener {
-    protected static final String ARG_SORT_COLUMN = "sort_column";
+    protected static final String ARG_SORT_COLUMNS = "sort_columns";
     protected static final String ARG_SORT_DESC = "sort_desc";
 
     private static final String TAG = "UPlayer";
 
     private int listItemResource;
+    private int listItemHeaderId;
+    private int listItemContentId;
 
     private DbHelper dbHelper;
-    private String sortColumn;
-    private boolean sortDesc, sortReversed;
+    private String[] sortColumns;
+    private boolean sortDesc;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
 
-    public ListFragment(int listItemResource) {
+    protected ListFragment(int listItemResource) {
         this.listItemResource = listItemResource;
+    }
+
+    protected ListFragment(int listItemResource,
+                           int listItemHeaderId, int listItemContentId) {
+        this.listItemResource = listItemResource;
+        this.listItemHeaderId = listItemHeaderId;
+        this.listItemContentId = listItemContentId;
     }
 
     @Override
@@ -46,7 +56,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
         Bundle args = getArguments();
         if (args != null) {
-            sortColumn = args.getString(ARG_SORT_COLUMN);
+            sortColumns = args.getStringArray(ARG_SORT_COLUMNS);
             sortDesc = args.getBoolean(ARG_SORT_DESC);
         }
     }
@@ -67,6 +77,9 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        if (listItemHeaderId != 0) {
+            position--;
+        }
         onListItemClick(position, data.get(position));
     }
 
@@ -76,6 +89,9 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         // because there are multiple fragments with the same context menu item ID's.
         if (getUserVisibleHint()) {
             int position = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
+            if (listItemHeaderId != 0) {
+                position--;
+            }
             onContextItemSelected(item.getItemId(), position, data.get(position));
             return true;
         } else {
@@ -92,7 +108,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     public void reverseSortOrder() {
         Log.d(TAG, "ListFragment.reverseSortOrder()");
         sortDesc = !sortDesc;
-        sortReversed = !sortReversed;
         reloadData();
     }
 
@@ -119,17 +134,14 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected abstract ArrayList<T> loadData();
 
-    protected String getOrderBy(String[] defaultSortColumns) {
-        int i = 0;
-        StringBuilder sb = new StringBuilder(sortColumn == null ?
-                defaultSortColumns[i++] : sortColumn);
-        if (sortDesc) {
-            sb.append(" DESC");
-        }
-        for (; i < defaultSortColumns.length; i++) {
-            sb.append(',');
-            sb.append(defaultSortColumns[i]);
-            if (sortReversed) {
+    protected String getOrderBy() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < sortColumns.length; i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(sortColumns[i]);
+            if (sortDesc && i == 0) {
                 sb.append(" DESC");
             }
         }
@@ -140,9 +152,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return null;
     }
 
-    protected void setListItemViews(View rootView, int position, T item) {
+    protected void setListItemHeader(View rootView) {
+    }
+
+    protected void setListItemContent(View rootView, int position, T item) {
         // Set (or hide) info text if sort column is specified.
-        if (sortColumn != null) {
+        if (sortColumns != null) {
             TextView tvSortColumnValue = rootView.findViewById(R.id.tvSortColumnValue);
             String sortColumnValue = getSortColumnValue(item);
             if (sortColumnValue == null) {
@@ -177,8 +192,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return dbHelper;
     }
 
-    protected String getSortColumn() {
-        return sortColumn;
+    protected String[] getSortColumns() {
+        return sortColumns;
     }
 
     protected boolean isSortDesc() {
@@ -187,6 +202,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected ArrayList<T> getData() {
         return data;
+    }
+
+    protected int getCount() {
+        return data.size();
     }
 
     private void setActivityTitle() {
@@ -205,12 +224,16 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
         @Override
         public int getCount() {
-            return data.size();
+            int count = data.size();
+            if (listItemHeaderId != 0) {
+                count++;
+            }
+            return count;
         }
 
         @Override
         public Object getItem(int position) {
-            return data.get(position);
+            return null;
         }
 
         @Override
@@ -223,7 +246,27 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
             if (view == null) {
                 view = layoutInflater.inflate(listItemResource, parent, false);
             }
-            setListItemViews(view, position, data.get(position));
+
+            if (listItemHeaderId == 0) {
+                setListItemContent(view, position, data.get(position));
+            } else {
+                View headerView = view.findViewById(listItemHeaderId);
+                View contentView = view.findViewById(listItemContentId);
+
+                if (position == 0) {
+                    setListItemHeader(headerView);
+
+                    headerView.setVisibility(View.VISIBLE);
+                    contentView.setVisibility(View.GONE);
+                } else {
+                    position--;
+                    setListItemContent(view, position, data.get(position));
+
+                    headerView.setVisibility(View.GONE);
+                    contentView.setVisibility(View.VISIBLE);
+                }
+            }
+
             return view;
         }
     }

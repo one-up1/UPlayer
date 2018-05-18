@@ -100,8 +100,8 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void setListItemViews(View rootView, int position, Song song) {
-            super.setListItemViews(rootView, position, song);
+        protected void setListItemContent(View rootView, int position, Song song) {
+            super.setListItemContent(rootView, position, song);
 
             if (mainService != null && position == mainService.getSongIndex()) {
                 TextView tvTitle = rootView.findViewById(R.id.tvTitle);
@@ -142,7 +142,7 @@ public class PlaylistActivity extends AppCompatActivity {
         protected void onSongRemoved(int index) {
             Log.d(TAG, "PlaylistFragment.onSongRemoved(" + index + ")");
             if (mainService != null) {
-                if (mainService.getSongs().size() > 1) {
+                if (getCount() > 1) {
                     mainService.removeSong(index);
                 } else {
                     getActivity().finish();
@@ -160,7 +160,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         private void moveDown(int songIndex) {
             Log.d(TAG, "PlaylistFragment.moveDown(" + songIndex + ")");
-            if (mainService != null && songIndex < mainService.getSongs().size() - 1) {
+            if (mainService != null && songIndex < getCount() - 1) {
                 mainService.moveSong(songIndex, songIndex + 1);
             }
         }

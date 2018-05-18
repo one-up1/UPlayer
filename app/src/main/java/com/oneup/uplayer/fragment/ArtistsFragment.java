@@ -18,9 +18,9 @@ import java.util.ArrayList;
 public class ArtistsFragment extends ListFragment<Artist> {
     private static final String TAG = "UPlayer";
 
-    private static final String ARG_SONGS_SORT_COLUMN = "songs_sort_column";
+    private static final String ARG_SONGS_SORT_COLUMNS = "songs_sort_columns";
 
-    private String songsSortColumn;
+    private String[] songsSortColumns;
 
     public ArtistsFragment() {
         super(R.layout.list_item_artist);
@@ -32,7 +32,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
         Bundle args = getArguments();
         if (args != null) {
-            songsSortColumn = args.getString(ARG_SONGS_SORT_COLUMN);
+            songsSortColumns = args.getStringArray(ARG_SONGS_SORT_COLUMNS);
         }
     }
 
@@ -50,12 +50,12 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected ArrayList<Artist> loadData() {
-        return getDbHelper().queryArtists(getOrderBy(new String[]{Artist.ARTIST}));
+        return getDbHelper().queryArtists(getOrderBy());
     }
 
     @Override
-    protected void setListItemViews(View rootView, int position, Artist artist) {
-        super.setListItemViews(rootView, position, artist);
+    protected void setListItemContent(View rootView, int position, Artist artist) {
+        super.setListItemContent(rootView, position, artist);
 
         // Set artist name.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
@@ -65,7 +65,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected String getSortColumnValue(Artist artist) {
-        switch (getSortColumn()) {
+        switch (getSortColumns()[0]) {
             case Artist.LAST_ADDED:
                 return artist.getLastAdded() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastAdded());
@@ -84,7 +84,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected void onListItemClick(int position, Artist artist) {
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(artist.getId(),
-                        songsSortColumn, isSortDesc())));
+                        songsSortColumns, isSortDesc())));
     }
 
     @Override
@@ -102,12 +102,12 @@ public class ArtistsFragment extends ListFragment<Artist> {
         }
     }
 
-    public static ArtistsFragment newInstance(String sortColumn, String songsSortColumn,
+    public static ArtistsFragment newInstance(String[] sortColumns, String[] songsSortColumns,
                                               boolean sortDesc) {
         ArtistsFragment fragment = new ArtistsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_SORT_COLUMN, sortColumn);
-        args.putString(ARG_SONGS_SORT_COLUMN, songsSortColumn);
+        args.putStringArray(ARG_SORT_COLUMNS, sortColumns);
+        args.putStringArray(ARG_SONGS_SORT_COLUMNS, songsSortColumns);
         args.putBoolean(ARG_SORT_DESC, sortDesc);
         fragment.setArguments(args);
         return fragment;

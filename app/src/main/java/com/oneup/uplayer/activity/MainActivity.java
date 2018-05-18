@@ -93,13 +93,13 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (bookmarksFragment == null) {
                         bookmarksFragment = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                Song.BOOKMARKED, true);
+                                new String[]{Song.BOOKMARKED, Song.ARTIST, Song.TITLE}, true);
                     }
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
-                                Artist.LAST_ADDED, Song.ADDED, true);
+                                new String[]{                   Artist.LAST_ADDED, Song.ADDED, true);
                     }
                     return lastAddedFragment;
                 case 3:

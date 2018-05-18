@@ -373,7 +373,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
-            //FIXME: Saved playlist could be invalid after syncing media store or manually deleting songs.
+            //FIXME: Saved playlist could be invalid after syncing media store or manually deleting songs. Saving playlist after deleting last song from PlaylistActivity?
             JSONArray playlistSongs = new JSONArray(preferences.getString(PREF_SONGS, null));
             songs = new ArrayList<>();
             for (int i = 0; i < playlistSongs.length(); i++) {

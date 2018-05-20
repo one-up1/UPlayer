@@ -92,7 +92,7 @@
         android:id="@+id/sSortColumn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:entries="@array/sort_columns"
+        android:entries="@array/song_sort_columns"
         app:layout_columnWeight="1" />
 
     <CheckBox

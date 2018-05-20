@@ -16,11 +16,12 @@ import com.oneup.uplayer.util.Util;
 import java.util.ArrayList;
 
 public class ArtistsFragment extends ListFragment<Artist> {
+    public static final int SORT_COLUMN_TITLE = 0;
+    public static final int SORT_COLUMN_LAST_ADDED = 1;
+    public static final int SORT_COLUMN_LAST_PLAYED = 2;
+    public static final int SORT_COLUMN_TIMES_PLAYED = 3;
+
     private static final String TAG = "UPlayer";
-
-    private static final String ARG_SONGS_SORT_COLUMNS = "songs_sort_columns";
-
-    private String[] songsSortColumns;
 
     public ArtistsFragment() {
         super(R.layout.list_item_artist);
@@ -29,11 +30,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Bundle args = getArguments();
-        if (args != null) {
-            songsSortColumns = args.getStringArray(ARG_SONGS_SORT_COLUMNS);
-        }
+        setSortColumns(new String[]{null, Artist.ARTIST});
     }
 
     @Override
@@ -64,15 +61,29 @@ public class ArtistsFragment extends ListFragment<Artist> {
     }
 
     @Override
-    protected String getSortColumnValue(Artist artist) {
-        switch (getSortColumns()[0]) {
-            case Artist.LAST_ADDED:
+    protected String getSortColumnName(int sortColumn) {
+        switch (sortColumn) {
+            case SORT_COLUMN_LAST_ADDED:
+                return Artist.LAST_ADDED;
+            case SORT_COLUMN_LAST_PLAYED:
+                return Artist.LAST_PLAYED;
+            case SORT_COLUMN_TIMES_PLAYED:
+                return Artist.TIMES_PLAYED;
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    protected String getSortColumnValue(int sortColumn, Artist artist) {
+        switch (sortColumn) {
+            case SORT_COLUMN_LAST_ADDED:
                 return artist.getLastAdded() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastAdded());
-            case Artist.LAST_PLAYED:
+            case SORT_COLUMN_LAST_PLAYED:
                 return artist.getLastPlayed() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastPlayed());
-            case Artist.TIMES_PLAYED:
+            case SORT_COLUMN_TIMES_PLAYED:
                 return artist.getTimesPlayed() == 0 ? null
                         : Integer.toString(artist.getTimesPlayed());
             default:
@@ -84,7 +95,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected void onListItemClick(int position, Artist artist) {
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(artist.getId(),
-                        songsSortColumns, isSortDesc())));
+                        getSortColumn(), isSortDesc())));
     }
 
     @Override
@@ -102,12 +113,10 @@ public class ArtistsFragment extends ListFragment<Artist> {
         }
     }
 
-    public static ArtistsFragment newInstance(String[] sortColumns, String[] songsSortColumns,
-                                              boolean sortDesc) {
+    public static ArtistsFragment newInstance(int sortColumn, boolean sortDesc) {
         ArtistsFragment fragment = new ArtistsFragment();
         Bundle args = new Bundle();
-        args.putStringArray(ARG_SORT_COLUMNS, sortColumns);
-        args.putStringArray(ARG_SONGS_SORT_COLUMNS, songsSortColumns);
+        args.putInt(ARG_SORT_COLUMN, sortColumn);
         args.putBoolean(ARG_SORT_DESC, sortDesc);
         fragment.setArguments(args);
         return fragment;

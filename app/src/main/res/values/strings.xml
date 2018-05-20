@@ -7,7 +7,6 @@
     <string name="artists">Artists</string>
     <string name="last_played">Last played</string>
     <string name="most_played">Most played</string>
-    <string name="reverse_sort_order">Reverse sort order</string>
 
     <string name="title">Title&#8230;</string>
     <string name="artist">Artist&#8230;</string>
@@ -19,17 +18,6 @@
     <string name="max_last_played">Max last played&#8230;</string>
     <string name="min_times_played">Min times played&#8230;</string>
     <string name="max_times_played">Max times played&#8230;</string>
-    <string-array name="sort_columns">
-        <item />
-        <item>Added</item>
-        <item>Last played</item>
-        <item>Times played</item>
-        <item>Artist</item>
-        <item>Duration</item>
-        <item>Year</item>
-        <item>Tag</item>
-        <item>Bookmarked</item>
-    </string-array>
     <string name="desc">Desc</string>
     <string name="tags">Tags&#8230;</string>
     <string name="none">None</string>
@@ -109,4 +97,15 @@
         <item quantity="one">%1$d song</item>
         <item quantity="other">%1$d songs</item>
     </plurals>
+
+    <string-array name="song_sort_columns">
+        <item />
+        <item>Added</item>
+        <item>Last played</item>
+        <item>Times played</item>
+        <item>Duration</item>
+        <item>Year</item>
+        <item>Tag</item>
+        <item>Bookmarked</item>
+    </string-array>
 </resources>

@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:entries="@array/sort_columns" />
+            android:entries="@array/song_sort_columns" />
 
         <CheckBox
             android:id="@+id/cbSortDesc"

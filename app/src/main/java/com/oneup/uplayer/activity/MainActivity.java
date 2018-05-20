@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.ListFragment;
@@ -93,30 +92,31 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (bookmarksFragment == null) {
                         bookmarksFragment = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                new String[]{Song.BOOKMARKED, Song.ARTIST, Song.TITLE}, true);
+                                SongsFragment.SORT_COLUMN_BOOKMARKED, true);
                     }
                     return bookmarksFragment;
                 case 2:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
-                                new String[]{                   Artist.LAST_ADDED, Song.ADDED, true);
+                                ArtistsFragment.SORT_COLUMN_LAST_ADDED, true);
                     }
                     return lastAddedFragment;
                 case 3:
                     if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(null, null, false);
+                        artistsFragment = ArtistsFragment.newInstance(
+                                ArtistsFragment.SORT_COLUMN_TITLE, false);
                     }
                     return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(
-                                Artist.LAST_PLAYED, Song.LAST_PLAYED, true);
+                                ArtistsFragment.SORT_COLUMN_LAST_PLAYED, true);
                     }
                     return lastPlayedFragment;
                 case 5:
                     if (mostPlayedFragment == null) {
                         mostPlayedFragment = ArtistsFragment.newInstance(
-                                Artist.TIMES_PLAYED, Song.TIMES_PLAYED, true);
+                                ArtistsFragment.SORT_COLUMN_TIMES_PLAYED, true);
                     }
                     return mostPlayedFragment;
                 default:

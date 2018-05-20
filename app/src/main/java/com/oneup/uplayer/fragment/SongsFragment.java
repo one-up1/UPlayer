@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
 
 import com.oneup.uplayer.MainService;
@@ -16,7 +18,16 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-public class SongsFragment extends SongsListFragment {
+public class SongsFragment extends SongsListFragment implements AdapterView.OnItemSelectedListener,
+        CompoundButton.OnCheckedChangeListener {
+    public static final int SORT_COLUMN_ADDED = 1;
+    public static final int SORT_COLUMN_LAST_PLAYED = 2;
+    public static final int SORT_COLUMN_TIMES_PLAYED = 3;
+    public static final int SORT_COLUMN_DURATION = 4;
+    public static final int SORT_COLUMN_YEAR = 5;
+    public static final int SORT_COLUMN_TAG = 6;
+    public static final int SORT_COLUMN_BOOKMARKED = 7;
+
     private static final String TAG = "UPlayer";
 
     private static final String ARG_ARTIST_ID = "artist_id";
@@ -26,6 +37,9 @@ public class SongsFragment extends SongsListFragment {
     private long artistId;
     private String selection;
     private String[] selectionArgs;
+
+    private Spinner sSortColumn;
+    private CheckBox cbSortDesc;
 
     public SongsFragment() {
         super(R.layout.list_item_song, R.id.llSorting, R.id.llSong);
@@ -41,9 +55,11 @@ public class SongsFragment extends SongsListFragment {
             if (artistId == 0) {
                 selection = args.getString(ARG_SELECTION);
                 selectionArgs = args.getStringArray(ARG_SELECTION_ARGS);
+                setSortColumns(new String[]{null, Song.ARTIST, Song.TITLE});
             } else {
                 selection = Song.ARTIST_ID + "=?";
                 selectionArgs = DbHelper.getWhereArgs(artistId);
+                setSortColumns(new String[]{null, Song.TITLE});
             }
         }
     }
@@ -62,16 +78,50 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
+    public void reverseSortOrder() {
+        cbSortDesc.setChecked(!cbSortDesc.isChecked());
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (parent == sSortColumn) {
+            if (position == getSortColumn()) {
+                Log.d(TAG, "Ignoring");
+            } else {
+                setSortColumn(position);
+                reloadData();
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (buttonView == cbSortDesc) {
+            Log.d(TAG, "onCheckedChanged()");
+            setSortDesc(cbSortDesc.isChecked());
+            reloadData();
+        }
+    }
+
+    @Override
     protected ArrayList<Song> loadData() {
         return getDbHelper().querySongs(selection, selectionArgs, getOrderBy());
     }
 
     @Override
     protected void setListItemHeader(View rootView) {
-        Spinner sSortColumn = rootView.findViewById(R.id.sSortColumn);
-        CheckBox cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
+        Log.d(TAG, "setListItemHeader()");
+        sSortColumn = rootView.findViewById(R.id.sSortColumn);
+        sSortColumn.setSelection(getSortColumn());
+        sSortColumn.setOnItemSelectedListener(this);
 
-
+        cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
+        cbSortDesc.setChecked(isSortDesc());
+        cbSortDesc.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -84,24 +134,46 @@ public class SongsFragment extends SongsListFragment {
     }
 
     @Override
-    protected String getSortColumnValue(Song song) {
-        switch (getSortColumns()[0]) {
-            case Song.ADDED:
+    protected String getSortColumnName(int sortColumn) {
+        switch (sortColumn) {
+            case SORT_COLUMN_ADDED:
+                return Song.ADDED;
+            case SORT_COLUMN_LAST_PLAYED:
+                return Song.LAST_PLAYED;
+            case SORT_COLUMN_TIMES_PLAYED:
+                return Song.TIMES_PLAYED;
+            case SORT_COLUMN_DURATION:
+                return Song.DURATION;
+            case SORT_COLUMN_YEAR:
+                return Song.YEAR;
+            case SORT_COLUMN_TAG:
+                return Song.TAG;
+            case SORT_COLUMN_BOOKMARKED:
+                return Song.BOOKMARKED;
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    protected String getSortColumnValue(int sortColumn, Song song) {
+        switch (sortColumn) {
+            case SORT_COLUMN_ADDED:
                 return song.getAdded() == 0 ? null
                         : Util.formatTimeAgo(song.getAdded());
-            case Song.LAST_PLAYED:
+            case SORT_COLUMN_LAST_PLAYED:
                 return song.getLastPlayed() == 0 ? null
                         : Util.formatTimeAgo(song.getLastPlayed());
-            case Song.TIMES_PLAYED:
+            case SORT_COLUMN_TIMES_PLAYED:
                 return song.getTimesPlayed() == 0 ? null
                         : Integer.toString(song.getTimesPlayed());
-            case Song.DURATION:
+            case SORT_COLUMN_DURATION:
                 return Util.formatDuration(song.getDuration());
-            case Song.YEAR:
+            case SORT_COLUMN_YEAR:
                 return Integer.toString(song.getYear());
-            case Song.TAG:
+            case SORT_COLUMN_TAG:
                 return song.getTag();
-            case Song.BOOKMARKED:
+            case SORT_COLUMN_BOOKMARKED:
                 return song.getBookmarked() == 0 ? null
                         : Util.formatTimeAgo(song.getBookmarked());
             default:
@@ -139,8 +211,8 @@ public class SongsFragment extends SongsListFragment {
     }
 
     public static SongsFragment newInstance(String selection, String[] selectionArgs,
-                                            String[] sortColumns, boolean sortDesc) {
-        return newInstance(getArguments(selection, selectionArgs, sortColumns, sortDesc));
+                                            int sortColumn, boolean sortDesc) {
+        return newInstance(getArguments(selection, selectionArgs, sortColumn, sortDesc));
     }
 
     public static SongsFragment newInstance(Bundle args) {
@@ -149,21 +221,23 @@ public class SongsFragment extends SongsListFragment {
         return fragment;
     }
 
-    public static Bundle getArguments(long artistId, String[] sortColumns, boolean sortDesc) {
+    public static Bundle getArguments(long artistId, int sortColumn, boolean sortDesc) {
         Bundle args = new Bundle();
         args.putLong(ARG_ARTIST_ID, artistId);
-        args.putStringArray(ARG_SORT_COLUMNS, sortColumns);
+        args.putInt(ARG_SORT_COLUMN, sortColumn);
         args.putBoolean(ARG_SORT_DESC, sortDesc);
+        args.putInt(ARG_SORT_COLUMN, sortColumn);
         return args;
     }
 
     public static Bundle getArguments(String selection, String[] selectionArgs,
-                                      String[] sortColumns, boolean sortDesc) {
+                                      int sortColumn, boolean sortDesc) {
         Bundle args = new Bundle();
         args.putString(ARG_SELECTION, selection);
         args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
-        args.putStringArray(ARG_SORT_COLUMNS, sortColumns);
+        args.putInt(ARG_SORT_COLUMN, sortColumn);
         args.putBoolean(ARG_SORT_DESC, sortDesc);
+        args.putInt(ARG_SORT_COLUMN, sortColumn);
         return args;
     }
 }

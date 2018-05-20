@@ -84,7 +84,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(song.getArtistId(),
-                                new String[]{Song.TITLE}, false)));
+                                getSortColumn(), isSortDesc())));
                 break;
             case R.id.edit:
                 try {

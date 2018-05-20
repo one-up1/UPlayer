@@ -55,11 +55,6 @@ public class QueryFragment extends Fragment implements
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
 
-    private static final String[] SORT_COLUMNS = new String[] {
-            null, Song.ADDED, Song.LAST_PLAYED, Song.TIMES_PLAYED,
-            Song.ARTIST, Song.DURATION, Song.YEAR, Song.TAG, Song.BOOKMARKED,
-    };
-
     private SharedPreferences preferences;
     private DbHelper dbHelper;
 
@@ -492,11 +487,10 @@ public class QueryFragment extends Fragment implements
 
             preferences.edit().putStringSet(PREF_TAGS, tags).apply();
         }
-        
+
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(selection, null,
-                        SORT_COLUMNS[sSortColumn.getSelectedItemPosition()],
-                        cbSortDesc.isChecked())));
+                        sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
     }
 
     public static QueryFragment newInstance() {

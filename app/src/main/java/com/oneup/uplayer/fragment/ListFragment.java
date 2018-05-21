@@ -30,23 +30,23 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private int listItemHeaderId;
     private int listItemContentId;
 
+    private String[] columns;
+    private String[] sortColumns;
+
     private DbHelper dbHelper;
     private int sortColumn;
     private boolean sortDesc;
-    private String[] sortColumns;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
 
-    protected ListFragment(int listItemResource) {
-        this.listItemResource = listItemResource;
-    }
-
-    protected ListFragment(int listItemResource,
-                           int listItemHeaderId, int listItemContentId) {
+    protected ListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
+                           String[] columns, String[] sortColumns) {
         this.listItemResource = listItemResource;
         this.listItemHeaderId = listItemHeaderId;
         this.listItemContentId = listItemContentId;
+        this.columns = columns;
+        this.sortColumns = sortColumns;
     }
 
     @Override
@@ -155,10 +155,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
-    protected String getSortColumnName(int sortColumn) {
-        return null;
-    }
-
     protected String getSortColumnValue(int sortColumn, T item) {
         return null;
     }
@@ -182,6 +178,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return dbHelper;
     }
 
+    protected void setSortColumns(String[] sortColumns) {
+        this.sortColumns = sortColumns;
+    }
+
     protected int getSortColumn() {
         return sortColumn;
     }
@@ -198,14 +198,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         this.sortDesc = sortDesc;
     }
 
-    protected void setSortColumns(String[] sortColumns) {
-        this.sortColumns = sortColumns;
-    }
-
     protected String getOrderBy() {
-        StringBuilder orderBy = new StringBuilder();
+        sortColumns[0] = columns[sortColumn];
         boolean sortDesc = this.sortDesc;
-        sortColumns[0] = getSortColumnName(sortColumn);
+
+        StringBuilder orderBy = new StringBuilder();
         for (String sortColumn : sortColumns) {
             if (sortColumn == null) {
                 continue;

@@ -23,13 +23,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     private static final int REQUEST_EDIT_SONG = 1;
 
-    protected SongsListFragment(int listItemResource) {
-        super(listItemResource);
-    }
-
-    protected SongsListFragment(int listItemResource,
-                                int listItemHeaderId, int listItemContentId) {
-        super(listItemResource, listItemHeaderId, listItemContentId);
+    protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
+                                String[] columns) {
+        super(listItemResource, listItemHeaderId, listItemContentId, columns, null);
     }
 
     @Override

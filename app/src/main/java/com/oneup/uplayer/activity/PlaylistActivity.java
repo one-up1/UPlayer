@@ -63,7 +63,7 @@ public class PlaylistActivity extends AppCompatActivity {
         private MainService mainService;
 
         public PlaylistFragment() {
-            super(R.layout.list_item_playlist);
+            super(R.layout.list_item_playlist, 0, 0, null);
         }
 
         @Override

@@ -42,7 +42,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     private CheckBox cbSortDesc;
 
     public SongsFragment() {
-        super(R.layout.list_item_song, R.id.llSorting, R.id.llSong);
+        super(R.layout.list_item_song, R.id.llSorting, R.id.llSong,
+                new String[]{null, Song.ADDED, Song.LAST_PLAYED, Song.TIMES_PLAYED,
+                        Song.DURATION, Song.YEAR, Song.TAG, Song.BOOKMARKED});
     }
 
     @Override
@@ -79,6 +81,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     public void reverseSortOrder() {
+        Log.d(TAG, "SongsFragment.reverseSortOrder()");
         cbSortDesc.setChecked(!cbSortDesc.isChecked());
     }
 
@@ -86,7 +89,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent == sSortColumn) {
             if (position == getSortColumn()) {
-                Log.d(TAG, "Ignoring");
+                Log.d(TAG, "Ignoring first sort column selection event");
             } else {
                 setSortColumn(position);
                 reloadData();
@@ -131,28 +134,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         // Set play next and play last buttons.
         setListItemButton(rootView, R.id.ibPlayNext, song);
         setListItemButton(rootView, R.id.ibPlayLast, song);
-    }
-
-    @Override
-    protected String getSortColumnName(int sortColumn) {
-        switch (sortColumn) {
-            case SORT_COLUMN_ADDED:
-                return Song.ADDED;
-            case SORT_COLUMN_LAST_PLAYED:
-                return Song.LAST_PLAYED;
-            case SORT_COLUMN_TIMES_PLAYED:
-                return Song.TIMES_PLAYED;
-            case SORT_COLUMN_DURATION:
-                return Song.DURATION;
-            case SORT_COLUMN_YEAR:
-                return Song.YEAR;
-            case SORT_COLUMN_TAG:
-                return Song.TAG;
-            case SORT_COLUMN_BOOKMARKED:
-                return Song.BOOKMARKED;
-            default:
-                return null;
-        }
     }
 
     @Override

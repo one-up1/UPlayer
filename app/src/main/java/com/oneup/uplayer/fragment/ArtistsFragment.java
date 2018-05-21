@@ -16,7 +16,6 @@ import com.oneup.uplayer.util.Util;
 import java.util.ArrayList;
 
 public class ArtistsFragment extends ListFragment<Artist> {
-    public static final int SORT_COLUMN_TITLE = 0;
     public static final int SORT_COLUMN_LAST_ADDED = 1;
     public static final int SORT_COLUMN_LAST_PLAYED = 2;
     public static final int SORT_COLUMN_TIMES_PLAYED = 3;
@@ -24,13 +23,9 @@ public class ArtistsFragment extends ListFragment<Artist> {
     private static final String TAG = "UPlayer";
 
     public ArtistsFragment() {
-        super(R.layout.list_item_artist);
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setSortColumns(new String[]{null, Artist.ARTIST});
+        super(R.layout.list_item_artist, 0, 0,
+                new String[]{null, Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+                new String[]{null, Artist.ARTIST});
     }
 
     @Override
@@ -58,20 +53,6 @@ public class ArtistsFragment extends ListFragment<Artist> {
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
         tvArtist.setTextColor(artist.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
         tvArtist.setText(artist.getArtist());
-    }
-
-    @Override
-    protected String getSortColumnName(int sortColumn) {
-        switch (sortColumn) {
-            case SORT_COLUMN_LAST_ADDED:
-                return Artist.LAST_ADDED;
-            case SORT_COLUMN_LAST_PLAYED:
-                return Artist.LAST_PLAYED;
-            case SORT_COLUMN_TIMES_PLAYED:
-                return Artist.TIMES_PLAYED;
-            default:
-                return null;
-        }
     }
 
     @Override

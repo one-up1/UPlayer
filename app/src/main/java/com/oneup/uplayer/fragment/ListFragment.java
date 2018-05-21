@@ -272,9 +272,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
                 View contentView = view.findViewById(listItemContentId);
 
                 if (position == 0) {
-                    if (convertView == null) {
-                        setListItemHeader(headerView);
-                    }
+                    setListItemHeader(headerView);
 
                     headerView.setVisibility(View.VISIBLE);
                     contentView.setVisibility(View.GONE);

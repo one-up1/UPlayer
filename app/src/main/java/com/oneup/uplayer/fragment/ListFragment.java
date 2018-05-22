@@ -112,6 +112,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected void reloadData() {
         data = loadData();
+        setActivityTitle();
 
         if (listAdapter == null) {
             listAdapter = new ListAdapter();
@@ -119,13 +120,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         } else {
             listAdapter.notifyDataSetChanged();
         }
-
-        setActivityTitle();
     }
 
     protected void notifyDataSetChanged() {
         Log.d(TAG, "ListFragment.notifyDataSetChanged()");
         setActivityTitle();
+
         if (listAdapter != null) {
             listAdapter.notifyDataSetChanged();
         }

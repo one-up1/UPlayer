@@ -84,6 +84,7 @@ public class QueryFragment extends Fragment implements
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "QueryFragment.onCreate()");
         super.onCreate(savedInstanceState);
 
         preferences = getActivity().getPreferences(MODE_PRIVATE);

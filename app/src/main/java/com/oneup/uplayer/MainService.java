@@ -122,9 +122,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "MainService.onStartCommand()");
         if (intent == null) {
-            Log.e(TAG, "No intent");
+            Log.e(TAG, "No service intent");
             return START_STICKY;
         }
 
@@ -163,7 +162,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 volumeUp();
                 break;
             default:
-                Log.e(TAG, "Invalid action: " + action);
+                Log.e(TAG, "Invalid service action: " + action);
                 break;
         }
 
@@ -178,7 +177,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player != null) {
             player.stop();
             player.release();
-            Log.d(TAG, "MediaPlayer released");
         }
 
         if (mainReceiver != null) {
@@ -195,7 +193,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "MainService.onBind()");
         return mainBinder;
     }
 
@@ -260,7 +257,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void play(int songIndex) {
-        Log.d(TAG, "MainService.play(" + songIndex + ")");
         this.songIndex = songIndex;
         play();
     }
@@ -317,7 +313,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void addSong(Song song, boolean next) {
-        Log.d(TAG, "MainService.addSong(" + song + ", " + next + ")");
+        Log.d(TAG, "MainService.addSong(" + song + ", " + next + "), songIndex=" + songIndex);
         if (songs == null) {
             songs = new ArrayList<>();
             songs.add(song);
@@ -363,7 +359,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                     .putInt(PREF_SONG_INDEX, songIndex)
                     .putInt(PREF_POSITION, player.getCurrentPosition())
                     .apply();
-            Log.d(TAG, "Playlist saved");
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
         }
@@ -394,9 +389,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             }
             songIndex = preferences.getInt(PREF_SONG_INDEX, 0);
             restorePosition = preferences.getInt(PREF_POSITION, 0);
-            
-            Log.d(TAG, "Restored playlist with " + songs.size() +
-                    " songs, songIndex=" + songIndex + ", position=" + restorePosition);
+
             if (songIndex >= songs.size()) {
                 Log.e(TAG, "Invalid song index");
                 songIndex = 0;
@@ -413,7 +406,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void previous() {
-        Log.d(TAG, "MainService.previous()");
+        Log.d(TAG, "MainService.previous(), songIndex=" + songIndex);
         if (songIndex > 0) {
             play(songIndex - 1);
         }
@@ -440,7 +433,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void next() {
-        Log.d(TAG, "MainService.next()");
+        Log.d(TAG, "MainService.next(), songIndex=" + songIndex);
         if (songIndex < songs.size() - 1) {
             play(songIndex + 1);
         }
@@ -461,7 +454,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void setVolume(int volume) {
-        Log.d(TAG, "MainService.setVolume(" + volume + ")");
         this.volume = volume;
 
         setVolume();
@@ -469,7 +461,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void setVolume() {
-        Log.d(TAG, "MainService.setVolume()");
         float volume = (float)
                 (1 - (Math.log(MAX_VOLUME + 1 - this.volume) / Math.log(MAX_VOLUME)));
         Log.d(TAG, "volume=" + this.volume + " (" + volume + ")");
@@ -509,7 +500,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void stop() {
-        Log.d(TAG, "MainService.stop()");
         PlaylistActivity.finishIfRunning();
         stopSelf();
     }

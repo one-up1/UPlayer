@@ -106,7 +106,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     public void reverseSortOrder() {
-        Log.d(TAG, "ListFragment.reverseSortOrder()");
         sortDesc = !sortDesc;
         reloadData();
     }

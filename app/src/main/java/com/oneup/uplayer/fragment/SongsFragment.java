@@ -2,7 +2,6 @@ package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,8 +26,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public static final int SORT_COLUMN_YEAR = 5;
     public static final int SORT_COLUMN_TAG = 6;
     public static final int SORT_COLUMN_BOOKMARKED = 7;
-
-    private static final String TAG = "UPlayer";
 
     private static final String ARG_ARTIST_ID = "artist_id";
     private static final String ARG_SELECTION = "selection";
@@ -81,16 +78,13 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     public void reverseSortOrder() {
-        Log.d(TAG, "SongsFragment.reverseSortOrder()");
         cbSortDesc.setChecked(!cbSortDesc.isChecked());
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent == sSortColumn) {
-            if (position == getSortColumn()) {
-                Log.d(TAG, "Ignoring first sort column selection event");
-            } else {
+            if (position != getSortColumn()) {
                 setSortColumn(position);
                 reloadData();
             }
@@ -104,7 +98,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView == cbSortDesc) {
-            Log.d(TAG, "onCheckedChanged()");
             setSortDesc(cbSortDesc.isChecked());
             reloadData();
         }
@@ -117,7 +110,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected void setListItemHeader(View rootView) {
-        Log.d(TAG, "setListItemHeader()");
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
         sSortColumn.setSelection(getSortColumn());
         sSortColumn.setOnItemSelectedListener(this);
@@ -164,7 +156,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected void onListItemClick(int position, Song song) {
-        Log.d(TAG, "Playing " + getCount() + " songs, songIndex=" + position);
         getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
                 .putExtra(MainService.EXTRA_SONGS, getData())
@@ -175,14 +166,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     protected void onListItemButtonClick(int buttonId, Song song) {
         switch (buttonId) {
             case R.id.ibPlayNext:
-                Log.d(TAG, "Playing next: " + song);
                 getActivity().startService(new Intent(getActivity(), MainService.class)
                         .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY_NEXT)
                         .putExtra(MainService.EXTRA_SONG, song));
                 Util.showToast(getActivity(), R.string.playing_next, song);
                 break;
             case R.id.ibPlayLast:
-                Log.d(TAG, "Playing last: " + song);
                 getActivity().startService(new Intent(getActivity(), MainService.class)
                         .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY_LAST)
                         .putExtra(MainService.EXTRA_SONG, song));

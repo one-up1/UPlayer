@@ -21,13 +21,12 @@ public class MainReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "MainReceiver.onReceive()");
         this.context = context;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         String action = intent.getAction();
         if (action == null) {
-            Log.e(TAG, "No action");
+            Log.e(TAG, "No broadcast action");
             return;
         }
 
@@ -36,7 +35,7 @@ public class MainReceiver extends BroadcastReceiver {
                 headsetPlug(intent.getIntExtra("state", -1));
                 break;
             default:
-                Log.e(TAG, "Invalid action: '" + action + "'");
+                Log.e(TAG, "Invalid broadcast action: '" + action + "'");
                 break;
         }
     }

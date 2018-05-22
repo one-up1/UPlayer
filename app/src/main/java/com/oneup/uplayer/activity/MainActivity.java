@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
-        Log.d(TAG, "MainActivity.onTabSelected(" + tab.getPosition() + ")");
     }
 
     @Override
@@ -58,8 +57,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
-        Log.d(TAG, "MainActivity.onTabReselected(" + tab.getPosition() + ")");
-
         // Reverse sort order when a ListFragment tab is reselected.
         Fragment fragment = sectionsPagerAdapter.getItem(tab.getPosition());
         if (fragment instanceof ListFragment) {
@@ -81,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         @Override
         public Fragment getItem(int position) {
-            Log.d(TAG, "MainActivity.SectionsPagerAdapter.getItem(" + position + ")");
             switch (position) {
                 case 0:
                     if (queryFragment == null) {

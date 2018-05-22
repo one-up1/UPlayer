@@ -157,7 +157,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     }
 
     protected void onSongRemoved(int position) {
-        Log.d(TAG, "SongsListFragment.onSongRemoved(" + position + ")");
         getData().remove(position);
         notifyDataSetChanged();
     }

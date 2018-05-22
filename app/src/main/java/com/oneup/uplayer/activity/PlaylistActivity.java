@@ -27,7 +27,6 @@ public class PlaylistActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "PlaylistActivity.onCreate()");
         super.onCreate(savedInstanceState);
 
         FrameLayout container = new FrameLayout(this);
@@ -45,15 +44,12 @@ public class PlaylistActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "PlaylistActivity.onDestroy()");
         instance = null;
         super.onDestroy();
     }
 
     public static void finishIfRunning() {
-        Log.d(TAG, "PlaylistActivity.finishIfRunning()");
         if (instance != null) {
-            Log.d(TAG, "Finishing PlaylistActivity");
             instance.finish();
         }
     }
@@ -77,8 +73,9 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         public void onDestroy() {
+            Log.d(TAG, "PlaylistActivity.onDestroy()");
+
             if (mainService != null) {
-                Log.d(TAG, "Unbinding service");
                 mainService.setOnUpdateListener(null);
                 getActivity().unbindService(serviceConnection);
                 mainService = null;
@@ -89,7 +86,6 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         public void onUpdate() {
-            Log.d(TAG, "PlaylistFragment.onUpdate()");
             notifyDataSetChanged();
         }
 
@@ -140,7 +136,6 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onSongRemoved(int index) {
-            Log.d(TAG, "PlaylistFragment.onSongRemoved(" + index + ")");
             if (mainService != null) {
                 if (getCount() > 1) {
                     mainService.removeSong(index);
@@ -152,14 +147,12 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         private void moveUp(int songIndex) {
-            Log.d(TAG, "PlaylistFragment.moveUp(" + songIndex + ")");
             if (mainService != null && songIndex > 0) {
                 mainService.moveSong(songIndex, songIndex - 1);
             }
         }
 
         private void moveDown(int songIndex) {
-            Log.d(TAG, "PlaylistFragment.moveDown(" + songIndex + ")");
             if (mainService != null && songIndex < getCount() - 1) {
                 mainService.moveSong(songIndex, songIndex + 1);
             }
@@ -174,7 +167,7 @@ public class PlaylistActivity extends AppCompatActivity {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 Log.d(TAG, "PlaylistFragment.onServiceConnected()");
                 if (getActivity().isFinishing()) {
-                    Log.d(TAG, "Finishing");
+                    Log.w(TAG, "Finishing");
                     return;
                 }
 

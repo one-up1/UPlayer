@@ -56,6 +56,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final int MIN_RESTORE_POSITION = 16000;
     private static final int RESTORE_POSITION_OFFSET = 8000;
 
+    private static boolean running;
+
     private final IBinder mainBinder = new MainBinder();
 
     private SharedPreferences preferences;
@@ -114,6 +116,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         mainReceiver = new MainReceiver();
         registerReceiver(mainReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+
+        running = true;
     }
 
     @Override
@@ -185,6 +189,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             dbHelper.close();
         }
 
+        running = false;
         super.onDestroy();
     }
 
@@ -507,6 +512,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.stop()");
         PlaylistActivity.finishIfRunning();
         stopSelf();
+    }
+
+    public static boolean isRunning() {
+        return running;
     }
 
     public class MainBinder extends Binder {

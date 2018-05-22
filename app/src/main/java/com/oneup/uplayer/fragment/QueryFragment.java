@@ -318,17 +318,18 @@ public class QueryFragment extends Fragment implements
                 Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bRestorePlaylist) {
-            //TODO: Only show restore playlist confirm when service is running.
-            Util.showConfirmDialog(getActivity(), R.string.restore_playlist_confirm,
-                    new DialogInterface.OnClickListener() {
+            if (MainService.isRunning()) {
+                Util.showConfirmDialog(getActivity(), R.string.restore_playlist_confirm,
+                        new DialogInterface.OnClickListener() {
 
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            getActivity().startService(new Intent(getActivity(), MainService.class)
-                                    .putExtra(MainService.EXTRA_ACTION,
-                                            MainService.ACTION_RESTORE_PLAYLIST));
-                        }
-                    });
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                restorePlaylist();
+                            }
+                        });
+            } else {
+                restorePlaylist();
+            }
         } else if (v == bSyncDatabase) {
             Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
                     new DialogInterface.OnClickListener() {
@@ -491,6 +492,12 @@ public class QueryFragment extends Fragment implements
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(selection, null,
                         sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
+    }
+
+    private void restorePlaylist() {
+        getActivity().startService(new Intent(getActivity(), MainService.class)
+                .putExtra(MainService.EXTRA_ACTION,
+                        MainService.ACTION_RESTORE_PLAYLIST));
     }
 
     public static QueryFragment newInstance() {

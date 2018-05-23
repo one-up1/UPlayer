@@ -74,13 +74,11 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         public void onDestroy() {
             Log.d(TAG, "PlaylistActivity.onDestroy()");
-
             if (mainService != null) {
                 mainService.setOnUpdateListener(null);
                 getActivity().unbindService(serviceConnection);
                 mainService = null;
             }
-
             super.onDestroy();
         }
 

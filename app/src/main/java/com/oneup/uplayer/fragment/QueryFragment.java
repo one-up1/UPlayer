@@ -201,25 +201,11 @@ public class QueryFragment extends Fragment implements
 
     @Override
     public void onDestroy() {
-        preferences.edit()
-                .putString(PREF_TITLE, etTitle.getString())
-                .putString(PREF_ARTIST, etArtist.getString())
-                .putString(PREF_MIN_YEAR, etMinYear.getString())
-                .putString(PREF_MAX_YEAR, etMaxYear.getString())
-                .putLong(PREF_MIN_ADDED, minAdded)
-                .putLong(PREF_MAX_ADDED, maxAdded)
-                .putString(PREF_MIN_TIMES_PLAYED, etMinTimesPlayed.getString())
-                .putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString())
-                .putLong(PREF_MIN_LAST_PLAYED, minLastPlayed)
-                .putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed)
-                .putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition())
-                .putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked())
-                .apply();
-        
+        saveQueryParams();
+
         if (dbHelper != null) {
             dbHelper.close();
         }
-
         super.onDestroy();
     }
 
@@ -493,12 +479,31 @@ public class QueryFragment extends Fragment implements
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(selection, null,
                         sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
+
+        saveQueryParams();
     }
 
     private void restorePlaylist() {
         getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION,
                         MainService.ACTION_RESTORE_PLAYLIST));
+    }
+
+    private void saveQueryParams() {
+        preferences.edit()
+                .putString(PREF_TITLE, etTitle.getString())
+                .putString(PREF_ARTIST, etArtist.getString())
+                .putString(PREF_MIN_YEAR, etMinYear.getString())
+                .putString(PREF_MAX_YEAR, etMaxYear.getString())
+                .putLong(PREF_MIN_ADDED, minAdded)
+                .putLong(PREF_MAX_ADDED, maxAdded)
+                .putString(PREF_MIN_TIMES_PLAYED, etMinTimesPlayed.getString())
+                .putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString())
+                .putLong(PREF_MIN_LAST_PLAYED, minLastPlayed)
+                .putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed)
+                .putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition())
+                .putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked())
+                .apply();
     }
 
     public static QueryFragment newInstance() {

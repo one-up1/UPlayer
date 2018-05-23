@@ -40,7 +40,7 @@ public class EditText extends AppCompatEditText {
     }
 
     public String getString() {
-        return getText().toString();
+        return getText().toString().trim();
     }
 
     public void setString(String s) {

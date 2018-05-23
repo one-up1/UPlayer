@@ -104,9 +104,9 @@ public class PlaylistActivity extends AppCompatActivity {
                 tvTitle.setText(underlinedText);
             }
 
-            setListItemButton(rootView, R.id.ibMoveUp, song);
-            setListItemButton(rootView, R.id.ibMoveDown, song);
-            setListItemButton(rootView, R.id.ibRemove, song);
+            setListItemButton(rootView, R.id.ibMoveUp);
+            setListItemButton(rootView, R.id.ibMoveDown);
+            setListItemButton(rootView, R.id.ibRemove);
         }
 
         @Override
@@ -117,17 +117,16 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onListItemButtonClick(int buttonId, Song song) {
-            int songIndex = getData().indexOf(song);
+        protected void onListItemButtonClick(int buttonId, int position, Song song) {
             switch (buttonId) {
                 case R.id.ibMoveUp:
-                    moveUp(songIndex);
+                    moveUp(position);
                     break;
                 case R.id.ibMoveDown:
-                    moveDown(songIndex);
+                    moveDown(position);
                     break;
                 case R.id.ibRemove:
-                    onSongRemoved(songIndex);
+                    onSongRemoved(position);
                     break;
             }
         }

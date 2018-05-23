@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -77,9 +76,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        if (listItemHeaderId != 0) {
-            position--;
-        }
+        position = getItemPosition(position);
         onListItemClick(position, data.get(position));
     }
 
@@ -88,10 +85,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         // getUserVisibleHint() or the wrong fragment may receive the onContextItemSelected() call,
         // because there are multiple fragments with the same context menu item ID's.
         if (getUserVisibleHint()) {
-            int position = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
-            if (listItemHeaderId != 0) {
-                position--;
-            }
+            int position = getItemPosition(
+                    ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
             onContextItemSelected(item.getItemId(), position, data.get(position));
             return true;
         } else {
@@ -101,8 +96,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onClick(View v) {
-        //noinspection unchecked
-        onListItemButtonClick(v.getId(), (T) v.getTag());
+        int position = getItemPosition(getListView().getPositionForView((View) v.getParent()));
+        onListItemButtonClick(v.getId(), position, data.get(position));
     }
 
     public void reverseSortOrder() {
@@ -154,14 +149,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
-    protected String getSortColumnValue(int sortColumn, T item) {
-        return null;
+    protected void setListItemButton(View rootView, int buttonId) {
+        rootView.findViewById(buttonId).setOnClickListener(this);
     }
 
-    protected void setListItemButton(View rootView, int buttonId, T item) {
-        ImageButton button = rootView.findViewById(buttonId);
-        button.setTag(item);
-        button.setOnClickListener(this);
+    protected String getSortColumnValue(int sortColumn, T item) {
+        return null;
     }
 
     protected void onListItemClick(int position, T item) {
@@ -170,7 +163,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     protected void onContextItemSelected(int itemId, int position, T item) {
     }
 
-    protected void onListItemButtonClick(int buttonId, T item) {
+    protected void onListItemButtonClick(int buttonId, int position, T item) {
     }
 
     protected DbHelper getDbHelper() {
@@ -231,6 +224,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         if (activity != null && !(activity instanceof MainActivity)) {
             activity.setTitle(getActivityTitle());
         }
+    }
+
+    private int getItemPosition(int position) {
+        return listItemHeaderId == 0 ? position : position - 1;
     }
 
     private class ListAdapter extends BaseAdapter {

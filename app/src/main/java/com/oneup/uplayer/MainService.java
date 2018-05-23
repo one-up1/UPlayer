@@ -210,7 +210,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.start();
         prepared = true;
 
-        notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_pause);
+        setPlayPauseResource(R.drawable.ic_pause);
         update();
     }
 
@@ -220,7 +220,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.reset();
         prepared = false;
         
-        notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
+        setPlayPauseResource(R.drawable.ic_play);
         startForeground(1, notification);
         
         return true; // Or onCompletion() will be called.
@@ -231,7 +231,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onCompletion()");
         prepared = false;
         
-        notificationViews.setImageViewResource(R.id.ibPlayPause, R.drawable.ic_play);
+        setPlayPauseResource(R.drawable.ic_play);
         startForeground(1, notification);
 
         //FIXME: onCompletion not always called or position 0? Only in emulator?
@@ -414,11 +414,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void playPause() {
         Log.d(TAG, "MainService.playPause()");
-        int ibSrcId;
         if (player.isPlaying()) {
             Log.d(TAG, "Pausing");
             player.pause();
-            ibSrcId = R.drawable.ic_play;
+            setPlayPauseResource(R.drawable.ic_play);
         } else {
             if (prepared) {
                 Log.d(TAG, "Resuming");
@@ -426,9 +425,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             } else {
                 play();
             }
-            ibSrcId = R.drawable.ic_pause;
+            setPlayPauseResource(R.drawable.ic_pause);
         }
-        notificationViews.setImageViewResource(R.id.ibPlayPause, ibSrcId);
         startForeground(1, notification);
     }
 
@@ -470,7 +468,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startForeground(1, notification);
     }
 
-    //TODO: Only set needed values in update() and method for setting button icons.
+    private void setPlayPauseResource(int srcId) {
+        notificationViews.setImageViewResource(R.id.ibPlayPause, srcId);
+    }
+
     private void update() {
         Log.d(TAG, "MainService.update()");
         Song song = songs.get(songIndex);

@@ -76,7 +76,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        position = getItemPosition(position);
+        position = getListItemPosition(position);
         onListItemClick(position, data.get(position));
     }
 
@@ -85,7 +85,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         // getUserVisibleHint() or the wrong fragment may receive the onContextItemSelected() call,
         // because there are multiple fragments with the same context menu item ID's.
         if (getUserVisibleHint()) {
-            int position = getItemPosition(
+            int position = getListItemPosition(
                     ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
             onContextItemSelected(item.getItemId(), position, data.get(position));
             return true;
@@ -96,7 +96,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onClick(View v) {
-        int position = getItemPosition(getListView().getPositionForView((View) v.getParent()));
+        int position = getListItemPosition(getListView().getPositionForView((View) v.getParent()));
         onListItemButtonClick(v.getId(), position, data.get(position));
     }
 
@@ -226,7 +226,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
-    private int getItemPosition(int position) {
+    private int getListItemPosition(int position) {
         return listItemHeaderId == 0 ? position : position - 1;
     }
 

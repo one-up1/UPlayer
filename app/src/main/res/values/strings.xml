@@ -36,9 +36,11 @@
 
     <string name="info">Info</string>
     <string name="play_next">Play next</string>
-    <string name="playing_next">Playing next: %1$s</string>
     <string name="play_last">Play last</string>
-    <string name="playing_last">Playing last: %1$s</string>
+    <string name="playing_all_next">Playing next</string>
+    <string name="playing_all_last">Playing last</string>
+    <string name="playing_song_next">Playing next: %1$s</string>
+    <string name="playing_song_last">Playing last: %1$s</string>
 
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>

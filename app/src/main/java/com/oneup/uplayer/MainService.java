@@ -31,19 +31,18 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final String EXTRA_ACTION = "com.oneup.extra.ACTION";
     public static final String EXTRA_SONGS = "com.oneup.extra.SONGS";
     public static final String EXTRA_SONG_INDEX = "com.oneup.extra.SONG_INDEX";
-    public static final String EXTRA_SONG = "com.oneup.extra.SONG";
+    public static final String EXTRA_NEXT = "com.oneup.extra.NEXT";
 
     public static final int ACTION_PLAY = 1;
-    public static final int ACTION_PLAY_NEXT = 2;
-    public static final int ACTION_PLAY_LAST = 3;
-    public static final int ACTION_RESTORE_PLAYLIST = 4;
+    public static final int ACTION_ADD = 2;
+    public static final int ACTION_RESTORE_PLAYLIST = 3;
 
-    private static final int ACTION_PREVIOUS = 5;
-    private static final int ACTION_PLAY_PAUSE = 6;
-    private static final int ACTION_NEXT = 7;
-    private static final int ACTION_STOP = 8;
-    private static final int ACTION_VOLUME_DOWN = 9;
-    private static final int ACTION_VOLUME_UP = 10;
+    private static final int ACTION_PREVIOUS = 4;
+    private static final int ACTION_PLAY_PAUSE = 5;
+    private static final int ACTION_NEXT = 6;
+    private static final int ACTION_STOP = 7;
+    private static final int ACTION_VOLUME_DOWN = 8;
+    private static final int ACTION_VOLUME_UP = 9;
 
     private static final String TAG = "UPlayer";
 
@@ -104,6 +103,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(R.id.ibVolumeUp, ACTION_VOLUME_UP);
 
         //FIXME: Notification icon is always ic_launcher.
+        //FIXME: Remove notification channel ID or create proper channel.
         notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setCustomContentView(notificationViews)
@@ -134,11 +134,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
                 play(intent.getIntExtra(EXTRA_SONG_INDEX, 0));
                 break;
-            case ACTION_PLAY_NEXT:
-                addSong((Song) intent.getParcelableExtra(EXTRA_SONG), true);
-                break;
-            case ACTION_PLAY_LAST:
-                addSong((Song) intent.getParcelableExtra(EXTRA_SONG), false);
+            case ACTION_ADD:
+                ArrayList<Song> songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
+                add(songs, intent.getBooleanExtra(EXTRA_NEXT, false));
                 break;
             case ACTION_RESTORE_PLAYLIST:
                 restorePlaylist();
@@ -262,7 +260,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void moveSong(int index, int toIndex) {
-        Log.d(TAG, "MainService.moveSong(" + index + "," + toIndex + "), songIndex=" + songIndex);
+        Log.d(TAG, "MainService.moveSong(" + index + ", " + toIndex + "), songIndex=" + songIndex);
         songs.add(toIndex, songs.remove(index));
 
         if (index == songIndex) {
@@ -312,15 +310,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void addSong(Song song, boolean next) {
-        Log.d(TAG, "MainService.addSong(" + song + ", " + next + "), songIndex=" + songIndex);
-        if (songs == null) {
-            songs = new ArrayList<>();
-            songs.add(song);
+    private void add(ArrayList<Song> songs, boolean next) {
+        Log.d(TAG, "MainService.add(" + songs.size() + ", " + next + "), songIndex=" + songIndex);
+        if (this.songs == null) {
+            this.songs = songs;
         } else if (next) {
-            songs.add(songIndex + 1, song);
+            this.songs.addAll(songIndex + 1, songs);
         } else {
-            songs.add(song);
+            this.songs.addAll(songs);
         }
 
         // Update when playing or paused (prepared), start playing the last song when not.

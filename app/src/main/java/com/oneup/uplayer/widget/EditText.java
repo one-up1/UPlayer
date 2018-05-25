@@ -15,6 +15,7 @@ public class EditText extends AppCompatEditText {
 
     public EditText(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setSelectAllOnFocus(true);
 
         numberFormat = NumberFormat.getInstance();
         numberFormat.setGroupingUsed(false);

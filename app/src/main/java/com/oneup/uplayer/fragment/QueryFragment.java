@@ -485,8 +485,7 @@ public class QueryFragment extends Fragment implements
 
     private void restorePlaylist() {
         getActivity().startService(new Intent(getActivity(), MainService.class)
-                .putExtra(MainService.EXTRA_ACTION,
-                        MainService.ACTION_RESTORE_PLAYLIST));
+                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_RESTORE_PLAYLIST));
     }
 
     private void saveQueryParams() {

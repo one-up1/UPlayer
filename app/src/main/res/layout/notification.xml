@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="4dp">
+    android:padding="@dimen/notification_padding">
 
     <TextView
         android:id="@+id/tvSongTitle"
@@ -24,34 +24,34 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:paddingTop="@dimen/notification_padding">
 
         <ImageButton
             android:id="@+id/ibPrevious"
-            android:layout_width="40dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/notification_button_width"
+            android:layout_height="@dimen/notification_button_height"
             android:src="@drawable/ic_previous"
             android:contentDescription="@string/previous" />
 
         <ImageButton
             android:id="@+id/ibPlayPause"
-            android:layout_width="40dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/notification_button_width"
+            android:layout_height="@dimen/notification_button_height"
             android:contentDescription="@string/play_pause" />
 
         <ImageButton
             android:id="@+id/ibNext"
-            android:layout_width="40dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/notification_button_width"
+            android:layout_height="@dimen/notification_button_height"
             android:src="@drawable/ic_next"
             android:contentDescription="@string/next" />
 
         <ImageButton
             android:id="@+id/ibStop"
-            android:layout_width="40dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/notification_button_width"
+            android:layout_height="@dimen/notification_button_height"
             android:src="@drawable/ic_stop"
             android:contentDescription="@string/stop" />
 
@@ -60,20 +60,20 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:gravity="end" />
+            android:gravity="end"
+            android:padding="@dimen/notification_padding" />
 
         <ImageButton
             android:id="@+id/ibVolumeDown"
-            android:layout_width="40dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/notification_button_width"
+            android:layout_height="@dimen/notification_button_height"
             android:src="@drawable/ic_volume_down"
             android:contentDescription="@string/stop" />
 
         <ImageButton
             android:id="@+id/ibVolumeUp"
-            android:layout_width="40dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/notification_button_width"
+            android:layout_height="@dimen/notification_button_height"
             android:contentDescription="@string/stop"
             android:src="@drawable/ic_volume_up" />
 

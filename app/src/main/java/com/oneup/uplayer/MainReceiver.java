@@ -9,8 +9,6 @@ import android.util.Log;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
 
-//TODO: Test headset plugging, starting with headset plugged in or not.
-
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
 

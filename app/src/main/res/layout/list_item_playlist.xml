@@ -41,17 +41,15 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/list_item_info_padding_start"
-            android:paddingEnd="@dimen/list_item_info_padding_end">
+            android:gravity="center_vertical">
 
             <ImageButton
                 android:id="@+id/ibMoveUp"
                 android:layout_width="@dimen/list_item_button_width_small"
                 android:layout_height="@dimen/list_item_button_height_small"
                 android:background="@android:color/transparent"
-                android:src="@drawable/ic_move_up"
-                android:contentDescription="@string/move_up" />
+                android:contentDescription="@string/move_up"
+                android:src="@drawable/ic_move_up" />
 
             <ImageButton
                 android:id="@+id/ibMoveDown"

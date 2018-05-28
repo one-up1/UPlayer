@@ -121,7 +121,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Log.d(TAG, "Deleting song: " + song + " (" + song.getId() + ")");
+                                Log.d(TAG, "Deleting song: '" + song + "' (" + song.getId() + ")");
                                 try {
                                     ContentResolver resolver = getActivity().getContentResolver();
                                     Uri uri = song.getContentUri();

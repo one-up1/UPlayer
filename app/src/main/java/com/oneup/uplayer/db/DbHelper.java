@@ -41,6 +41,9 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
     private static final String SQL_WHERE_ID_IS = " WHERE " + SQL_ID_IS;
 
+    private static final String SQL_ARTIST_ID_IS = Song.ARTIST_ID + "=?";
+    private static final String SQL_WHERE_ARTIST_ID_IS = " WHERE " + SQL_ARTIST_ID_IS;
+
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
@@ -235,18 +238,13 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 delete(db, TABLE_SONGS, song.getId());
 
-                // Delete artists with no songs. If nothing is deleted, the artist still exists and
-                // the artist stats should be updated. Make sure only 1 artist is deleted otherwise.
-                switch (db.delete(TABLE_ARTISTS, Artist._ID + " NOT IN (SELECT " + Song.ARTIST_ID +
-                        " FROM " + TABLE_SONGS + ")", null)) {
-                    case 0:
-                        updateArtistStats(db, song);
-                        break;
-                    case 1:
-                        Log.d(TAG, "Deleted artist: " + song.getArtist());
-                        break;
-                    default:
-                        throw new SQLiteException("Multiple artists deleted");
+                // Update artist stats if the artist has other songs, delete it otherwise.
+                if (queryInt(db, "SELECT COUNT(*) FROM " + TABLE_SONGS + SQL_WHERE_ARTIST_ID_IS,
+                        getWhereArgs(song.getArtistId())) > 0) {
+                    updateArtistStats(db, song);
+                } else {
+                    Log.d(TAG, "Deleting artist: '" + song.getArtist() + "'");
+                    delete(db, TABLE_ARTISTS, song.getArtistId());
                 }
 
                 db.setTransactionSuccessful();
@@ -456,7 +454,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static String appendWhereArtistId(String sql, Artist artist, boolean and) {
         return artist == null ? sql
-                : sql + " " + (and ? "AND" : "WHERE") + " " + Song.ARTIST_ID + "=?";
+                : sql + " " + (and ? "AND" : "WHERE") + " " + SQL_ARTIST_ID_IS;
     }
 
     private static SyncResult syncTable(Context context, Uri contentUri,

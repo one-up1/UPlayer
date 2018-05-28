@@ -15,7 +15,6 @@
         android:id="@+id/etTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
         android:hint="@string/title"
         app:layout_columnSpan="2"
         app:layout_columnWeight="1" />

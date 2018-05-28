@@ -1,6 +1,8 @@
 package com.oneup.uplayer.activity;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -9,14 +11,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsListFragment;
+import com.oneup.uplayer.util.Calendar;
+import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
@@ -66,6 +74,7 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             Log.d(TAG, "PlaylistFragment.onCreate()");
             super.onCreate(savedInstanceState);
+            setHasOptionsMenu(true);
 
             getActivity().bindService(new Intent(getActivity(), MainService.class),
                     serviceConnection, BIND_AUTO_CREATE);
@@ -80,6 +89,45 @@ public class PlaylistActivity extends AppCompatActivity {
                 mainService = null;
             }
             super.onDestroy();
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            super.onCreateOptionsMenu(menu, inflater);
+            inflater.inflate(R.menu.fragment_playlist, menu);
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.save:
+                    final EditText etName = new EditText(getActivity());
+                    etName.setHint(R.string.name);
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle(R.string.save_playlist)
+                            .setView(etName)
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Playlist playlist = new Playlist();
+                                    playlist.setName(etName.getString());
+                                    if (playlist.getName().length() == 0) {
+                                        return;
+                                    }
+                                    playlist.setModified(Calendar.currentTime());
+                                    if (mainService != null) {
+                                        playlist.setSongIndex(mainService.getSongIndex());
+                                        playlist.setSongPosition(mainService.getSongPosition());
+                                    }
+                                    getDbHelper().insertOrUpdatePlaylist(playlist, getData());
+                                }
+                            })
+                            .show();
+                    return true;
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
         }
 
         @Override

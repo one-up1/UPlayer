@@ -91,6 +91,10 @@
     <string name="stats_times_played">Times played:</string>
     <string name="stats_avg_times_played">Avg times played:</string>
 
+    <string name="save">Save</string>
+    <string name="save_playlist">Save playlist</string>
+    <string name="name">Name&#8230;</string>
+
     <string name="ok">OK</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

@@ -13,6 +13,10 @@ public class EditText extends AppCompatEditText {
     private TextWatcher textWatcher;
     private OnTextChangeListener onTextChangeListener;
 
+    public EditText(Context context) {
+        this(context, null);
+    }
+
     public EditText(Context context, AttributeSet attrs) {
         super(context, attrs);
         setSelectAllOnFocus(true);

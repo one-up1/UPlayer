@@ -254,6 +254,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         return songIndex;
     }
 
+    public int getSongPosition() {
+        return player.getCurrentPosition();
+    }
+
     public void play(int songIndex) {
         this.songIndex = songIndex;
         play();

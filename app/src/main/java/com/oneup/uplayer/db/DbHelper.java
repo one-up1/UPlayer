@@ -275,8 +275,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList<Playlist> queryPlaylists() {
         Log.d(TAG, "DbHelper.queryPlaylists()");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLISTS, null, null, null, null, null,
-                    Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
+            try (Cursor c = db.query(TABLE_PLAYLISTS, null, Playlist.MODIFIED + " IS NOT NULL",
+                    null, null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
                 ArrayList<Playlist> playlists = new ArrayList<>();
                 while (c.moveToNext()) {
                     Playlist playlist = new Playlist();
@@ -300,7 +300,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.TIMES_PLAYED},
                     Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS +
                             " WHERE " + Playlist.PLAYLIST_ID + "=?)",
-                    getWhereArgs(playlist.getId()), null, null, null)) {
+                    getWhereArgs(playlist.getId()), null, null, Playlist._ID)) {
                 ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
                     Song song = new Song();
@@ -469,13 +469,14 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public void backup() throws JSONException, IOException {
         Log.d(TAG, "DbHelper.backup()");
-        JSONArray songs = new JSONArray();
+        JSONObject backup = new JSONObject();
 
-        // Put songs table in JSONArray.
         try (SQLiteDatabase db = getReadableDatabase()) {
+            // Backup songs table.
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
                     Song.ADDED, Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED},
                     null, null, null, null, null)) {
+                JSONArray songs = new JSONArray();
                 while (c.moveToNext()) {
                     JSONObject song = new JSONObject();
                     putValue(c, 0, song, Song.TITLE);
@@ -488,27 +489,59 @@ public class DbHelper extends SQLiteOpenHelper {
                     putValue(c, 7, song, Song.TIMES_PLAYED);
                     songs.put(song);
                 }
+                backup.put(TABLE_SONGS, songs);
+                Log.d(TAG, songs.length() + " songs backed up");
+            }
+
+            // Backup playlists table.
+            try (Cursor c = db.query(TABLE_PLAYLISTS, null, null, null, null, null, null)) {
+                JSONArray playlists = new JSONArray();
+                while (c.moveToNext()) {
+                    JSONObject playlist = new JSONObject();
+                    putValue(c, 0, playlist, Playlist._ID);
+                    putValue(c, 1, playlist, Playlist.NAME);
+                    putValue(c, 2, playlist, Playlist.MODIFIED);
+                    putValue(c, 3, playlist, Playlist.SONG_INDEX);
+                    putValue(c, 4, playlist, Playlist.SONG_POSITION);
+                    playlists.put(playlist);
+                }
+                backup.put(TABLE_PLAYLISTS, playlists);
+                Log.d(TAG, playlists.length() + " playlists backed up");
+            }
+
+            // Backup playlist_songs table.
+            try (Cursor c = db.query(TABLE_PLAYLIST_SONGS, null, null, null, null, null, null)) {
+                JSONArray playlistSongs = new JSONArray();
+                while (c.moveToNext()) {
+                    JSONObject playlistSong = new JSONObject();
+                    putValue(c, 0, playlistSong, Playlist._ID);
+                    putValue(c, 1, playlistSong, Playlist.PLAYLIST_ID);
+                    putValue(c, 2, playlistSong, Playlist.SONG_ID);
+                    playlistSongs.put(playlistSong);
+                }
+                backup.put(TABLE_PLAYLIST_SONGS, playlistSongs);
+                Log.d(TAG, playlistSongs.length() + " playlist songs backed up");
             }
         }
 
-        // Write JSONArray to file.
+        // Write JSONObject to file.
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(BACKUP_FILE, false)))) {
-            writer.write(songs.toString());
+            writer.write(backup.toString());
         }
-
-        Log.d(TAG, songs.length() + " songs backed up");
     }
 
     public void restoreBackup() throws IOException, JSONException {
         Log.d(TAG, "DbHelper.restoreBackup()");
 
-        // Read JSONArray from file.
-        JSONArray songs;
+        // Read  from file.
+        JSONObject backup;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new FileInputStream(BACKUP_FILE)))) {
-            songs = new JSONArray(reader.readLine());
+            backup = new JSONObject(reader.readLine());
         }
+        JSONArray songs = backup.getJSONArray(TABLE_SONGS);
+        //TODO: Restore playlists from backup.
 
         // Update songs table from JSONArray.
         try (SQLiteDatabase db = getWritableDatabase()) {

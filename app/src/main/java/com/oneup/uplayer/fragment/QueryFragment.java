@@ -246,6 +246,11 @@ public class QueryFragment extends Fragment implements
             query(null, null);
         } else if (v == bTags) {
             final String[] tags = dbHelper.querySongTags().toArray(new String[0]);
+            if (tags.length == 0) {
+                Util.showToast(getActivity(), R.string.no_tags);
+                return;
+            }
+
             final Set<String> checkedTags = preferences.getStringSet(PREF_TAGS,
                     new ArraySet<String>());
             boolean[] checkedItems = new boolean[tags.length];
@@ -310,6 +315,11 @@ public class QueryFragment extends Fragment implements
         } else if (v == bPlaylists) {
             //TODO: Improve playlists dialog.
             final List<Playlist> playlists = dbHelper.queryPlaylists();
+            if (playlists.size() == 0) {
+                Util.showToast(getActivity(), R.string.no_playlists);
+                return;
+            }
+
             final String[] playlistNames = new String[playlists.size()];
             for (int i = 0; i < playlists.size(); i++) {
                 Playlist playlist = playlists.get(i);

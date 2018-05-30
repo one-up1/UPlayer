@@ -4,8 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.BaseColumns;
 
-//TODO: Playlist.song_index 0 or null?
-
 public class Playlist implements Parcelable, BaseColumns {
     public static final String NAME = "name";
     public static final String MODIFIED = "modified";

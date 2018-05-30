@@ -20,10 +20,12 @@
     <string name="max_times_played">Max times played&#8230;</string>
     <string name="desc">Desc</string>
     <string name="tags">Tags&#8230;</string>
+    <string name="no_tags">No tags available</string>
     <string name="none">None</string>
     <string name="all">All</string>
     <string name="statistics">Statistics</string>
     <string name="playlists">Playlists&#8230;</string>
+    <string name="no_playlists">No playlists available</string>
     <string name="resume_playlist">Resume</string>
     <string name="sync_database">Sync database</string>
     <string name="sync_database_confirm">Sync database?</string>

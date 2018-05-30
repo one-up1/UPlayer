@@ -187,7 +187,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent == sTag) {
             if (position > 0) {
-                etTag.setText(tags.get(position));
+                etTag.setString(tags.get(position));
                 sTag.setSelection(0);
             }
         }

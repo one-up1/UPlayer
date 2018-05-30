@@ -22,10 +22,13 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -73,7 +76,7 @@ public class QueryFragment extends Fragment implements
     private Button bQuery;
     private Button bTags;
     private Button bStatistics;
-    private Button bRestorePlaylist;
+    private Button bPlaylists;
     private Button bSyncDatabase;
     private Button bBackup;
 
@@ -97,16 +100,16 @@ public class QueryFragment extends Fragment implements
         View rootView = inflater.inflate(R.layout.fragment_query, container, false);
 
         etTitle = rootView.findViewById(R.id.etTitle);
-        etTitle.setText(preferences.getString(PREF_TITLE, ""));
+        etTitle.setString(preferences.getString(PREF_TITLE, ""));
 
         etArtist = rootView.findViewById(R.id.etArtist);
-        etArtist.setText(preferences.getString(PREF_ARTIST, ""));
+        etArtist.setString(preferences.getString(PREF_ARTIST, ""));
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
-        etMinYear.setText(preferences.getString(PREF_MIN_YEAR, ""));
+        etMinYear.setString(preferences.getString(PREF_MIN_YEAR, ""));
 
         etMaxYear = rootView.findViewById(R.id.etMaxYear);
-        etMaxYear.setText(preferences.getString(PREF_MAX_YEAR, ""));
+        etMaxYear.setString(preferences.getString(PREF_MAX_YEAR, ""));
 
         bMinAdded = rootView.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
@@ -141,10 +144,10 @@ public class QueryFragment extends Fragment implements
         }
 
         etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
-        etMinTimesPlayed.setText(preferences.getString(PREF_MIN_TIMES_PLAYED, ""));
+        etMinTimesPlayed.setString(preferences.getString(PREF_MIN_TIMES_PLAYED, ""));
 
         etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
-        etMaxTimesPlayed.setText(preferences.getString(PREF_MAX_TIMES_PLAYED, ""));
+        etMaxTimesPlayed.setString(preferences.getString(PREF_MAX_TIMES_PLAYED, ""));
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
         sSortColumn.setSelection(preferences.getInt(PREF_SORT_COLUMN, 0));
@@ -161,8 +164,8 @@ public class QueryFragment extends Fragment implements
         bStatistics = rootView.findViewById(R.id.bStatistics);
         bStatistics.setOnClickListener(this);
 
-        bRestorePlaylist = rootView.findViewById(R.id.bRestorePlaylist);
-        bRestorePlaylist.setOnClickListener(this);
+        bPlaylists = rootView.findViewById(R.id.bPlaylists);
+        bPlaylists.setOnClickListener(this);
 
         bSyncDatabase = rootView.findViewById(R.id.bSyncDatabase);
         bSyncDatabase.setOnClickListener(this);
@@ -240,7 +243,7 @@ public class QueryFragment extends Fragment implements
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_LAST_PLAYED);
         } else if (v == bQuery) {
-            query(null);
+            query(null, null);
         } else if (v == bTags) {
             final String[] tags = dbHelper.querySongTags().toArray(new String[0]);
             final Set<String> checkedTags = preferences.getStringSet(PREF_TAGS,
@@ -269,7 +272,7 @@ public class QueryFragment extends Fragment implements
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            query(checkedTags);
+                            query(checkedTags, null);
                         }
                     })
                     .create();
@@ -304,19 +307,69 @@ public class QueryFragment extends Fragment implements
                 Log.e(TAG, "Error querying stats", ex);
                 Util.showErrorDialog(getActivity(), ex);
             }
-        } else if (v == bRestorePlaylist) {
-            if (MainService.isRunning()) {
-                Util.showConfirmDialog(getActivity(), R.string.restore_playlist_confirm,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                restorePlaylist();
-                            }
-                        });
-            } else {
-                restorePlaylist();
+        } else if (v == bPlaylists) {
+            //TODO: Improve playlists dialog.
+            final List<Playlist> playlists = dbHelper.queryPlaylists();
+            final String[] playlistNames = new String[playlists.size()];
+            for (int i = 0; i < playlists.size(); i++) {
+                Playlist playlist = playlists.get(i);
+                playlistNames[i] = playlist.getName() == null ?
+                        Util.formatDateTime(playlist.getModified())
+                        : playlist.getName() + ": " + Util.formatDateTime(playlist.getModified());
             }
+            final boolean[] checkedPlaylists = new boolean[playlistNames.length];
+            new AlertDialog.Builder(getActivity())
+                    .setMultiChoiceItems(playlistNames, checkedPlaylists,
+                            new DialogInterface.OnMultiChoiceClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                            checkedPlaylists[which] = isChecked;
+                        }
+                    })
+                    .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            for (int i = 0; i < checkedPlaylists.length; i++) {
+                                if (checkedPlaylists[i] && playlists.get(i).getId() > 1) {
+                                    dbHelper.deletePlaylist(playlists.get(i));
+                                }
+                            }
+                        }
+                    })
+                    .setNegativeButton(R.string.resume_playlist,
+                            new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            for (int i = 0; i < checkedPlaylists.length; i++) {
+                                if (checkedPlaylists[i]) {
+                                    getActivity().startService(
+                                            new Intent(getActivity(), MainService.class)
+                                                    .putExtra(MainService.EXTRA_ACTION,
+                                                            MainService.ACTION_RESUME_PLAYLIST)
+                                                    .putExtra(MainService.EXTRA_PLAYLIST,
+                                                            playlists.get(i)));
+                                    break;
+                                }
+                            }
+                        }
+                    })
+                    .setPositiveButton(R.string.query, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            List<Playlist> queryPlaylists = new ArrayList<>();
+                            for (int i = 0; i < checkedPlaylists.length; i++) {
+                                if (checkedPlaylists[i]) {
+                                    queryPlaylists.add(playlists.get(i));
+                                }
+                            }
+                            query(null, queryPlaylists);
+                        }
+                    })
+                    .show();
         } else if (v == bSyncDatabase) {
             Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
                     new DialogInterface.OnClickListener() {
@@ -407,7 +460,7 @@ public class QueryFragment extends Fragment implements
         return true;
     }
 
-    private void query(Set<String> tags) {
+    private void query(Set<String> tags, List<Playlist> playlists) {
         String selection = null;
 
         String title = etTitle.getString();
@@ -476,16 +529,29 @@ public class QueryFragment extends Fragment implements
             preferences.edit().putStringSet(PREF_TAGS, tags).apply();
         }
 
+        if (playlists != null) {
+            //TODO: Query playlists, use playlist_songs table name constant, use selectionArgs?
+            String playlistSelection;
+            if (playlists.size() == 0) {
+                playlistSelection = "NOT IN(SELECT " + Playlist.SONG_ID + " FROM playlist_songs)";
+            } else {
+                StringBuilder sbPlaylistIds = new StringBuilder();
+                for (Playlist playlist : playlists) {
+                    sbPlaylistIds.append(sbPlaylistIds.length() == 0 ? '(' : ',');
+                    sbPlaylistIds.append(playlist.getId());
+                }
+                sbPlaylistIds.append(')');
+                playlistSelection = "IN(SELECT " + Playlist.SONG_ID + " FROM playlist_songs" +
+                        " WHERE " + Playlist.PLAYLIST_ID + " IN" + sbPlaylistIds + ")";
+            }
+            selection = appendSelection(selection, Song._ID + " " + playlistSelection);
+        }
+
         startActivity(new Intent(getActivity(), SongsActivity.class)
                 .putExtras(SongsFragment.getArguments(selection, null,
                         sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
 
         saveQueryParams();
-    }
-
-    private void restorePlaylist() {
-        getActivity().startService(new Intent(getActivity(), MainService.class)
-                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_RESTORE_PLAYLIST));
     }
 
     private void saveQueryParams() {

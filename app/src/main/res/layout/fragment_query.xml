@@ -16,6 +16,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/title"
+        android:selectAllOnFocus="true"
         app:layout_columnSpan="2"
         app:layout_columnWeight="1" />
 
@@ -24,6 +25,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/artist"
+        android:selectAllOnFocus="true"
         app:layout_columnSpan="2"
         app:layout_columnWeight="1" />
 
@@ -33,6 +35,7 @@
         android:layout_height="wrap_content"
         android:inputType="number"
         android:hint="@string/min_year"
+        android:selectAllOnFocus="true"
         app:layout_columnWeight="1" />
 
     <com.oneup.uplayer.widget.EditText
@@ -41,6 +44,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/max_year"
         android:inputType="number"
+        android:selectAllOnFocus="true"
         app:layout_columnWeight="1" />
 
     <Button
@@ -77,6 +81,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/min_times_played"
         android:inputType="number"
+        android:selectAllOnFocus="true"
         app:layout_columnWeight="1" />
 
     <com.oneup.uplayer.widget.EditText
@@ -85,6 +90,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/max_times_played"
         android:inputType="number"
+        android:selectAllOnFocus="true"
         app:layout_columnWeight="1" />
 
     <Spinner
@@ -123,10 +129,10 @@
         app:layout_columnWeight="1" />
 
     <Button
-        android:id="@+id/bRestorePlaylist"
+        android:id="@+id/bPlaylists"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/restore_playlist"
+        android:text="@string/playlists"
         app:layout_columnWeight="1" />
 
     <Button

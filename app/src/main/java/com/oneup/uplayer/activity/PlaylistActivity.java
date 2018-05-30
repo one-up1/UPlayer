@@ -23,7 +23,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsListFragment;
-import com.oneup.uplayer.util.Calendar;
+import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
@@ -103,6 +103,13 @@ public class PlaylistActivity extends AppCompatActivity {
                 case R.id.save:
                     final EditText etName = new EditText(getActivity());
                     etName.setHint(R.string.name);
+                    etName.setSelectAllOnFocus(true);
+
+                    Playlist playlist = mainService == null ? null : mainService.getPlaylist();
+                    if (playlist != null) {
+                        etName.setText(playlist.getName());
+                    }
+
                     new AlertDialog.Builder(getActivity())
                             .setTitle(R.string.save_playlist)
                             .setView(etName)
@@ -110,17 +117,16 @@ public class PlaylistActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Playlist playlist = new Playlist();
-                                    playlist.setName(etName.getString());
-                                    if (playlist.getName().length() == 0) {
-                                        return;
-                                    }
-                                    playlist.setModified(Calendar.currentTime());
                                     if (mainService != null) {
-                                        playlist.setSongIndex(mainService.getSongIndex());
-                                        playlist.setSongPosition(mainService.getSongPosition());
+                                        Playlist playlist = mainService.getPlaylist();
+                                        if (playlist == null) {
+                                            playlist = new Playlist();
+                                            mainService.setPlaylist(playlist);
+                                        }
+                                        String name = etName.getString();
+                                        playlist.setName(name.length() == 0 ? null : name);
+                                        Util.showToast(getActivity(), R.string.ok);
                                     }
-                                    getDbHelper().insertOrUpdatePlaylist(playlist, getData());
                                 }
                             })
                             .show();

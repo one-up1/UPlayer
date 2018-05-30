@@ -272,12 +272,12 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public List<Playlist> queryPlaylists() {
+    public ArrayList<Playlist> queryPlaylists() {
         Log.d(TAG, "DbHelper.queryPlaylists()");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLISTS, null, Playlist.NAME + " IS NOT NULL", null,
-                    null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
-                List<Playlist> playlists = new ArrayList<>();
+            try (Cursor c = db.query(TABLE_PLAYLISTS, null, null, null, null, null,
+                    Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
+                ArrayList<Playlist> playlists = new ArrayList<>();
                 while (c.moveToNext()) {
                     Playlist playlist = new Playlist();
                     playlist.setId(c.getLong(0));
@@ -294,13 +294,13 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
-        Log.d(TAG, "DbHelper.queryPlaylistSongs()");
+        Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
                             Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.TIMES_PLAYED},
                     Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS +
-                            " WHERE " + Playlist.PLAYLIST_ID + "=?", getWhereArgs(playlist.getId()),
-                    null, null, null)) {
+                            " WHERE " + Playlist.PLAYLIST_ID + "=?)",
+                    getWhereArgs(playlist.getId()), null, null, null)) {
                 ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
                     Song song = new Song();
@@ -310,6 +310,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     song.setArtist(c.getString(3));
                     song.setDuration(c.getLong(4));
                     song.setTimesPlayed(c.getInt(5));
+                    songs.add(song);
                 }
                 Log.d(TAG, songs.size() + " playlist songs queried");
                 return songs;
@@ -327,16 +328,15 @@ public class DbHelper extends SQLiteOpenHelper {
                 // Insert or update playlist, deleting any existing playlist songs.
                 values = new ContentValues();
                 values.put(Playlist.NAME, playlist.getName());
-                values.put(Playlist.MODIFIED, playlist.getModified());
-                values.put(Playlist.SONG_INDEX, playlist.getSongIndex());
-                values.put(Playlist.SONG_POSITION, playlist.getSongPosition());
+                putValue(values, Playlist.MODIFIED, playlist.getModified());
+                putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
+                putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
                 if (playlist.getId() == 0) {
                     playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
                     Log.d(TAG, "Playlist inserted: " + playlist.getId());
                 } else {
                     update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
-                    Log.d(TAG, db.delete(TABLE_PLAYLIST_SONGS, Playlist.PLAYLIST_ID + "=?",
-                            getWhereArgs(playlist.getId())) + " playlist songs deleted");
+                    deletePlaylistSongs(db, playlist);
                 }
 
                 // Insert playlist songs.
@@ -348,6 +348,20 @@ public class DbHelper extends SQLiteOpenHelper {
                 }
                 Log.d(TAG, songs.size() + " playlist songs inserted");
 
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    public void deletePlaylist(Playlist playlist) {
+        Log.d(TAG, "DbHelper.deletePlaylist(" + playlist + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                deletePlaylistSongs(db, playlist);
+                delete(db, TABLE_PLAYLISTS, playlist.getId());
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -787,6 +801,11 @@ public class DbHelper extends SQLiteOpenHelper {
             default:
                 throw new SQLiteException("Duplicate " + table + " row: " + id);
         }
+    }
+
+    private static void deletePlaylistSongs(SQLiteDatabase db, Playlist playlist) {
+        Log.d(TAG, db.delete(TABLE_PLAYLIST_SONGS, Playlist.PLAYLIST_ID + "=?",
+                getWhereArgs(playlist.getId())) + " playlist songs deleted");
     }
 
     interface ArtistColumns extends MediaStore.Audio.ArtistColumns {

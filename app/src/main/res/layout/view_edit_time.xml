@@ -10,6 +10,7 @@
         android:layout_width="@dimen/edit_time_number_width"
         android:layout_height="wrap_content"
         android:inputType="number"
+        android:selectAllOnFocus="true"
         tools:ignore="LabelFor" />
 
     <TextView
@@ -24,6 +25,7 @@
         android:layout_width="@dimen/edit_time_number_width"
         android:layout_height="wrap_content"
         android:inputType="number"
+        android:selectAllOnFocus="true"
         tools:ignore="LabelFor" />
 
 </LinearLayout>

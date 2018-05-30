@@ -194,7 +194,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (playlist != null && playlist.getSongPosition() > 0) {
             Log.d(TAG, "Seeking to playlist position: " + playlist.getSongPosition());
             player.seekTo(playlist.getSongPosition());
-            playlist.setSongPosition(0);
+            playlist.setSongPosition(0); //FIXME: Not set to 0?
         }
 
         player.start();

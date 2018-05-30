@@ -294,14 +294,18 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
-        //TODO: Is the order of queried playlist songs correct?
+        //TODO: View? https://stackoverflow.com/questions/4957009/how-do-i-join-two-sqlite-tables-in-my-android-application
         Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
-                            Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.TIMES_PLAYED},
-                    Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS +
-                            " WHERE " + Playlist.PLAYLIST_ID + "=?)",
-                    getWhereArgs(playlist.getId()), null, null, Playlist._ID)) {
+            try (Cursor c = db.rawQuery("SELECT " +
+                            Playlist.SONG_ID + "," + Song.TITLE + "," + Song.ARTIST_ID + "," +
+                            Song.ARTIST + "," + Song.DURATION + "," + Song.TIMES_PLAYED + " " +
+                            "FROM " + TABLE_PLAYLIST_SONGS + " " +
+                            "INNER JOIN " + TABLE_SONGS + " ON " +
+                            TABLE_SONGS + "." + Song._ID + "=" + Playlist.SONG_ID + " " +
+                            "WHERE " + Playlist.PLAYLIST_ID + "=? " +
+                            "ORDER BY " + TABLE_PLAYLIST_SONGS + "." + Playlist._ID,
+                    getWhereArgs(playlist.getId()))) {
                 ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
                     Song song = new Song();

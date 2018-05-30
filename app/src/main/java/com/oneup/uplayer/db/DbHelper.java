@@ -294,6 +294,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
+        //TODO: Is the order of queried playlist songs correct?
         Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
@@ -471,6 +472,7 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.backup()");
         JSONObject backup = new JSONObject();
 
+        //TODO: Methods for backup up/restoring tables?
         try (SQLiteDatabase db = getReadableDatabase()) {
             // Backup songs table.
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
@@ -534,22 +536,21 @@ public class DbHelper extends SQLiteOpenHelper {
     public void restoreBackup() throws IOException, JSONException {
         Log.d(TAG, "DbHelper.restoreBackup()");
 
-        // Read  from file.
+        // Read JSONObject from file.
         JSONObject backup;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new FileInputStream(BACKUP_FILE)))) {
             backup = new JSONObject(reader.readLine());
         }
-        JSONArray songs = backup.getJSONArray(TABLE_SONGS);
-        //TODO: Restore playlists from backup.
 
-        // Update songs table from JSONArray.
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                for (int index = 0; index < songs.length(); index++) {
+                // Restore songs table.
+                JSONArray songs = backup.getJSONArray(TABLE_SONGS);
+                for (int i = 0; i < songs.length(); i++) {
                     // Put values to update from JSONObject.
-                    JSONObject song = songs.getJSONObject(index);
+                    JSONObject song = songs.getJSONObject(i);
                     ContentValues values = new ContentValues();
                     putValue(song, values, Song.YEAR);
                     putValue(song, values, Song.ADDED);
@@ -577,15 +578,45 @@ public class DbHelper extends SQLiteOpenHelper {
                                     song.getString(Song.TITLE) + "'");
                     }
                 }
+                Log.d(TAG, songs.length() + " songs restored");
                 updateArtistStats(db, null);
+
+                // Restore playlists table.
+                Log.d(TAG, db.delete(TABLE_PLAYLISTS, null, null) + " playlists deleted");
+                JSONArray playlists = backup.getJSONArray(TABLE_PLAYLISTS);
+                for (int i = 0; i < playlists.length(); i++) {
+                    // Put values to update from JSONObject and insert it.
+                    JSONObject playlist = playlists.getJSONObject(i);
+                    ContentValues values = new ContentValues();
+                    putValue(playlist, values, Playlist._ID);
+                    putValue(playlist, values, Playlist.NAME);
+                    putValue(playlist, values, Playlist.MODIFIED);
+                    putValue(playlist, values, Playlist.SONG_INDEX);
+                    putValue(playlist, values, Playlist.SONG_POSITION);
+                    db.insert(TABLE_PLAYLISTS, null, values);
+                }
+                Log.d(TAG, playlists.length() + " playlists restored");
+
+                // Restore playlist songs table.
+                Log.d(TAG, db.delete(TABLE_PLAYLIST_SONGS, null, null) + " playlist songs deleted");
+                JSONArray playlistSongs = backup.getJSONArray(TABLE_PLAYLIST_SONGS);
+                for (int i = 0; i < playlistSongs.length(); i++) {
+                    // Put values to update from JSONObject and insert it.
+                    JSONObject playlistSong = playlistSongs.getJSONObject(i);
+                    ContentValues values = new ContentValues();
+                    putValue(playlistSong, values, Playlist._ID);
+                    putValue(playlistSong, values, Playlist.PLAYLIST_ID);
+                    putValue(playlistSong, values, Playlist.SONG_ID);
+                    db.insert(TABLE_PLAYLIST_SONGS, null, values);
+                }
+                Log.d(TAG, playlistSongs.length() + " playlist songs restored");
+                //FIXME: Playlist song ID could be invalid after restoring a backup.
 
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
             }
         }
-
-        Log.d(TAG, songs.length() + " songs restored");
     }
 
     public static String[] getWhereArgs(long id) {

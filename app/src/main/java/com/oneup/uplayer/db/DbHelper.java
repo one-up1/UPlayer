@@ -294,18 +294,15 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
-        //TODO: View? https://stackoverflow.com/questions/4957009/how-do-i-join-two-sqlite-tables-in-my-android-application
         Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.rawQuery("SELECT " +
-                            Playlist.SONG_ID + "," + Song.TITLE + "," + Song.ARTIST_ID + "," +
-                            Song.ARTIST + "," + Song.DURATION + "," + Song.TIMES_PLAYED + " " +
-                            "FROM " + TABLE_PLAYLIST_SONGS + " " +
-                            "INNER JOIN " + TABLE_SONGS + " ON " +
-                            TABLE_SONGS + "." + Song._ID + "=" + Playlist.SONG_ID + " " +
-                            "WHERE " + Playlist.PLAYLIST_ID + "=? " +
-                            "ORDER BY " + TABLE_PLAYLIST_SONGS + "." + Playlist._ID,
-                    getWhereArgs(playlist.getId()))) {
+            try (Cursor c = db.query(TABLE_PLAYLIST_SONGS + "," + TABLE_SONGS, new String[]{
+                    Playlist.SONG_ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
+                            Song.DURATION, Song.TIMES_PLAYED},
+                    Playlist.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID +
+                            " AND " + Playlist.PLAYLIST_ID + "=?",
+                    getWhereArgs(playlist.getId()), null, null,
+                    TABLE_PLAYLIST_SONGS + "." + Playlist._ID)) {
                 ArrayList<Song> songs = new ArrayList<>();
                 while (c.moveToNext()) {
                     Song song = new Song();

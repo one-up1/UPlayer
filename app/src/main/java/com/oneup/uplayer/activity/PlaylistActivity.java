@@ -105,8 +105,8 @@ public class PlaylistActivity extends AppCompatActivity {
                     etName.setHint(R.string.name);
 
                     Playlist playlist = mainService == null ? null : mainService.getPlaylist();
-                    if (playlist != null) {
-                        etName.setText(playlist.getName());
+                    if (playlist != null && playlist.getName() != null) {
+                        etName.setString(playlist.getName());
                     }
 
                     new AlertDialog.Builder(getActivity())
@@ -117,13 +117,12 @@ public class PlaylistActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     if (mainService != null) {
-                                        Playlist playlist = mainService.getPlaylist();
-                                        if (playlist == null) {
-                                            playlist = new Playlist();
-                                            mainService.setPlaylist(playlist);
-                                        }
+                                        Playlist playlist = new Playlist();
+
                                         String name = etName.getString();
                                         playlist.setName(name.length() == 0 ? null : name);
+
+                                        mainService.setPlaylist(playlist);
                                         Util.showToast(getActivity(), R.string.ok);
                                     }
                                 }

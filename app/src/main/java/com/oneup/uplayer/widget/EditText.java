@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 
 import java.text.NumberFormat;
 
+//TODO: EditText.getString()/setString() null.
+
 public class EditText extends AppCompatEditText {
     private NumberFormat numberFormat;
     private TextWatcher textWatcher;

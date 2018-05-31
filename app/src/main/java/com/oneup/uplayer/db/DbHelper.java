@@ -357,6 +357,23 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void insertPlaylistSong(Playlist playlist, Song song) {
+        Log.d(TAG, "DbHelper.insertPlaylistSong(" + playlist + "," + song + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                ContentValues values = new ContentValues();
+                values.put(Playlist.PLAYLIST_ID, playlist.getId());
+                values.put(Playlist.SONG_ID, song.getId());
+                Log.d(TAG, "Playlist song inserted: " +
+                        db.insert(TABLE_PLAYLIST_SONGS, null, values));
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
     public void deletePlaylist(Playlist playlist) {
         Log.d(TAG, "DbHelper.deletePlaylist(" + playlist + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {

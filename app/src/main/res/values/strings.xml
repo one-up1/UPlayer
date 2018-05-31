@@ -69,6 +69,8 @@
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_cleared">Bookmark cleared</string>
 
+    <string name="add_to_playlist">Add to playlist</string>
+
     <string name="mark_played">Mark played</string>
     <string name="times_played">Times played: %1$d</string>
 

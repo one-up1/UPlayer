@@ -245,66 +245,7 @@ public class QueryFragment extends Fragment implements
         } else if (v == bQuery) {
             query(null, null);
         } else if (v == bTags) {
-            final String[] tags = dbHelper.querySongTags().toArray(new String[0]);
-            if (tags.length == 0) {
-                Util.showToast(getActivity(), R.string.no_tags);
-                return;
-            }
-
-            final Set<String> checkedTags = preferences.getStringSet(PREF_TAGS,
-                    new ArraySet<String>());
-            boolean[] checkedItems = new boolean[tags.length];
-            for (int i = 0; i < tags.length; i++) {
-                checkedItems[i] = checkedTags.contains(tags[i]);
-            }
-            final AlertDialog tagsDialog = new AlertDialog.Builder(getActivity())
-                    .setMultiChoiceItems(tags, checkedItems,
-                            new DialogInterface.OnMultiChoiceClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog,
-                                                    int which, boolean isChecked) {
-                                    if (isChecked) {
-                                        checkedTags.add(tags[which]);
-                                    } else {
-                                        checkedTags.remove(tags[which]);
-                                    }
-                                }
-                            })
-                    .setNeutralButton(R.string.none, null)
-                    .setNegativeButton(R.string.all, null)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            query(checkedTags, null);
-                        }
-                    })
-                    .create();
-            tagsDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-
-                @Override
-                public void onShow(DialogInterface dialog) {
-                    final ListView listView = tagsDialog.getListView();
-                    final Button bNone = tagsDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
-                    final Button bAll = tagsDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-
-                    View.OnClickListener buttonOnClickListener = new View.OnClickListener() {
-
-                        @Override
-                        public void onClick(View v) {
-                            for (int i = 0; i < tags.length; i++) {
-                                if (v == bNone == checkedTags.contains(tags[i])) {
-                                    listView.performItemClick(listView, i, i);
-                                }
-                            }
-                        }
-                    };
-                    bAll.setOnClickListener(buttonOnClickListener);
-                    bNone.setOnClickListener(buttonOnClickListener);
-                }
-            });
-            tagsDialog.show();
+            showTags();
         } else if (v == bStatistics) {
             try {
                 dbHelper.queryStats(null).showDialog(getActivity(), getString(R.string.statistics));
@@ -313,121 +254,11 @@ public class QueryFragment extends Fragment implements
                 Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bPlaylists) {
-            //TODO: Improve playlists dialog.
-            final List<Playlist> playlists = dbHelper.queryPlaylists();
-            if (playlists.size() == 0) {
-                Util.showToast(getActivity(), R.string.no_playlists);
-                return;
-            }
-
-            final String[] playlistNames = new String[playlists.size()];
-            for (int i = 0; i < playlists.size(); i++) {
-                Playlist playlist = playlists.get(i);
-                playlistNames[i] = playlist.getName() == null ?
-                        Util.formatDateTime(playlist.getModified())
-                        : playlist.getName() + ": " + Util.formatDateTime(playlist.getModified());
-            }
-            final boolean[] checkedPlaylists = new boolean[playlistNames.length];
-            new AlertDialog.Builder(getActivity())
-                    .setMultiChoiceItems(playlistNames, checkedPlaylists,
-                            new DialogInterface.OnMultiChoiceClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                            checkedPlaylists[which] = isChecked;
-                        }
-                    })
-                    .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            for (int i = 0; i < checkedPlaylists.length; i++) {
-                                if (checkedPlaylists[i] && playlists.get(i).getId() > 1) {
-                                    dbHelper.deletePlaylist(playlists.get(i));
-                                }
-                            }
-                        }
-                    })
-                    .setNegativeButton(R.string.resume_playlist,
-                            new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            for (int i = 0; i < checkedPlaylists.length; i++) {
-                                if (checkedPlaylists[i]) {
-                                    getActivity().startService(
-                                            new Intent(getActivity(), MainService.class)
-                                                    .putExtra(MainService.EXTRA_ACTION,
-                                                            MainService.ACTION_RESUME_PLAYLIST)
-                                                    .putExtra(MainService.EXTRA_PLAYLIST,
-                                                            playlists.get(i)));
-                                    break;
-                                }
-                            }
-                        }
-                    })
-                    .setPositiveButton(R.string.query, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            List<Playlist> queryPlaylists = new ArrayList<>();
-                            for (int i = 0; i < checkedPlaylists.length; i++) {
-                                if (checkedPlaylists[i]) {
-                                    queryPlaylists.add(playlists.get(i));
-                                }
-                            }
-                            query(null, queryPlaylists);
-                        }
-                    })
-                    .show();
+            showPlaylists();
         } else if (v == bSyncDatabase) {
-            Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
-                    new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //TODO: Refresh MediaStore before syncing database
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        DbHelper.SyncResult[] results =
-                                                dbHelper.syncWithMediaStore(getActivity());
-
-                                        Util.showInfoDialog(getActivity(), R.string.sync_completed,
-                                                R.string.sync_completed_message,
-                                                results[0].getRowCount(),
-                                                results[0].getRowsIgnored(),
-                                                results[0].getRowsInserted(),
-                                                results[0].getRowsUpdated(),
-                                                results[0].getRowsDeleted(),
-                                                results[1].getRowCount(),
-                                                results[1].getRowsIgnored(),
-                                                results[1].getRowsInserted(),
-                                                results[1].getRowsUpdated(),
-                                                results[1].getRowsDeleted());
-                                    } catch (Exception ex) {
-                                        Log.e(TAG, "Error synchronizing database", ex);
-                                        Util.showErrorDialog(getActivity(), ex);
-                                    }
-                                }
-                            }).start();
-                        }
-                    });
+            syncDatabase();
         } else if (v == bBackup) {
-            new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        dbHelper.backup();
-                        Util.showToast(getActivity(), R.string.backup_completed);
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error running backup", ex);
-                        Util.showErrorDialog(getActivity(), ex);
-                    }
-                }
-            }).start();
+            backup();
         }
     }
 
@@ -446,26 +277,7 @@ public class QueryFragment extends Fragment implements
             maxLastPlayed = 0;
             bMaxLastPlayed.setText(R.string.max_last_played);
         } else if (v == bBackup) {
-            Util.showConfirmDialog(getActivity(), R.string.restore_backup_confirm,
-                    new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            new Thread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    try {
-                                        dbHelper.restoreBackup();
-                                        Util.showToast(getActivity(), R.string.backup_restored);
-                                    } catch (Exception ex) {
-                                        Log.e(TAG, "Error restoring backup", ex);
-                                        Util.showErrorDialog(getActivity(), ex);
-                                    }
-                                }
-                            }).start();
-                        }
-                    });
+            restoreBackup();
         }
         return true;
     }
@@ -564,6 +376,68 @@ public class QueryFragment extends Fragment implements
         saveQueryParams();
     }
 
+    private void showTags() {
+        final String[] tags = dbHelper.querySongTags().toArray(new String[0]);
+        if (tags.length == 0) {
+            Util.showToast(getActivity(), R.string.no_tags);
+            return;
+        }
+
+        final Set<String> checkedTags = preferences.getStringSet(PREF_TAGS, new ArraySet<String>());
+        boolean[] checkedItems = new boolean[tags.length];
+        for (int i = 0; i < tags.length; i++) {
+            checkedItems[i] = checkedTags.contains(tags[i]);
+        }
+        final AlertDialog tagsDialog = new AlertDialog.Builder(getActivity())
+                .setMultiChoiceItems(tags, checkedItems,
+                        new DialogInterface.OnMultiChoiceClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                                int which, boolean isChecked) {
+                                if (isChecked) {
+                                    checkedTags.add(tags[which]);
+                                } else {
+                                    checkedTags.remove(tags[which]);
+                                }
+                            }
+                        })
+                .setNeutralButton(R.string.none, null)
+                .setNegativeButton(R.string.all, null)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        query(checkedTags, null);
+                    }
+                })
+                .create();
+        tagsDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                final ListView listView = tagsDialog.getListView();
+                final Button bNone = tagsDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+                final Button bAll = tagsDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+                View.OnClickListener buttonOnClickListener = new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        for (int i = 0; i < tags.length; i++) {
+                            if (v == bNone == checkedTags.contains(tags[i])) {
+                                listView.performItemClick(listView, i, i);
+                            }
+                        }
+                    }
+                };
+                bAll.setOnClickListener(buttonOnClickListener);
+                bNone.setOnClickListener(buttonOnClickListener);
+            }
+        });
+        tagsDialog.show();
+    }
+
     private void saveQueryParams() {
         preferences.edit()
                 .putString(PREF_TITLE, etTitle.getString())
@@ -579,6 +453,152 @@ public class QueryFragment extends Fragment implements
                 .putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition())
                 .putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked())
                 .apply();
+    }
+
+    private void showPlaylists() {
+        //TODO: Improve playlists dialog.
+        final List<Playlist> playlists = dbHelper.queryPlaylists();
+        if (playlists.size() == 0) {
+            Util.showToast(getActivity(), R.string.no_playlists);
+            return;
+        }
+
+        final String[] playlistNames = new String[playlists.size()];
+        for (int i = 0; i < playlists.size(); i++) {
+            Playlist playlist = playlists.get(i);
+            playlistNames[i] = playlist.getName() == null ?
+                    Util.formatDateTime(playlist.getModified())
+                    : playlist.getName() + ": " + Util.formatDateTime(playlist.getModified());
+        }
+        final boolean[] checkedPlaylists = new boolean[playlistNames.length];
+        new AlertDialog.Builder(getActivity())
+                .setMultiChoiceItems(playlistNames, checkedPlaylists,
+                        new DialogInterface.OnMultiChoiceClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                                int which, boolean isChecked) {
+                                checkedPlaylists[which] = isChecked;
+                            }
+                        })
+                .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        for (int i = 0; i < checkedPlaylists.length; i++) {
+                            if (checkedPlaylists[i] && playlists.get(i).getId() > 1) {
+                                dbHelper.deletePlaylist(playlists.get(i));
+                            }
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.resume_playlist,
+                        new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                for (int i = 0; i < checkedPlaylists.length; i++) {
+                                    if (checkedPlaylists[i]) {
+                                        getActivity().startService(
+                                                new Intent(getActivity(), MainService.class)
+                                                        .putExtra(MainService.EXTRA_ACTION,
+                                                                MainService.ACTION_RESUME_PLAYLIST)
+                                                        .putExtra(MainService.EXTRA_PLAYLIST,
+                                                                playlists.get(i)));
+                                        break;
+                                    }
+                                }
+                            }
+                        })
+                .setPositiveButton(R.string.query, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        List<Playlist> queryPlaylists = new ArrayList<>();
+                        for (int i = 0; i < checkedPlaylists.length; i++) {
+                            if (checkedPlaylists[i]) {
+                                queryPlaylists.add(playlists.get(i));
+                            }
+                        }
+                        query(null, queryPlaylists);
+                    }
+                })
+                .show();
+    }
+
+    private void syncDatabase() {
+        Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //TODO: Refresh MediaStore before syncing database
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    DbHelper.SyncResult[] results =
+                                            dbHelper.syncWithMediaStore(getActivity());
+
+                                    Util.showInfoDialog(getActivity(), R.string.sync_completed,
+                                            R.string.sync_completed_message,
+                                            results[0].getRowCount(),
+                                            results[0].getRowsIgnored(),
+                                            results[0].getRowsInserted(),
+                                            results[0].getRowsUpdated(),
+                                            results[0].getRowsDeleted(),
+                                            results[1].getRowCount(),
+                                            results[1].getRowsIgnored(),
+                                            results[1].getRowsInserted(),
+                                            results[1].getRowsUpdated(),
+                                            results[1].getRowsDeleted());
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Error synchronizing database", ex);
+                                    Util.showErrorDialog(getActivity(), ex);
+                                }
+                            }
+                        }).start();
+                    }
+                });
+    }
+
+    private void backup() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    dbHelper.backup();
+                    Util.showToast(getActivity(), R.string.backup_completed);
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error running backup", ex);
+                    Util.showErrorDialog(getActivity(), ex);
+                }
+            }
+        }).start();
+    }
+
+    private void restoreBackup() {
+        Util.showConfirmDialog(getActivity(), R.string.restore_backup_confirm,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    dbHelper.restoreBackup();
+                                    Util.showToast(getActivity(), R.string.backup_restored);
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Error restoring backup", ex);
+                                    Util.showErrorDialog(getActivity(), ex);
+                                }
+                            }
+                        }).start();
+                    }
+                });
     }
 
     public static QueryFragment newInstance() {

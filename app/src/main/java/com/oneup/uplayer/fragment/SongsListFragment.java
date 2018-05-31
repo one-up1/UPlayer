@@ -1,5 +1,6 @@
 package com.oneup.uplayer.fragment;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -15,8 +16,11 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
 import com.oneup.uplayer.activity.SongsActivity;
+import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
+
+import java.util.List;
 
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
@@ -75,7 +79,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     }
 
     @Override
-    protected void onContextItemSelected(int itemId, final int position, final Song song) {
+    protected void onContextItemSelected(int itemId, int position, Song song) {
         switch (itemId) {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
@@ -104,6 +108,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     Util.showErrorDialog(getActivity(), ex);
                 }
                 break;
+            case R.id.add_to_playlist:
+                addToPlaylist(song);
+                break;
             case R.id.mark_played:
                 try {
                     getDbHelper().updateSongPlayed(song);
@@ -115,43 +122,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 }
                 break;
             case R.id.delete:
-                Util.showConfirmDialog(getActivity(),
-                        getString(R.string.delete_confirm, song.getArtist(), song.getTitle()),
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d(TAG, "Deleting song: '" + song + "' (" + song.getId() + ")");
-                                try {
-                                    ContentResolver resolver = getActivity().getContentResolver();
-                                    Uri uri = song.getContentUri();
-
-                                    // Change type to image, otherwise nothing will be deleted.
-                                    ContentValues values = new ContentValues();
-                                    values.put("media_type", 1);
-                                    resolver.update(uri, values, null, null);
-
-                                    // Delete song from MediaStore and database.
-                                    int rowsAffected = resolver.delete(uri, null, null);
-                                    switch (rowsAffected) {
-                                        case 0:
-                                            throw new RuntimeException("Song not found");
-                                        case 1:
-                                            Log.d(TAG, "Song deleted from MediaStore");
-                                            break;
-                                        default:
-                                            throw new RuntimeException("Duplicate song");
-                                    }
-                                    getDbHelper().deleteSong(song);
-
-                                    Util.showToast(getActivity(), R.string.song_deleted);
-                                    onSongRemoved(position);
-                                } catch (Exception ex) {
-                                    Log.e(TAG, "Error deleting song", ex);
-                                    Util.showErrorDialog(getActivity(), ex);
-                                }
-                            }
-                        });
+                deleteSong(position, song);
                 break;
         }
     }
@@ -159,5 +130,70 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     protected void onSongRemoved(int position) {
         getData().remove(position);
         notifyDataSetChanged();
+    }
+
+    private void addToPlaylist(final Song song) {
+        final List<Playlist> playlists = getDbHelper().queryPlaylists();
+        if (playlists.size() == 0) {
+            Util.showToast(getActivity(), R.string.no_playlists);
+            return;
+        }
+
+        final String[] playlistNames = new String[playlists.size()];
+        for (int i = 0; i < playlists.size(); i++) {
+            Playlist playlist = playlists.get(i);
+            playlistNames[i] = playlist.getName() == null ?
+                    Util.formatDateTime(playlist.getModified())
+                    : playlist.getName() + ": " + Util.formatDateTime(playlist.getModified());
+        }
+        new AlertDialog.Builder(getActivity())
+                .setItems(playlistNames, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        getDbHelper().insertPlaylistSong(playlists.get(which), song);
+                        Util.showToast(getActivity(), R.string.ok);
+                    }
+                })
+                .show();
+    }
+
+    private void deleteSong(final int position, final Song song) {
+        Util.showConfirmDialog(getActivity(),
+                getString(R.string.delete_confirm, song.getArtist(), song.getTitle()),
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.d(TAG, "Deleting song: '" + song + "' (" + song.getId() + ")");
+                        try {
+                            ContentResolver resolver = getActivity().getContentResolver();
+                            Uri uri = song.getContentUri();
+
+                            // Change type to image, otherwise nothing will be deleted.
+                            ContentValues values = new ContentValues();
+                            values.put("media_type", 1);
+                            resolver.update(uri, values, null, null);
+
+                            // Delete song from MediaStore and database.
+                            int rowsAffected = resolver.delete(uri, null, null);
+                            switch (rowsAffected) {
+                                case 0:
+                                    throw new RuntimeException("Song not found");
+                                case 1:
+                                    Log.d(TAG, "Song deleted from MediaStore");
+                                    break;
+                                default:
+                                    throw new RuntimeException("Duplicate song");
+                            }
+                            getDbHelper().deleteSong(song);
+
+                            Util.showToast(getActivity(), R.string.song_deleted);
+                            onSongRemoved(position);
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error deleting song", ex);
+                            Util.showErrorDialog(getActivity(), ex);
+                        }
+                    }
+                });
     }
 }

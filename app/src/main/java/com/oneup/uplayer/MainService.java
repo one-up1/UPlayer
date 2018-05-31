@@ -130,6 +130,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 add(songs, intent.getBooleanExtra(EXTRA_NEXT, false));
                 break;
             case ACTION_RESUME_PLAYLIST:
+                savePlaylist();
                 this.playlist = intent.getParcelableExtra(EXTRA_PLAYLIST);
                 this.songs = dbHelper.queryPlaylistSongs(this.playlist);
                 resumePlaylist();
@@ -194,7 +195,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (playlist != null && playlist.getSongPosition() > 0) {
             Log.d(TAG, "Seeking to playlist position: " + playlist.getSongPosition());
             player.seekTo(playlist.getSongPosition());
-            playlist.setSongPosition(0); //FIXME: Not set to 0?
+            playlist.setSongPosition(0);
         }
 
         player.start();
@@ -348,6 +349,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             dbHelper.insertOrUpdatePlaylist(playlist, songs);
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
+        } finally {
+            playlist = null;
         }
     }
 

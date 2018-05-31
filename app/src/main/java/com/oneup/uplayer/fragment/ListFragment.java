@@ -18,8 +18,6 @@ import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
 
-//TODO: -1 vs 0
-
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements View.OnClickListener {
     protected static final String ARG_SORT_COLUMN = "sort_column";
@@ -56,10 +54,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         dbHelper = new DbHelper(getActivity());
 
         Bundle args = getArguments();
-        if (args == null) {
-            sortColumn = -1;
-        } else {
-            sortColumn = args.getInt(ARG_SORT_COLUMN, -1);
+        if (args != null) {
+            sortColumn = args.getInt(ARG_SORT_COLUMN);
             sortDesc = args.getBoolean(ARG_SORT_DESC);
         }
     }
@@ -140,8 +136,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     protected void setListItemContent(View rootView, int position, T item) {
-        // Set (or hide) sort column value if sort column is specified.
-        if (sortColumn != -1) {
+        // Set (or hide) sort column value if sort columns are specified.
+        if (columns != null && sortColumns != null) {
             TextView tvSortColumnValue = rootView.findViewById(R.id.tvSortColumnValue);
             String sortColumnValue = getSortColumnValue(sortColumn, item);
             if (sortColumnValue == null) {

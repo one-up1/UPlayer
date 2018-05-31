@@ -103,7 +103,6 @@ public class PlaylistActivity extends AppCompatActivity {
                 case R.id.save:
                     final EditText etName = new EditText(getActivity());
                     etName.setHint(R.string.name);
-                    etName.setSelectAllOnFocus(true);
 
                     Playlist playlist = mainService == null ? null : mainService.getPlaylist();
                     if (playlist != null) {

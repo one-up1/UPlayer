@@ -100,16 +100,16 @@ public class QueryFragment extends Fragment implements
         View rootView = inflater.inflate(R.layout.fragment_query, container, false);
 
         etTitle = rootView.findViewById(R.id.etTitle);
-        etTitle.setString(preferences.getString(PREF_TITLE, ""));
+        etTitle.setString(preferences.getString(PREF_TITLE, null));
 
         etArtist = rootView.findViewById(R.id.etArtist);
-        etArtist.setString(preferences.getString(PREF_ARTIST, ""));
+        etArtist.setString(preferences.getString(PREF_ARTIST, null));
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
-        etMinYear.setString(preferences.getString(PREF_MIN_YEAR, ""));
+        etMinYear.setString(preferences.getString(PREF_MIN_YEAR, null));
 
         etMaxYear = rootView.findViewById(R.id.etMaxYear);
-        etMaxYear.setString(preferences.getString(PREF_MAX_YEAR, ""));
+        etMaxYear.setString(preferences.getString(PREF_MAX_YEAR, null));
 
         bMinAdded = rootView.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
@@ -144,10 +144,10 @@ public class QueryFragment extends Fragment implements
         }
 
         etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
-        etMinTimesPlayed.setString(preferences.getString(PREF_MIN_TIMES_PLAYED, ""));
+        etMinTimesPlayed.setString(preferences.getString(PREF_MIN_TIMES_PLAYED, null));
 
         etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
-        etMaxTimesPlayed.setString(preferences.getString(PREF_MAX_TIMES_PLAYED, ""));
+        etMaxTimesPlayed.setString(preferences.getString(PREF_MAX_TIMES_PLAYED, null));
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
         sSortColumn.setSelection(preferences.getInt(PREF_SORT_COLUMN, 0));
@@ -286,17 +286,17 @@ public class QueryFragment extends Fragment implements
         String selection = null;
 
         String title = etTitle.getString();
-        if (title.length() > 0) {
+        if (title != null) {
             selection = Song.TITLE + " LIKE '%" + title + "%'";
         }
 
         String artist = etArtist.getString();
-        if (artist.length() > 0) {
+        if (artist != null) {
             selection = appendSelection(selection, Song.ARTIST + " LIKE '%" + artist + "%'");
         }
 
         String minYear = etMinYear.getString();
-        if (minYear.length() > 0) {
+        if (minYear != null) {
             selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
         }
 
@@ -322,12 +322,12 @@ public class QueryFragment extends Fragment implements
         }
 
         String minTimesPlayed = etMinTimesPlayed.getString();
-        if (minTimesPlayed.length() > 0) {
+        if (minTimesPlayed != null) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + ">=" + minTimesPlayed);
         }
 
         String maxTimesPlayed = etMaxTimesPlayed.getString();
-        if (maxTimesPlayed.length() > 0) {
+        if (maxTimesPlayed != null) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
         }
 

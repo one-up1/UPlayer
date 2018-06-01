@@ -8,8 +8,6 @@ import android.util.AttributeSet;
 
 import java.text.NumberFormat;
 
-//TODO: EditText.getString()/setString() null.
-
 public class EditText extends AppCompatEditText {
     private NumberFormat numberFormat;
     private TextWatcher textWatcher;
@@ -47,17 +45,19 @@ public class EditText extends AppCompatEditText {
     }
 
     public String getString() {
-        return getText().toString().trim();
+        String s = getText().toString().trim();
+        return s.length() == 0 ? null : s;
     }
 
     public void setString(String s) {
         removeTextChangedListener(textWatcher);
-        setText(s);
+        setText(s == null ? "" : s);
         addTextChangedListener(textWatcher);
     }
 
     public int getInt() {
-        return length() == 0 ? 0 : Integer.parseInt(getString());
+        String s = getString();
+        return s == null ? 0 : Integer.parseInt(s);
     }
 
     public void setInt(int i) {
@@ -65,7 +65,8 @@ public class EditText extends AppCompatEditText {
     }
 
     public long getLong() {
-        return length() == 0 ? 0 : Long.parseLong(getString());
+        String s = getString();
+        return s == null ? 0 : Long.parseLong(s);
     }
 
     public void setLong(long l) {

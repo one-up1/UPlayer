@@ -101,33 +101,7 @@ public class PlaylistActivity extends AppCompatActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.save:
-                    final EditText etName = new EditText(getActivity());
-                    etName.setHint(R.string.name);
-
-                    Playlist playlist = mainService == null ? null : mainService.getPlaylist();
-                    if (playlist != null && playlist.getName() != null) {
-                        etName.setString(playlist.getName());
-                    }
-
-                    new AlertDialog.Builder(getActivity())
-                            .setTitle(R.string.save_playlist)
-                            .setView(etName)
-                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if (mainService != null) {
-                                        Playlist playlist = new Playlist();
-
-                                        String name = etName.getString();
-                                        playlist.setName(name.length() == 0 ? null : name);
-
-                                        mainService.setPlaylist(playlist);
-                                        Util.showToast(getActivity(), R.string.ok);
-                                    }
-                                }
-                            })
-                            .show();
+                    savePlaylist();
                     return true;
                 default:
                     return super.onOptionsItemSelected(item);
@@ -193,6 +167,34 @@ public class PlaylistActivity extends AppCompatActivity {
                     getActivity().stopService(new Intent(getActivity(), MainService.class));
                 }
             }
+        }
+
+        private void savePlaylist() {
+            final EditText etName = new EditText(getActivity());
+            etName.setHint(R.string.name);
+
+            Playlist playlist = mainService == null ? null : mainService.getPlaylist();
+            if (playlist != null) {
+                etName.setString(playlist.getName());
+            }
+
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.save_playlist)
+                    .setView(etName)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (mainService != null) {
+                                Playlist playlist = new Playlist();
+                                playlist.setName(etName.getString());
+
+                                mainService.setPlaylist(playlist);
+                                Util.showToast(getActivity(), R.string.ok);
+                            }
+                        }
+                    })
+                    .show();
         }
 
         private void moveUp(int songIndex) {

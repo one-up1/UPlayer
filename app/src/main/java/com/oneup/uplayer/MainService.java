@@ -96,8 +96,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(R.id.ibVolumeUp, ACTION_VOLUME_UP);
 
         //FIXME: Notification icon is always ic_launcher.
-        //FIXME: Remove notification channel ID or create proper channel.
-        notification = new NotificationCompat.Builder(this, TAG)
+        notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setCustomContentView(notificationViews)
                 .setCustomBigContentView(notificationViews)
@@ -225,7 +224,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setPlayPauseResource(R.drawable.ic_play);
         startForeground(1, notification);
 
-        //FIXME: onCompletion not always called or position 0? Only in emulator?
         if (player.getCurrentPosition() == 0) {
             Log.e(TAG, "Current position is 0");
         } else {

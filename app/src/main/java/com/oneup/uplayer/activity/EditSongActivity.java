@@ -114,9 +114,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         switch (item.getItemId()) {
             case R.id.ok:
                 song.setYear(etYear.getInt());
-
-                String tag = etTag.getString();
-                song.setTag(tag.length() == 0 ? null : tag);
+                song.setTag(etTag.getString());
 
                 setResult(RESULT_OK, new Intent()
                         .putExtra(EXTRA_SONG, song));

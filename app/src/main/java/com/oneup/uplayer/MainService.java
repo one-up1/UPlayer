@@ -121,7 +121,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         switch (action) {
             case ACTION_PLAY:
                 savePlaylist();
-                this.songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
+                songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
                 play(intent.getIntExtra(EXTRA_SONG_INDEX, 0));
                 break;
             case ACTION_ADD:
@@ -130,8 +130,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 break;
             case ACTION_RESUME_PLAYLIST:
                 savePlaylist();
-                this.playlist = intent.getParcelableExtra(EXTRA_PLAYLIST);
-                this.songs = dbHelper.queryPlaylistSongs(this.playlist);
+                playlist = intent.getParcelableExtra(EXTRA_PLAYLIST);
                 resumePlaylist();
                 break;
             case ACTION_PREVIOUS:
@@ -353,25 +352,27 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void resumePlaylist() {
-        Log.d(TAG, "MainService.resumePlaylist()");
-        if (playlist.getSongIndex() <= songs.size() - 1) {
-            if (playlist.getSongPosition() < songs.get(songIndex).getDuration()) {
-                playlist.setSongPosition(playlist.getSongPosition() - RESUME_POSITION_OFFSET);
-                if (playlist.getSongPosition() < RESUME_POSITION_OFFSET) {
-                    Log.d(TAG, "Ignoring song position " + playlist.getSongPosition());
-                    playlist.setSongPosition(0);
-                }
-            } else {
-                Log.d(TAG, "Song position equals duration");
-                playlist.setSongIndex(playlist.getSongIndex() == songs.size() - 1 ? 0
-                        : playlist.getSongIndex() + 1);
-                playlist.setSongPosition(0);
-            }
-        } else {
+        Log.d(TAG, "MainService.resumePlaylist(" + playlist.getName() + "," +
+                playlist.getSongIndex() + "," + playlist.getSongPosition() + ")");
+        songs = dbHelper.queryPlaylistSongs(playlist);
+
+        if (playlist.getSongIndex() >= songs.size()) {
             Log.w(TAG, "Invalid song index: " + playlist.getSongIndex());
             playlist.setSongIndex(0);
             playlist.setSongPosition(0);
+        } else if (playlist.getSongPosition() <= RESUME_POSITION_OFFSET * 2) {
+            Log.d(TAG, "Ignoring low song position");
+            playlist.setSongPosition(0);
+        } else if (playlist.getSongPosition() >=
+                songs.get(playlist.getSongIndex()).getDuration() - RESUME_POSITION_OFFSET) {
+            Log.d(TAG, "Ignoring high song position");
+            playlist.setSongIndex(playlist.getSongIndex() == songs.size() - 1 ? 0
+                    : playlist.getSongIndex() + 1);
+            playlist.setSongPosition(0);
+        } else {
+            playlist.setSongPosition(playlist.getSongPosition() - RESUME_POSITION_OFFSET);
         }
+
         play(playlist.getSongIndex());
     }
 

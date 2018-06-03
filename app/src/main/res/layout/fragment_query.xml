@@ -29,21 +29,13 @@
         app:layout_columnSpan="2"
         app:layout_columnWeight="1" />
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etMinYear"
+    <org.florescu.android.rangeseekbar.RangeSeekBar
+        android:id="@+id/rsbYear"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="number"
-        android:hint="@string/min_year"
-        app:layout_columnWeight="1" />
-
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etMaxYear"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/max_year"
-        android:inputType="number"
-        app:layout_columnWeight="1" />
+        app:layout_columnSpan="2"
+        app:layout_columnWeight="1"
+        app:textAboveThumbsColor="@color/range_seek_bar" />
 
     <Button
         android:id="@+id/bMinAdded"
@@ -73,21 +65,13 @@
         android:text="@string/max_last_played"
         app:layout_columnWeight="1" />
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etMinTimesPlayed"
+    <org.florescu.android.rangeseekbar.RangeSeekBar
+        android:id="@+id/rsbTimesPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="@string/min_times_played"
-        android:inputType="number"
-        app:layout_columnWeight="1" />
-
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etMaxTimesPlayed"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/max_times_played"
-        android:inputType="number"
-        app:layout_columnWeight="1" />
+        app:layout_columnSpan="2"
+        app:layout_columnWeight="1"
+        app:textAboveThumbsColor="@color/range_seek_bar" />
 
     <Spinner
         android:id="@+id/sSortColumn"

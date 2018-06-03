@@ -25,8 +25,11 @@ import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
+
+import org.florescu.android.rangeseekbar.RangeSeekBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +55,12 @@ public class QueryFragment extends Fragment implements
     private static final String PREF_SORT_DESC = "sort_desc";
     private static final String PREF_TAGS = "tags";
 
+    //TODO: Dynamic min/max values for RangeSeekBars and display label.
+    private static final int MIN_YEAR = 1975;
+    private static final int MAX_YEAR = new Calendar().getYear();
+    private static final int MIN_TIMES_PLAYED = 0;
+    private static final int MAX_TIMES_PLAYED = 1000;
+
     private static final int REQUEST_SELECT_MIN_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
@@ -62,14 +71,12 @@ public class QueryFragment extends Fragment implements
 
     private EditText etTitle;
     private EditText etArtist;
-    private EditText etMinYear;
-    private EditText etMaxYear;
+    private RangeSeekBar<Integer> rsbYear;
     private Button bMinAdded;
     private Button bMaxAdded;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
-    private EditText etMinTimesPlayed;
-    private EditText etMaxTimesPlayed;
+    private RangeSeekBar<Integer> rsbTimesPlayed;
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
     private Button bQuery;
@@ -104,11 +111,11 @@ public class QueryFragment extends Fragment implements
         etArtist = rootView.findViewById(R.id.etArtist);
         etArtist.setString(preferences.getString(PREF_ARTIST, null));
 
-        etMinYear = rootView.findViewById(R.id.etMinYear);
-        etMinYear.setString(preferences.getString(PREF_MIN_YEAR, null));
-
-        etMaxYear = rootView.findViewById(R.id.etMaxYear);
-        etMaxYear.setString(preferences.getString(PREF_MAX_YEAR, null));
+        rsbYear = rootView.findViewById(R.id.rsbYear);
+        rsbYear.setRangeValues(MIN_YEAR, MAX_YEAR);
+        rsbYear.setNotifyWhileDragging(true);
+        rsbYear.setSelectedMinValue(preferences.getInt(PREF_MIN_YEAR, MIN_YEAR));
+        rsbYear.setSelectedMaxValue(preferences.getInt(PREF_MAX_YEAR, MAX_YEAR));
 
         bMinAdded = rootView.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
@@ -142,11 +149,13 @@ public class QueryFragment extends Fragment implements
             bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
         }
 
-        etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
-        etMinTimesPlayed.setString(preferences.getString(PREF_MIN_TIMES_PLAYED, null));
-
-        etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
-        etMaxTimesPlayed.setString(preferences.getString(PREF_MAX_TIMES_PLAYED, null));
+        rsbTimesPlayed = rootView.findViewById(R.id.rsbTimesPlayed);
+        rsbTimesPlayed.setRangeValues(MIN_TIMES_PLAYED, MAX_TIMES_PLAYED);
+        rsbTimesPlayed.setNotifyWhileDragging(true);
+        rsbTimesPlayed.setSelectedMinValue(preferences.getInt(
+                PREF_MIN_TIMES_PLAYED, MIN_TIMES_PLAYED));
+        rsbTimesPlayed.setSelectedMaxValue(preferences.getInt(
+                PREF_MAX_TIMES_PLAYED, MAX_TIMES_PLAYED));
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
         sSortColumn.setSelection(preferences.getInt(PREF_SORT_COLUMN, 0));
@@ -294,13 +303,13 @@ public class QueryFragment extends Fragment implements
             selection = appendSelection(selection, Song.ARTIST + " LIKE '%" + artist + "%'");
         }
 
-        String minYear = etMinYear.getString();
-        if (minYear != null) {
+        int minYear = rsbYear.getSelectedMinValue();
+        if (minYear > MIN_YEAR) {
             selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
         }
 
-        String maxYear = etMaxYear.getString();
-        if (maxYear != null) {
+        int maxYear = rsbYear.getSelectedMaxValue();
+        if (maxYear < MAX_YEAR) {
             selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
         }
         
@@ -320,13 +329,13 @@ public class QueryFragment extends Fragment implements
             selection = appendSelection(selection, Song.LAST_PLAYED + "<=" + maxLastPlayed);
         }
 
-        String minTimesPlayed = etMinTimesPlayed.getString();
-        if (minTimesPlayed != null) {
+        int minTimesPlayed = rsbTimesPlayed.getSelectedMinValue();
+        if (minTimesPlayed > MIN_TIMES_PLAYED) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + ">=" + minTimesPlayed);
         }
 
-        String maxTimesPlayed = etMaxTimesPlayed.getString();
-        if (maxTimesPlayed != null) {
+        int maxTimesPlayed = rsbTimesPlayed.getSelectedMaxValue();
+        if (maxTimesPlayed < MAX_TIMES_PLAYED) {
             selection = appendSelection(selection, Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
         }
 
@@ -605,12 +614,12 @@ public class QueryFragment extends Fragment implements
         preferences.edit()
                 .putString(PREF_TITLE, etTitle.getString())
                 .putString(PREF_ARTIST, etArtist.getString())
-                .putString(PREF_MIN_YEAR, etMinYear.getString())
-                .putString(PREF_MAX_YEAR, etMaxYear.getString())
+                .putInt(PREF_MIN_YEAR, rsbYear.getSelectedMinValue())
+                .putInt(PREF_MAX_YEAR, rsbYear.getSelectedMaxValue())
                 .putLong(PREF_MIN_ADDED, minAdded)
                 .putLong(PREF_MAX_ADDED, maxAdded)
-                .putString(PREF_MIN_TIMES_PLAYED, etMinTimesPlayed.getString())
-                .putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString())
+                .putInt(PREF_MIN_TIMES_PLAYED, rsbTimesPlayed.getSelectedMinValue())
+                .putInt(PREF_MAX_TIMES_PLAYED, rsbTimesPlayed.getSelectedMaxValue())
                 .putLong(PREF_MIN_LAST_PLAYED, minLastPlayed)
                 .putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed)
                 .putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition())

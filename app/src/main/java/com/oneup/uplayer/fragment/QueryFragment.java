@@ -1,13 +1,11 @@
 package com.oneup.uplayer.fragment;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.ArraySet;
@@ -17,14 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
-import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -35,10 +31,6 @@ import com.oneup.uplayer.widget.EditText;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import android.content.Context;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.DialogFragment;
 
 //TODO: Update lists after syncing database or restoring backup
 
@@ -255,7 +247,7 @@ public class QueryFragment extends Fragment implements
             showTags();
         } else if (v == bStatistics) {
             try {
-                dbHelper.queryStats(null).showDialog(getActivity(), getString(R.string.statistics));
+                dbHelper.queryStats(null).showDialog(getActivity(), null);
             } catch (Exception ex) {
                 Log.e(TAG, "Error querying stats", ex);
                 Util.showErrorDialog(getActivity(), ex);
@@ -445,7 +437,7 @@ public class QueryFragment extends Fragment implements
         tagsDialog.show();
     }
 
-    public static class PlaylistsFragment extends DialogFragment {
+    /*public static class PlaylistsFragment extends DialogFragment {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.dialog_playlists, null);
@@ -456,15 +448,15 @@ public class QueryFragment extends Fragment implements
         }
     }
 
-    PlaylistsFragment pf = PlaylistsFragment.newInstance();
+    PlaylistsFragment pf = PlaylistsFragment.newInstance();*/
     private void showPlaylists() {
 
-        pf.setRetainInstance(true);
+        /*pf.setRetainInstance(true);
         pf.show(getFragmentManager(), TAG);
 
-        if(true)return;
+        if(true)return;*/
 
-        //TODO: Improve (playlists) dialog, titles.
+        //TODO: Improve (playlists) dialog, titles, dimens.
         final List<Playlist> playlists = dbHelper.queryPlaylists();
         if (playlists.size() == 0) {
             Util.showToast(getActivity(), R.string.no_playlists);

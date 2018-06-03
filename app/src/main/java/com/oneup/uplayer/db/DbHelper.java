@@ -490,7 +490,6 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.backup()");
         JSONObject backup = new JSONObject();
 
-        //TODO: Methods for backup up/restoring tables?
         try (SQLiteDatabase db = getReadableDatabase()) {
             // Backup songs table.
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,

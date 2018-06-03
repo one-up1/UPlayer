@@ -48,7 +48,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final String PREF_VOLUME = "volume";
 
     private static final int MAX_VOLUME = 100;
-    private static final int RESUME_POSITION_OFFSET = 8000;
+    private static final int RESUME_POSITION_OFFSET = 12000;
 
     private final IBinder mainBinder = new MainBinder();
 
@@ -325,7 +325,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (prepared) {
             update();
         } else {
-            play(songs.size() - 1);
+            play(this.songs.size() - 1);
         }
     }
 
@@ -355,10 +355,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void resumePlaylist() {
         Log.d(TAG, "MainService.resumePlaylist()");
         if (playlist.getSongIndex() <= songs.size() - 1) {
-            //TODO: Test restoring playlist song position.
             if (playlist.getSongPosition() < songs.get(songIndex).getDuration()) {
                 playlist.setSongPosition(playlist.getSongPosition() - RESUME_POSITION_OFFSET);
                 if (playlist.getSongPosition() < RESUME_POSITION_OFFSET) {
+                    Log.d(TAG, "Ignoring song position " + playlist.getSongPosition());
                     playlist.setSongPosition(0);
                 }
             } else {

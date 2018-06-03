@@ -65,11 +65,13 @@ public class Stats {
     }
 
     public void showDialog(Context context, String title) {
-        AlertDialog dialog = new AlertDialog.Builder(context)
-                .setTitle(title)
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
                 .setView(R.layout.dialog_stats)
-                .setPositiveButton(R.string.ok, null)
-                .show();
+                .setPositiveButton(R.string.ok, null);
+        if (title != null) {
+            dialogBuilder.setTitle(title);
+        }
+        AlertDialog dialog = dialogBuilder.show();
 
         GridLayout grid = dialog.findViewById(R.id.grid);
 

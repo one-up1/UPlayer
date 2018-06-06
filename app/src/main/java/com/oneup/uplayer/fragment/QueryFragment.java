@@ -446,20 +446,19 @@ public class QueryFragment extends Fragment implements
         tagsDialog.show();
     }
 
-    /*public static class PlaylistsFragment extends DialogFragment {
+    /*public static class PlaylistsDialogFragment extends DialogFragment {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.dialog_playlists, null);
         }
 
-        public static PlaylistsFragment newInstance() {
-            return new PlaylistsFragment();
+        public static PlaylistsDialogFragment newInstance() {
+            return new PlaylistsDialogFragment();
         }
     }
 
-    PlaylistsFragment pf = PlaylistsFragment.newInstance();*/
+    PlaylistsDialogFragment pf = PlaylistsDialogFragment.newInstance();*/
     private void showPlaylists() {
-
         /*pf.setRetainInstance(true);
         pf.show(getFragmentManager(), TAG);
 
@@ -634,4 +633,53 @@ public class QueryFragment extends Fragment implements
     private static String appendSelection(String selection, String s) {
         return selection == null ? s : selection + " AND " + s;
     }
+
+    /*public static class PlaylistsFragment extends ListFragment<Playlist> {
+        public PlaylistsFragment() {
+            super(R.layout.list_item_playlist, 0, 0, null, null);
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            Log.d(TAG, "PlaylistsFragment.onCreate()");
+            super.onCreate(savedInstanceState);
+            reloadData();
+        }
+
+        @Override
+        protected ArrayList<Playlist> loadData() {
+            Log.d(TAG, "PlaylistsFragment.loadData()");
+            return getDbHelper().queryPlaylists();
+        }
+
+        @Override
+        protected void setListItemContent(View rootView, int position, Playlist playlist) {
+            super.setListItemContent(rootView, position, playlist);
+
+            TextView tvName = rootView.findViewById(R.id.tvName);
+            if (playlist.getName() == null) {
+                tvName.setVisibility(View.GONE);
+            } else {
+                tvName.setText(playlist.getName());
+                tvName.setVisibility(View.VISIBLE);
+            }
+
+            TextView tvModified = rootView.findViewById(R.id.tvModified);
+            tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
+
+            setListItemButton(rootView, R.id.ibQuery);
+        }
+
+        @Override
+        protected void onListItemClick(int position, Playlist playlist) {
+        }
+
+        @Override
+        protected void onListItemButtonClick(int buttonId, int position, Playlist playlist) {
+            switch (buttonId) {
+                case R.id.ibQuery:
+                    break;
+            }
+        }
+    }*/
 }

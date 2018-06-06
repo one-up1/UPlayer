@@ -129,7 +129,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 add(songs, intent.getBooleanExtra(EXTRA_NEXT, false));
                 break;
             case ACTION_RESUME_PLAYLIST:
-                savePlaylist();
                 playlist = intent.getParcelableExtra(EXTRA_PLAYLIST);
                 resumePlaylist();
                 break;

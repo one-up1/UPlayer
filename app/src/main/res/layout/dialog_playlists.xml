@@ -4,10 +4,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <fragment
+    <!--<fragment
         android:id="@+id/flContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.oneup.uplayer.fragment.ArtistsFragment" />
+        class="com.oneup.uplayer.fragment.QueryFragment$PlaylistsFragment" />-->
 
 </LinearLayout>

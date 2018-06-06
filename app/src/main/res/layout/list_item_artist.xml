@@ -20,9 +20,9 @@
         android:id="@+id/tvSortColumnValue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="end"
         android:paddingStart="@dimen/list_item_info_padding_start"
         android:paddingEnd="@dimen/list_item_info_padding_end"
-        android:gravity="end"
         android:textColor="@color/list_item_text"
         android:textSize="@dimen/list_item_text_small" />
 

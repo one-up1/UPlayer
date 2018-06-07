@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         viewPager = findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(3);
+        viewPager.setCurrentItem(2);
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -92,16 +92,16 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     }
                     return bookmarksFragment;
                 case 2:
+                    if (artistsFragment == null) {
+                        artistsFragment = ArtistsFragment.newInstance(0, false);
+                    }
+                    return artistsFragment;
+                case 3:
                     if (lastAddedFragment == null) {
                         lastAddedFragment = ArtistsFragment.newInstance(
                                 ArtistsFragment.SORT_COLUMN_LAST_ADDED, true);
                     }
                     return lastAddedFragment;
-                case 3:
-                    if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(0, false);
-                    }
-                    return artistsFragment;
                 case 4:
                     if (lastPlayedFragment == null) {
                         lastPlayedFragment = ArtistsFragment.newInstance(
@@ -132,9 +132,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 case 1:
                     return getString(R.string.bookmarks);
                 case 2:
-                    return getString(R.string.last_added);
-                case 3:
                     return getString(R.string.artists);
+                case 3:
+                    return getString(R.string.last_added);
                 case 4:
                     return getString(R.string.last_played);
                 case 5:

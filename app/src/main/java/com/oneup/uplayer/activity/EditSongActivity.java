@@ -154,14 +154,14 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View v) {
         if (v == bAdded) {
             Intent intent = new Intent(this, DateTimeActivity.class);
-            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.added);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_added);
             if (song.getAdded() > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getAdded());
             }
             startActivityForResult(intent, REQUEST_SELECT_ADDED);
         } else if (v == bBookmarked) {
             Intent intent = new Intent(this, DateTimeActivity.class);
-            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.bookmarked);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_bookmarked);
             if (song.getBookmarked() > 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getBookmarked());
             }

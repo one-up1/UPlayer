@@ -41,29 +41,56 @@
         android:id="@+id/bMinAdded"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/min_added"
+        android:text="@string/select_min_added"
         app:layout_columnWeight="1" />
 
     <Button
         android:id="@+id/bMaxAdded"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/max_added"
+        android:text="@string/select_max_added"
         app:layout_columnWeight="1" />
 
-    <Button
+    <RadioGroup
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_columnSpan="2"
+        app:layout_columnWeight="1">
+
+        <RadioButton
+            android:id="@+id/rbAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/all" />
+
+        <RadioButton
+            android:id="@+id/rbBookmarked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bookmarked" />
+
+        <RadioButton
+            android:id="@+id/rbNotBookmarked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/not_bookmarked" />
+
+    </RadioGroup>
+
+    <!--<Button
         android:id="@+id/bMinLastPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/min_last_played"
+        android:text="@string/select_min_last_played"
         app:layout_columnWeight="1" />
 
     <Button
         android:id="@+id/bMaxLastPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/max_last_played"
-        app:layout_columnWeight="1" />
+        android:text="@string/select_max_last_played"
+        app:layout_columnWeight="1" />-->
 
     <org.florescu.android.rangeseekbar.RangeSeekBar
         android:id="@+id/rsbTimesPlayed"
@@ -98,7 +125,7 @@
         android:id="@+id/bTags"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/tags"
+        android:text="@string/select_tags"
         app:layout_columnWeight="1" />
 
     <Button
@@ -112,7 +139,7 @@
         android:id="@+id/bPlaylists"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/playlists"
+        android:text="@string/select_playlists"
         app:layout_columnWeight="1" />
 
     <Button

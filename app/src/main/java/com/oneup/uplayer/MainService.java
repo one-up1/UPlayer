@@ -451,7 +451,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         String left = Util.formatDuration(Song.getDuration(songs, songIndex));
         if (songIndex < songs.size() - 1) {
-            left += " / " + Util.formatDuration(Song.getDuration(songs, songIndex + 1));
+            left += " / " + Util.formatDuration(Song.getDuration(songs, songIndex + 1)) +
+                    " / " + (songs.size() - songIndex - 1);
         }
         notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
                 R.string.playlist_position, songIndex + 1, songs.size(), left));

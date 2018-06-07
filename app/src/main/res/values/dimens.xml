@@ -17,6 +17,8 @@
     <dimen name="list_item_button_height_large">42dp</dimen>
     <dimen name="list_item_button_width_small">42dp</dimen>
     <dimen name="list_item_button_height_small">21dp</dimen>
+    <dimen name="list_item_buttons_padding_start">12dp</dimen>
+    <dimen name="list_item_buttons_padding_end">4dp</dimen>
 
     <dimen name="notification_padding">4dp</dimen>
     <dimen name="notification_button_width">40dp</dimen>

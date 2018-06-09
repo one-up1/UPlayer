@@ -6,8 +6,8 @@ android {
         applicationId "com.oneup.uplayer"
         minSdkVersion 23
         targetSdkVersion 27
-        versionCode 246
-        versionName "5.5.246"
+        versionCode 247
+        versionName "5.5.247"
     }
     buildTypes {
         release {
@@ -23,6 +23,4 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:gridlayout-v7:27.1.1'
-
-    implementation 'org.florescu.android.rangeseekbar:rangeseekbar-library:0.3.0'
 }

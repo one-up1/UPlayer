@@ -29,13 +29,21 @@
         app:layout_columnSpan="2"
         app:layout_columnWeight="1" />
 
-    <org.florescu.android.rangeseekbar.RangeSeekBar
-        android:id="@+id/rsbYear"
+    <com.oneup.uplayer.widget.EditText
+        android:id="@+id/etMinYear"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_columnSpan="2"
-        app:layout_columnWeight="1"
-        app:textAboveThumbsColor="@color/range_seek_bar" />
+        android:inputType="number"
+        android:hint="@string/min_year"
+        app:layout_columnWeight="1" />
+
+    <com.oneup.uplayer.widget.EditText
+        android:id="@+id/etMaxYear"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/max_year"
+        android:inputType="number"
+        app:layout_columnWeight="1" />
 
     <Button
         android:id="@+id/bMinAdded"
@@ -78,7 +86,7 @@
 
     </RadioGroup>
 
-    <!--<Button
+    <Button
         android:id="@+id/bMinLastPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -90,15 +98,23 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/select_max_last_played"
-        app:layout_columnWeight="1" />-->
+        app:layout_columnWeight="1" />
 
-    <org.florescu.android.rangeseekbar.RangeSeekBar
-        android:id="@+id/rsbTimesPlayed"
+    <com.oneup.uplayer.widget.EditText
+        android:id="@+id/etMinTimesPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_columnSpan="2"
-        app:layout_columnWeight="1"
-        app:textAboveThumbsColor="@color/range_seek_bar" />
+        android:hint="@string/min_times_played"
+        android:inputType="number"
+        app:layout_columnWeight="1" />
+
+    <com.oneup.uplayer.widget.EditText
+        android:id="@+id/etMaxTimesPlayed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/max_times_played"
+        android:inputType="number"
+        app:layout_columnWeight="1" />
 
     <Spinner
         android:id="@+id/sSortColumn"

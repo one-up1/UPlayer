@@ -17,10 +17,6 @@ public class Calendar {
         calendar.setTimeInMillis(TimeUnit.SECONDS.toMillis(seconds));
     }
 
-    public int getYear() {
-        return calendar.get(java.util.Calendar.YEAR);
-    }
-
     public void setDate(int year, int month, int dayOfMonth) {
         calendar.set(java.util.Calendar.YEAR, year);
         calendar.set(java.util.Calendar.MONTH, month);

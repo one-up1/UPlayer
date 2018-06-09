@@ -86,12 +86,14 @@
     <string name="next">Next</string>
     <string name="stop">Stop</string>
 
-    <string name="stats_song_count">Song count:</string>
-    <string name="stats_artist_count">Artist count: </string>
-    <string name="stats_songs_played">Songs played:</string>
-    <string name="stats_songs_unplayed">Songs unplayed:</string>
-    <string name="stats_songs_tagged">Songs tagged:</string>
-    <string name="stats_songs_untagged">Songs untagged:</string>
+    <string name="stats_song_count">Songs:</string>
+    <string name="stats_artist_count">Artists: </string>
+    <string name="stats_songs_played">Played:</string>
+    <string name="stats_songs_unplayed">Unplayed:</string>
+    <string name="stats_songs_bookmarked">Bookmarked:</string>
+    <string name="stats_songs_not_bookmarked">Not bookmarked:</string>
+    <string name="stats_songs_tagged">Tagged:</string>
+    <string name="stats_songs_untagged">Untagged:</string>
     <string name="stats_last_added">Last added:</string>
     <string name="stats_last_played">Last played:</string>
     <string name="stats_times_played">Times played:</string>

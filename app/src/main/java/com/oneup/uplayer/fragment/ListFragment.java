@@ -100,6 +100,22 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         onListItemButtonClick(v.getId(), position, data.get(position));
     }
 
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public void setSortColumn(int sortColumn) {
+        this.sortColumn = sortColumn;
+    }
+
+    public boolean isSortDesc() {
+        return sortDesc;
+    }
+
+    public void setSortDesc(boolean sortDesc) {
+        this.sortDesc = sortDesc;
+    }
+
     public void reverseSortOrder() {
         sortDesc = !sortDesc;
         reloadData();
@@ -172,22 +188,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected void setSortColumns(String[] sortColumns) {
         this.sortColumns = sortColumns;
-    }
-
-    protected int getSortColumn() {
-        return sortColumn;
-    }
-
-    protected void setSortColumn(int sortColumn) {
-        this.sortColumn = sortColumn;
-    }
-
-    protected boolean isSortDesc() {
-        return sortDesc;
-    }
-
-    protected void setSortDesc(boolean sortDesc) {
-        this.sortDesc = sortDesc;
     }
 
     protected String getOrderBy() {

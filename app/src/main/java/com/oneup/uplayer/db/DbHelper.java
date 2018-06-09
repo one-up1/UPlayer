@@ -412,6 +412,10 @@ public class DbHelper extends SQLiteOpenHelper {
                     "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + ">0",
                     artist, true), artistIdWhereArgs));
 
+            stats.setSongsBookmarked(queryInt(db, appendWhereArtistId(
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.BOOKMARKED + ">0",
+                    artist, true), artistIdWhereArgs));
+
             stats.setSongsTagged(queryInt(db, appendWhereArtistId(
                     "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NOT NULL",
                     artist, true), artistIdWhereArgs));

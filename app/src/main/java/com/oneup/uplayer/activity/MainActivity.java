@@ -1,6 +1,8 @@
 package com.oneup.uplayer.activity;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -21,6 +23,12 @@ import com.oneup.uplayer.fragment.SongsFragment;
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
 
+    private static final String PREF_CURRENT_ITEM = "current_item";
+    private static final String PREF_BOOKMARKS_SORT_COLUMN = "bookmarks_sort_column";
+    private static final String PREF_BOOKMARKS_SORT_DESC = "bookmarks_sort_desc";
+
+    private SharedPreferences preferences;
+
     private SectionsPagerAdapter sectionsPagerAdapter;
     private ViewPager viewPager;
 
@@ -30,11 +38,13 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        preferences = getPreferences(Context.MODE_PRIVATE);
+
         sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         viewPager = findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(2);
+        viewPager.setCurrentItem(preferences.getInt(PREF_CURRENT_ITEM, 2));
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -45,6 +55,19 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             Log.d(TAG, "Requesting WRITE_EXTERNAL_STORAGE permission");
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "MainActivity.onDestroy()");
+        preferences.edit()
+                .putInt(PREF_CURRENT_ITEM, viewPager.getCurrentItem())
+                .putInt(PREF_BOOKMARKS_SORT_COLUMN,
+                        sectionsPagerAdapter.bookmarksFragment.getSortColumn())
+                .putBoolean(PREF_BOOKMARKS_SORT_DESC,
+                        sectionsPagerAdapter.bookmarksFragment.isSortDesc())
+                .apply();
+        super.onDestroy();
     }
 
     @Override
@@ -88,7 +111,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (bookmarksFragment == null) {
                         bookmarksFragment = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                SongsFragment.SORT_COLUMN_BOOKMARKED, true);
+                                preferences.getInt(PREF_BOOKMARKS_SORT_COLUMN,
+                                        SongsFragment.SORT_COLUMN_BOOKMARKED),
+                                preferences.getBoolean(PREF_BOOKMARKS_SORT_DESC, true));
+
                     }
                     return bookmarksFragment;
                 case 2:

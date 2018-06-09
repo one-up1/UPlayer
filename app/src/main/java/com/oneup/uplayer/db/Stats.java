@@ -16,6 +16,8 @@ public class Stats {
     private int artistCount;
     private int songsPlayed;
     private int songsUnplayed;
+    private int songsBookmarked;
+    private int songsNotBookmarked;
     private int songsTagged;
     private int songsUntagged;
     private long lastAdded;
@@ -41,6 +43,11 @@ public class Stats {
     void setSongsPlayed(int songsPlayed) {
         this.songsPlayed = songsPlayed;
         songsUnplayed = songCount - songsPlayed;
+    }
+
+    void setSongsBookmarked(int songsBookmarked) {
+        this.songsBookmarked = songsBookmarked;
+        songsNotBookmarked = songCount - songsBookmarked;
     }
 
     void setSongsTagged(int songsTagged) {
@@ -90,6 +97,12 @@ public class Stats {
             addDialogRow(context, grid, R.string.stats_songs_unplayed, songsUnplayed +
                     " (" + Util.formatPercent(songsUnplayed, songCount) + ")");
 
+            addDialogRow(context, grid, R.string.stats_songs_bookmarked, songsBookmarked +
+                    " (" + Util.formatPercent(songsBookmarked, songCount) + ")");
+
+            addDialogRow(context, grid, R.string.stats_songs_not_bookmarked, songsNotBookmarked +
+                    " (" + Util.formatPercent(songsNotBookmarked, songCount) + ")");
+
             addDialogRow(context, grid, R.string.stats_songs_tagged, songsTagged +
                     " (" + Util.formatPercent(songsTagged, songCount) + ")");
 
@@ -109,7 +122,7 @@ public class Stats {
 
         if (timesPlayed > 0) {
             addDialogRow(context, grid, R.string.stats_times_played, timesPlayed +
-                    " (" + Util.formatDuration(playedDuration) + ")");
+                    " (" + Util.formatDuration(playedDuration) + ")\n");
         }
 
         if (songsPlayed > 0) {

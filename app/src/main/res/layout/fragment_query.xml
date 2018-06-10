@@ -155,7 +155,7 @@
         android:id="@+id/bPlaylists"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/select_playlists"
+        android:text="@string/playlists"
         app:layout_columnWeight="1" />
 
     <Button

@@ -150,8 +150,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         super.setListItemContent(rootView, position, song);
 
         // Set play next and play last buttons.
-        setListItemButton(rootView, R.id.ibPlayNext);
-        setListItemButton(rootView, R.id.ibPlayLast);
+        setListItemViewOnClickListener(rootView, R.id.ibPlayNext);
+        setListItemViewOnClickListener(rootView, R.id.ibPlayLast);
     }
 
     @Override
@@ -189,8 +189,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     }
 
     @Override
-    protected void onListItemButtonClick(int buttonId, int position, Song song) {
-        switch (buttonId) {
+    protected void onListItemViewClick(int viewId, int position, Song song) {
+        switch (viewId) {
             case R.id.ibPlayNext:
                 add(song, true);
                 Util.showToast(getActivity(), R.string.playing_song_next, song);

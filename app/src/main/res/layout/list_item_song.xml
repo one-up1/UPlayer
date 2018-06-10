@@ -88,7 +88,7 @@
                 android:layout_width="@dimen/list_item_button_width_large"
                 android:layout_height="@dimen/list_item_button_height_large"
                 android:background="@android:color/transparent"
-                android:src="@drawable/ic_play_song_next"
+                android:src="@drawable/ic_list_item_play_next"
                 android:contentDescription="@string/play_next"
                 android:paddingStart="@dimen/list_item_buttons_padding_start" />
 
@@ -97,7 +97,7 @@
                 android:layout_width="@dimen/list_item_button_width_large"
                 android:layout_height="@dimen/list_item_button_height_large"
                 android:background="@android:color/transparent"
-                android:src="@drawable/ic_play_song_last"
+                android:src="@drawable/ic_list_item_play_last"
                 android:contentDescription="@string/play_last"
                 android:paddingEnd="@dimen/list_item_buttons_padding_end" />
 

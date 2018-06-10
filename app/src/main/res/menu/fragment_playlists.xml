@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/play_next"
-        android:title="@string/play_next"
-        android:icon="@drawable/ic_menu_play_next"
+        android:id="@+id/add"
+        android:title="@string/add"
+        android:icon="@drawable/ic_menu_add"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/play_last"
-        android:title="@string/play_last"
-        android:icon="@drawable/ic_menu_play_last"
+        android:id="@+id/query"
+        android:title="@string/query"
+        android:icon="@drawable/ic_menu_query"
         app:showAsAction="ifRoom" />
 
 </menu>

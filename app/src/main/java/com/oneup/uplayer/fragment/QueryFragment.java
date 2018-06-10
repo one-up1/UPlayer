@@ -19,9 +19,9 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 
-import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
+import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -29,7 +29,6 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +58,7 @@ public class QueryFragment extends Fragment implements
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
+    private static final int REQUEST_SELECT_PLAYLISTS = 5;
 
     private SharedPreferences preferences;
     private DbHelper dbHelper;
@@ -92,7 +92,6 @@ public class QueryFragment extends Fragment implements
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "QueryFragment.onCreate()");
         super.onCreate(savedInstanceState);
 
         preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -214,6 +213,10 @@ public class QueryFragment extends Fragment implements
                     maxLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
                     break;
+                case REQUEST_SELECT_PLAYLISTS:
+                    query(null, data.<Playlist>getParcelableArrayListExtra(
+                            PlaylistsActivity.EXTRA_PLAYLISTS));
+                    break;
             }
         }
     }
@@ -270,7 +273,8 @@ public class QueryFragment extends Fragment implements
                 Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bPlaylists) {
-            showPlaylists();
+            startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class),
+                    REQUEST_SELECT_PLAYLISTS);
         } else if (v == bSyncDatabase) {
             syncDatabase();
         } else if (v == bBackup) {
@@ -460,94 +464,6 @@ public class QueryFragment extends Fragment implements
         tagsDialog.show();
     }
 
-    /*public static class PlaylistsDialogFragment extends DialogFragment {
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.dialog_playlists, null);
-        }
-
-        public static PlaylistsDialogFragment newInstance() {
-            return new PlaylistsDialogFragment();
-        }
-    }
-
-    PlaylistsDialogFragment pf = PlaylistsDialogFragment.newInstance();*/
-    private void showPlaylists() {
-        /*pf.setRetainInstance(true);
-        pf.show(getFragmentManager(), TAG);
-
-        if(true)return;*/
-
-        //TODO: Improve (playlists) dialog, titles, dimens.
-        final List<Playlist> playlists = dbHelper.queryPlaylists();
-        if (playlists.size() == 0) {
-            Util.showToast(getActivity(), R.string.no_playlists);
-            return;
-        }
-
-        final String[] playlistNames = new String[playlists.size()];
-        for (int i = 0; i < playlists.size(); i++) {
-            Playlist playlist = playlists.get(i);
-            playlistNames[i] = playlist.getName() == null ?
-                    Util.formatDateTime(playlist.getModified())
-                    : playlist.getName() + ": " + Util.formatDateTime(playlist.getModified());
-        }
-        final boolean[] checkedPlaylists = new boolean[playlistNames.length];
-        new AlertDialog.Builder(getActivity())
-                .setMultiChoiceItems(playlistNames, checkedPlaylists,
-                        new DialogInterface.OnMultiChoiceClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int which, boolean isChecked) {
-                                checkedPlaylists[which] = isChecked;
-                            }
-                        })
-                .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        for (int i = 0; i < checkedPlaylists.length; i++) {
-                            if (checkedPlaylists[i] && playlists.get(i).getId() > 1) {
-                                dbHelper.deletePlaylist(playlists.get(i));
-                            }
-                        }
-                    }
-                })
-                .setNegativeButton(R.string.resume_playlist,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                for (int i = 0; i < checkedPlaylists.length; i++) {
-                                    if (checkedPlaylists[i]) {
-                                        getActivity().startService(
-                                                new Intent(getActivity(), MainService.class)
-                                                        .putExtra(MainService.EXTRA_ACTION,
-                                                                MainService.ACTION_RESUME_PLAYLIST)
-                                                        .putExtra(MainService.EXTRA_PLAYLIST,
-                                                                playlists.get(i)));
-                                        break;
-                                    }
-                                }
-                            }
-                        })
-                .setPositiveButton(R.string.query, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        List<Playlist> queryPlaylists = new ArrayList<>();
-                        for (int i = 0; i < checkedPlaylists.length; i++) {
-                            if (checkedPlaylists[i]) {
-                                queryPlaylists.add(playlists.get(i));
-                            }
-                        }
-                        query(null, queryPlaylists);
-                    }
-                })
-                .show();
-    }
-
     private void syncDatabase() {
         Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
                 new DialogInterface.OnClickListener() {
@@ -649,53 +565,4 @@ public class QueryFragment extends Fragment implements
     private static String appendSelection(String selection, String s) {
         return selection == null ? s : selection + " AND " + s;
     }
-
-    /*public static class PlaylistsFragment extends ListFragment<Playlist> {
-        public PlaylistsFragment() {
-            super(R.layout.list_item_playlist, 0, 0, null, null);
-        }
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            Log.d(TAG, "PlaylistsFragment.onCreate()");
-            super.onCreate(savedInstanceState);
-            reloadData();
-        }
-
-        @Override
-        protected ArrayList<Playlist> loadData() {
-            Log.d(TAG, "PlaylistsFragment.loadData()");
-            return getDbHelper().queryPlaylists();
-        }
-
-        @Override
-        protected void setListItemContent(View rootView, int position, Playlist playlist) {
-            super.setListItemContent(rootView, position, playlist);
-
-            TextView tvName = rootView.findViewById(R.id.tvName);
-            if (playlist.getName() == null) {
-                tvName.setVisibility(View.GONE);
-            } else {
-                tvName.setText(playlist.getName());
-                tvName.setVisibility(View.VISIBLE);
-            }
-
-            TextView tvModified = rootView.findViewById(R.id.tvModified);
-            tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
-
-            setListItemButton(rootView, R.id.ibQuery);
-        }
-
-        @Override
-        protected void onListItemClick(int position, Playlist playlist) {
-        }
-
-        @Override
-        protected void onListItemButtonClick(int buttonId, int position, Playlist playlist) {
-            switch (buttonId) {
-                case R.id.ibQuery:
-                    break;
-            }
-        }
-    }*/
 }

@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -19,7 +21,7 @@ import com.oneup.uplayer.db.DbHelper;
 import java.util.ArrayList;
 
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
-        implements View.OnClickListener {
+        implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     protected static final String ARG_SORT_COLUMN = "sort_column";
     protected static final String ARG_SORT_DESC = "sort_desc";
 
@@ -28,6 +30,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private int listItemResource;
     private int listItemHeaderId;
     private int listItemContentId;
+    private int listItemCheckBoxId;
 
     private String[] columns;
     private String[] sortColumns;
@@ -38,12 +41,15 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
+    private boolean[] checkedListItems;
 
     protected ListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
-                           String[] columns, String[] sortColumns) {
+                           int listItemCheckBoxId, String[] columns, String[] sortColumns) {
         this.listItemResource = listItemResource;
         this.listItemHeaderId = listItemHeaderId;
         this.listItemContentId = listItemContentId;
+        this.listItemCheckBoxId = listItemCheckBoxId;
+
         this.columns = columns;
         this.sortColumns = sortColumns;
     }
@@ -96,8 +102,13 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onClick(View v) {
-        int position = getListItemPosition(getListView().getPositionForView((View) v.getParent()));
-        onListItemButtonClick(v.getId(), position, data.get(position));
+        int position = getListItemPosition(v);
+        onListItemViewClick(v.getId(), position, data.get(position));
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        checkedListItems[getListItemPosition(buttonView)] = isChecked;
     }
 
     public int getSortColumn() {
@@ -123,8 +134,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected void reloadData() {
         data = loadData();
-        setActivityTitle();
+        if (listItemCheckBoxId != 0) {
+            checkedListItems = new boolean[data.size()];
+        }
 
+        setActivityTitle();
         if (listAdapter == null) {
             listAdapter = new ListAdapter();
             setListAdapter(listAdapter);
@@ -152,6 +166,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     protected void setListItemContent(View rootView, int position, T item) {
+        // Set CheckBox listener if specified.
+        if (listItemCheckBoxId != 0) {
+            CheckBox checkBox = rootView.findViewById(listItemCheckBoxId);
+            checkBox.setOnCheckedChangeListener(this);
+        }
+
         // Set (or hide) sort column value if sort columns are specified.
         if (columns != null && sortColumns != null) {
             TextView tvSortColumnValue = rootView.findViewById(R.id.tvSortColumnValue);
@@ -165,8 +185,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
-    protected void setListItemButton(View rootView, int buttonId) {
-        rootView.findViewById(buttonId).setOnClickListener(this);
+    protected void setListItemViewOnClickListener(View rootView, int viewId) {
+        rootView.findViewById(viewId).setOnClickListener(this);
     }
 
     protected String getSortColumnValue(int sortColumn, T item) {
@@ -179,7 +199,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     protected void onContextItemSelected(int itemId, int position, T item) {
     }
 
-    protected void onListItemButtonClick(int buttonId, int position, T item) {
+    protected void onListItemViewClick(int viewId, int position, T item) {
     }
 
     protected DbHelper getDbHelper() {
@@ -219,6 +239,16 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return data.size();
     }
 
+    public ArrayList<T> getCheckedListItems() {
+        ArrayList<T> items = new ArrayList<>();
+        for (int i = 0; i < checkedListItems.length; i++) {
+            if (checkedListItems[i]) {
+                items.add(data.get(i));
+            }
+        }
+        return items;
+    }
+
     private void setActivityTitle() {
         Activity activity = getActivity();
         if (activity != null && !(activity instanceof MainActivity)) {
@@ -228,6 +258,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     private int getListItemPosition(int position) {
         return listItemHeaderId == 0 ? position : position - 1;
+    }
+
+    private int getListItemPosition(View v) {
+        return getListItemPosition(getListView().getPositionForView((View) v.getParent()));
     }
 
     private class ListAdapter extends BaseAdapter {

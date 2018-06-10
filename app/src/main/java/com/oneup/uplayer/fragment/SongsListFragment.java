@@ -29,7 +29,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
-        super(listItemResource, listItemHeaderId, listItemContentId, columns, null);
+        super(listItemResource, listItemHeaderId, listItemContentId, 0, columns, null);
     }
 
     @Override
@@ -159,7 +159,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     private void deleteSong(final int position, final Song song) {
         Util.showConfirmDialog(getActivity(),
-                getString(R.string.delete_confirm, song.getArtist(), song.getTitle()),
+                getString(R.string.delete_song_confirm, song.getArtist(), song.getTitle()),
                 new DialogInterface.OnClickListener() {
 
                     @Override

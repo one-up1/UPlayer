@@ -35,7 +35,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     public static final int ACTION_PLAY = 1;
     public static final int ACTION_ADD = 2;
-    public static final int ACTION_RESUME_PLAYLIST = 3;
+    public static final int ACTION_PLAY_PLAYLIST = 3;
 
     private static final int ACTION_PREVIOUS = 4;
     private static final int ACTION_PLAY_PAUSE = 5;
@@ -125,12 +125,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 play(intent.getIntExtra(EXTRA_SONG_INDEX, 0));
                 break;
             case ACTION_ADD:
-                ArrayList<Song> songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
-                add(songs, intent.getBooleanExtra(EXTRA_NEXT, false));
+                add(intent.<Song>getParcelableArrayListExtra(EXTRA_SONGS),
+                        intent.getBooleanExtra(EXTRA_NEXT, false));
                 break;
-            case ACTION_RESUME_PLAYLIST:
-                playlist = intent.getParcelableExtra(EXTRA_PLAYLIST);
-                resumePlaylist();
+            case ACTION_PLAY_PLAYLIST:
+                playPlaylist((Playlist) intent.getParcelableExtra(EXTRA_PLAYLIST));
                 break;
             case ACTION_PREVIOUS:
                 previous();
@@ -198,7 +197,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.start();
         prepared = true;
 
-        setPlayPauseResource(R.drawable.ic_pause);
+        setPlayPauseResource(R.drawable.ic_notification_pause);
         update();
     }
 
@@ -208,7 +207,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.reset();
         prepared = false;
         
-        setPlayPauseResource(R.drawable.ic_play);
+        setPlayPauseResource(R.drawable.ic_notification_play);
         startForeground(1, notification);
         
         return true; // Or onCompletion() will be called.
@@ -219,7 +218,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onCompletion()");
         prepared = false;
         
-        setPlayPauseResource(R.drawable.ic_play);
+        setPlayPauseResource(R.drawable.ic_notification_play);
         startForeground(1, notification);
 
         if (player.getCurrentPosition() == 0) {
@@ -350,10 +349,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void resumePlaylist() {
-        Log.d(TAG, "MainService.resumePlaylist(" + playlist.getName() + "," +
+    private void playPlaylist(Playlist playlist) {
+        Log.d(TAG, "MainService.playPlaylist(" + playlist + "," +
                 playlist.getSongIndex() + "," + playlist.getSongPosition() + ")");
+        this.playlist = playlist;
+
         songs = dbHelper.queryPlaylistSongs(playlist);
+        if (songs.size() == 0) {
+            Log.e(TAG, "Playlist is empty");
+            stopSelf();
+            return;
+        }
 
         if (playlist.getSongIndex() >= songs.size()) {
             Log.w(TAG, "Invalid song index: " + playlist.getSongIndex());
@@ -387,15 +393,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player.isPlaying()) {
             Log.d(TAG, "Pausing");
             player.pause();
-            setPlayPauseResource(R.drawable.ic_play);
+            setPlayPauseResource(R.drawable.ic_notification_play);
         } else {
             if (prepared) {
                 Log.d(TAG, "Resuming");
+                player.seekTo(player.getCurrentPosition() <= RESUME_POSITION_OFFSET * 2 ? 0
+                        : player.getCurrentPosition() - RESUME_POSITION_OFFSET);
                 player.start();
             } else {
                 play();
             }
-            setPlayPauseResource(R.drawable.ic_pause);
+            setPlayPauseResource(R.drawable.ic_notification_pause);
         }
         startForeground(1, notification);
     }

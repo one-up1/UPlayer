@@ -327,7 +327,7 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 ContentValues values;
 
-                // Insert or update playlist, deleting any existing playlist songs.
+                // Insert or update playlist.
                 values = new ContentValues();
                 values.put(Playlist.NAME, playlist.getName());
                 putValue(values, Playlist.MODIFIED, playlist.getModified());
@@ -338,17 +338,22 @@ public class DbHelper extends SQLiteOpenHelper {
                     Log.d(TAG, "Playlist inserted: " + playlist.getId());
                 } else {
                     update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
-                    deletePlaylistSongs(db, playlist);
                 }
 
-                // Insert playlist songs.
-                for (Song song : songs) {
-                    values = new ContentValues();
-                    values.put(Playlist.PLAYLIST_ID, playlist.getId());
-                    values.put(Playlist.SONG_ID, song.getId());
-                    db.insert(TABLE_PLAYLIST_SONGS, null, values);
+                // Insert playlist songs, deleting any existing playlist songs.
+                if (songs != null) {
+                    if (playlist.getId() > 0) {
+                        deletePlaylistSongs(db, playlist);
+                    }
+
+                    for (Song song : songs) {
+                        values = new ContentValues();
+                        values.put(Playlist.PLAYLIST_ID, playlist.getId());
+                        values.put(Playlist.SONG_ID, song.getId());
+                        db.insert(TABLE_PLAYLIST_SONGS, null, values);
+                    }
+                    Log.d(TAG, songs.size() + " playlist songs inserted");
                 }
-                Log.d(TAG, songs.size() + " playlist songs inserted");
 
                 db.setTransactionSuccessful();
             } finally {

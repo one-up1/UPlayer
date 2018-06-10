@@ -6,8 +6,8 @@ android {
         applicationId "com.oneup.uplayer"
         minSdkVersion 23
         targetSdkVersion 27
-        versionCode 248
-        versionName "5.6.248"
+        versionCode 249
+        versionName "5.6.249"
     }
     buildTypes {
         release {
@@ -23,4 +23,5 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:gridlayout-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.1'
 }

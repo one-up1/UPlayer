@@ -1,8 +1,6 @@
 package com.oneup.uplayer.activity;
 
-import android.app.AlertDialog;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -23,8 +21,6 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsListFragment;
-import com.oneup.uplayer.util.Util;
-import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
@@ -64,7 +60,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
     public static class PlaylistFragment extends SongsListFragment
             implements MainService.OnUpdateListener {
-        private MainService mainService;
+        private MainService service;
 
         public PlaylistFragment() {
             super(R.layout.list_item_playlist_song, 0, 0, null);
@@ -83,10 +79,10 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         public void onDestroy() {
             Log.d(TAG, "PlaylistActivity.onDestroy()");
-            if (mainService != null) {
-                mainService.setOnUpdateListener(null);
+            if (service != null) {
+                service.setOnUpdateListener(null);
                 getActivity().unbindService(serviceConnection);
-                mainService = null;
+                service = null;
             }
             super.onDestroy();
         }
@@ -101,7 +97,17 @@ public class PlaylistActivity extends AppCompatActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.save:
-                    savePlaylist();
+                    Playlist.showSaveDialog(getActivity(), getDbHelper(),
+                            service == null ? null : service.getPlaylist(),
+                            new Playlist.SaveListener() {
+
+                                @Override
+                                public void onSave(Playlist playlist) {
+                                    if (service != null) {
+                                        service.setPlaylist(playlist);
+                                    }
+                                }
+                            });
                     return true;
                 default:
                     return super.onOptionsItemSelected(item);
@@ -116,35 +122,35 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         protected ArrayList<Song> loadData() {
             Log.d(TAG, "PlaylistFragment.loadData()");
-            return mainService.getSongs();
+            return service.getSongs();
         }
 
         @Override
         protected void setListItemContent(View rootView, int position, Song song) {
             super.setListItemContent(rootView, position, song);
 
-            if (mainService != null && position == mainService.getSongIndex()) {
+            if (service != null && position == service.getSongIndex()) {
                 TextView tvTitle = rootView.findViewById(R.id.tvTitle);
                 SpannableString underlinedText = new SpannableString(tvTitle.getText());
                 underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
                 tvTitle.setText(underlinedText);
             }
 
-            setListItemButton(rootView, R.id.ibMoveUp);
-            setListItemButton(rootView, R.id.ibMoveDown);
-            setListItemButton(rootView, R.id.ibRemove);
+            setListItemViewOnClickListener(rootView, R.id.ibMoveUp);
+            setListItemViewOnClickListener(rootView, R.id.ibMoveDown);
+            setListItemViewOnClickListener(rootView, R.id.ibRemove);
         }
 
         @Override
         protected void onListItemClick(int position, Song song) {
-            if (mainService != null) {
-                mainService.play(position);
+            if (service != null) {
+                service.play(position);
             }
         }
 
         @Override
-        protected void onListItemButtonClick(int buttonId, int position, Song song) {
-            switch (buttonId) {
+        protected void onListItemViewClick(int viewId, int position, Song song) {
+            switch (viewId) {
                 case R.id.ibMoveUp:
                     moveUp(position);
                     break;
@@ -159,9 +165,9 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onSongRemoved(int index) {
-            if (mainService != null) {
+            if (service != null) {
                 if (getCount() > 1) {
-                    mainService.removeSong(index);
+                    service.removeSong(index);
                 } else {
                     getActivity().finish();
                     getActivity().stopService(new Intent(getActivity(), MainService.class));
@@ -169,43 +175,15 @@ public class PlaylistActivity extends AppCompatActivity {
             }
         }
 
-        private void savePlaylist() {
-            final EditText etName = new EditText(getActivity());
-            etName.setHint(R.string.name);
-
-            Playlist playlist = mainService == null ? null : mainService.getPlaylist();
-            if (playlist != null) {
-                etName.setString(playlist.getName());
-            }
-
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.save_playlist)
-                    .setView(etName)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (mainService != null) {
-                                Playlist playlist = new Playlist();
-                                playlist.setName(etName.getString());
-
-                                mainService.setPlaylist(playlist);
-                                Util.showToast(getActivity(), R.string.ok);
-                            }
-                        }
-                    })
-                    .show();
-        }
-
         private void moveUp(int songIndex) {
-            if (mainService != null && songIndex > 0) {
-                mainService.moveSong(songIndex, songIndex - 1);
+            if (service != null && songIndex > 0) {
+                service.moveSong(songIndex, songIndex - 1);
             }
         }
 
         private void moveDown(int songIndex) {
-            if (mainService != null && songIndex < getCount() - 1) {
-                mainService.moveSong(songIndex, songIndex + 1);
+            if (service != null && songIndex < getCount() - 1) {
+                service.moveSong(songIndex, songIndex + 1);
             }
         }
 
@@ -215,27 +193,27 @@ public class PlaylistActivity extends AppCompatActivity {
 
         private ServiceConnection serviceConnection = new ServiceConnection() {
             @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
+            public void onServiceConnected(ComponentName name, IBinder serviceBinder) {
                 Log.d(TAG, "PlaylistFragment.onServiceConnected()");
                 if (getActivity().isFinishing()) {
                     Log.w(TAG, "Finishing");
                     return;
                 }
 
-                MainService.MainBinder binder = (MainService.MainBinder) service;
-                mainService = binder.getService();
-                mainService.setOnUpdateListener(PlaylistFragment.this);
+                MainService.MainBinder mainBinder = (MainService.MainBinder) serviceBinder;
+                service = mainBinder.getService();
+                service.setOnUpdateListener(PlaylistFragment.this);
 
                 reloadData();
-                setSelection(mainService.getSongIndex());
+                setSelection(service.getSongIndex());
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 Log.d(TAG, "PlaylistFragment.onServiceDisconnected()");
-                if (mainService != null) {
-                    mainService.setOnUpdateListener(null);
-                    mainService = null;
+                if (service != null) {
+                    service.setOnUpdateListener(null);
+                    service = null;
                 }
             }
         };

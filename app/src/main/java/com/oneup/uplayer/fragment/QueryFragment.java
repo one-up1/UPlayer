@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 
+import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
@@ -214,8 +215,15 @@ public class QueryFragment extends Fragment implements
                     bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
                     break;
                 case REQUEST_SELECT_PLAYLISTS:
-                    query(null, data.<Playlist>getParcelableArrayListExtra(
-                            PlaylistsActivity.EXTRA_PLAYLISTS));
+                    if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
+                        getActivity().startService(new Intent(getActivity(), MainService.class)
+                                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY_PLAYLIST)
+                                .putExtra(MainService.EXTRA_PLAYLIST,
+                                        data.getParcelableExtra(PlaylistsActivity.EXTRA_PLAYLIST)));
+                    } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
+                        query(null, data.<Playlist>getParcelableArrayListExtra(
+                                PlaylistsActivity.EXTRA_PLAYLISTS));
+                    }
                     break;
             }
         }
@@ -273,7 +281,8 @@ public class QueryFragment extends Fragment implements
                 Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bPlaylists) {
-            startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class),
+            startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
+                            .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(true)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bSyncDatabase) {
             syncDatabase();

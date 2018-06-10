@@ -1,5 +1,6 @@
 package com.oneup.uplayer.activity;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,17 +14,19 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.fragment.ListFragment;
+import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
+import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
+    public static final String EXTRA_PLAYLIST = "com.oneup.extra.PLAYLIST";
     public static final String EXTRA_PLAYLISTS = "com.oneup.extra.PLAYLISTS";
 
     @Override
@@ -36,7 +39,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, PlaylistsFragment.newInstance())
+                    .add(R.id.container, PlaylistsFragment.newInstance(getIntent().getExtras()))
                     .commit();
         }
     }
@@ -61,19 +64,18 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onPrepareOptionsMenu(Menu menu) {
+            super.onPrepareOptionsMenu(menu);
+            menu.findItem(R.id.select).setVisible(getArguments().getBoolean(ARG_SHOW_CHECKBOX));
+        }
+
+        @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.add:
-                    Playlist.showSaveDialog(getActivity(), getDbHelper(), null,
-                            new Playlist.SaveListener() {
-
-                        @Override
-                        public void onSave(Playlist playlist) {
-                            reloadData();
-                        }
-                    });
+                    add();
                     return true;
-                case R.id.query:
+                case R.id.select:
                     getActivity().setResult(RESULT_OK, new Intent()
                             .putParcelableArrayListExtra(EXTRA_PLAYLISTS, getCheckedListItems()));
                     getActivity().finish();
@@ -117,41 +119,108 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemClick(int position, Playlist playlist) {
-            getActivity().startService(new Intent(getActivity(), MainService.class)
-                    .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY_PLAYLIST)
-                    .putExtra(MainService.EXTRA_PLAYLIST, playlist));
+            getActivity().setResult(RESULT_OK, new Intent()
+                    .putExtra(EXTRA_PLAYLIST, playlist));
+            getActivity().finish();
         }
 
         @Override
-        protected void onContextItemSelected(int itemId, int position, final Playlist playlist) {
+        protected void onContextItemSelected(int itemId, int position, Playlist playlist) {
             switch (itemId) {
+                case R.id.rename:
+                    rename(playlist);
+                    break;
                 case R.id.delete:
-                    if (playlist.getId() == 1) {
-                        Util.showToast(getActivity(), R.string.cannot_delete_default_playlist);
-                        return;
-                    }
-
-                    Util.showConfirmDialog(getActivity(),
-                            getString(R.string.delete_playlist_confirm, playlist.getName()),
-                            new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    try {
-                                        getDbHelper().deletePlaylist(playlist);
-                                        reloadData();
-                                    } catch (Exception ex) {
-                                        Log.e(TAG, "Error deleting playlist", ex);
-                                        Util.showErrorDialog(getActivity(), ex);
-                                    }
-                                }
-                            });
+                    delete(playlist);
                     break;
             }
         }
 
-        private static PlaylistsFragment newInstance() {
-            return new PlaylistsFragment();
+        private void add() {
+            final EditText etName = new EditText(getActivity());
+            etName.setHint(R.string.name);
+
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.add)
+                    .setView(etName)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Playlist playlist = new Playlist();
+                            playlist.setName(etName.getString());
+                            playlist.setModified(Calendar.currentTime());
+
+                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                            Util.showToast(getActivity(), R.string.ok);
+                            reloadData();
+                        }
+                    })
+                    .show();
+        }
+
+        private void rename(final Playlist playlist) {
+            final EditText etName = new EditText(getActivity());
+            etName.setHint(R.string.name);
+
+            if (playlist.getName() != null) {
+                etName.setText(playlist.getName());
+            }
+
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.rename)
+                    .setView(etName)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            playlist.setName(etName.getString());
+                            playlist.setModified(Calendar.currentTime());
+
+                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                            Util.showToast(getActivity(), R.string.ok);
+                            reloadData();
+                        }
+                    })
+                    .show();
+        }
+
+        private void delete(final Playlist playlist) {
+            if (playlist.getId() == 1) {
+                Util.showToast(getActivity(), R.string.cannot_delete_default_playlist);
+                return;
+            }
+
+            Util.showConfirmDialog(getActivity(),
+                    getString(R.string.delete_playlist_confirm,
+                            playlist.getName() == null ?
+                                    Util.formatDateTime(playlist.getModified())
+                                    : playlist.getName()),
+                    new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            try {
+                                getDbHelper().deletePlaylist(playlist);
+                                reloadData();
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Error deleting playlist", ex);
+                                Util.showErrorDialog(getActivity(), ex);
+                            }
+                        }
+                    });
+        }
+
+        public static Bundle getArguments(boolean showCheckbox) {
+            Bundle args = new Bundle();
+            args.putBoolean(ARG_SHOW_CHECKBOX, showCheckbox);
+            return args;
+        }
+
+        private static PlaylistsFragment newInstance(Bundle args) {
+            PlaylistsFragment fragment = new PlaylistsFragment();
+            fragment.setArguments(args);
+            return fragment;
         }
     }
 }

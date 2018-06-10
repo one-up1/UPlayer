@@ -20,10 +20,13 @@ import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
 
+//TODO: ListFragment impl, what is defined where, specify context menu ID and create it in ListFragment?
+
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     protected static final String ARG_SORT_COLUMN = "sort_column";
     protected static final String ARG_SORT_DESC = "sort_desc";
+    protected static final String ARG_SHOW_CHECKBOX = "show_checkbox";
 
     private static final String TAG = "UPlayer";
 
@@ -166,9 +169,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     protected void setListItemContent(View rootView, int position, T item) {
-        // Set CheckBox listener if specified.
+        // Set CheckBox if specified.
         if (listItemCheckBoxId != 0) {
             CheckBox checkBox = rootView.findViewById(listItemCheckBoxId);
+            checkBox.setVisibility(getArguments().getBoolean(ARG_SHOW_CHECKBOX) ?
+                    View.VISIBLE : View.GONE);
+            checkBox.setChecked(checkedListItems[position]);
             checkBox.setOnCheckedChangeListener(this);
         }
 

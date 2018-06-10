@@ -91,6 +91,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(Playlist._ID, 1);
+        values.put(Playlist.NAME, "Default playlist");
         db.insert(TABLE_PLAYLISTS, null, values);
     }
 

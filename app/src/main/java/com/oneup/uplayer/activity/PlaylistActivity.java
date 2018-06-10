@@ -62,6 +62,8 @@ public class PlaylistActivity extends AppCompatActivity {
             implements MainService.OnUpdateListener {
         private MainService service;
 
+        private static final int REQUEST_SELECT_PLAYLIST = 3;
+
         public PlaylistFragment() {
             super(R.layout.list_item_playlist_song, 0, 0, null);
         }
@@ -97,20 +99,26 @@ public class PlaylistActivity extends AppCompatActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.save:
-                    Playlist.showSaveDialog(getActivity(), getDbHelper(),
-                            service == null ? null : service.getPlaylist(),
-                            new Playlist.SaveListener() {
-
-                                @Override
-                                public void onSave(Playlist playlist) {
-                                    if (service != null) {
-                                        service.setPlaylist(playlist);
-                                    }
-                                }
-                            });
+                    startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
+                                    .putExtras(PlaylistsActivity.PlaylistsFragment
+                                            .getArguments(false)),
+                            REQUEST_SELECT_PLAYLIST);
                     return true;
                 default:
                     return super.onOptionsItemSelected(item);
+            }
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+            if (resultCode == AppCompatActivity.RESULT_OK) {
+                switch (requestCode) {
+                    case REQUEST_SELECT_PLAYLIST:
+                        service.setPlaylist((Playlist) data.getParcelableExtra(
+                                PlaylistsActivity.EXTRA_PLAYLIST));
+                        break;
+                }
             }
         }
 

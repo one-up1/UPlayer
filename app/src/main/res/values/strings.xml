@@ -98,13 +98,13 @@
     <string name="stats_avg_times_played">Avg times played:</string>
 
     <string name="save">Save</string>
-    <string name="save_playlist">Save playlist</string>
-    <string name="name">Name&#8230;</string>
 
     <string name="add">Add</string>
+    <string name="select">Select</string>
+    <string name="rename">Rename</string>
+    <string name="name">Name&#8230;</string>
     <string name="delete_playlist_confirm">Delete \'%1$s\'?</string>
     <string name="cannot_delete_default_playlist">Cannot delete the default playlist</string>
-    <string name="play">Play</string>
 
     <string name="ok">OK</string>
     <string name="yes">Yes</string>

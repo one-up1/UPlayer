@@ -1,6 +1,5 @@
 package com.oneup.uplayer.fragment;
 
-import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -15,17 +14,19 @@ import android.widget.TextView;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
+import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
-import java.util.List;
-
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
     private static final int REQUEST_EDIT_SONG = 1;
+    private static final int REQUEST_SELECT_PLAYLIST = 2;
+
+    private Song playlistSong;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
@@ -51,6 +52,23 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                         // UI will update in onResume().
                     } catch (Exception ex) {
                         Log.e(TAG, "Error updating song", ex);
+                        Util.showErrorDialog(getActivity(), ex);
+                    }
+                    break;
+                case REQUEST_SELECT_PLAYLIST:
+                    try {
+                        if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
+                            getDbHelper().insertPlaylistSong((Playlist) data.getParcelableExtra(
+                                    PlaylistsActivity.EXTRA_PLAYLIST), playlistSong);
+                        } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
+                            for (Playlist playlist : data.<Playlist>getParcelableArrayListExtra(
+                                    PlaylistsActivity.EXTRA_PLAYLISTS)) {
+                                getDbHelper().insertPlaylistSong(playlist, playlistSong);
+                            }
+                        }
+                        Util.showToast(getActivity(), R.string.ok);
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error adding song to playlist", ex);
                         Util.showErrorDialog(getActivity(), ex);
                     }
                     break;
@@ -109,7 +127,10 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 }
                 break;
             case R.id.add_to_playlist:
-                addToPlaylist(song);
+                playlistSong = song;
+                startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
+                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(true)),
+                        REQUEST_SELECT_PLAYLIST);
                 break;
             case R.id.mark_played:
                 try {
@@ -130,31 +151,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     protected void onSongRemoved(int position) {
         getData().remove(position);
         notifyDataSetChanged();
-    }
-
-    private void addToPlaylist(final Song song) {
-        final List<Playlist> playlists = getDbHelper().queryPlaylists();
-        if (playlists.size() == 0) {
-            Util.showToast(getActivity(), R.string.no_playlists);
-            return;
-        }
-
-        final String[] playlistNames = new String[playlists.size()];
-        for (int i = 0; i < playlists.size(); i++) {
-            Playlist playlist = playlists.get(i);
-            playlistNames[i] = playlist.getName() == null ?
-                    Util.formatDateTime(playlist.getModified())
-                    : playlist.getName() + ": " + Util.formatDateTime(playlist.getModified());
-        }
-        new AlertDialog.Builder(getActivity())
-                .setItems(playlistNames, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        getDbHelper().insertPlaylistSong(playlists.get(which), song);
-                        Util.showToast(getActivity(), R.string.ok);
-                    }
-                })
-                .show();
     }
 
     private void deleteSong(final int position, final Song song) {

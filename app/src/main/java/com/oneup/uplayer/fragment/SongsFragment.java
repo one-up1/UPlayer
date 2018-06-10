@@ -99,7 +99,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.getItem(0).setVisible(artistId == 0);
+        menu.findItem(R.id.view_artist).setVisible(artistId == 0);
     }
 
     @Override
@@ -215,17 +215,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         add(songs, next);
     }
 
-    public static SongsFragment newInstance(String selection, String[] selectionArgs,
-                                            int sortColumn, boolean sortDesc) {
-        return newInstance(getArguments(selection, selectionArgs, sortColumn, sortDesc));
-    }
-
-    public static SongsFragment newInstance(Bundle args) {
-        SongsFragment fragment = new SongsFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     public static Bundle getArguments(long artistId, int sortColumn, boolean sortDesc) {
         Bundle args = new Bundle();
         args.putLong(ARG_ARTIST_ID, artistId);
@@ -244,5 +233,16 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         args.putBoolean(ARG_SORT_DESC, sortDesc);
         args.putInt(ARG_SORT_COLUMN, sortColumn);
         return args;
+    }
+
+    public static SongsFragment newInstance(String selection, String[] selectionArgs,
+                                            int sortColumn, boolean sortDesc) {
+        return newInstance(getArguments(selection, selectionArgs, sortColumn, sortDesc));
+    }
+
+    public static SongsFragment newInstance(Bundle args) {
+        SongsFragment fragment = new SongsFragment();
+        fragment.setArguments(args);
+        return fragment;
     }
 }

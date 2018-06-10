@@ -321,7 +321,7 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void insertOrUpdatePlaylist(Playlist playlist, List<Song> songs) {
+    public void insertOrUpdatePlaylist(Playlist playlist, boolean updateName, List<Song> songs) {
         Log.d(TAG, "DbHelper.insertOrUpdatePlaylist(" + playlist + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
@@ -330,7 +330,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 // Insert or update playlist.
                 values = new ContentValues();
-                values.put(Playlist.NAME, playlist.getName());
+                if (updateName) {
+                    values.put(Playlist.NAME, playlist.getName());
+                }
                 putValue(values, Playlist.MODIFIED, playlist.getModified());
                 putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
                 putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());

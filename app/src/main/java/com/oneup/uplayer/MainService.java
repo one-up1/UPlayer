@@ -470,7 +470,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             playlist.setModified(Calendar.currentTime());
             playlist.setSongIndex(songIndex);
             playlist.setSongPosition(player.getCurrentPosition());
-            dbHelper.insertOrUpdatePlaylist(playlist, songs);
+            dbHelper.insertOrUpdatePlaylist(playlist, false, songs);
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
         }

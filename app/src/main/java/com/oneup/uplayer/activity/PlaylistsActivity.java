@@ -147,7 +147,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                             playlist.setName(etName.getString());
                             playlist.setModified(Calendar.currentTime());
 
-                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                            getDbHelper().insertOrUpdatePlaylist(playlist, true, null);
                             Util.showToast(getActivity(), R.string.ok);
                             reloadData();
                         }
@@ -172,7 +172,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             playlist.setName(etName.getString());
-                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                            getDbHelper().insertOrUpdatePlaylist(playlist, true, null);
 
                             Util.showToast(getActivity(), R.string.ok);
                             reloadData();

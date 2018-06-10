@@ -5,8 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -46,7 +46,8 @@ public class PlaylistsActivity extends AppCompatActivity {
 
     public static class PlaylistsFragment extends ListFragment<Playlist> {
         public PlaylistsFragment() {
-            super(R.layout.list_item_playlist, 0, 0, R.id.checkBox, null, null);
+            super(R.layout.list_item_playlist, R.menu.list_item_playlist,
+                    0, 0, R.id.checkBox, null, null);
         }
 
         @Override
@@ -83,12 +84,6 @@ public class PlaylistsActivity extends AppCompatActivity {
                 default:
                     return super.onOptionsItemSelected(item);
             }
-        }
-
-        @Override
-        public void onCreateContextMenu(ContextMenu menu, View v,
-                                        ContextMenu.ContextMenuInfo menuInfo) {
-            getActivity().getMenuInflater().inflate(R.menu.list_item_playlist, menu);
         }
 
         @Override
@@ -138,6 +133,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         private void add() {
             final EditText etName = new EditText(getActivity());
+            etName.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
             etName.setHint(R.string.name);
 
             new AlertDialog.Builder(getActivity())
@@ -161,6 +157,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         private void rename(final Playlist playlist) {
             final EditText etName = new EditText(getActivity());
+            etName.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
             etName.setHint(R.string.name);
 
             if (playlist.getName() != null) {

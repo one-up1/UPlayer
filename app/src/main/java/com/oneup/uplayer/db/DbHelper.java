@@ -322,7 +322,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void insertOrUpdatePlaylist(Playlist playlist, List<Song> songs) {
-        Log.d(TAG, "DbHelper.insertPlaylist(" + playlist + ")");
+        Log.d(TAG, "DbHelper.insertOrUpdatePlaylist(" + playlist + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {

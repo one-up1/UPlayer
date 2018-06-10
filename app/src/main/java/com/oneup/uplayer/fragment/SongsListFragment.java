@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
 
@@ -30,13 +29,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
-        super(listItemResource, listItemHeaderId, listItemContentId, 0, columns, null);
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-        getActivity().getMenuInflater().inflate(R.menu.list_item_song, menu);
+        super(listItemResource, R.menu.list_item_song,
+                listItemHeaderId, listItemContentId, 0,
+                columns, null);
     }
 
     @Override

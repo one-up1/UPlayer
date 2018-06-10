@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
 
@@ -23,7 +22,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     private static final String TAG = "UPlayer";
 
     public ArtistsFragment() {
-        super(R.layout.list_item_artist, 0, 0, 0,
+        super(R.layout.list_item_artist, R.menu.list_item_artist, 0, 0, 0,
                 new String[]{null, Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
                 new String[]{null, Artist.ARTIST});
     }
@@ -32,12 +31,6 @@ public class ArtistsFragment extends ListFragment<Artist> {
     public void onResume() {
         super.onResume();
         reloadData();
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-        getActivity().getMenuInflater().inflate(R.menu.list_item_artist, menu);
     }
 
     @Override

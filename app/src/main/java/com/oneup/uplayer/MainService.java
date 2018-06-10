@@ -120,9 +120,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         int action = intent.getIntExtra(EXTRA_ACTION, 0);
         switch (action) {
             case ACTION_PLAY:
-                savePlaylist();
-                songs = intent.getParcelableArrayListExtra(EXTRA_SONGS);
-                play(intent.getIntExtra(EXTRA_SONG_INDEX, 0));
+                play(intent.<Song>getParcelableArrayListExtra(EXTRA_SONGS),
+                        intent.getIntExtra(EXTRA_SONG_INDEX, 0));
                 break;
             case ACTION_ADD:
                 add(intent.<Song>getParcelableArrayListExtra(EXTRA_SONGS),
@@ -283,27 +282,23 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         update();
     }
 
-    public Playlist getPlaylist() {
-        return playlist;
-    }
-
-    public void setPlaylist(Playlist playlist) {
+    public void savePlaylist(Playlist playlist) {
         this.playlist = playlist;
+        savePlaylist();
     }
 
     public void setOnUpdateListener(OnUpdateListener onUpdateListener) {
         this.onUpdateListener = onUpdateListener;
     }
 
-    private void play() {
-        Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
-        try {
-            player.reset();
-            player.setDataSource(getApplicationContext(), songs.get(songIndex).getContentUri());
-            player.prepareAsync();
-        } catch (Exception ex) {
-            Log.e(TAG, "Error preparing MediaPlayer", ex);
-        }
+    private void play(ArrayList<Song> songs, int songIndex) {
+        Log.d(TAG, "MainService.play(" + songs.size() + ", " + songIndex);
+        savePlaylist();
+        playlist = null;
+
+        this.songs = songs;
+        this.songIndex = songIndex;
+        play();
     }
 
     private void add(ArrayList<Song> songs, boolean next) {
@@ -323,29 +318,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             update();
         } else {
             play(this.songs.size() - 1);
-        }
-    }
-
-    private void savePlaylist() {
-        Log.d(TAG, "MainService.savePlaylist()");
-        if (songs == null || songs.size() == 0) {
-            Log.d(TAG, "No playlist to save");
-            return;
-        }
-
-        try {
-            if (playlist == null) {
-                playlist = new Playlist();
-                playlist.setId(1);
-            }
-            playlist.setModified(Calendar.currentTime());
-            playlist.setSongIndex(songIndex);
-            playlist.setSongPosition(player.getCurrentPosition());
-            dbHelper.insertOrUpdatePlaylist(playlist, songs);
-        } catch (Exception ex) {
-            Log.e(TAG, "Error saving playlist", ex);
-        } finally {
-            playlist = null;
         }
     }
 
@@ -469,6 +441,38 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         if (onUpdateListener != null) {
             onUpdateListener.onUpdate();
+        }
+    }
+
+    private void play() {
+        Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
+        try {
+            player.reset();
+            player.setDataSource(getApplicationContext(), songs.get(songIndex).getContentUri());
+            player.prepareAsync();
+        } catch (Exception ex) {
+            Log.e(TAG, "Error preparing MediaPlayer", ex);
+        }
+    }
+
+    private void savePlaylist() {
+        Log.d(TAG, "MainService.savePlaylist()");
+        if (songs == null || songs.size() == 0) {
+            Log.d(TAG, "No playlist to save");
+            return;
+        }
+
+        try {
+            if (playlist == null) {
+                playlist = new Playlist();
+                playlist.setId(1);
+            }
+            playlist.setModified(Calendar.currentTime());
+            playlist.setSongIndex(songIndex);
+            playlist.setSongPosition(player.getCurrentPosition());
+            dbHelper.insertOrUpdatePlaylist(playlist, songs);
+        } catch (Exception ex) {
+            Log.e(TAG, "Error saving playlist", ex);
         }
     }
 

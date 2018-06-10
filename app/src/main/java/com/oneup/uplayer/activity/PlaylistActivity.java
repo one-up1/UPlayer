@@ -115,7 +115,7 @@ public class PlaylistActivity extends AppCompatActivity {
             if (resultCode == AppCompatActivity.RESULT_OK) {
                 switch (requestCode) {
                     case REQUEST_SELECT_PLAYLIST:
-                        service.setPlaylist((Playlist) data.getParcelableExtra(
+                        service.savePlaylist((Playlist) data.getParcelableExtra(
                                 PlaylistsActivity.EXTRA_PLAYLIST));
                         break;
                 }

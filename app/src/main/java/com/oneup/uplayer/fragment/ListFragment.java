@@ -3,6 +3,7 @@ package com.oneup.uplayer.fragment;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,8 +21,6 @@ import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
 
-//TODO: ListFragment impl, what is defined where, specify context menu ID and create it in ListFragment?
-
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     protected static final String ARG_SORT_COLUMN = "sort_column";
@@ -31,6 +30,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private static final String TAG = "UPlayer";
 
     private int listItemResource;
+    private int listItemContextMenuResource;
     private int listItemHeaderId;
     private int listItemContentId;
     private int listItemCheckBoxId;
@@ -46,9 +46,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private ArrayList<T> data;
     private boolean[] checkedListItems;
 
-    protected ListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
+    protected ListFragment(int listItemResource, int listItemContextMenuResource,
+                           int listItemHeaderId, int listItemContentId,
                            int listItemCheckBoxId, String[] columns, String[] sortColumns) {
         this.listItemResource = listItemResource;
+        this.listItemContextMenuResource = listItemContextMenuResource;
         this.listItemHeaderId = listItemHeaderId;
         this.listItemContentId = listItemContentId;
         this.listItemCheckBoxId = listItemCheckBoxId;
@@ -72,21 +74,17 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        registerForContextMenu(getListView());
-    }
-
-    @Override
-    public void onDestroy() {
-        if (dbHelper != null) {
-            dbHelper.close();
+        if (listItemContextMenuResource != 0) {
+            registerForContextMenu(getListView());
         }
-        super.onDestroy();
     }
 
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        position = getListItemPosition(position);
-        onListItemClick(position, data.get(position));
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        if (listItemContextMenuResource != 0) {
+            getActivity().getMenuInflater().inflate(listItemContextMenuResource, menu);
+        }
     }
 
     @Override
@@ -101,6 +99,20 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (dbHelper != null) {
+            dbHelper.close();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        position = getListItemPosition(position);
+        onListItemClick(position, data.get(position));
     }
 
     @Override

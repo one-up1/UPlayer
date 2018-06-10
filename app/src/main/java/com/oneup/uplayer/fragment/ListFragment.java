@@ -25,7 +25,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     protected static final String ARG_SORT_COLUMN = "sort_column";
     protected static final String ARG_SORT_DESC = "sort_desc";
-    protected static final String ARG_SHOW_CHECKBOX = "show_checkbox";
+    protected static final String ARG_CHECKBOX_VISIBLE = "checkbox_visible";
 
     private static final String TAG = "UPlayer";
 
@@ -41,6 +41,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private DbHelper dbHelper;
     private int sortColumn;
     private boolean sortDesc;
+    private boolean checkboxVisible;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
@@ -68,6 +69,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         if (args != null) {
             sortColumn = args.getInt(ARG_SORT_COLUMN);
             sortDesc = args.getBoolean(ARG_SORT_DESC);
+            checkboxVisible = args.getBoolean(ARG_CHECKBOX_VISIBLE);
         }
     }
 
@@ -142,6 +144,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         this.sortDesc = sortDesc;
     }
 
+    public boolean isCheckboxVisible() {
+        return checkboxVisible;
+    }
+
     public void reverseSortOrder() {
         sortDesc = !sortDesc;
         reloadData();
@@ -184,10 +190,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         // Set CheckBox if specified.
         if (listItemCheckBoxId != 0) {
             CheckBox checkBox = rootView.findViewById(listItemCheckBoxId);
-            checkBox.setVisibility(getArguments().getBoolean(ARG_SHOW_CHECKBOX) ?
-                    View.VISIBLE : View.GONE);
-            checkBox.setChecked(checkedListItems[position]);
-            checkBox.setOnCheckedChangeListener(this);
+            if (checkboxVisible) {
+                checkBox.setChecked(checkedListItems[position]);
+                checkBox.setOnCheckedChangeListener(this);
+            } else {
+                checkBox.setVisibility(View.GONE);
+            }
         }
 
         // Set (or hide) sort column value if sort columns are specified.

@@ -67,7 +67,7 @@ public class PlaylistsActivity extends AppCompatActivity {
         @Override
         public void onPrepareOptionsMenu(Menu menu) {
             super.onPrepareOptionsMenu(menu);
-            menu.findItem(R.id.select).setVisible(getArguments().getBoolean(ARG_SHOW_CHECKBOX));
+            menu.findItem(R.id.select).setVisible(isCheckboxVisible());
         }
 
         @Override
@@ -172,9 +172,8 @@ public class PlaylistsActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             playlist.setName(etName.getString());
-                            playlist.setModified(Calendar.currentTime());
-
                             getDbHelper().insertOrUpdatePlaylist(playlist, null);
+
                             Util.showToast(getActivity(), R.string.ok);
                             reloadData();
                         }
@@ -208,9 +207,9 @@ public class PlaylistsActivity extends AppCompatActivity {
                     });
         }
 
-        public static Bundle getArguments(boolean showCheckbox) {
+        public static Bundle getArguments(boolean checkboxVisible) {
             Bundle args = new Bundle();
-            args.putBoolean(ARG_SHOW_CHECKBOX, showCheckbox);
+            args.putBoolean(ARG_CHECKBOX_VISIBLE, checkboxVisible);
             return args;
         }
 

@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.fragment.ListFragment;
+import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
@@ -146,6 +147,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             Playlist playlist = new Playlist();
                             playlist.setName(etName.getString());
+                            playlist.setModified(Calendar.currentTime());
                             getDbHelper().insertOrUpdatePlaylist(playlist, null);
                             reloadData();
                         }

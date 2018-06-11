@@ -123,8 +123,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public void queryArtist(Artist artist) {
         Log.d(TAG, "DbHelper.queryArtist(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = query(db, TABLE_ARTISTS,new String[]{Artist.LAST_ADDED,
-                            Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+            try (Cursor c = query(db, TABLE_ARTISTS,new String[]{
+                    Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
                     artist.getId())) {
                 artist.setLastAdded(c.getLong(0));
                 artist.setLastPlayed(c.getLong(1));
@@ -332,15 +332,14 @@ public class DbHelper extends SQLiteOpenHelper {
                 values = new ContentValues();
                 if (songs == null) {
                     values.put(Playlist.NAME, playlist.getName());
-                } else {
-                    putValue(values, Playlist.MODIFIED, playlist.getModified());
-                    putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
-                    putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
                 }
+                values.put(Playlist.MODIFIED, playlist.getModified());
                 if (playlist.getId() == 0) {
                     playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
                     Log.d(TAG, "Playlist inserted: " + playlist.getId());
                 } else {
+                    values.put(Playlist.SONG_INDEX, playlist.getSongIndex());
+                    values.put(Playlist.SONG_POSITION, playlist.getSongPosition());
                     update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
                 }
 
@@ -349,12 +348,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     if (playlist.getId() > 0) {
                         deletePlaylistSongs(db, playlist);
                     }
-
                     for (Song song : songs) {
-                        values = new ContentValues();
-                        values.put(Playlist.PLAYLIST_ID, playlist.getId());
-                        values.put(Playlist.SONG_ID, song.getId());
-                        db.insert(TABLE_PLAYLIST_SONGS, null, values);
+                        insertPlaylistSong(db, playlist, song);
                     }
                     Log.d(TAG, songs.size() + " playlist songs inserted");
                 }
@@ -367,15 +362,15 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void insertPlaylistSong(Playlist playlist, Song song) {
-        Log.d(TAG, "DbHelper.insertPlaylistSong(" + playlist + "," + song + ")");
+        Log.d(TAG, "DbHelper.insertPlaylistSong(" + playlist + ", " + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
                 ContentValues values = new ContentValues();
-                values.put(Playlist.PLAYLIST_ID, playlist.getId());
-                values.put(Playlist.SONG_ID, song.getId());
-                Log.d(TAG, "Playlist song inserted: " +
-                        db.insert(TABLE_PLAYLIST_SONGS, null, values));
+                values.put(Playlist.MODIFIED, Calendar.currentTime());
+                update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
+
+                insertPlaylistSong(db, playlist, song);
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -505,8 +500,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
         try (SQLiteDatabase db = getReadableDatabase()) {
             // Backup songs table.
-            try (Cursor c = db.query(TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
-                    Song.ADDED, Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED},
+            try (Cursor c = db.query(TABLE_SONGS, new String[]{
+                    Song.TITLE, Song.ARTIST, Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
+                            Song.LAST_PLAYED, Song.TIMES_PLAYED},
                     null, null, null, null, null)) {
                 JSONArray songs = new JSONArray();
                 while (c.moveToNext()) {
@@ -640,7 +636,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     db.insert(TABLE_PLAYLIST_SONGS, null, values);
                 }
                 Log.d(TAG, playlistSongs.length() + " playlist songs restored");
-                //FIXME: Playlist song ID could be invalid after restoring a backup.
+                //FIXME: Playlist song ID could be invalid after restoring a backup. Method for backing up?
 
                 db.setTransactionSuccessful();
             } finally {
@@ -659,6 +655,13 @@ public class DbHelper extends SQLiteOpenHelper {
                         PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1" +
                         SQL_WHERE_ID_IS,
                 new Object[]{time, id}, table, id);
+    }
+
+    private static void insertPlaylistSong(SQLiteDatabase db, Playlist playlist, Song song) {
+        ContentValues values = new ContentValues();
+        values.put(Playlist.PLAYLIST_ID, playlist.getId());
+        values.put(Playlist.SONG_ID, song.getId());
+        Log.d(TAG, "Playlist song inserted: " + db.insert(TABLE_PLAYLIST_SONGS, null, values));
     }
 
     private static String appendWhereArtistId(String sql, Artist artist, boolean and) {

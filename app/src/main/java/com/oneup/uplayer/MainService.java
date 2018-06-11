@@ -322,8 +322,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void playPlaylist(Playlist playlist) {
-        Log.d(TAG, "MainService.playPlaylist(" + playlist + "," +
-                playlist.getSongIndex() + "," + playlist.getSongPosition() + ")");
+        Log.d(TAG, "MainService.playPlaylist(" + playlist + ", " +
+                playlist.getSongIndex() + ", " + playlist.getSongPosition() + ")");
         this.playlist = playlist;
 
         songs = dbHelper.queryPlaylistSongs(playlist);

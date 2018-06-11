@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.BaseColumns;
 
+import com.oneup.uplayer.util.Util;
+
 public class Playlist implements Parcelable, BaseColumns {
     public static final String NAME = "name";
     public static final String MODIFIED = "modified";
@@ -21,7 +23,7 @@ public class Playlist implements Parcelable, BaseColumns {
 
     @Override
     public String toString() {
-        return name;
+        return name == null ? Util.formatDateTime(modified) : name;
     }
 
     @Override

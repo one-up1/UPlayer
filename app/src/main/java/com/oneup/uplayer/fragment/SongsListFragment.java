@@ -19,6 +19,8 @@ import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
+import java.util.List;
+
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
@@ -52,19 +54,30 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     break;
                 case REQUEST_SELECT_PLAYLIST:
                     try {
+                        String s;
                         if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
-                            getDbHelper().insertPlaylistSong((Playlist) data.getParcelableExtra(
-                                    PlaylistsActivity.EXTRA_PLAYLIST), playlistSong);
+                            Playlist playlist = data.getParcelableExtra(
+                                    PlaylistsActivity.EXTRA_PLAYLIST);
+                            getDbHelper().insertPlaylistSong(playlist, playlistSong);
+                            s = "'" + playlist.toString() + "'";
                         } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
-                            for (Playlist playlist : data.<Playlist>getParcelableArrayListExtra(
-                                    PlaylistsActivity.EXTRA_PLAYLISTS)) {
+                            List<Playlist> playlists = data.getParcelableArrayListExtra(
+                                    PlaylistsActivity.EXTRA_PLAYLISTS);
+                            for (Playlist playlist : playlists) {
                                 getDbHelper().insertPlaylistSong(playlist, playlistSong);
                             }
+                            s = Util.getCountString(getActivity(),
+                                    R.plurals.playlists, playlists.size());
+                        } else {
+                            throw new RuntimeException("No playlists");
                         }
-                        Util.showToast(getActivity(), R.string.ok);
+                        Util.showToast(getActivity(), R.string.song_added_to_playlist,
+                                playlistSong, s);
                     } catch (Exception ex) {
                         Log.e(TAG, "Error adding song to playlist", ex);
                         Util.showErrorDialog(getActivity(), ex);
+                    } finally {
+                        playlistSong = null;
                     }
                     break;
             }

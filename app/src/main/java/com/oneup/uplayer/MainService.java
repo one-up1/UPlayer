@@ -95,7 +95,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(R.id.ibVolumeDown, ACTION_VOLUME_DOWN);
         setOnClickPendingIntent(R.id.ibVolumeUp, ACTION_VOLUME_UP);
 
-        //FIXME: Notification icon is always ic_launcher.
+        //FIXME: Notification icon is always ic_launcher and channel ID must be set.
         notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setCustomContentView(notificationViews)
@@ -470,7 +470,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             playlist.setModified(Calendar.currentTime());
             playlist.setSongIndex(songIndex);
             playlist.setSongPosition(player.getCurrentPosition());
-            dbHelper.insertOrUpdatePlaylist(playlist, false, songs);
+            dbHelper.insertOrUpdatePlaylist(playlist, songs);
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);
         }

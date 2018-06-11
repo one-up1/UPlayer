@@ -17,11 +17,12 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.fragment.ListFragment;
-import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
+
+//TODO: Save checked playlists.
 
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
@@ -145,10 +146,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             Playlist playlist = new Playlist();
                             playlist.setName(etName.getString());
-                            playlist.setModified(Calendar.currentTime());
-
-                            getDbHelper().insertOrUpdatePlaylist(playlist, true, null);
-                            Util.showToast(getActivity(), R.string.ok);
+                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
                             reloadData();
                         }
                     })
@@ -172,9 +170,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             playlist.setName(etName.getString());
-                            getDbHelper().insertOrUpdatePlaylist(playlist, true, null);
-
-                            Util.showToast(getActivity(), R.string.ok);
+                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
                             reloadData();
                         }
                     })
@@ -188,10 +184,7 @@ public class PlaylistsActivity extends AppCompatActivity {
             }
 
             Util.showConfirmDialog(getActivity(),
-                    getString(R.string.delete_playlist_confirm,
-                            playlist.getName() == null ?
-                                    Util.formatDateTime(playlist.getModified())
-                                    : playlist.getName()),
+                    getString(R.string.delete_playlist_confirm, playlist),
                     new DialogInterface.OnClickListener() {
 
                         @Override

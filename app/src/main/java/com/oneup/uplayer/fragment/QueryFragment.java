@@ -479,7 +479,6 @@ public class QueryFragment extends Fragment implements
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //TODO: Refresh MediaStore before syncing database
                         new Thread(new Runnable() {
                             @Override
                             public void run() {

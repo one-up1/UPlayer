@@ -11,6 +11,7 @@ import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 
@@ -49,8 +50,11 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
+    private Context context;
+
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
     @Override
@@ -91,7 +95,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(Playlist._ID, 1);
-        values.put(Playlist.NAME, "Default playlist");
+        values.put(Playlist.NAME, context.getString(R.string.default_playlist));
         db.insert(TABLE_PLAYLISTS, null, values);
     }
 

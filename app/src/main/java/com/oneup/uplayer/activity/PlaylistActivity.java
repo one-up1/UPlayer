@@ -21,6 +21,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsListFragment;
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
@@ -62,7 +63,7 @@ public class PlaylistActivity extends AppCompatActivity {
             implements MainService.OnUpdateListener {
         private MainService service;
 
-        private static final int REQUEST_SELECT_PLAYLIST = 3;
+        private static final int REQUEST_SELECT_PLAYLIST = 100;
 
         public PlaylistFragment() {
             super(R.layout.list_item_playlist_song, 0, 0, null);
@@ -98,7 +99,7 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.save:
+                case R.id.savePlaylist:
                     startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class),
                             REQUEST_SELECT_PLAYLIST);
                     return true;
@@ -115,6 +116,7 @@ public class PlaylistActivity extends AppCompatActivity {
                     case REQUEST_SELECT_PLAYLIST:
                         service.savePlaylist((Playlist) data.getParcelableExtra(
                                 PlaylistsActivity.EXTRA_PLAYLIST));
+                        Util.showToast(getActivity(), R.string.playlist_saved);
                         break;
                 }
             }

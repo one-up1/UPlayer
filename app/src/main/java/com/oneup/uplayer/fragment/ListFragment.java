@@ -84,6 +84,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
         if (listItemContextMenuResource != 0) {
             getActivity().getMenuInflater().inflate(listItemContextMenuResource, menu);
         }

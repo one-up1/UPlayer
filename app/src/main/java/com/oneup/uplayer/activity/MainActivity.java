@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     @Override
     protected void onDestroy() {
         Log.d(TAG, "MainActivity.onDestroy()");
+        //FIXME: bookmarksFragment can be null causing crash on exit.
         preferences.edit()
                 .putInt(PREF_CURRENT_ITEM, viewPager.getCurrentItem())
                 .putInt(PREF_BOOKMARKS_SORT_COLUMN,

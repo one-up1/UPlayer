@@ -62,14 +62,15 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     @Override
     protected void onDestroy() {
         Log.d(TAG, "MainActivity.onDestroy()");
-        //FIXME: bookmarksFragment can be null causing crash on exit.
-        preferences.edit()
-                .putInt(PREF_CURRENT_ITEM, viewPager.getCurrentItem())
-                .putInt(PREF_BOOKMARKS_SORT_COLUMN,
-                        sectionsPagerAdapter.bookmarksFragment.getSortColumn())
-                .putBoolean(PREF_BOOKMARKS_SORT_DESC,
-                        sectionsPagerAdapter.bookmarksFragment.isSortDesc())
-                .apply();
+        SharedPreferences.Editor preferences = this.preferences.edit();
+        preferences.putInt(PREF_CURRENT_ITEM, viewPager.getCurrentItem());
+        if (sectionsPagerAdapter.bookmarksFragment != null) {
+            preferences.putInt(PREF_BOOKMARKS_SORT_COLUMN,
+                    sectionsPagerAdapter.bookmarksFragment.getSortColumn());
+            preferences.putBoolean(PREF_BOOKMARKS_SORT_DESC,
+                    sectionsPagerAdapter.bookmarksFragment.isSortDesc());
+        }
+        preferences.apply();
         super.onDestroy();
     }
 
@@ -117,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                                 preferences.getInt(PREF_BOOKMARKS_SORT_COLUMN,
                                         SongsFragment.SORT_COLUMN_BOOKMARKED),
                                 preferences.getBoolean(PREF_BOOKMARKS_SORT_DESC, true));
-
                     }
                     return bookmarksFragment;
                 case 2:

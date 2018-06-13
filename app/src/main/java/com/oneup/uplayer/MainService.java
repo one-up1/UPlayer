@@ -269,6 +269,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             songIndex--;
         } else if (index == songIndex) {
             if (index == songs.size()) {
+                //TODO: Don't go to previous song after removing last and current.
                 songIndex--;
             }
             if (player.isPlaying()) {

@@ -57,13 +57,550 @@ public class DbHelper extends SQLiteOpenHelper {
         this.context = context;
     }
 
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        Log.d(TAG, "DbHelper.onCreate()");
+
+        db.execSQL("CREATE TABLE " + TABLE_ARTISTS + "(" +
+                Artist._ID + " INTEGER PRIMARY KEY," +
+                Artist.ARTIST + " TEXT," +
+                Artist.LAST_ADDED + " INTEGER," +
+                Artist.LAST_PLAYED + " INTEGER," +
+                Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)");
+
+        db.execSQL("CREATE TABLE " + TABLE_SONGS + "(" +
+                Song._ID + " INTEGER PRIMARY KEY," +
+                Song.TITLE + " TEXT," +
+                Song.ARTIST_ID + " INTEGER," +
+                Song.ARTIST + " INTEGER," +
+                Song.DURATION + " INTEGER," +
+                Song.YEAR + " INTEGER," +
+                Song.ADDED + " INTEGER," +
+                Song.TAG + " TEXT," +
+                Song.BOOKMARKED + " INTEGER," +
+                Song.LAST_PLAYED + " INTEGER," +
+                Song.TIMES_PLAYED + " INTEGER DEFAULT 0)");
+
+        db.execSQL("CREATE TABLE " + TABLE_PLAYLISTS + "(" +
+                Playlist._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                Playlist.NAME + " TEXT," +
+                Playlist.MODIFIED + " INTEGER," +
+                Playlist.SONG_INDEX + " INTEGER," +
+                Playlist.SONG_POSITION + " INTEGER)");
+
+        db.execSQL("CREATE TABLE " + TABLE_PLAYLIST_SONGS + "(" +
+                Playlist._ID + " INTEGER PRIMARY KEY," +
+                Playlist.PLAYLIST_ID + " INTEGER," +
+                Playlist.SONG_ID + ")");
+
+        ContentValues values = new ContentValues();
+        values.put(Playlist._ID, 1L);
+        values.put(Playlist.NAME, context.getString(R.string.default_playlist));
+        db.insert(TABLE_PLAYLISTS, null, values);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
+
+    public ArrayList<Artist> queryArtists(String orderBy) {
+        Log.d(TAG, "DbHelper.queryArtists('" + orderBy + "')");
+        ArrayList<Artist> artists = new ArrayList<>();
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(TABLE_ARTISTS, null, null, null, null, null, orderBy)) {
+                while (c.moveToNext()) {
+                    Artist artist = new Artist();
+                    artist.setId(c.getLong(0));
+                    artist.setArtist(c.getString(1));
+                    artist.setLastAdded(c.getLong(2));
+                    artist.setLastPlayed(c.getLong(3));
+                    artist.setTimesPlayed(c.getInt(4));
+                    artists.add(artist);
+                }
+            }
+        }
+        Log.d(TAG, artists.size() + " artists queried");
+        return artists;
+    }
+
+    public void queryArtist(Artist artist) {
+        Log.d(TAG, "DbHelper.queryArtist(" + artist + ")");
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = query(db, TABLE_ARTISTS, new String[]{Artist.LAST_ADDED,
+                            Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+                    artist.getId())) {
+                artist.setLastAdded(c.getLong(0));
+                artist.setLastPlayed(c.getLong(1));
+                artist.setTimesPlayed(c.getInt(2));
+            }
+        }
+    }
+
+    public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
+        Log.d(TAG, "DbHelper.querySongs(" + selection + ",'" + orderBy + "')");
+        ArrayList<Song> songs = new ArrayList<>();
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(TABLE_SONGS, null, selection, selectionArgs,
+                    null, null, orderBy)) {
+                while (c.moveToNext()) {
+                    Song song = new Song();
+                    song.setId(c.getLong(0));
+                    song.setTitle(c.getString(1));
+                    song.setArtistId(c.getLong(2));
+                    song.setArtist(c.getString(3));
+                    song.setDuration(c.getLong(4));
+                    song.setYear(c.getInt(5));
+                    song.setAdded(c.getLong(6));
+                    song.setTag(c.getString(7));
+                    song.setBookmarked(c.getLong(8));
+                    song.setLastPlayed(c.getLong(9));
+                    song.setTimesPlayed(c.getInt(10));
+                    songs.add(song);
+                }
+            }
+        }
+        Log.d(TAG, songs.size() + " songs queried");
+        return songs;
+    }
+
+    public void querySong(Song song) {
+        Log.d(TAG, "DbHelper.querySong(" + song + ")");
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = query(db, TABLE_SONGS, new String[]{Song.YEAR, Song.ADDED, Song.TAG,
+                            Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED},
+                    song.getId())) {
+                song.setYear(c.getInt(0));
+                song.setAdded(c.getLong(1));
+                song.setTag(c.getString(2));
+                song.setBookmarked(c.getLong(3));
+                song.setLastPlayed(c.getLong(4));
+                song.setTimesPlayed(c.getInt(5));
+            }
+        }
+    }
+
+    public ArrayList<String> querySongTags() {
+        Log.d(TAG, "DbHelper.querySongTags()");
+        ArrayList<String> tags = new ArrayList<>();
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(true, TABLE_SONGS, new String[]{Song.TAG},
+                    Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
+                while (c.moveToNext()) {
+                    tags.add(c.getString(0));
+                }
+            }
+        }
+        Log.d(TAG, tags.size() + " song tags queried");
+        return tags;
+    }
+
+    public void updateSong(Song song) {
+        Log.d(TAG, "DbHelper.updateSong(" + song + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                ContentValues values = new ContentValues();
+                putValue(values, Song.YEAR, song.getYear());
+                putValue(values, Song.ADDED, song.getAdded());
+                values.put(Song.TAG, song.getTag());
+                putValue(values, Song.BOOKMARKED, song.getBookmarked());
+
+                update(db, TABLE_SONGS, values, song.getId(), true);
+                updateArtistStats(db, song);
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    public void bookmarkSong(Song song) {
+        Log.d(TAG, "DbHelper.bookmarkSong(" + song + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                update(db, "UPDATE " + TABLE_SONGS + " SET " +
+                                Song.BOOKMARKED + "=CASE WHEN " +
+                                Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
+                                SQL_WHERE_ID_IS,
+                        new Object[]{Calendar.currentTime(), song.getId()},
+                        TABLE_SONGS, song.getId());
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+            song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED, song.getId()));
+        }
+    }
+
+    public void updateSongPlayed(Song song) {
+        Log.d(TAG, "DbHelper.updateSongPlayed(" + song + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            long time = Calendar.currentTime();
+
+            db.beginTransaction();
+            try {
+                updatePlayed(db, TABLE_SONGS, time, song.getId());
+                updatePlayed(db, TABLE_ARTISTS, time, song.getArtistId());
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+
+            song.setLastPlayed(time);
+            song.setTimesPlayed(queryInt(db, TABLE_SONGS, Song.TIMES_PLAYED, song.getId()));
+        }
+    }
+
+    public void deleteSong(Song song) {
+        Log.d(TAG, "DbHelper.deleteSong(" + song + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                delete(db, TABLE_SONGS, song.getId());
+
+                // Update artist stats if the artist has other songs, delete it otherwise.
+                if (queryInt(db, "SELECT COUNT(*) FROM " + TABLE_SONGS + SQL_WHERE_ARTIST_ID_IS,
+                        getWhereArgs(song.getArtistId())) > 0) {
+                    updateArtistStats(db, song);
+                } else {
+                    Log.d(TAG, "Deleting artist: '" + song.getArtist() + "'");
+                    delete(db, TABLE_ARTISTS, song.getArtistId());
+                }
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    public ArrayList<Playlist> queryPlaylists() {
+        Log.d(TAG, "DbHelper.queryPlaylists()");
+        ArrayList<Playlist> playlists = new ArrayList<>();
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(TABLE_PLAYLISTS, null, Playlist.MODIFIED + " IS NOT NULL",
+                    null, null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
+                while (c.moveToNext()) {
+                    Playlist playlist = new Playlist();
+                    playlist.setId(c.getLong(0));
+                    playlist.setName(c.getString(1));
+                    playlist.setModified(c.getLong(2));
+                    playlist.setSongIndex(c.getInt(3));
+                    playlist.setSongPosition(c.getInt(4));
+                    playlists.add(playlist);
+                }
+            }
+        }
+        Log.d(TAG, playlists.size() + " playlists queried");
+        return playlists;
+    }
+
+    public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
+        Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
+        ArrayList<Song> songs = new ArrayList<>();
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(TABLE_PLAYLIST_SONGS + "," + TABLE_SONGS, new String[]{
+                            Playlist.SONG_ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
+                            Song.DURATION, Song.TIMES_PLAYED},
+                    Playlist.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID +
+                            " AND " + Playlist.PLAYLIST_ID + "=?",
+                    getWhereArgs(playlist.getId()), null, null,
+                    TABLE_PLAYLIST_SONGS + "." + Playlist._ID)) {
+                while (c.moveToNext()) {
+                    Song song = new Song();
+                    song.setId(c.getLong(0));
+                    song.setTitle(c.getString(1));
+                    song.setArtistId(c.getLong(2));
+                    song.setArtist(c.getString(3));
+                    song.setDuration(c.getLong(4));
+                    song.setTimesPlayed(c.getInt(5));
+                    songs.add(song);
+                }
+            }
+        }
+        Log.d(TAG, songs.size() + " playlist songs queried");
+        return songs;
+    }
+
+    public void insertOrUpdatePlaylist(Playlist playlist, List<Song> songs) {
+        Log.d(TAG, "DbHelper.insertOrUpdatePlaylist(" + playlist + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                ContentValues values;
+
+                // Insert or update playlist.
+                values = new ContentValues();
+                if (songs == null) {
+                    values.put(Playlist.NAME, playlist.getName());
+                }
+                values.put(Playlist.MODIFIED, playlist.getModified());
+                if (playlist.getId() == 0) {
+                    playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
+                    Log.d(TAG, "Playlist inserted: " + playlist.getId());
+                } else {
+                    values.put(Playlist.SONG_INDEX, playlist.getSongIndex());
+                    values.put(Playlist.SONG_POSITION, playlist.getSongPosition());
+                    update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
+                }
+
+                // Insert playlist songs, deleting any existing playlist songs.
+                if (songs != null) {
+                    if (playlist.getId() > 0) {
+                        deletePlaylistSongs(db, playlist);
+                    }
+                    for (Song song : songs) {
+                        insertPlaylistSong(db, playlist, song);
+                    }
+                    Log.d(TAG, songs.size() + " playlist songs inserted");
+                }
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    public void insertPlaylistSong(Playlist playlist, Song song) {
+        Log.d(TAG, "DbHelper.insertPlaylistSong(" + playlist + ", " + song + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                ContentValues values = new ContentValues();
+                values.put(Playlist.MODIFIED, Calendar.currentTime());
+                update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
+
+                insertPlaylistSong(db, playlist, song);
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    public void deletePlaylist(Playlist playlist) {
+        Log.d(TAG, "DbHelper.deletePlaylist(" + playlist + ")");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                deletePlaylistSongs(db, playlist);
+                delete(db, TABLE_PLAYLISTS, playlist.getId());
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    public Stats queryStats(Artist artist) {
+        Log.d(TAG, "DbHelper.queryStats(" + artist + ")");
+        Stats stats = new Stats();
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            String[] artistIdWhereArgs = artist == null ? null : getWhereArgs(artist.getId());
+
+            stats.setSongCount(queryInt(db, appendWhereArtistId(
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS,
+                    artist, false), artistIdWhereArgs));
+
+            stats.setSongsDuration(queryLong(db, appendWhereArtistId(
+                    "SELECT SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS,
+                    artist, false), artistIdWhereArgs));
+
+            if (artist == null) {
+                stats.setArtistCount(queryInt(db,
+                        "SELECT COUNT(*) FROM " + TABLE_ARTISTS, null));
+            }
+
+            stats.setSongsPlayed(queryInt(db, appendWhereArtistId(
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + ">0",
+                    artist, true), artistIdWhereArgs));
+
+            stats.setSongsBookmarked(queryInt(db, appendWhereArtistId(
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.BOOKMARKED + ">0",
+                    artist, true), artistIdWhereArgs));
+
+            stats.setSongsTagged(queryInt(db, appendWhereArtistId(
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NOT NULL",
+                    artist, true), artistIdWhereArgs));
+
+            if (artist == null) {
+                stats.setLastAdded(queryLong(db,
+                        "SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS, null));
+
+                stats.setLastPlayed(queryLong(db,
+                        "SELECT MAX(" + Song.LAST_PLAYED + ") FROM " + TABLE_SONGS, null));
+
+                stats.setTimesPlayed(queryInt(db,
+                        "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS, null));
+            } else {
+                stats.setLastAdded(artist.getLastAdded());
+                stats.setLastPlayed(artist.getLastPlayed());
+                stats.setTimesPlayed(artist.getTimesPlayed());
+            }
+
+            stats.setPlayedDuration(queryLong(db, appendWhereArtistId(
+                    "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED +
+                            ") FROM " + TABLE_SONGS,
+                    artist, false), artistIdWhereArgs));
+        }
+        return stats;
+    }
+
+    public SyncResult[] syncWithMediaStore(Context context) throws IOException {
+        Log.d(TAG, "DbHelper.syncWithMediaStore()");
+
+        // Read artist ignore file.
+        List<String> artistIgnore = new ArrayList<>();
+        if (ARTIST_IGNORE_FILE.exists()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(ARTIST_IGNORE_FILE)))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    artistIgnore.add(line);
+                }
+            }
+        }
+        Log.d(TAG, artistIgnore.size() + " artists on ignore list");
+
+        // Sync artists and songs tables.
+        SyncResult[] results = new SyncResult[2];
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                long time = Calendar.currentTime();
+
+                results[0] = syncTable(context, MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+                        db, TABLE_ARTISTS, new String[]{Artist._ID, Artist.ARTIST},
+                        null, new int[0], 1, artistIgnore, -1, null, null, 0);
+
+                results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        db, TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
+                                Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.YEAR},
+                        new int[]{1, 2, 3, 4}, new int[]{5}, -1, null, 2, results[0].ids,
+                        Song.ADDED, time);
+
+                // Update artists when songs have been inserted or deleted.
+                if (results[1].rowsInserted > 0 || results[1].rowsDeleted > 0) {
+                    updateArtistStats(db, null);
+                }
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+        return results;
+    }
+
+    public void backup() throws JSONException, IOException {
+        Log.d(TAG, "DbHelper.backup()");
+        JSONObject backup = new JSONObject();
+
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            backupTable(backup, db, TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
+                    Song.ADDED, Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
+
+            backupTable(backup, db, TABLE_PLAYLISTS, new String[]{Playlist._ID, Playlist.NAME,
+                    Playlist.MODIFIED, Playlist.SONG_INDEX, Playlist.SONG_POSITION});
+
+            backupTable(backup, db, TABLE_PLAYLIST_SONGS, new String[]{
+                    Playlist.PLAYLIST_ID, Playlist.SONG_ID});
+        }
+
+        // Write JSONObject to file.
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(BACKUP_FILE, false)))) {
+            writer.write(backup.toString());
+        }
+    }
+
+    public void restoreBackup() throws IOException, JSONException {
+        Log.d(TAG, "DbHelper.restoreBackup()");
+
+        // Read JSONObject from file.
+        JSONObject backup;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(BACKUP_FILE)))) {
+            backup = new JSONObject(reader.readLine());
+        }
+
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.beginTransaction();
+            try {
+                // Restore songs table.
+                JSONArray songs = backup.getJSONArray(TABLE_SONGS);
+                for (int i = 0; i < songs.length(); i++) {
+                    // Get ContentValues from JSONObject.
+                    JSONObject song = songs.getJSONObject(i);
+                    ContentValues values = getValues(song, new String[]{Song.YEAR, Song.ADDED,
+                            Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
+
+                    // Update row and make sure 1 row is updated.
+                    switch (db.update(TABLE_SONGS, values,
+                            Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?", new String[]{
+                                    song.getString(Song.TITLE), song.getString(Song.ARTIST)})) {
+                        case 0:
+                            throw new SQLiteException("Song not found: '" +
+                                    song.getString(Song.ARTIST) + " - " +
+                                    song.getString(Song.TITLE) + "'");
+                        case 1:
+                            Log.d(TAG, "Song updated: '" +
+                                    song.getString(Song.ARTIST) + " - " +
+                                    song.getString(Song.TITLE) + "'");
+                            break;
+                        default:
+                            throw new SQLiteException("Duplicate song: '" +
+                                    song.getString(Song.ARTIST) + " - " +
+                                    song.getString(Song.TITLE) + "'");
+                    }
+                }
+                Log.d(TAG, songs.length() + " songs restored");
+                updateArtistStats(db, null);
+
+                restoreTable(backup, db, TABLE_PLAYLISTS, new String[]{Playlist._ID, Playlist.NAME,
+                        Playlist.MODIFIED, Playlist.SONG_INDEX, Playlist.SONG_POSITION});
+
+                restoreTable(backup, db, TABLE_PLAYLIST_SONGS, new String[]{
+                        Playlist.PLAYLIST_ID, Playlist.SONG_ID});
+                //FIXME: Playlist song ID could be invalid after restoring a backup.
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+    }
+
+    public static String[] getWhereArgs(long id) {
+        return new String[]{Long.toString(id)};
+    }
+
+    private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
+        update(db, "UPDATE " + table + " SET " +
+                        PlayedColumns.LAST_PLAYED + "=?," +
+                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1" +
+                        SQL_WHERE_ID_IS,
+                new Object[]{time, id}, table, id);
+    }
+
+    private static void insertPlaylistSong(SQLiteDatabase db, Playlist playlist, Song song) {
+        ContentValues values = new ContentValues();
+        values.put(Playlist.PLAYLIST_ID, playlist.getId());
+        values.put(Playlist.SONG_ID, song.getId());
+        Log.d(TAG, "Playlist song inserted: " + db.insert(TABLE_PLAYLIST_SONGS, null, values));
+    }
+
     private static void deletePlaylistSongs(SQLiteDatabase db, Playlist playlist) {
         Log.d(TAG, db.delete(TABLE_PLAYLIST_SONGS, Playlist.PLAYLIST_ID + "=?",
                 getWhereArgs(playlist.getId())) + " playlist songs deleted");
     }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    private static String appendWhereArtistId(String sql, Artist artist, boolean and) {
+        return artist == null ? sql
+                : sql + " " + (and ? "AND" : "WHERE") + " " + SQL_ARTIST_ID_IS;
     }
 
     private static SyncResult syncTable(Context context, Uri contentUri,
@@ -196,22 +733,6 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, rows.length() + " " + table + " rows backed up");
     }
 
-    public void querySong(Song song) {
-        Log.d(TAG, "DbHelper.querySong(" + song + ")");
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = query(db, TABLE_SONGS, new String[]{Song.YEAR, Song.ADDED, Song.TAG,
-                            Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED},
-                    song.getId())) {
-                song.setYear(c.getInt(0));
-                song.setAdded(c.getLong(1));
-                song.setTag(c.getString(2));
-                song.setBookmarked(c.getLong(3));
-                song.setLastPlayed(c.getLong(4));
-                song.setTimesPlayed(c.getInt(5));
-            }
-        }
-    }
-
     private static void restoreTable(JSONObject obj, SQLiteDatabase db,
                                      String table, String[] columns) throws JSONException {
         Log.d(TAG, "DbHelper.restoreTable(" + table + ")");
@@ -221,88 +742,6 @@ public class DbHelper extends SQLiteOpenHelper {
             db.insert(table, null, getValues(rows.getJSONObject(i), columns));
         }
         Log.d(TAG, rows.length() + " " + table + " rows restored");
-    }
-
-    public void updateSong(Song song) {
-        Log.d(TAG, "DbHelper.updateSong(" + song + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                ContentValues values = new ContentValues();
-                putValue(values, Song.YEAR, song.getYear());
-                putValue(values, Song.ADDED, song.getAdded());
-                values.put(Song.TAG, song.getTag());
-                putValue(values, Song.BOOKMARKED, song.getBookmarked());
-
-                update(db, TABLE_SONGS, values, song.getId(), true);
-                updateArtistStats(db, song);
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-    }
-
-    public void bookmarkSong(Song song) {
-        Log.d(TAG, "DbHelper.bookmarkSong(" + song + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                update(db, "UPDATE " + TABLE_SONGS + " SET " +
-                                Song.BOOKMARKED + "=CASE WHEN " +
-                                Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END " +
-                                SQL_WHERE_ID_IS,
-                        new Object[]{Calendar.currentTime(), song.getId()},
-                        TABLE_SONGS, song.getId());
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-            song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED, song.getId()));
-        }
-    }
-
-    public void updateSongPlayed(Song song) {
-        Log.d(TAG, "DbHelper.updateSongPlayed(" + song + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            long time = Calendar.currentTime();
-
-            db.beginTransaction();
-            try {
-                updatePlayed(db, TABLE_SONGS, time, song.getId());
-                updatePlayed(db, TABLE_ARTISTS, time, song.getArtistId());
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-
-            song.setLastPlayed(time);
-            song.setTimesPlayed(queryInt(db, TABLE_SONGS, Song.TIMES_PLAYED, song.getId()));
-        }
-    }
-
-    public void deleteSong(Song song) {
-        Log.d(TAG, "DbHelper.deleteSong(" + song + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                delete(db, TABLE_SONGS, song.getId());
-
-                // Update artist stats if the artist has other songs, delete it otherwise.
-                if (queryInt(db, "SELECT COUNT(*) FROM " + TABLE_SONGS + SQL_WHERE_ARTIST_ID_IS,
-                        getWhereArgs(song.getArtistId())) > 0) {
-                    updateArtistStats(db, song);
-                } else {
-                    Log.d(TAG, "Deleting artist: '" + song.getArtist() + "'");
-                    delete(db, TABLE_ARTISTS, song.getArtistId());
-                }
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
     }
 
     private static ContentValues getValues(JSONObject obj, String[] keys) throws JSONException {
@@ -324,445 +763,6 @@ public class DbHelper extends SQLiteOpenHelper {
             }
         }
         return values;
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        Log.d(TAG, "DbHelper.onCreate()");
-
-        db.execSQL("CREATE TABLE " + TABLE_ARTISTS + "(" +
-                Artist._ID + " INTEGER PRIMARY KEY," +
-                Artist.ARTIST + " TEXT," +
-                Artist.LAST_ADDED + " INTEGER," +
-                Artist.LAST_PLAYED + " INTEGER," +
-                Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)");
-
-        db.execSQL("CREATE TABLE " + TABLE_SONGS + "(" +
-                Song._ID + " INTEGER PRIMARY KEY," +
-                Song.TITLE + " TEXT," +
-                Song.ARTIST_ID + " INTEGER," +
-                Song.ARTIST + " INTEGER," +
-                Song.DURATION + " INTEGER," +
-                Song.YEAR + " INTEGER," +
-                Song.ADDED + " INTEGER," +
-                Song.TAG + " TEXT," +
-                Song.BOOKMARKED + " INTEGER," +
-                Song.LAST_PLAYED + " INTEGER," +
-                Song.TIMES_PLAYED + " INTEGER DEFAULT 0)");
-
-        db.execSQL("CREATE TABLE " + TABLE_PLAYLISTS + "(" +
-                Playlist._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                Playlist.NAME + " TEXT," +
-                Playlist.MODIFIED + " INTEGER," +
-                Playlist.SONG_INDEX + " INTEGER," +
-                Playlist.SONG_POSITION + " INTEGER)");
-
-        db.execSQL("CREATE TABLE " + TABLE_PLAYLIST_SONGS + "(" +
-                Playlist._ID + " INTEGER PRIMARY KEY," +
-                Playlist.PLAYLIST_ID + " INTEGER," +
-                Playlist.SONG_ID + ")");
-
-        ContentValues values = new ContentValues();
-        values.put(Playlist._ID, 1L);
-        values.put(Playlist.NAME, context.getString(R.string.default_playlist));
-        db.insert(TABLE_PLAYLISTS, null, values);
-    }
-
-    public void insertOrUpdatePlaylist(Playlist playlist, List<Song> songs) {
-        Log.d(TAG, "DbHelper.insertOrUpdatePlaylist(" + playlist + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                ContentValues values;
-
-                // Insert or update playlist.
-                values = new ContentValues();
-                if (songs == null) {
-                    values.put(Playlist.NAME, playlist.getName());
-                }
-                values.put(Playlist.MODIFIED, playlist.getModified());
-                if (playlist.getId() == 0) {
-                    playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
-                    Log.d(TAG, "Playlist inserted: " + playlist.getId());
-                } else {
-                    values.put(Playlist.SONG_INDEX, playlist.getSongIndex());
-                    values.put(Playlist.SONG_POSITION, playlist.getSongPosition());
-                    update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
-                }
-
-                // Insert playlist songs, deleting any existing playlist songs.
-                if (songs != null) {
-                    if (playlist.getId() > 0) {
-                        deletePlaylistSongs(db, playlist);
-                    }
-                    for (Song song : songs) {
-                        insertPlaylistSong(db, playlist, song);
-                    }
-                    Log.d(TAG, songs.size() + " playlist songs inserted");
-                }
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-    }
-
-    public void insertPlaylistSong(Playlist playlist, Song song) {
-        Log.d(TAG, "DbHelper.insertPlaylistSong(" + playlist + ", " + song + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                ContentValues values = new ContentValues();
-                values.put(Playlist.MODIFIED, Calendar.currentTime());
-                update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
-
-                insertPlaylistSong(db, playlist, song);
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-    }
-
-    public void deletePlaylist(Playlist playlist) {
-        Log.d(TAG, "DbHelper.deletePlaylist(" + playlist + ")");
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                deletePlaylistSongs(db, playlist);
-                delete(db, TABLE_PLAYLISTS, playlist.getId());
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-    }
-
-    public ArrayList<Artist> queryArtists(String orderBy) {
-        Log.d(TAG, "DbHelper.queryArtists('" + orderBy + "')");
-        ArrayList<Artist> artists = new ArrayList<>();
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_ARTISTS, null, null, null, null, null, orderBy)) {
-                while (c.moveToNext()) {
-                    Artist artist = new Artist();
-                    artist.setId(c.getLong(0));
-                    artist.setArtist(c.getString(1));
-                    artist.setLastAdded(c.getLong(2));
-                    artist.setLastPlayed(c.getLong(3));
-                    artist.setTimesPlayed(c.getInt(4));
-                    artists.add(artist);
-                }
-            }
-        }
-        Log.d(TAG, artists.size() + " artists queried");
-        return artists;
-    }
-
-    public SyncResult[] syncWithMediaStore(Context context) throws IOException {
-        Log.d(TAG, "DbHelper.syncWithMediaStore()");
-
-        // Read artist ignore file.
-        List<String> artistIgnore = new ArrayList<>();
-        if (ARTIST_IGNORE_FILE.exists()) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(ARTIST_IGNORE_FILE)))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    artistIgnore.add(line);
-                }
-            }
-        }
-        Log.d(TAG, artistIgnore.size() + " artists on ignore list");
-
-        // Sync artists and songs tables.
-        SyncResult[] results = new SyncResult[2];
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                long time = Calendar.currentTime();
-
-                results[0] = syncTable(context, MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                        db, TABLE_ARTISTS, new String[]{Artist._ID, Artist.ARTIST},
-                        null, new int[0], 1, artistIgnore, -1, null, null, 0);
-
-                results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        db, TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
-                                Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.YEAR},
-                        new int[]{1, 2, 3, 4}, new int[]{5}, -1, null, 2, results[0].ids,
-                        Song.ADDED, time);
-
-                // Update artists when songs have been inserted or deleted.
-                if (results[1].rowsInserted > 0 || results[1].rowsDeleted > 0) {
-                    updateArtistStats(db, null);
-                }
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-        return results;
-    }
-
-    public void queryArtist(Artist artist) {
-        Log.d(TAG, "DbHelper.queryArtist(" + artist + ")");
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = query(db, TABLE_ARTISTS, new String[]{
-                    Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
-                    artist.getId())) {
-                artist.setLastAdded(c.getLong(0));
-                artist.setLastPlayed(c.getLong(1));
-                artist.setTimesPlayed(c.getInt(2));
-            }
-        }
-    }
-
-    public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
-        Log.d(TAG, "DbHelper.querySongs(" + selection + ",'" + orderBy + "')");
-        ArrayList<Song> songs = new ArrayList<>();
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_SONGS, null,
-                    selection, selectionArgs, null, null, orderBy)) {
-                while (c.moveToNext()) {
-                    Song song = new Song();
-                    song.setId(c.getLong(0));
-                    song.setTitle(c.getString(1));
-                    song.setArtistId(c.getLong(2));
-                    song.setArtist(c.getString(3));
-                    song.setDuration(c.getLong(4));
-                    song.setYear(c.getInt(5));
-                    song.setAdded(c.getLong(6));
-                    song.setTag(c.getString(7));
-                    song.setBookmarked(c.getLong(8));
-                    song.setLastPlayed(c.getLong(9));
-                    song.setTimesPlayed(c.getInt(10));
-                    songs.add(song);
-                }
-            }
-        }
-        Log.d(TAG, songs.size() + " songs queried");
-        return songs;
-    }
-
-    public static String[] getWhereArgs(long id) {
-        return new String[]{Long.toString(id)};
-    }
-
-    private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
-        update(db, "UPDATE " + table + " SET " +
-                        PlayedColumns.LAST_PLAYED + "=?," +
-                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1" +
-                        SQL_WHERE_ID_IS,
-                new Object[]{time, id}, table, id);
-    }
-
-    private static void insertPlaylistSong(SQLiteDatabase db, Playlist playlist, Song song) {
-        ContentValues values = new ContentValues();
-        values.put(Playlist.PLAYLIST_ID, playlist.getId());
-        values.put(Playlist.SONG_ID, song.getId());
-        Log.d(TAG, "Playlist song inserted: " + db.insert(TABLE_PLAYLIST_SONGS, null, values));
-    }
-
-    public ArrayList<String> querySongTags() {
-        Log.d(TAG, "DbHelper.querySongTags()");
-        ArrayList<String> tags = new ArrayList<>();
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(true, TABLE_SONGS, new String[]{Song.TAG},
-                    Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
-                while (c.moveToNext()) {
-                    tags.add(c.getString(0));
-                }
-            }
-        }
-        Log.d(TAG, tags.size() + " song tags queried");
-        return tags;
-    }
-
-    private static String appendWhereArtistId(String sql, Artist artist, boolean and) {
-        return artist == null ? sql
-                : sql + " " + (and ? "AND" : "WHERE") + " " + SQL_ARTIST_ID_IS;
-    }
-
-    public ArrayList<Playlist> queryPlaylists() {
-        Log.d(TAG, "DbHelper.queryPlaylists()");
-        ArrayList<Playlist> playlists = new ArrayList<>();
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLISTS, null, Playlist.MODIFIED + " IS NOT NULL",
-                    null, null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
-                while (c.moveToNext()) {
-                    Playlist playlist = new Playlist();
-                    playlist.setId(c.getLong(0));
-                    playlist.setName(c.getString(1));
-                    playlist.setModified(c.getLong(2));
-                    playlist.setSongIndex(c.getInt(3));
-                    playlist.setSongPosition(c.getInt(4));
-                    playlists.add(playlist);
-                }
-            }
-        }
-        Log.d(TAG, playlists.size() + " playlists queried");
-        return playlists;
-    }
-
-    public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
-        Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
-        ArrayList<Song> songs = new ArrayList<>();
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLIST_SONGS + "," + TABLE_SONGS, new String[]{
-                    Playlist.SONG_ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
-                            Song.DURATION, Song.TIMES_PLAYED},
-                    Playlist.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID +
-                            " AND " + Playlist.PLAYLIST_ID + "=?",
-                    getWhereArgs(playlist.getId()), null, null,
-                    TABLE_PLAYLIST_SONGS + "." + Playlist._ID)) {
-                while (c.moveToNext()) {
-                    Song song = new Song();
-                    song.setId(c.getLong(0));
-                    song.setTitle(c.getString(1));
-                    song.setArtistId(c.getLong(2));
-                    song.setArtist(c.getString(3));
-                    song.setDuration(c.getLong(4));
-                    song.setTimesPlayed(c.getInt(5));
-                    songs.add(song);
-                }
-            }
-        }
-        Log.d(TAG, songs.size() + " playlist songs queried");
-        return songs;
-    }
-
-    public Stats queryStats(Artist artist) {
-        Log.d(TAG, "DbHelper.queryStats(" + artist + ")");
-        Stats stats = new Stats();
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            String[] artistIdWhereArgs = artist == null ? null : getWhereArgs(artist.getId());
-
-            stats.setSongCount(queryInt(db, appendWhereArtistId(
-                    "SELECT COUNT(*) FROM " + TABLE_SONGS,
-                    artist, false), artistIdWhereArgs));
-
-            stats.setSongsDuration(queryLong(db, appendWhereArtistId(
-                    "SELECT SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS,
-                    artist, false), artistIdWhereArgs));
-
-            if (artist == null) {
-                stats.setArtistCount(queryInt(db,
-                        "SELECT COUNT(*) FROM " + TABLE_ARTISTS, null));
-            }
-
-            stats.setSongsPlayed(queryInt(db, appendWhereArtistId(
-                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + ">0",
-                    artist, true), artistIdWhereArgs));
-
-            stats.setSongsBookmarked(queryInt(db, appendWhereArtistId(
-                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.BOOKMARKED + ">0",
-                    artist, true), artistIdWhereArgs));
-
-            stats.setSongsTagged(queryInt(db, appendWhereArtistId(
-                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NOT NULL",
-                    artist, true), artistIdWhereArgs));
-
-            if (artist == null) {
-                stats.setLastAdded(queryLong(db,
-                        "SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS, null));
-
-                stats.setLastPlayed(queryLong(db,
-                        "SELECT MAX(" + Song.LAST_PLAYED + ") FROM " + TABLE_SONGS, null));
-
-                stats.setTimesPlayed(queryInt(db,
-                        "SELECT SUM(" + Song.TIMES_PLAYED + ") FROM " + TABLE_SONGS, null));
-            } else {
-                stats.setLastAdded(artist.getLastAdded());
-                stats.setLastPlayed(artist.getLastPlayed());
-                stats.setTimesPlayed(artist.getTimesPlayed());
-            }
-
-            stats.setPlayedDuration(queryLong(db, appendWhereArtistId(
-                    "SELECT SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED +
-                            ") FROM " + TABLE_SONGS,
-                    artist, false), artistIdWhereArgs));
-        }
-        return stats;
-    }
-
-    public void backup() throws JSONException, IOException {
-        Log.d(TAG, "DbHelper.backup()");
-        JSONObject backup = new JSONObject();
-
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            backupTable(backup, db, TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
-                    Song.ADDED, Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
-
-            backupTable(backup, db, TABLE_PLAYLISTS, new String[]{Playlist._ID, Playlist.NAME,
-                    Playlist.MODIFIED, Playlist.SONG_INDEX, Playlist.SONG_POSITION});
-
-            backupTable(backup, db, TABLE_PLAYLIST_SONGS, new String[]{
-                    Playlist.PLAYLIST_ID, Playlist.SONG_ID});
-        }
-
-        // Write JSONObject to file.
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(BACKUP_FILE, false)))) {
-            writer.write(backup.toString());
-        }
-    }
-
-    public void restoreBackup() throws IOException, JSONException {
-        Log.d(TAG, "DbHelper.restoreBackup()");
-
-        // Read JSONObject from file.
-        JSONObject backup;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new FileInputStream(BACKUP_FILE)))) {
-            backup = new JSONObject(reader.readLine());
-        }
-
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.beginTransaction();
-            try {
-                // Restore songs table.
-                JSONArray songs = backup.getJSONArray(TABLE_SONGS);
-                for (int i = 0; i < songs.length(); i++) {
-                    // Get ContentValues from JSONObject.
-                    JSONObject song = songs.getJSONObject(i);
-                    ContentValues values = getValues(song, new String[] {Song.YEAR, Song.ADDED,
-                            Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
-
-                    // Update row and make sure 1 row is updated.
-                    switch (db.update(TABLE_SONGS, values,
-                            Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?", new String[]{
-                            song.getString(Song.TITLE), song.getString(Song.ARTIST)})) {
-                        case 0:
-                            throw new SQLiteException("Song not found: '" +
-                                    song.getString(Song.ARTIST) + " - " +
-                                    song.getString(Song.TITLE) + "'");
-                        case 1:
-                            Log.d(TAG, "Song updated: '" +
-                                    song.getString(Song.ARTIST) + " - " +
-                                    song.getString(Song.TITLE) + "'");
-                            break;
-                        default:
-                            throw new SQLiteException("Duplicate song: '" +
-                                    song.getString(Song.ARTIST) + " - " +
-                                    song.getString(Song.TITLE) + "'");
-                    }
-                }
-                Log.d(TAG, songs.length() + " songs restored");
-                updateArtistStats(db, null);
-
-                restoreTable(backup, db, TABLE_PLAYLISTS, new String[]{Playlist._ID, Playlist.NAME,
-                        Playlist.MODIFIED, Playlist.SONG_INDEX, Playlist.SONG_POSITION});
-
-                restoreTable(backup, db, TABLE_PLAYLIST_SONGS,  new String[]{
-                        Playlist.PLAYLIST_ID, Playlist.SONG_ID});
-                //FIXME: Playlist song ID could be invalid after restoring a backup.
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
     }
 
     private static void updateArtistStats(SQLiteDatabase db, Song song) {

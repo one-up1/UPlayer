@@ -50,9 +50,6 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
-    public static String PLAYLIST_SELECTION =
-            "IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS + ")";
-
     private Context context;
 
     public DbHelper(Context context) {
@@ -575,6 +572,28 @@ public class DbHelper extends SQLiteOpenHelper {
                 db.endTransaction();
             }
         }
+    }
+
+    public static String getInClause(int count) {
+        StringBuilder sb = new StringBuilder("IN(");
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append('?');
+        }
+        sb.append(')');
+        return sb.toString();
+    }
+
+    public static String getPlaylistSongsInClause(int count) {
+        String s = "IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS;
+        if (count == 0) {
+            s = "NOT " + s;
+        } else {
+            s += " WHERE " + Playlist.PLAYLIST_ID + " " + getInClause(count);
+        }
+        return Song._ID + " " + s + ")";
     }
 
     public static String[] getWhereArgs(long id) {

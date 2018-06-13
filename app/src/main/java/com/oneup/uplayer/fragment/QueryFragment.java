@@ -31,6 +31,7 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -312,33 +313,40 @@ public class QueryFragment extends Fragment implements
 
     private void query(Set<String> tags, List<Playlist> playlists) {
         String selection = null;
+        List<String> selectionArgs = new ArrayList<>();
 
         String title = etTitle.getString();
         if (title != null) {
-            selection = Song.TITLE + " LIKE '%" + title + "%'";
+            selection = Song.TITLE + " LIKE ?";
+            selectionArgs.add("%" + title + "%");
         }
 
         String artist = etArtist.getString();
         if (artist != null) {
-            selection = appendSelection(selection, Song.ARTIST + " LIKE '%" + artist + "%'");
+            selection = appendSelection(selection, Song.ARTIST + " LIKE ?");
+            selectionArgs.add("%" + artist + "%");
         }
 
         String minYear = etMinYear.getString();
         if (minYear != null) {
-            selection = appendSelection(selection, Song.YEAR + ">=" + minYear);
+            selection = appendSelection(selection, Song.YEAR + ">=?");
+            selectionArgs.add(minYear);
         }
 
         String maxYear = etMaxYear.getString();
         if (maxYear != null) {
-            selection = appendSelection(selection, Song.YEAR + "<=" + maxYear);
+            selection = appendSelection(selection, Song.YEAR + "<=?");
+            selectionArgs.add(maxYear);
         }
         
         if (minAdded > 0) {
-            selection = appendSelection(selection, Song.ADDED + ">=" + minAdded);
+            selection = appendSelection(selection, Song.ADDED + ">=?");
+            selectionArgs.add(Long.toString(minAdded));
         }
         
         if (maxAdded > 0) {
-            selection = appendSelection(selection, Song.ADDED + "<=" + maxAdded);
+            selection = appendSelection(selection, Song.ADDED + "<=?");
+            selectionArgs.add(Long.toString(maxAdded));
         }
 
         if (rbBookmarked.isChecked()) {
@@ -348,21 +356,25 @@ public class QueryFragment extends Fragment implements
         }
         
         if (minLastPlayed > 0) {
-            selection = appendSelection(selection, Song.LAST_PLAYED + ">=" + minLastPlayed);
+            selection = appendSelection(selection, Song.LAST_PLAYED + ">=?");
+            selectionArgs.add(Long.toString(minLastPlayed));
         }
         
         if (maxLastPlayed > 0) {
-            selection = appendSelection(selection, Song.LAST_PLAYED + "<=" + maxLastPlayed);
+            selection = appendSelection(selection, Song.LAST_PLAYED + "<=?");
+            selectionArgs.add(Long.toString(maxLastPlayed));
         }
 
         String minTimesPlayed = etMinTimesPlayed.getString();
         if (minTimesPlayed != null) {
-            selection = appendSelection(selection, Song.TIMES_PLAYED + ">=" + minTimesPlayed);
+            selection = appendSelection(selection, Song.TIMES_PLAYED + ">=?");
+            selectionArgs.add(minTimesPlayed);
         }
 
         String maxTimesPlayed = etMaxTimesPlayed.getString();
         if (maxTimesPlayed != null) {
-            selection = appendSelection(selection, Song.TIMES_PLAYED + "<=" + maxTimesPlayed);
+            selection = appendSelection(selection, Song.TIMES_PLAYED + "<=?");
+            selectionArgs.add(maxTimesPlayed);
         }
 
         if (tags != null) {
@@ -370,15 +382,8 @@ public class QueryFragment extends Fragment implements
             if (tags.size() == 0) {
                 tagSelection = "IS NULL";
             } else {
-                StringBuilder sbTags = new StringBuilder();
-                for (String tag : tags) {
-                    sbTags.append(sbTags.length() == 0 ? '(' : ',');
-                    sbTags.append('\'');
-                    sbTags.append(tag);
-                    sbTags.append('\'');
-                }
-                sbTags.append(')');
-                tagSelection = "IN" + sbTags;
+                tagSelection = DbHelper.getInClause(tags.size());
+                selectionArgs.addAll(tags);
             }
             selection = appendSelection(selection, Song.TAG + " " + tagSelection);
 
@@ -386,25 +391,16 @@ public class QueryFragment extends Fragment implements
         }
 
         if (playlists != null) {
-            //TODO: Query playlists, use playlist_songs table name constant, use selectionArgs
-            String playlistSelection;
-            if (playlists.size() == 0) {
-                playlistSelection = "NOT IN(SELECT " + Playlist.SONG_ID + " FROM playlist_songs)";
-            } else {
-                StringBuilder sbPlaylistIds = new StringBuilder();
-                for (Playlist playlist : playlists) {
-                    sbPlaylistIds.append(sbPlaylistIds.length() == 0 ? '(' : ',');
-                    sbPlaylistIds.append(playlist.getId());
-                }
-                sbPlaylistIds.append(')');
-                playlistSelection = "IN(SELECT " + Playlist.SONG_ID + " FROM playlist_songs" +
-                        " WHERE " + Playlist.PLAYLIST_ID + " IN" + sbPlaylistIds + ")";
+            selection = appendSelection(selection,
+                    DbHelper.getPlaylistSongsInClause(playlists.size()));
+            for (Playlist playlist : playlists) {
+                selectionArgs.add(Long.toString(playlist.getId()));
             }
-            selection = appendSelection(selection, Song._ID + " " + playlistSelection);
         }
 
         startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(selection, null,
+                .putExtras(SongsFragment.getArguments(selection,
+                        selection == null ? null : selectionArgs.toArray(new String[0]),
                         sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
 
         saveQueryParams();

@@ -48,8 +48,8 @@ public class PlaylistsActivity extends AppCompatActivity {
 
     public static class PlaylistsFragment extends ListFragment<Playlist> {
         public PlaylistsFragment() {
-            super(R.layout.list_item_playlist, R.menu.list_item_playlist,
-                    0, 0, R.id.checkBox, null, null);
+            super(R.layout.list_item_playlist, R.menu.list_item_playlist, 0, 0, R.id.checkBox,
+                    null, null);
         }
 
         @Override

@@ -24,6 +24,13 @@ import com.oneup.uplayer.fragment.SongsFragment;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
+    
+    private static final int TAB_QUERY = 0;
+    private static final int TAB_BOOKMARKS = 1;
+    private static final int TAB_ARTISTS = 2;
+    private static final int TAB_LAST_ADDED = 3;
+    private static final int TAB_LAST_PLAYED = 4;
+    private static final int TAB_MOST_PLAYED = 5;
 
     private static final String PREF_CURRENT_ITEM = "current_item";
     private static final String PREF_BOOKMARKS_SORT_COLUMN = "bookmarks_sort_column";
@@ -31,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     private SharedPreferences preferences;
 
-    private SectionsPagerAdapter sectionsPagerAdapter;
+    private SectionsPagerAdapter tabAdapter;
     private ViewPager viewPager;
 
     @Override
@@ -42,10 +49,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         preferences = getPreferences(Context.MODE_PRIVATE);
 
-        sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        tabAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         viewPager = findViewById(R.id.container);
-        viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.setAdapter(tabAdapter);
         viewPager.setCurrentItem(preferences.getInt(PREF_CURRENT_ITEM, 2));
 
         TabLayout tabLayout = findViewById(R.id.tabs);
@@ -62,15 +69,17 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     @Override
     protected void onDestroy() {
         Log.d(TAG, "MainActivity.onDestroy()");
+
+        // Save the current tab position and the sort options of the bookmarks tab.
         SharedPreferences.Editor preferences = this.preferences.edit();
         preferences.putInt(PREF_CURRENT_ITEM, viewPager.getCurrentItem());
-        if (sectionsPagerAdapter.bookmarksFragment != null) {
-            preferences.putInt(PREF_BOOKMARKS_SORT_COLUMN,
-                    sectionsPagerAdapter.bookmarksFragment.getSortColumn());
-            preferences.putBoolean(PREF_BOOKMARKS_SORT_DESC,
-                    sectionsPagerAdapter.bookmarksFragment.isSortDesc());
+        SongsFragment bookmarksFragment = (SongsFragment) tabAdapter.items[TAB_BOOKMARKS];
+        if (bookmarksFragment != null) {
+            preferences.putInt(PREF_BOOKMARKS_SORT_COLUMN, bookmarksFragment.getSortColumn());
+            preferences.putBoolean(PREF_BOOKMARKS_SORT_DESC, bookmarksFragment.isSortDesc());
         }
         preferences.apply();
+
         super.onDestroy();
     }
 
@@ -85,88 +94,99 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
         // Reverse sort order when a ListFragment tab is reselected.
-        Fragment fragment = sectionsPagerAdapter.getItem(tab.getPosition());
+        Fragment fragment = tabAdapter.getItem(tab.getPosition());
         if (fragment instanceof ListFragment) {
             ((ListFragment) fragment).reverseSortOrder();
         }
     }
 
+    public void reload() {
+        Log.d(TAG, "MainActivity.reload()");
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                for (Fragment fragment : tabAdapter.items) {
+                    // Reload all ListFragments.
+                    if (fragment instanceof ListFragment) {
+                        ((ListFragment) fragment).reloadData();
+                    }
+                }
+            }
+        });
+    }
+
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
-        private QueryFragment queryFragment;
-        private SongsFragment bookmarksFragment;
-        private ArtistsFragment lastAddedFragment;
-        private ArtistsFragment artistsFragment;
-        private ArtistsFragment lastPlayedFragment;
-        private ArtistsFragment mostPlayedFragment;
+        private Fragment[] items;
 
         private SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
+            items = new Fragment[6];
         }
 
         @Override
         public Fragment getItem(int position) {
             switch (position) {
-                case 0:
-                    if (queryFragment == null) {
-                        queryFragment = QueryFragment.newInstance();
+                case TAB_QUERY:
+                    if (items[position] == null) {
+                        items[position] = QueryFragment.newInstance();
                     }
-                    return queryFragment;
-                case 1:
-                    if (bookmarksFragment == null) {
-                        bookmarksFragment = SongsFragment.newInstance(
+                    break;
+                case TAB_BOOKMARKS:
+                    if (items[position] == null) {
+                        items[position] = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
                                 preferences.getInt(PREF_BOOKMARKS_SORT_COLUMN,
                                         SongsFragment.SORT_COLUMN_BOOKMARKED),
                                 preferences.getBoolean(PREF_BOOKMARKS_SORT_DESC, true));
                     }
-                    return bookmarksFragment;
-                case 2:
-                    if (artistsFragment == null) {
-                        artistsFragment = ArtistsFragment.newInstance(0, false);
+                    break;
+                case TAB_ARTISTS:
+                    if (items[position] == null) {
+                        items[position] = ArtistsFragment.newInstance(0, false);
                     }
-                    return artistsFragment;
-                case 3:
-                    if (lastAddedFragment == null) {
-                        lastAddedFragment = ArtistsFragment.newInstance(
+                    break;
+                case TAB_LAST_ADDED:
+                    if (items[position] == null) {
+                        items[position] = ArtistsFragment.newInstance(
                                 ArtistsFragment.SORT_COLUMN_LAST_ADDED, true);
                     }
-                    return lastAddedFragment;
-                case 4:
-                    if (lastPlayedFragment == null) {
-                        lastPlayedFragment = ArtistsFragment.newInstance(
+                    break;
+                case TAB_LAST_PLAYED:
+                    if (items[position] == null) {
+                        items[position] = ArtistsFragment.newInstance(
                                 ArtistsFragment.SORT_COLUMN_LAST_PLAYED, true);
                     }
-                    return lastPlayedFragment;
-                case 5:
-                    if (mostPlayedFragment == null) {
-                        mostPlayedFragment = ArtistsFragment.newInstance(
+                    break;
+                case TAB_MOST_PLAYED:
+                    if (items[position] == null) {
+                        items[position] = ArtistsFragment.newInstance(
                                 ArtistsFragment.SORT_COLUMN_TIMES_PLAYED, true);
                     }
-                    return mostPlayedFragment;
-                default:
-                    return null;
+                    break;
             }
+            return items[position];
         }
 
         @Override
         public int getCount() {
-            return 6;
+            return items.length;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0:
+                case TAB_QUERY:
                     return getString(R.string.query);
-                case 1:
+                case TAB_BOOKMARKS:
                     return getString(R.string.bookmarks);
-                case 2:
+                case TAB_ARTISTS:
                     return getString(R.string.artists);
-                case 3:
+                case TAB_LAST_ADDED:
                     return getString(R.string.last_added);
-                case 4:
+                case TAB_LAST_PLAYED:
                     return getString(R.string.last_played);
-                case 5:
+                case TAB_MOST_PLAYED:
                     return getString(R.string.most_played);
                 default:
                     return null;

@@ -50,6 +50,9 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
+    public static String PLAYLIST_SELECTION =
+            "IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS + ")";
+
     private Context context;
 
     public DbHelper(Context context) {

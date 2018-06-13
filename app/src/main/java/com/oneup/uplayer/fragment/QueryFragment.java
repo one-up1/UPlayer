@@ -22,6 +22,7 @@ import android.widget.Spinner;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
+import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
@@ -32,8 +33,6 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.List;
 import java.util.Set;
-
-//TODO: Update lists after syncing database or restoring backup
 
 public class QueryFragment extends Fragment implements
         View.OnClickListener, View.OnLongClickListener {
@@ -387,7 +386,7 @@ public class QueryFragment extends Fragment implements
         }
 
         if (playlists != null) {
-            //TODO: Query playlists, use playlist_songs table name constant, use selectionArgs?
+            //TODO: Query playlists, use playlist_songs table name constant, use selectionArgs
             String playlistSelection;
             if (playlists.size() == 0) {
                 playlistSelection = "NOT IN(SELECT " + Playlist.SONG_ID + " FROM playlist_songs)";
@@ -486,6 +485,8 @@ public class QueryFragment extends Fragment implements
                                     DbHelper.SyncResult[] results =
                                             dbHelper.syncWithMediaStore(getActivity());
 
+                                    ((MainActivity) getActivity()).reload();
+
                                     Util.showInfoDialog(getActivity(), R.string.sync_completed,
                                             R.string.sync_completed_message,
                                             results[0].getRowCount(),
@@ -536,6 +537,7 @@ public class QueryFragment extends Fragment implements
                             public void run() {
                                 try {
                                     dbHelper.restoreBackup();
+                                    ((MainActivity) getActivity()).reload();
                                     Util.showToast(getActivity(), R.string.backup_restored);
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error restoring backup", ex);

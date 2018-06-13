@@ -269,12 +269,17 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             songIndex--;
         } else if (index == songIndex) {
             if (index == songs.size()) {
-                //TODO: Don't go to previous song after removing last and current.
+                //TODO: test Stop playback when the current and last song is removed.
+                //What happens when playing from notification after last has completed?
                 songIndex--;
-            }
-            if (player.isPlaying()) {
-                // Start playing the next song when the current song is removed, only when
-                // currently playing, or playback may start when removing songs while paused.
+
+                player.stop();
+                prepared = false;
+
+                setPlayPauseResource(R.drawable.ic_notification_play);
+            } else if (player.isPlaying()) {
+                // Play the next song when the current song is removed, only when currently playing,
+                // or playback may start when removing songs while paused.
                 play();
             }
         }
@@ -312,7 +317,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             this.songs.addAll(songs);
         }
 
-        // Update when playing or paused (prepared), start playing the last song when not.
+        // Update when playing or paused (prepared), play the last song when not.
         // This will start playback of the added song, if it is the first song
         // or is being added to a playlist of which the last song has completed.
         if (prepared) {

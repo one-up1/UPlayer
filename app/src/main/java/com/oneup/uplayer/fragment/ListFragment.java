@@ -129,32 +129,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         checkedListItems[getListItemPosition(buttonView)] = isChecked;
     }
 
-    public int getSortColumn() {
-        return sortColumn;
-    }
-
-    public void setSortColumn(int sortColumn) {
-        this.sortColumn = sortColumn;
-    }
-
-    public boolean isSortDesc() {
-        return sortDesc;
-    }
-
-    public void setSortDesc(boolean sortDesc) {
-        this.sortDesc = sortDesc;
-    }
-
-    public boolean isCheckboxVisible() {
-        return checkboxVisible;
-    }
-
-    public void reverseSortOrder() {
-        sortDesc = !sortDesc;
-        reloadData();
-    }
-
-    protected void reloadData() {
+    public void reloadData() {
         data = loadData();
         if (listItemCheckBoxId != 0) {
             checkedListItems = new boolean[data.size()];
@@ -169,13 +144,17 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
-    protected void notifyDataSetChanged() {
-        Log.d(TAG, "ListFragment.notifyDataSetChanged()");
-        setActivityTitle();
+    public void reverseSortOrder() {
+        sortDesc = !sortDesc;
+        reloadData();
+    }
 
-        if (listAdapter != null) {
-            listAdapter.notifyDataSetChanged();
-        }
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortDesc() {
+        return sortDesc;
     }
 
     protected abstract ArrayList<T> loadData();
@@ -212,12 +191,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
-    protected void setListItemViewOnClickListener(View rootView, int viewId) {
-        rootView.findViewById(viewId).setOnClickListener(this);
-    }
-
     protected String getSortColumnValue(int sortColumn, T item) {
         return null;
+    }
+
+    protected void setListItemViewOnClickListener(View rootView, int viewId) {
+        rootView.findViewById(viewId).setOnClickListener(this);
     }
 
     protected void onListItemClick(int position, T item) {
@@ -229,12 +208,22 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     protected void onListItemViewClick(int viewId, int position, T item) {
     }
 
+    protected void setSortColumns(String[] sortColumns) {
+        this.sortColumns = sortColumns;
+    }
+
     protected DbHelper getDbHelper() {
         return dbHelper;
     }
 
-    protected void setSortColumns(String[] sortColumns) {
-        this.sortColumns = sortColumns;
+    protected void setSortColumn(int sortColumn) {
+        this.sortColumn = sortColumn;
+        reloadData();
+    }
+
+    protected void setSortDesc(boolean sortDesc) {
+        this.sortDesc = sortDesc;
+        reloadData();
     }
 
     protected String getOrderBy() {
@@ -258,6 +247,19 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return orderBy.toString();
     }
 
+    protected boolean isCheckboxVisible() {
+        return checkboxVisible;
+    }
+
+    protected void notifyDataSetChanged() {
+        Log.d(TAG, "ListFragment.notifyDataSetChanged()");
+        setActivityTitle();
+
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
     protected ArrayList<T> getData() {
         return data;
     }
@@ -266,7 +268,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return data.size();
     }
 
-    public ArrayList<T> getCheckedListItems() {
+    protected ArrayList<T> getCheckedListItems() {
         ArrayList<T> items = new ArrayList<>();
         for (int i = 0; i < checkedListItems.length; i++) {
             if (checkedListItems[i]) {

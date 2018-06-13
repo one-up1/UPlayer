@@ -112,7 +112,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         if (parent == sSortColumn) {
             if (position != getSortColumn()) {
                 setSortColumn(position);
-                reloadData();
             }
         }
     }
@@ -125,7 +124,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView == cbSortDesc) {
             setSortDesc(cbSortDesc.isChecked());
-            reloadData();
         }
     }
 

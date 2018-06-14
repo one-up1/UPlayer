@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.LongSparseArray;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
@@ -41,6 +42,42 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String TABLE_PLAYLISTS = "playlists";
     private static final String TABLE_PLAYLIST_SONGS = "playlist_songs";
 
+    private static final String SQL_CREATE_ARTISTS =
+            "CREATE TABLE " + TABLE_ARTISTS + "(" +
+                    Artist._ID + " INTEGER PRIMARY KEY," +
+                    Artist.ARTIST + " TEXT," +
+                    Artist.LAST_ADDED + " INTEGER," +
+                    Artist.LAST_PLAYED + " INTEGER," +
+                    Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)";
+
+    private static final String SQL_CREATE_SONGS =
+            "CREATE TABLE " + TABLE_SONGS + "(" +
+                    Song._ID + " INTEGER PRIMARY KEY," +
+                    Song.TITLE + " TEXT," +
+                    Song.ARTIST_ID + " INTEGER," +
+                    Song.ARTIST + " INTEGER," +
+                    Song.DURATION + " INTEGER," +
+                    Song.YEAR + " INTEGER," +
+                    Song.ADDED + " INTEGER," +
+                    Song.TAG + " TEXT," +
+                    Song.BOOKMARKED + " INTEGER," +
+                    Song.LAST_PLAYED + " INTEGER," +
+                    Song.TIMES_PLAYED + " INTEGER DEFAULT 0)";
+
+    private static final String SQL_CREATE_PLAYLISTS =
+            "CREATE TABLE " + TABLE_PLAYLISTS + "(" +
+                    Playlist._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    Playlist.NAME + " TEXT," +
+                    Playlist.MODIFIED + " INTEGER," +
+                    Playlist.SONG_INDEX + " INTEGER," +
+                    Playlist.SONG_POSITION + " INTEGER)";
+
+    private static final String SQL_CREATE_PLAYLIST_SONGS =
+            "CREATE TABLE " + TABLE_PLAYLIST_SONGS + "(" +
+                    Playlist._ID + " INTEGER PRIMARY KEY," +
+                    Playlist.PLAYLIST_ID + " INTEGER," +
+                    Playlist.SONG_ID + ")";
+
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
     private static final String SQL_WHERE_ID_IS = " WHERE " + SQL_ID_IS;
 
@@ -60,39 +97,12 @@ public class DbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "DbHelper.onCreate()");
+        db.execSQL(SQL_CREATE_ARTISTS);
+        db.execSQL(SQL_CREATE_SONGS);
+        db.execSQL(SQL_CREATE_PLAYLISTS);
+        db.execSQL(SQL_CREATE_PLAYLIST_SONGS);
 
-        db.execSQL("CREATE TABLE " + TABLE_ARTISTS + "(" +
-                Artist._ID + " INTEGER PRIMARY KEY," +
-                Artist.ARTIST + " TEXT," +
-                Artist.LAST_ADDED + " INTEGER," +
-                Artist.LAST_PLAYED + " INTEGER," +
-                Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)");
-
-        db.execSQL("CREATE TABLE " + TABLE_SONGS + "(" +
-                Song._ID + " INTEGER PRIMARY KEY," +
-                Song.TITLE + " TEXT," +
-                Song.ARTIST_ID + " INTEGER," +
-                Song.ARTIST + " INTEGER," +
-                Song.DURATION + " INTEGER," +
-                Song.YEAR + " INTEGER," +
-                Song.ADDED + " INTEGER," +
-                Song.TAG + " TEXT," +
-                Song.BOOKMARKED + " INTEGER," +
-                Song.LAST_PLAYED + " INTEGER," +
-                Song.TIMES_PLAYED + " INTEGER DEFAULT 0)");
-
-        db.execSQL("CREATE TABLE " + TABLE_PLAYLISTS + "(" +
-                Playlist._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                Playlist.NAME + " TEXT," +
-                Playlist.MODIFIED + " INTEGER," +
-                Playlist.SONG_INDEX + " INTEGER," +
-                Playlist.SONG_POSITION + " INTEGER)");
-
-        db.execSQL("CREATE TABLE " + TABLE_PLAYLIST_SONGS + "(" +
-                Playlist._ID + " INTEGER PRIMARY KEY," +
-                Playlist.PLAYLIST_ID + " INTEGER," +
-                Playlist.SONG_ID + ")");
-
+        // Insert default playlist.
         ContentValues values = new ContentValues();
         values.put(Playlist._ID, 1L);
         values.put(Playlist.NAME, context.getString(R.string.default_playlist));
@@ -126,8 +136,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public void queryArtist(Artist artist) {
         Log.d(TAG, "DbHelper.queryArtist(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = query(db, TABLE_ARTISTS, new String[]{Artist.LAST_ADDED,
-                            Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
+            try (Cursor c = query(db, TABLE_ARTISTS,
+                    new String[]{Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
                     artist.getId())) {
                 artist.setLastAdded(c.getLong(0));
                 artist.setLastPlayed(c.getLong(1));
@@ -166,8 +176,9 @@ public class DbHelper extends SQLiteOpenHelper {
     public void querySong(Song song) {
         Log.d(TAG, "DbHelper.querySong(" + song + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = query(db, TABLE_SONGS, new String[]{Song.YEAR, Song.ADDED, Song.TAG,
-                            Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED},
+            try (Cursor c = query(db, TABLE_SONGS, new String[]{
+                            Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
+                            Song.LAST_PLAYED, Song.TIMES_PLAYED},
                     song.getId())) {
                 song.setYear(c.getInt(0));
                 song.setAdded(c.getLong(1));
@@ -477,8 +488,9 @@ public class DbHelper extends SQLiteOpenHelper {
                         null, new int[0], 1, artistIgnore, -1, null, null, 0);
 
                 results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        db, TABLE_SONGS, new String[]{Song._ID, Song.TITLE,
-                                Song.ARTIST_ID, Song.ARTIST, Song.DURATION, Song.YEAR},
+                        db, TABLE_SONGS, new String[]{
+                                Song._ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
+                                Song.DURATION, Song.YEAR},
                         new int[]{1, 2, 3, 4}, new int[]{5}, -1, null, 2, results[0].ids,
                         Song.ADDED, time);
 
@@ -500,11 +512,13 @@ public class DbHelper extends SQLiteOpenHelper {
         JSONObject backup = new JSONObject();
 
         try (SQLiteDatabase db = getReadableDatabase()) {
-            backupTable(backup, db, TABLE_SONGS, new String[]{Song.TITLE, Song.ARTIST, Song.YEAR,
-                    Song.ADDED, Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
+            backupTable(backup, db, TABLE_SONGS, new String[]{
+                    Song._ID, Song.TITLE, Song.ARTIST, Song.YEAR, Song.ADDED,
+                    Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
 
-            backupTable(backup, db, TABLE_PLAYLISTS, new String[]{Playlist._ID, Playlist.NAME,
-                    Playlist.MODIFIED, Playlist.SONG_INDEX, Playlist.SONG_POSITION});
+            backupTable(backup, db, TABLE_PLAYLISTS, new String[]{
+                    Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
+                    Playlist.SONG_INDEX, Playlist.SONG_POSITION});
 
             backupTable(backup, db, TABLE_PLAYLIST_SONGS, new String[]{
                     Playlist.PLAYLIST_ID, Playlist.SONG_ID});
@@ -532,40 +546,48 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 // Restore songs table.
                 JSONArray songs = backup.getJSONArray(TABLE_SONGS);
+                LongSparseArray<Long> songIds = new LongSparseArray<>();
                 for (int i = 0; i < songs.length(); i++) {
-                    // Get ContentValues from JSONObject.
                     JSONObject song = songs.getJSONObject(i);
-                    ContentValues values = getValues(song, new String[]{Song.YEAR, Song.ADDED,
-                            Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
 
-                    // Update row and make sure 1 row is updated.
-                    switch (db.update(TABLE_SONGS, values,
-                            Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?", new String[]{
-                                    song.getString(Song.TITLE), song.getString(Song.ARTIST)})) {
-                        case 0:
+                    // Query the current ID of the row by artist and title.
+                    long id;
+                    try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID},
+                            Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?",
+                            new String[]{song.getString(Song.TITLE), song.getString(Song.ARTIST)},
+                            null, null, null)) {
+                        if (c.moveToFirst()) {
+                            id = c.getLong(0);
+                            if (c.moveToNext()) {
+                                throw new SQLiteException("Duplicate song: '" +
+                                        song.getString(Song.ARTIST) + " - " +
+                                        song.getString(Song.TITLE) + "'");
+                            }
+                        } else {
                             throw new SQLiteException("Song not found: '" +
                                     song.getString(Song.ARTIST) + " - " +
                                     song.getString(Song.TITLE) + "'");
-                        case 1:
-                            Log.d(TAG, "Song updated: '" +
-                                    song.getString(Song.ARTIST) + " - " +
-                                    song.getString(Song.TITLE) + "'");
-                            break;
-                        default:
-                            throw new SQLiteException("Duplicate song: '" +
-                                    song.getString(Song.ARTIST) + " - " +
-                                    song.getString(Song.TITLE) + "'");
+                        }
                     }
+                    songIds.put(song.getLong(Song._ID), id);
+
+                    // Get ContentValues from JSONObject and update row.
+                    ContentValues values = getValues(song, new String[]{
+                            Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
+                            Song.LAST_PLAYED, Song.TIMES_PLAYED});
+                    update(db, TABLE_SONGS, values, id, false);
                 }
                 Log.d(TAG, songs.length() + " songs restored");
                 updateArtistStats(db, null);
 
-                restoreTable(backup, db, TABLE_PLAYLISTS, new String[]{Playlist._ID, Playlist.NAME,
-                        Playlist.MODIFIED, Playlist.SONG_INDEX, Playlist.SONG_POSITION});
+                restoreTable(backup, db, TABLE_PLAYLISTS, SQL_CREATE_PLAYLISTS, new String[]{
+                        Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
+                        Playlist.SONG_INDEX, Playlist.SONG_POSITION},
+                        null, null);
 
-                restoreTable(backup, db, TABLE_PLAYLIST_SONGS, new String[]{
-                        Playlist.PLAYLIST_ID, Playlist.SONG_ID});
-                //FIXME: Playlist song ID could be invalid after restoring a backup.
+                restoreTable(backup, db, TABLE_PLAYLIST_SONGS, SQL_CREATE_PLAYLIST_SONGS,
+                        new String[]{Playlist.PLAYLIST_ID},
+                        Playlist.SONG_ID, songIds);
 
                 db.setTransactionSuccessful();
             } finally {
@@ -756,12 +778,24 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     private static void restoreTable(JSONObject obj, SQLiteDatabase db,
-                                     String table, String[] columns) throws JSONException {
+                                     String table, String sqlCreate, String[] columns,
+                                     String refIdColumn, LongSparseArray<Long> refIds)
+            throws JSONException {
         Log.d(TAG, "DbHelper.restoreTable(" + table + ")");
-        Log.d(TAG, db.delete(table, null, null) + " " + table + " rows deleted");
+
+        // Recreate the table.
+        db.execSQL("DROP TABLE " + table);
+        db.execSQL(sqlCreate);
+
+        // Insert rows from JSONArray.
         JSONArray rows = obj.getJSONArray(table);
         for (int i = 0; i < rows.length(); i++) {
-            db.insert(table, null, getValues(rows.getJSONObject(i), columns));
+            JSONObject row = rows.getJSONObject(i);
+            ContentValues values = getValues(row, columns);
+            if (refIdColumn != null) {
+                values.put(refIdColumn, refIds.get(row.getLong(refIdColumn)));
+            }
+            db.insert(table, null, values);
         }
         Log.d(TAG, rows.length() + " " + table + " rows restored");
     }

@@ -269,8 +269,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             songIndex--;
         } else if (index == songIndex) {
             if (index == songs.size()) {
-                //TODO: test Stop playback when the current and last song is removed.
-                //What happens when playing from notification after last has completed?
                 songIndex--;
 
                 player.stop();

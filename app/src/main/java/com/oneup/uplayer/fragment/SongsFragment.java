@@ -42,9 +42,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     private CheckBox cbSortDesc;
 
     public SongsFragment() {
-        super(R.layout.list_item_song, R.id.llSorting, R.id.llSong,
-                new String[]{null, Song.ADDED, Song.LAST_PLAYED, Song.TIMES_PLAYED,
-                        Song.DURATION, Song.YEAR, Song.TAG, Song.BOOKMARKED});
+        super(R.layout.list_item_song, R.id.llSorting, R.id.llSong, new String[]{
+                null, Song.ADDED, Song.LAST_PLAYED, Song.TIMES_PLAYED,
+                Song.DURATION, Song.YEAR, Song.TAG, Song.BOOKMARKED});
     }
 
     @Override

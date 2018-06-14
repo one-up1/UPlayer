@@ -26,7 +26,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/artist"
-        app:layout_columnSpan="2"
+        app:layout_columnWeight="1" />
+
+    <Spinner
+        android:id="@+id/sArtist"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         app:layout_columnWeight="1" />
 
     <com.oneup.uplayer.widget.EditText

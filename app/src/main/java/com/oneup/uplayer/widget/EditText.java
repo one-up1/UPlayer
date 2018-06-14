@@ -5,10 +5,11 @@ import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.View;
 
 import java.text.NumberFormat;
 
-public class EditText extends AppCompatEditText {
+public class EditText extends AppCompatEditText implements View.OnLongClickListener {
     private NumberFormat numberFormat;
     private TextWatcher textWatcher;
     private OnTextChangeListener onTextChangeListener;
@@ -20,6 +21,7 @@ public class EditText extends AppCompatEditText {
     public EditText(Context context, AttributeSet attrs) {
         super(context, attrs);
         setSelectAllOnFocus(true);
+        setOnLongClickListener(this);
 
         numberFormat = NumberFormat.getInstance();
         numberFormat.setGroupingUsed(false);
@@ -42,6 +44,12 @@ public class EditText extends AppCompatEditText {
             }
         };
         addTextChangedListener(textWatcher);
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        setString(null);
+        return true;
     }
 
     public String getString() {

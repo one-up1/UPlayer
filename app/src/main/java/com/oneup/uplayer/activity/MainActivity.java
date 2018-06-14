@@ -102,18 +102,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     public void reload() {
         Log.d(TAG, "MainActivity.reload()");
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                for (Fragment fragment : tabAdapter.items) {
-                    // Reload all ListFragments.
-                    if (fragment instanceof ListFragment) {
-                        ((ListFragment) fragment).reloadData();
-                    }
-                }
+        for (Fragment fragment : tabAdapter.items) {
+            // Reload all ListFragments.
+            if (fragment instanceof ListFragment) {
+                ((ListFragment) fragment).reloadData();
             }
-        });
+        }
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {

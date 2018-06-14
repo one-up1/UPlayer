@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
@@ -25,6 +27,7 @@ import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
+import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
@@ -35,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class QueryFragment extends Fragment implements
+public class QueryFragment extends Fragment implements AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
 
@@ -63,9 +66,11 @@ public class QueryFragment extends Fragment implements
 
     private SharedPreferences preferences;
     private DbHelper dbHelper;
+    private List<Artist> artists;
 
     private EditText etTitle;
     private EditText etArtist;
+    private Spinner sArtist;
     private EditText etMinYear;
     private EditText etMaxYear;
     private Button bMinAdded;
@@ -109,6 +114,10 @@ public class QueryFragment extends Fragment implements
 
         etArtist = rootView.findViewById(R.id.etArtist);
         etArtist.setString(preferences.getString(PREF_ARTIST, null));
+
+        sArtist = rootView.findViewById(R.id.sArtist);
+        sArtist.setOnItemSelectedListener(this);
+        loadArtists();
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
         etMinYear.setString(preferences.getString(PREF_MIN_YEAR, null));
@@ -240,6 +249,20 @@ public class QueryFragment extends Fragment implements
     }
 
     @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (parent == sArtist) {
+            if (position > 0) {
+                etArtist.setString(artists.get(position).getArtist());
+                sArtist.setSelection(0);
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
+
+    @Override
     public void onClick(View v) {
         if (v == bMinAdded) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
@@ -309,6 +332,16 @@ public class QueryFragment extends Fragment implements
             restoreBackup();
         }
         return true;
+    }
+
+    private void loadArtists() {
+        artists = dbHelper.queryArtists(null);
+        Artist nullArtist = new Artist();
+        nullArtist.setArtist("");
+        artists.add(0, nullArtist);
+
+        sArtist.setAdapter(new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_spinner_dropdown_item, artists));
     }
 
     private void query(Set<String> tags, List<Playlist> playlists) {
@@ -480,9 +513,7 @@ public class QueryFragment extends Fragment implements
                                 try {
                                     DbHelper.SyncResult[] results =
                                             dbHelper.syncWithMediaStore(getActivity());
-
-                                    ((MainActivity) getActivity()).reload();
-
+                                    reload();
                                     Util.showInfoDialog(getActivity(), R.string.sync_completed,
                                             R.string.sync_completed_message,
                                             results[0].getRowCount(),
@@ -533,7 +564,7 @@ public class QueryFragment extends Fragment implements
                             public void run() {
                                 try {
                                     dbHelper.restoreBackup();
-                                    ((MainActivity) getActivity()).reload();
+                                    reload();
                                     Util.showToast(getActivity(), R.string.backup_restored);
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error restoring backup", ex);
@@ -543,6 +574,17 @@ public class QueryFragment extends Fragment implements
                         }).start();
                     }
                 });
+    }
+
+    private void reload() {
+        getActivity().runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                ((MainActivity) getActivity()).reload();
+                loadArtists();
+            }
+        });
     }
 
     private void saveQueryParams() {

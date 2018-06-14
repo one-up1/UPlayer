@@ -122,7 +122,7 @@ public class Stats {
 
         if (timesPlayed > 0) {
             addDialogRow(context, grid, R.string.stats_times_played, timesPlayed +
-                    " (" + Util.formatDuration(playedDuration) + ")\n");
+                    " (" + Util.formatDuration(playedDuration) + ")");
         }
 
         if (songsPlayed > 0) {

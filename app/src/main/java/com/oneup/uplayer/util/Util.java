@@ -36,6 +36,9 @@ public class Util {
         PERCENT_FORMAT.setMaximumFractionDigits(1);
     }
 
+    private Util() {
+    }
+
     public static File getMusicFile(String name) {
         return new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC), name);

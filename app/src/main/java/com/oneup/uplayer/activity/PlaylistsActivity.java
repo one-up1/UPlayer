@@ -1,6 +1,5 @@
 package com.oneup.uplayer.activity;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,8 +21,6 @@ import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
-
-//TODO: Save checked playlists.
 
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
@@ -56,7 +53,6 @@ public class PlaylistsActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setHasOptionsMenu(true);
-
             reloadData();
         }
 
@@ -111,7 +107,7 @@ public class PlaylistsActivity extends AppCompatActivity {
             }
 
             TextView tvModified = rootView.findViewById(R.id.tvModified);
-            tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
+            tvModified.setText(Util.formatDateTimeAgo(getActivity(), playlist.getModified(), true));
         }
 
         @Override
@@ -134,49 +130,33 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         private void add() {
-            final EditText etName = new EditText(getActivity());
-            etName.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
-            etName.setHint(R.string.name);
-
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.add)
-                    .setView(etName)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            Util.showInputDialog(getActivity(),
+                    InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                    R.string.name, null, new Util.InputDialogListener() {
 
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
+                        public void onOk(EditText view) {
                             Playlist playlist = new Playlist();
-                            playlist.setName(etName.getString());
+                            playlist.setName(view.getString());
                             playlist.setModified(Calendar.currentTime());
                             getDbHelper().insertOrUpdatePlaylist(playlist, null);
                             reloadData();
                         }
-                    })
-                    .show();
+                    });
         }
 
         private void rename(final Playlist playlist) {
-            final EditText etName = new EditText(getActivity());
-            etName.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-            etName.setHint(R.string.name);
-
-            if (playlist.getName() != null) {
-                etName.setText(playlist.getName());
-            }
-
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.rename)
-                    .setView(etName)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            Util.showInputDialog(getActivity(),
+                    InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                    R.string.name, playlist.getName(), new Util.InputDialogListener() {
 
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            playlist.setName(etName.getString());
+                        public void onOk(EditText view) {
+                            playlist.setName(view.getString());
                             getDbHelper().insertOrUpdatePlaylist(playlist, null);
                             reloadData();
                         }
-                    })
-                    .show();
+                    });
         }
 
         private void delete(final Playlist playlist) {

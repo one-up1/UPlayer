@@ -20,8 +20,6 @@ import com.oneup.uplayer.fragment.ListFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
 
-//TODO: Dialogs
-
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
     

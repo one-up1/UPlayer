@@ -25,15 +25,15 @@
             android:id="@+id/tvName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/list_item_text"
-            android:textSize="@dimen/list_item_text_large" />
+            android:textSize="@dimen/list_item_text_large"
+            android:textColor="@color/list_item_text" />
 
         <TextView
             android:id="@+id/tvModified"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/list_item_text"
-            android:textSize="@dimen/list_item_text_small" />
+            android:textSize="@dimen/list_item_text_small"
+            android:textColor="@color/list_item_text" />
 
     </LinearLayout>
 

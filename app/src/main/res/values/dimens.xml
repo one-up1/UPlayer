@@ -9,6 +9,7 @@
     <dimen name="list_item_padding_start">12dp</dimen>
     <dimen name="list_item_padding_end">4dp</dimen>
     <dimen name="list_item_height">36dp</dimen>
+    <dimen name="list_item_header_height">42dp</dimen>
     <dimen name="list_item_text_large">14sp</dimen>
     <dimen name="list_item_text_small">12sp</dimen>
     <dimen name="list_item_info_padding_start">6dp</dimen>
@@ -17,15 +18,20 @@
     <dimen name="list_item_button_height_large">42dp</dimen>
     <dimen name="list_item_button_width_small">42dp</dimen>
     <dimen name="list_item_button_height_small">21dp</dimen>
-    <dimen name="list_item_buttons_padding_start">12dp</dimen>
-    <dimen name="list_item_buttons_padding_end">4dp</dimen>
+    <dimen name="list_item_first_button_padding_start">12dp</dimen>
+    <dimen name="list_item_button_padding_start">4dp</dimen>
+    <dimen name="list_item_button_padding_end">4dp</dimen>
 
     <dimen name="notification_padding">4dp</dimen>
     <dimen name="notification_button_width">40dp</dimen>
     <dimen name="notification_button_height">32dp</dimen>
 
     <dimen name="edit_time_number_width">30dp</dimen>
-    <dimen name="dialog_text_padding">5dp</dimen>
+
+    <dimen name="stats_border_width">1dp</dimen>
+    <dimen name="stats_text_padding_horizontal">6dp</dimen>
+    <dimen name="stats_text_padding_vertical">4dp</dimen>
+    <dimen name="stats_text_size">12sp</dimen>
 
     <dimen name="design_tab_text_size" tools:override="true">9sp</dimen>
     <dimen name="design_tab_text_size_2line" tools:override="true">9sp</dimen>

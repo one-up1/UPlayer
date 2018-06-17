@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/grid"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="12dp"
     android:paddingBottom="8dp"
     android:paddingStart="14dp"
-    android:paddingEnd="10dp"
-    app:columnCount="2" />
+    android:paddingEnd="10dp">
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/stats_border_width"
+        android:background="@drawable/border"
+        app:columnCount="3" />
+
+</LinearLayout>

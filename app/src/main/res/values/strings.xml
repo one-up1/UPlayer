@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">UPlayer</string>
     <string name="default_playlist">Default Playlist</string>
 
@@ -31,7 +31,7 @@
     <string name="sync_database">Sync database</string>
     <string name="sync_database_confirm">Sync database?</string>
     <string name="sync_completed">Sync completed</string>
-    <string name="sync_completed_message">%1$d artists (%2$d ignored)\n%3$d inserted, %4$d updated, %5$d deleted\n\n%6$d songs (%7$d ignored)\n%8$d inserted, %9$d updated, %10$d deleted</string>
+    <string name="sync_completed_message" tools:ignore="PluralsCandidate">%1$d artists (%2$d ignored)\n%3$d inserted, %4$d updated, %5$d deleted\n\n%6$d songs (%7$d ignored)\n%8$d inserted, %9$d updated, %10$d deleted</string>
     <string name="backup">Backup&#8230;</string>
     <string name="backup_completed">Backup completed</string>
     <string name="restore_backup_confirm">Restore backup?</string>
@@ -85,14 +85,14 @@
     <string name="next">Next</string>
     <string name="stop">Stop</string>
 
-    <string name="stats_song_count">Songs:</string>
-    <string name="stats_artist_count">Artists: </string>
-    <string name="stats_songs_played">Played:</string>
-    <string name="stats_songs_unplayed">Unplayed:</string>
-    <string name="stats_songs_bookmarked">Bookmarked:</string>
-    <string name="stats_songs_not_bookmarked">Not bookmarked:</string>
-    <string name="stats_songs_tagged">Tagged:</string>
-    <string name="stats_songs_untagged">Untagged:</string>
+    <string name="stats_count">Count:</string>
+    <string name="avg_songs">avg %1$s songs</string>
+    <string name="stats_played">Played:</string>
+    <string name="stats_unplayed">Unplayed:</string>
+    <string name="stats_bookmarked">Bookmarked:</string>
+    <string name="stats_unbookmarked">Unbookmarked:</string>
+    <string name="stats_tagged">Tagged:</string>
+    <string name="stats_untagged">Untagged:</string>
     <string name="stats_last_added">Last added:</string>
     <string name="stats_last_played">Last played:</string>
     <string name="stats_times_played">Times played:</string>
@@ -112,6 +112,8 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="delete">Delete</string>
+    <string name="date_time_ago">%1$s (%2$s)</string>
+    <string name="date_time_ago_newline">%1$s\n%2$s</string>
 
     <plurals name="songs">
         <item quantity="one">%1$d song</item>

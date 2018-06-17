@@ -2,7 +2,7 @@ package com.oneup.uplayer.db;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayout;
 import android.util.TypedValue;
 import android.widget.TextView;
@@ -15,11 +15,11 @@ public class Stats {
     private long songsDuration;
     private int artistCount;
     private int songsPlayed;
-    private int songsUnplayed;
+    private int artistsPlayed;
     private int songsBookmarked;
-    private int songsNotBookmarked;
+    private int artistsBookmarked;
     private int songsTagged;
-    private int songsUntagged;
+    private int artistsTagged;
     private long lastAdded;
     private long lastPlayed;
     private int timesPlayed;
@@ -42,17 +42,26 @@ public class Stats {
 
     void setSongsPlayed(int songsPlayed) {
         this.songsPlayed = songsPlayed;
-        songsUnplayed = songCount - songsPlayed;
+    }
+
+    void setArtistsPlayed(int artistsPlayed) {
+        this.artistsPlayed = artistsPlayed;
     }
 
     void setSongsBookmarked(int songsBookmarked) {
         this.songsBookmarked = songsBookmarked;
-        songsNotBookmarked = songCount - songsBookmarked;
+    }
+
+    void setArtistsBookmarked(int artistsBookmarked) {
+        this.artistsBookmarked = artistsBookmarked;
     }
 
     void setSongsTagged(int songsTagged) {
         this.songsTagged = songsTagged;
-        songsUntagged = songCount - songsTagged;
+    }
+
+    void setArtistsTagged(int artistsTagged) {
+        this.artistsTagged = artistsTagged;
     }
 
     void setLastAdded(long lastAdded) {
@@ -79,71 +88,117 @@ public class Stats {
             dialogBuilder.setTitle(title);
         }
         AlertDialog dialog = dialogBuilder.show();
-
         GridLayout grid = dialog.findViewById(R.id.grid);
 
-        addDialogRow(context, grid, R.string.stats_song_count, songCount +
-                " (" + Util.formatDuration(songsDuration) + ")");
-
-        if (artistCount > 0) {
-            addDialogRow(context, grid, R.string.stats_artist_count, artistCount +
-                    " (avg " + Util.formatFraction(songCount, artistCount) + " songs)");
+        String sSongCount = Integer.toString(songCount);
+        if (songCount > 0) {
+            sSongCount += "\n" + Util.formatDuration(songsDuration);
         }
+        addDialogRow(context, grid, R.string.stats_count, sSongCount, artistCount == 0 ? null
+                : formatCountAvg(context, songCount, artistCount));
 
         if (songCount > 0) {
-            addDialogRow(context, grid, R.string.stats_songs_played, songsPlayed +
-                    " (" + Util.formatPercent(songsPlayed, songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_played,
+                    songsPlayed, artistsPlayed);
 
-            addDialogRow(context, grid, R.string.stats_songs_unplayed, songsUnplayed +
-                    " (" + Util.formatPercent(songsUnplayed, songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_unplayed,
+                    songCount - songsPlayed, artistCount - artistsPlayed);
 
-            addDialogRow(context, grid, R.string.stats_songs_bookmarked, songsBookmarked +
-                    " (" + Util.formatPercent(songsBookmarked, songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_bookmarked,
+                    songsBookmarked, artistsBookmarked);
 
-            addDialogRow(context, grid, R.string.stats_songs_not_bookmarked, songsNotBookmarked +
-                    " (" + Util.formatPercent(songsNotBookmarked, songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_unbookmarked,
+                    songCount - songsBookmarked, artistCount - artistsBookmarked);
 
-            addDialogRow(context, grid, R.string.stats_songs_tagged, songsTagged +
-                    " (" + Util.formatPercent(songsTagged, songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_tagged,
+                    songsTagged, artistsTagged);
 
-            addDialogRow(context, grid, R.string.stats_songs_untagged, songsUntagged +
-                    " (" + Util.formatPercent(songsUntagged, songCount) + ")");
+            addDialogRow(context, grid, R.string.stats_untagged,
+                    songCount - songsTagged, artistCount - artistsTagged);
         }
 
-        if (lastAdded > 0) {
-            addDialogRow(context, grid, R.string.stats_last_added,
-                    Util.formatDateTimeAgo(lastAdded));
-        }
-
-        if (lastPlayed > 0) {
-            addDialogRow(context, grid, R.string.stats_last_played,
-                    Util.formatDateTimeAgo(lastPlayed));
-        }
+        addDialogRow(context, grid, R.string.stats_last_added, lastAdded);
+        addDialogRow(context, grid, R.string.stats_last_played, lastPlayed);
 
         if (timesPlayed > 0) {
-            addDialogRow(context, grid, R.string.stats_times_played, timesPlayed +
-                    " (" + Util.formatDuration(playedDuration) + ")");
+            addDialogRow(context, grid, R.string.stats_times_played,
+                    Integer.toString(timesPlayed) +
+                            " (" + Util.formatDuration(playedDuration) + ")", null);
         }
 
         if (songsPlayed > 0) {
             addDialogRow(context, grid, R.string.stats_avg_times_played,
-                    Util.formatFraction(timesPlayed, songsPlayed) +
-                    " (" + Util.formatDuration(playedDuration / songsPlayed) + ")");
+                    formatAvgTimesPlayed(timesPlayed, songsPlayed),
+                    artistCount == 0 ? null : formatAvgTimesPlayed(timesPlayed, artistsPlayed));
         }
     }
 
-    private static void addDialogRow(Context context, GridLayout grid, int labelId, Object value) {
-        addDialogColumn(context, grid, context.getString(labelId));
-        addDialogColumn(context, grid, value.toString());
+    private String formatCountAvg(Context context, int countSongs, int countArtists) {
+        String value = formatCount(countArtists, artistCount);
+        if (countArtists > 1) {
+            value += "\n" + context.getString(R.string.avg_songs,
+                    Util.formatFraction(countSongs, countArtists));
+        }
+        return value;
     }
 
-    private static void addDialogColumn(Context context, GridLayout grid, String text) {
+    private void addDialogRow(Context context, GridLayout grid, int labelId,
+                              int countSongs, int countArtists) {
+        addDialogRow(context, grid, labelId, formatCount(countSongs, songCount),
+                artistCount == 0 ? null : formatCountAvg(context, countSongs, countArtists));
+    }
+
+    private String formatAvgTimesPlayed(int timesPlayed, int total) {
+        return Util.formatFraction(timesPlayed, total) +
+                "\n" + Util.formatDuration(playedDuration / total);
+    }
+
+    private static void addDialogRow(Context context, GridLayout grid, int labelId,
+                                     String value1, String value2) {
+        addDialogColumn(context, grid, context.getString(labelId), false);
+        addDialogColumn(context, grid, value1, value2 == null);
+        if (value2 != null) {
+            addDialogColumn(context, grid, value2, false);
+        }
+    }
+
+    private static void addDialogRow(Context context, GridLayout grid, int labelId, long time) {
+        if (time > 0) {
+            addDialogRow(context, grid, labelId,
+                    Util.formatDateTimeAgo(context, time, false), null);
+        }
+    }
+
+    private static void addDialogColumn(Context context, GridLayout grid,
+                                        String text, boolean span) {
         TextView view = new TextView(context);
-        int padding = context.getResources().getDimensionPixelSize(R.dimen.dialog_text_padding);
-        view.setPadding(padding, padding, padding, padding);
+        view.setBackground(ContextCompat.getDrawable(context, R.drawable.border));
+
+        GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
+        layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED,
+                span ? 2 : 1, GridLayout.FILL);
+        layoutParams.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, GridLayout.FILL);
+        view.setLayoutParams(layoutParams);
+
+        int paddingHorizontal = context.getResources().getDimensionPixelSize(
+                R.dimen.stats_text_padding_horizontal);
+        int paddingVertical = context.getResources().getDimensionPixelSize(
+                R.dimen.stats_text_padding_vertical);
+        view.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
+
         view.setText(text);
-        view.setTextColor(Color.BLACK);
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        view.setTextColor(ContextCompat.getColor(context, R.color.stats_text));
+        view.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                context.getResources().getDimensionPixelSize(R.dimen.stats_text_size));
+
         grid.addView(view);
+    }
+
+    private static String formatCount(int count, int total) {
+        String value = Integer.toString(count);
+        if (count > 0 && count < total) {
+            value += " (" + Util.formatPercent(count, total) + ")";
+        }
+        return value;
     }
 }

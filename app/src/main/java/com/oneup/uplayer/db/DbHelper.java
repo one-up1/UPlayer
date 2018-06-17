@@ -426,16 +426,37 @@ public class DbHelper extends SQLiteOpenHelper {
             }
 
             stats.setSongsPlayed(queryInt(db, appendWhereArtistId(
-                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TIMES_PLAYED + ">0",
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS +
+                    " WHERE " + Song.LAST_PLAYED + " IS NOT NULL",
                     artist, true), artistIdWhereArgs));
+
+            if (artist == null) {
+                stats.setArtistsPlayed(queryInt(db,
+                        "SELECT COUNT(*) FROM " + TABLE_ARTISTS +
+                        " WHERE " + Artist.LAST_PLAYED + " IS NOT NULL", null));
+            }
 
             stats.setSongsBookmarked(queryInt(db, appendWhereArtistId(
-                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.BOOKMARKED + ">0",
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS +
+                    " WHERE " + Song.BOOKMARKED + " IS NOT NULL",
                     artist, true), artistIdWhereArgs));
 
+            if (artist == null) {
+                stats.setArtistsBookmarked(queryInt(db,
+                        "SELECT COUNT(DISTINCT " + Song.ARTIST_ID + ") FROM " + TABLE_SONGS +
+                        " WHERE " + Song.BOOKMARKED + " IS NOT NULL", null));
+            }
+
             stats.setSongsTagged(queryInt(db, appendWhereArtistId(
-                    "SELECT COUNT(*) FROM " + TABLE_SONGS + " WHERE " + Song.TAG + " IS NOT NULL",
+                    "SELECT COUNT(*) FROM " + TABLE_SONGS +
+                    " WHERE " + Song.TAG + " IS NOT NULL",
                     artist, true), artistIdWhereArgs));
+
+            if (artist == null) {
+                stats.setArtistsTagged(queryInt(db,
+                        "SELECT COUNT(DISTINCT " + Song.ARTIST_ID + ") FROM " + TABLE_SONGS +
+                        " WHERE " + Song.TAG + " IS NOT NULL", null));
+            }
 
             if (artist == null) {
                 stats.setLastAdded(queryLong(db,

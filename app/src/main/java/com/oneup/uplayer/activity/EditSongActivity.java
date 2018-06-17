@@ -71,7 +71,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
         bAdded = findViewById(R.id.bAdded);
         if (song.getAdded() > 0) {
-            bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
+            bAdded.setText(Util.formatDateTimeAgo(this, song.getAdded(), true));
         }
         bAdded.setOnClickListener(this);
         bAdded.setOnLongClickListener(this);
@@ -88,14 +88,14 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
         bBookmarked = findViewById(R.id.bBookmarked);
         if (song.getBookmarked() > 0) {
-            bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
+            bBookmarked.setText(Util.formatDateTimeAgo(this, song.getBookmarked(), true));
         }
         bBookmarked.setOnClickListener(this);
         bBookmarked.setOnLongClickListener(this);
 
         bLastPlayed = findViewById(R.id.bLastPlayed);
         if (song.getLastPlayed() > 0) {
-            bLastPlayed.setText(Util.formatDateTimeAgo(song.getLastPlayed()));
+            bLastPlayed.setText(Util.formatDateTimeAgo(this, song.getLastPlayed(), true));
         }
 
         etTimesPlayed = findViewById(R.id.etTimesPlayed);
@@ -132,11 +132,11 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             switch (requestCode) {
                 case REQUEST_SELECT_ADDED:
                     song.setAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
+                    bAdded.setText(Util.formatDateTimeAgo(this, song.getAdded(), true));
                     break;
                 case REQUEST_SELECT_BOOKMARKED:
                     song.setBookmarked(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
+                    bBookmarked.setText(Util.formatDateTimeAgo(this, song.getBookmarked(), true));
                     break;
             }
         }

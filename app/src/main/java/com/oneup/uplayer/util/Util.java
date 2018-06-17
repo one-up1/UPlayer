@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.widget.EditText;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -89,13 +90,34 @@ public class Util {
                 ex.getMessage());
     }
 
+    public static void showInputDialog(Context context, int inputType, int hintId,
+                                       String text, final InputDialogListener listener) {
+        final EditText view = new EditText(context);
+        view.setInputType(inputType);
+        view.setHint(hintId);
+        if (text != null) {
+            view.setText(text);
+        }
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.add)
+                .setView(view)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        listener.onOk(view);
+                    }
+                })
+                .show();
+    }
+
     public static String formatDateTime(long seconds) {
         return formatDateTime(seconds, DATE_TIME_FORMAT);
     }
 
-    public static String formatDateTimeAgo(long seconds) {
-        return formatDateTime(seconds, DATE_TIME_FORMAT_WEEKDAY) +
-                "\n" + formatTimeAgo(seconds);
+    public static String formatDateTimeAgo(Context context, long seconds, boolean newline) {
+        return context.getString(newline ? R.string.date_time_ago_newline : R.string.date_time_ago,
+                formatDateTime(seconds, DATE_TIME_FORMAT_WEEKDAY), formatTimeAgo(seconds));
     }
 
     public static String formatTimeAgo(long seconds) {
@@ -186,5 +208,9 @@ public class Util {
 
     private static String formatFraction(long value, long total, NumberFormat format) {
         return format.format((double) value / total);
+    }
+
+    public interface InputDialogListener {
+        void onOk(EditText view);
     }
 }

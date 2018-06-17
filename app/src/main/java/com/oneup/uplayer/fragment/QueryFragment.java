@@ -340,7 +340,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         nullArtist.setArtist("");
         artists.add(0, nullArtist);
 
-        sArtist.setAdapter(new ArrayAdapter<>(getActivity(),
+        sArtist.setAdapter(new
+                ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, artists));
     }
 

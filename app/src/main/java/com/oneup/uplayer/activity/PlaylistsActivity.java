@@ -107,7 +107,7 @@ public class PlaylistsActivity extends AppCompatActivity {
             }
 
             TextView tvModified = rootView.findViewById(R.id.tvModified);
-            tvModified.setText(Util.formatDateTimeAgo(getActivity(), playlist.getModified(), true));
+            tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
         }
 
         @Override

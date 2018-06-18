@@ -10,11 +10,13 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Util;
 
+//TODO: Column weight.
+
 public class Stats {
     private Total total;
+    private Total played;
     private Total bookmarked;
     private Total tagged;
-    private Total played;
 
     private long lastAdded;
     private long lastPlayed;
@@ -70,10 +72,10 @@ public class Stats {
         AlertDialog dialog = dialogBuilder.show();
         GridLayout grid = dialog.findViewById(R.id.grid);
 
-        total.addRows(context, grid, R.string.stats_count, 0);
+        total.addRows(context, grid, R.string.stats_total, 0);
+        played.addRows(context, grid, R.string.stats_played, R.string.stats_unplayed);
         bookmarked.addRows(context, grid, R.string.stats_bookmarked, R.string.stats_unbookmarked);
         tagged.addRows(context, grid, R.string.stats_tagged, R.string.stats_untagged);
-        played.addRows(context, grid, R.string.stats_played, R.string.stats_unplayed);
 
         addRow(context, grid, R.string.stats_last_added, lastAdded);
         addRow(context, grid, R.string.stats_last_played, lastPlayed);
@@ -108,8 +110,7 @@ public class Stats {
 
     private static void addRow(Context context, GridLayout grid, int labelId, long time) {
         if (time > 0) {
-            addRow(context, grid, labelId,
-                    Util.formatDateTimeAgo(context, time, false), null);
+            addRow(context, grid, labelId, Util.formatDateTimeAgo(time), null);
         }
     }
 
@@ -124,9 +125,9 @@ public class Stats {
         view.setLayoutParams(layoutParams);
 
         int paddingHorizontal = context.getResources().getDimensionPixelSize(
-                R.dimen.stats_text_padding);
+                R.dimen.stats_text_padding_horizontal);
         int paddingVertical = context.getResources().getDimensionPixelSize(
-                R.dimen.stats_text_padding);
+                R.dimen.stats_text_padding_vertical);
         view.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
 
         view.setBackground(ContextCompat.getDrawable(context, R.drawable.border));

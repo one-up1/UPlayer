@@ -38,6 +38,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+//TODO: Allow showing stats for tagged/playlist songs.
+//TODO: Allow showing songs with tag and on playlist.
+
 public class QueryFragment extends Fragment implements AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
@@ -226,7 +229,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                 case REQUEST_SELECT_PLAYLISTS:
                     if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                         getActivity().startService(new Intent(getActivity(), MainService.class)
-                                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY_PLAYLIST)
+                                .putExtra(MainService.EXTRA_ACTION,
+                                        MainService.ACTION_PLAY_PLAYLIST)
                                 .putExtra(MainService.EXTRA_PLAYLIST,
                                         data.getParcelableExtra(PlaylistsActivity.EXTRA_PLAYLIST)));
                     } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
@@ -240,7 +244,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
     @Override
     public void onDestroy() {
-        saveQueryParams();
+        saveQueryParams(null);
 
         if (dbHelper != null) {
             dbHelper.close();
@@ -298,7 +302,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             showTags();
         } else if (v == bStatistics) {
             try {
-                dbHelper.queryStats(null).showDialog(getActivity(), null);
+                List<String> selectionArgs = new ArrayList<>();
+                dbHelper.queryStats(true, getSelection(selectionArgs),
+                        selectionArgs.toArray(new String[0]))
+                        .showDialog(getActivity(), null);
             } catch (Exception ex) {
                 Log.e(TAG, "Error querying stats", ex);
                 Util.showErrorDialog(getActivity(), ex);
@@ -346,70 +353,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void query(Set<String> tags, List<Playlist> playlists) {
-        String selection = null;
         List<String> selectionArgs = new ArrayList<>();
-
-        String title = etTitle.getString();
-        if (title != null) {
-            selection = Song.TITLE + " LIKE ?";
-            selectionArgs.add("%" + title + "%");
-        }
-
-        String artist = etArtist.getString();
-        if (artist != null) {
-            selection = appendSelection(selection, Song.ARTIST + " LIKE ?");
-            selectionArgs.add("%" + artist + "%");
-        }
-
-        String minYear = etMinYear.getString();
-        if (minYear != null) {
-            selection = appendSelection(selection, Song.YEAR + ">=?");
-            selectionArgs.add(minYear);
-        }
-
-        String maxYear = etMaxYear.getString();
-        if (maxYear != null) {
-            selection = appendSelection(selection, Song.YEAR + "<=?");
-            selectionArgs.add(maxYear);
-        }
-        
-        if (minAdded > 0) {
-            selection = appendSelection(selection, Song.ADDED + ">=?");
-            selectionArgs.add(Long.toString(minAdded));
-        }
-        
-        if (maxAdded > 0) {
-            selection = appendSelection(selection, Song.ADDED + "<=?");
-            selectionArgs.add(Long.toString(maxAdded));
-        }
-
-        if (rbBookmarked.isChecked()) {
-            selection = appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
-        } else if (rbNotBookmarked.isChecked()) {
-            selection = appendSelection(selection, Song.BOOKMARKED + " IS NULL");
-        }
-        
-        if (minLastPlayed > 0) {
-            selection = appendSelection(selection, Song.LAST_PLAYED + ">=?");
-            selectionArgs.add(Long.toString(minLastPlayed));
-        }
-        
-        if (maxLastPlayed > 0) {
-            selection = appendSelection(selection, Song.LAST_PLAYED + "<=?");
-            selectionArgs.add(Long.toString(maxLastPlayed));
-        }
-
-        String minTimesPlayed = etMinTimesPlayed.getString();
-        if (minTimesPlayed != null) {
-            selection = appendSelection(selection, Song.TIMES_PLAYED + ">=?");
-            selectionArgs.add(minTimesPlayed);
-        }
-
-        String maxTimesPlayed = etMaxTimesPlayed.getString();
-        if (maxTimesPlayed != null) {
-            selection = appendSelection(selection, Song.TIMES_PLAYED + "<=?");
-            selectionArgs.add(maxTimesPlayed);
-        }
+        String selection = getSelection(selectionArgs);
+        saveQueryParams(tags);
 
         if (tags != null) {
             String tagSelection;
@@ -419,13 +365,11 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                 tagSelection = DbHelper.getInClause(tags.size());
                 selectionArgs.addAll(tags);
             }
-            selection = appendSelection(selection, Song.TAG + " " + tagSelection);
-
-            preferences.edit().putStringSet(PREF_TAGS, tags).apply();
+            selection = DbHelper.appendSelection(selection, Song.TAG + " " + tagSelection);
         }
 
         if (playlists != null) {
-            selection = appendSelection(selection,
+            selection = DbHelper.appendSelection(selection,
                     DbHelper.getPlaylistSongsInClause(playlists.size()));
             for (Playlist playlist : playlists) {
                 selectionArgs.add(Long.toString(playlist.getId()));
@@ -436,8 +380,74 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                 .putExtras(SongsFragment.getArguments(selection,
                         selection == null ? null : selectionArgs.toArray(new String[0]),
                         sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
+    }
 
-        saveQueryParams();
+    private String getSelection(List<String> selectionArgs) {
+        String selection = null;
+
+        String title = etTitle.getString();
+        if (title != null) {
+            selection = Song.TITLE + " LIKE ?";
+            selectionArgs.add("%" + title + "%");
+        }
+
+        String artist = etArtist.getString();
+        if (artist != null) {
+            selection = DbHelper.appendSelection(selection, Song.ARTIST + " LIKE ?");
+            selectionArgs.add("%" + artist + "%");
+        }
+
+        String minYear = etMinYear.getString();
+        if (minYear != null) {
+            selection = DbHelper.appendSelection(selection, Song.YEAR + ">=?");
+            selectionArgs.add(minYear);
+        }
+
+        String maxYear = etMaxYear.getString();
+        if (maxYear != null) {
+            selection = DbHelper.appendSelection(selection, Song.YEAR + "<=?");
+            selectionArgs.add(maxYear);
+        }
+
+        if (minAdded > 0) {
+            selection = DbHelper.appendSelection(selection, Song.ADDED + ">=?");
+            selectionArgs.add(Long.toString(minAdded));
+        }
+
+        if (maxAdded > 0) {
+            selection = DbHelper.appendSelection(selection, Song.ADDED + "<=?");
+            selectionArgs.add(Long.toString(maxAdded));
+        }
+
+        if (rbBookmarked.isChecked()) {
+            selection = DbHelper.appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
+        } else if (rbNotBookmarked.isChecked()) {
+            selection = DbHelper.appendSelection(selection, Song.BOOKMARKED + " IS NULL");
+        }
+
+        if (minLastPlayed > 0) {
+            selection = DbHelper.appendSelection(selection, Song.LAST_PLAYED + ">=?");
+            selectionArgs.add(Long.toString(minLastPlayed));
+        }
+
+        if (maxLastPlayed > 0) {
+            selection = DbHelper.appendSelection(selection, Song.LAST_PLAYED + "<=?");
+            selectionArgs.add(Long.toString(maxLastPlayed));
+        }
+
+        String minTimesPlayed = etMinTimesPlayed.getString();
+        if (minTimesPlayed != null) {
+            selection = DbHelper.appendSelection(selection, Song.TIMES_PLAYED + ">=?");
+            selectionArgs.add(minTimesPlayed);
+        }
+
+        String maxTimesPlayed = etMaxTimesPlayed.getString();
+        if (maxTimesPlayed != null) {
+            selection = DbHelper.appendSelection(selection, Song.TIMES_PLAYED + "<=?");
+            selectionArgs.add(maxTimesPlayed);
+        }
+
+        return selection;
     }
 
     private void showTags() {
@@ -588,30 +598,29 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         });
     }
 
-    private void saveQueryParams() {
-        preferences.edit()
-                .putString(PREF_TITLE, etTitle.getString())
-                .putString(PREF_ARTIST, etArtist.getString())
-                .putString(PREF_MIN_YEAR, etMinYear.getString())
-                .putString(PREF_MAX_YEAR, etMaxYear.getString())
-                .putLong(PREF_MIN_ADDED, minAdded)
-                .putLong(PREF_MAX_ADDED, maxAdded)
-                .putBoolean(PREF_BOOKMARKED, rbBookmarked.isChecked())
-                .putBoolean(PREF_NOT_BOOKMARKED, rbNotBookmarked.isChecked())
-                .putLong(PREF_MIN_LAST_PLAYED, minLastPlayed)
-                .putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed)
-                .putString(PREF_MIN_TIMES_PLAYED, etMinTimesPlayed.getString())
-                .putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString())
-                .putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition())
-                .putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked())
-                .apply();
+    private void saveQueryParams(Set<String> tags) {
+        SharedPreferences.Editor preferences = this.preferences.edit();
+        preferences.putString(PREF_TITLE, etTitle.getString());
+        preferences.putString(PREF_ARTIST, etArtist.getString());
+        preferences.putString(PREF_MIN_YEAR, etMinYear.getString());
+        preferences.putString(PREF_MAX_YEAR, etMaxYear.getString());
+        preferences.putLong(PREF_MIN_ADDED, minAdded);
+        preferences.putLong(PREF_MAX_ADDED, maxAdded);
+        preferences.putBoolean(PREF_BOOKMARKED, rbBookmarked.isChecked());
+        preferences.putBoolean(PREF_NOT_BOOKMARKED, rbNotBookmarked.isChecked());
+        preferences.putLong(PREF_MIN_LAST_PLAYED, minLastPlayed);
+        preferences.putLong(PREF_MAX_LAST_PLAYED, maxLastPlayed);
+        preferences.putString(PREF_MIN_TIMES_PLAYED, etMinTimesPlayed.getString());
+        preferences.putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString());
+        preferences.putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition());
+        preferences.putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked());;
+        if (tags != null) {
+            preferences.putStringSet(PREF_TAGS, tags);
+        }
+        preferences.apply();
     }
 
     public static QueryFragment newInstance() {
         return new QueryFragment();
-    }
-
-    private static String appendSelection(String selection, String s) {
-        return selection == null ? s : selection + " AND " + s;
     }
 }

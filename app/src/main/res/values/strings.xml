@@ -85,13 +85,13 @@
     <string name="next">Next</string>
     <string name="stop">Stop</string>
 
-    <string name="stats_count">Count:</string>
+    <string name="stats_total">Total:</string>
+    <string name="stats_played">Played:</string>
+    <string name="stats_unplayed">Unplayed:</string>
     <string name="stats_bookmarked">Bookmarked:</string>
     <string name="stats_unbookmarked">Unbookmarked:</string>
     <string name="stats_tagged">Tagged:</string>
     <string name="stats_untagged">Untagged:</string>
-    <string name="stats_played">Played:</string>
-    <string name="stats_unplayed">Unplayed:</string>
     <string name="stats_avg_songs">avg %1$s songs</string>
     <string name="stats_last_added">Last added:</string>
     <string name="stats_last_played">Last played:</string>
@@ -112,8 +112,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="delete">Delete</string>
-    <string name="date_time_ago">%1$s (%2$s)</string>
-    <string name="date_time_ago_newline">%1$s\n%2$s</string>
 
     <plurals name="songs">
         <item quantity="one">%1$d song</item>

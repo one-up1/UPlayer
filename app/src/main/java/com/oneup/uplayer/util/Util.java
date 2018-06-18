@@ -118,9 +118,9 @@ public class Util {
         return formatDateTime(seconds, DATE_TIME_FORMAT);
     }
 
-    public static String formatDateTimeAgo(Context context, long seconds, boolean newline) {
-        return context.getString(newline ? R.string.date_time_ago_newline : R.string.date_time_ago,
-                formatDateTime(seconds, DATE_TIME_FORMAT_WEEKDAY), formatTimeAgo(seconds));
+    public static String formatDateTimeAgo(long seconds) {
+        return formatDateTime(seconds, DATE_TIME_FORMAT_WEEKDAY) +
+                "\n" + formatTimeAgo(seconds);
     }
 
     public static String formatTimeAgo(long seconds) {

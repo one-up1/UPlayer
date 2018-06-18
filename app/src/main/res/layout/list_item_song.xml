@@ -88,21 +88,21 @@
                 android:id="@+id/ibPlayNext"
                 android:layout_width="@dimen/list_item_button_width_large"
                 android:layout_height="@dimen/list_item_button_height_large"
+                android:paddingStart="@dimen/list_item_first_button_padding_start"
+                android:paddingEnd="@dimen/list_item_button_padding_end"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_list_item_play_next"
-                android:contentDescription="@string/play_next"
-                android:paddingStart="@dimen/list_item_first_button_padding_start"
-                android:paddingEnd="@dimen/list_item_button_padding_end" />
+                android:contentDescription="@string/play_next" />
 
             <ImageButton
                 android:id="@+id/ibPlayLast"
                 android:layout_width="@dimen/list_item_button_width_large"
                 android:layout_height="@dimen/list_item_button_height_large"
+                android:paddingStart="@dimen/list_item_button_padding_start"
+                android:paddingEnd="@dimen/list_item_button_padding_end"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_list_item_play_last"
-                android:contentDescription="@string/play_last"
-                android:paddingStart="@dimen/list_item_button_padding_start"
-                android:paddingEnd="@dimen/list_item_button_padding_end" />
+                android:contentDescription="@string/play_last" />
 
         </LinearLayout>
 

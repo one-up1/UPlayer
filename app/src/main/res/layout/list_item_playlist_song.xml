@@ -46,21 +46,21 @@
                 android:id="@+id/ibMoveUp"
                 android:layout_width="@dimen/list_item_button_width_small"
                 android:layout_height="@dimen/list_item_button_height_small"
+                android:paddingStart="@dimen/list_item_first_button_padding_start"
+                android:paddingEnd="@dimen/list_item_button_padding_end"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_list_item_move_up"
-                android:contentDescription="@string/move_up"
-                android:paddingStart="@dimen/list_item_first_button_padding_start"
-                android:paddingEnd="@dimen/list_item_button_padding_end" />
+                android:contentDescription="@string/move_up" />
 
             <ImageButton
                 android:id="@+id/ibMoveDown"
                 android:layout_width="@dimen/list_item_button_width_small"
                 android:layout_height="@dimen/list_item_button_height_small"
+                android:paddingStart="@dimen/list_item_first_button_padding_start"
+                android:paddingEnd="@dimen/list_item_button_padding_end"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_list_item_move_down"
-                android:contentDescription="@string/move_down"
-                android:paddingStart="@dimen/list_item_first_button_padding_start"
-                android:paddingEnd="@dimen/list_item_button_padding_end" />
+                android:contentDescription="@string/move_down" />
 
         </LinearLayout>
 
@@ -68,11 +68,11 @@
             android:id="@+id/ibRemove"
             android:layout_width="@dimen/list_item_button_width_large"
             android:layout_height="@dimen/list_item_button_height_large"
+            android:paddingStart="@dimen/list_item_button_padding_start"
+            android:paddingEnd="@dimen/list_item_button_padding_end"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_list_item_remove"
-            android:contentDescription="@string/remove"
-            android:paddingStart="@dimen/list_item_button_padding_start"
-            android:paddingEnd="@dimen/list_item_button_padding_end" />
+            android:contentDescription="@string/remove" />
 
     </LinearLayout>
 

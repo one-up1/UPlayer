@@ -133,9 +133,10 @@ public class DbHelper extends SQLiteOpenHelper {
     public void queryArtist(Artist artist) {
         Log.d(TAG, "DbHelper.queryArtist(" + artist + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = query(db, TABLE_ARTISTS,
+            try (Cursor c = db.query(TABLE_ARTISTS,
                     new String[]{Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
-                    artist.getId())) {
+                    SQL_ID_IS, getWhereArgs(artist.getId()), null, null, null)) {
+                c.moveToFirst();
                 artist.setLastAdded(c.getLong(0));
                 artist.setLastPlayed(c.getLong(1));
                 artist.setTimesPlayed(c.getInt(2));
@@ -173,10 +174,13 @@ public class DbHelper extends SQLiteOpenHelper {
     public void querySong(Song song) {
         Log.d(TAG, "DbHelper.querySong(" + song + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = query(db, TABLE_SONGS, new String[]{
+            try (Cursor c = db.query(TABLE_SONGS,
+                    new String[]{
                             Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
-                            Song.LAST_PLAYED, Song.TIMES_PLAYED},
-                    song.getId())) {
+                            Song.LAST_PLAYED, Song.TIMES_PLAYED
+                    },
+                    SQL_ID_IS, getWhereArgs(song.getId()), null, null, null)) {
+                c.moveToFirst();
                 song.setYear(c.getInt(0));
                 song.setAdded(c.getLong(1));
                 song.setTag(c.getString(2));
@@ -231,13 +235,14 @@ public class DbHelper extends SQLiteOpenHelper {
                 update(db, "UPDATE " + TABLE_SONGS + " SET " +
                                 Song.BOOKMARKED + "=CASE WHEN " +
                                 Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END",
-                        SQL_ID_IS, new Object[]{Calendar.currentTime(), song.getId()},
+                        new Object[]{Calendar.currentTime(), song.getId()},
                         TABLE_SONGS, song.getId());
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
             }
-            song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED, song.getId()));
+            song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED,
+                    SQL_ID_IS, getWhereArgs(song.getId())));
         }
     }
 
@@ -256,7 +261,8 @@ public class DbHelper extends SQLiteOpenHelper {
             }
 
             song.setLastPlayed(time);
-            song.setTimesPlayed(queryInt(db, TABLE_SONGS, Song.TIMES_PLAYED, song.getId()));
+            song.setTimesPlayed(queryInt(db, TABLE_SONGS, Song.TIMES_PLAYED,
+                    SQL_ID_IS, getWhereArgs(song.getId())));
         }
     }
 
@@ -268,7 +274,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 delete(db, TABLE_SONGS, song.getId());
 
                 // Update artist stats if the artist has other songs, delete it otherwise.
-                if (queryInt(db, "SELECT COUNT(*) FROM " + TABLE_SONGS,
+                if (queryInt(db, TABLE_SONGS, "COUNT(*)",
                         SQL_ARTIST_ID_IS, getWhereArgs(song.getArtistId())) > 0) {
                     updateArtistStats(db, song);
                 } else {
@@ -308,9 +314,11 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
         ArrayList<Song> songs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLIST_SONGS + "," + TABLE_SONGS, new String[]{
+            try (Cursor c = db.query(TABLE_PLAYLIST_SONGS + "," + TABLE_SONGS,
+                    new String[]{
                             Playlist.SONG_ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
-                            Song.DURATION, Song.TIMES_PLAYED},
+                            Song.DURATION, Song.TIMES_PLAYED
+                    },
                     Playlist.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID +
                             " AND " + Playlist.PLAYLIST_ID + "=?",
                     getWhereArgs(playlist.getId()), null, null,
@@ -416,13 +424,14 @@ public class DbHelper extends SQLiteOpenHelper {
             queryTotal(db, stats.getPlayed(), artist,
                     Song.LAST_PLAYED + " IS NOT NULL", selectionArgs);
 
-            try (Cursor c = db.rawQuery(appendWhereClause("SELECT " +
-                    "MAX(" + Song.ADDED + "), " +
-                    "MAX(" + Song.LAST_PLAYED + "), " +
-                    "SUM(" + Song.TIMES_PLAYED + "), " +
-                    "SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ") " +
-                    "FROM " + TABLE_SONGS,
-                    artist == null ? null : SQL_ARTIST_ID_IS, false), selectionArgs)) {
+            try (Cursor c = db.query(TABLE_SONGS,
+                    new String[]{
+                            "MAX(" + Song.ADDED + ")",
+                            "MAX(" + Song.LAST_PLAYED + ")",
+                            "SUM(" + Song.TIMES_PLAYED + ")",
+                            "SUM(" + Song.DURATION + "*" + Song.TIMES_PLAYED + ")"
+                    },
+                    artist == null ? null : SQL_ARTIST_ID_IS, selectionArgs, null, null, null)) {
                 c.moveToFirst();
                 stats.setLastAdded(c.getLong(0));
                 stats.setLastPlayed(c.getLong(1));
@@ -461,9 +470,11 @@ public class DbHelper extends SQLiteOpenHelper {
                         null, new int[0], 1, artistIgnore, -1, null, null, 0);
 
                 results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        db, TABLE_SONGS, new String[]{
+                        db, TABLE_SONGS,
+                        new String[]{
                                 Song._ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
-                                Song.DURATION, Song.YEAR},
+                                Song.DURATION, Song.YEAR
+                        },
                         new int[]{1, 2, 3, 4}, new int[]{5}, -1, null, 2, results[0].ids,
                         Song.ADDED, time);
 
@@ -485,16 +496,20 @@ public class DbHelper extends SQLiteOpenHelper {
         JSONObject backup = new JSONObject();
 
         try (SQLiteDatabase db = getReadableDatabase()) {
-            backupTable(backup, db, TABLE_SONGS, new String[]{
-                    Song._ID, Song.TITLE, Song.ARTIST, Song.YEAR, Song.ADDED,
-                    Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED});
+            backupTable(backup, db, TABLE_SONGS,
+                    new String[]{
+                            Song._ID, Song.TITLE, Song.ARTIST, Song.YEAR, Song.ADDED,
+                            Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED
+                    });
 
-            backupTable(backup, db, TABLE_PLAYLISTS, new String[]{
-                    Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
-                    Playlist.SONG_INDEX, Playlist.SONG_POSITION});
+            backupTable(backup, db, TABLE_PLAYLISTS,
+                    new String[]{
+                            Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
+                            Playlist.SONG_INDEX, Playlist.SONG_POSITION
+                    });
 
-            backupTable(backup, db, TABLE_PLAYLIST_SONGS, new String[]{
-                    Playlist.PLAYLIST_ID, Playlist.SONG_ID});
+            backupTable(backup, db, TABLE_PLAYLIST_SONGS,
+                    new String[]{Playlist.PLAYLIST_ID, Playlist.SONG_ID});
         }
 
         // Write JSONObject to file.
@@ -545,17 +560,21 @@ public class DbHelper extends SQLiteOpenHelper {
                     songIds.put(song.getLong(Song._ID), id);
 
                     // Get ContentValues from JSONObject and update row.
-                    ContentValues values = getValues(song, new String[]{
-                            Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
-                            Song.LAST_PLAYED, Song.TIMES_PLAYED});
+                    ContentValues values = getValues(song,
+                            new String[]{
+                                    Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
+                                    Song.LAST_PLAYED, Song.TIMES_PLAYED
+                            });
                     update(db, TABLE_SONGS, values, id, false);
                 }
                 Log.d(TAG, songs.length() + " songs restored");
                 updateArtistStats(db, null);
 
-                restoreTable(backup, db, TABLE_PLAYLISTS, SQL_CREATE_PLAYLISTS, new String[]{
-                        Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
-                        Playlist.SONG_INDEX, Playlist.SONG_POSITION},
+                restoreTable(backup, db, TABLE_PLAYLISTS, SQL_CREATE_PLAYLISTS,
+                        new String[]{
+                                Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
+                                Playlist.SONG_INDEX, Playlist.SONG_POSITION
+                        },
                         null, null);
 
                 restoreTable(backup, db, TABLE_PLAYLIST_SONGS, SQL_CREATE_PLAYLIST_SONGS,
@@ -586,7 +605,7 @@ public class DbHelper extends SQLiteOpenHelper {
         if (count == 0) {
             s = "NOT " + s;
         } else {
-            s = appendWhereClause(s, Playlist.PLAYLIST_ID + " " + getInClause(count), false);
+            s += " WHERE " + Playlist.PLAYLIST_ID + " " + getInClause(count);
         }
         return Song._ID + " " + s + ")";
     }
@@ -599,7 +618,7 @@ public class DbHelper extends SQLiteOpenHelper {
         update(db, "UPDATE " + table + " SET " +
                         PlayedColumns.LAST_PLAYED + "=?," +
                         PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1",
-                SQL_ID_IS, new Object[]{time, id}, table, id);
+                new Object[]{time, id}, table, id);
     }
 
     private static void insertPlaylistSong(SQLiteDatabase db, Playlist playlist, Song song) {
@@ -616,18 +635,22 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static void queryTotal(SQLiteDatabase db, Stats.Total total, Artist artist,
                                    String selection, String[] selectionArgs) {
-        try (Cursor c = db.rawQuery(appendWhereClause(appendWhereClause(
-                "SELECT COUNT(*), SUM(" + Song.DURATION + ") FROM " + TABLE_SONGS,
-                artist == null ? null : SQL_ARTIST_ID_IS, false),
-                selection, artist != null), selectionArgs)) {
+        if (artist != null) {
+            selection = selection == null ? SQL_ARTIST_ID_IS
+                    : SQL_ARTIST_ID_IS + " AND " + selection;
+        }
+
+        try (Cursor c = db.query(TABLE_SONGS,
+                new String[]{"COUNT(*)", "SUM(" + Song.DURATION + ")"},
+                selection, selectionArgs, null, null, null)) {
             c.moveToFirst();
             total.setSongCount(c.getInt(0));
             total.setSongsDuration(c.getLong(1));
         }
 
         if (artist == null) {
-            total.setArtistCount(queryInt(db,
-                    "SELECT COUNT(DISTINCT " + Song.ARTIST_ID + ") FROM " + TABLE_SONGS,
+            total.setArtistCount(queryInt(db, TABLE_SONGS,
+                    "COUNT(DISTINCT " + Song.ARTIST_ID + ")",
                     selection, selectionArgs));
         }
     }
@@ -778,7 +801,12 @@ public class DbHelper extends SQLiteOpenHelper {
             JSONObject row = rows.getJSONObject(i);
             ContentValues values = getValues(row, columns);
             if (refIdColumn != null) {
-                values.put(refIdColumn, refIds.get(row.getLong(refIdColumn)));
+                long rowRefId = row.getLong(refIdColumn);
+                Long refId = refIds.get(rowRefId);
+                if (refId == null) {
+                    throw new JSONException(table + "." + refIdColumn + " not found: " + rowRefId);
+                }
+                values.put(refIdColumn, refId);
             }
             db.insert(table, null, values);
         }
@@ -825,39 +853,23 @@ public class DbHelper extends SQLiteOpenHelper {
         if (song == null) {
             db.execSQL(sql);
         } else {
-            update(db, sql, SQL_ID_IS, new Object[]{song.getArtistId()},
-                    TABLE_ARTISTS, song.getArtistId());
+            update(db, sql, new Object[]{song.getArtistId()}, TABLE_ARTISTS, song.getArtistId());
         }
     }
 
-    private static Cursor query(SQLiteDatabase db, String table, String[] columns, long id) {
-        Cursor c = db.query(table, columns, SQL_ID_IS, getWhereArgs(id), null, null, null);
-        c.moveToFirst();
-        return c;
-    }
-
-    private static int queryInt(SQLiteDatabase db, String table, String column, long id) {
-        try (Cursor c = query(db, table, new String[]{column}, id)) {
-            return c.getInt(0);
-        }
-    }
-
-    private static int queryInt(SQLiteDatabase db, String sql,
+    private static int queryInt(SQLiteDatabase db, String table, String column,
                                 String selection, String[] selectionArgs) {
-        try (Cursor c = db.rawQuery(appendWhereClause(sql, selection, false), selectionArgs)) {
+        try (Cursor c = db.query(table, new String[]{column},
+                selection, selectionArgs, null, null, null)) {
             c.moveToFirst();
             return c.getInt(0);
         }
     }
 
-    private static long queryLong(SQLiteDatabase db, String table, String column, long id) {
-        try (Cursor c = query(db, table, new String[]{column}, id)) {
-            return c.getLong(0);
-        }
-    }
-
-    private static long queryLong(SQLiteDatabase db, String sql, String[] selectionArgs) {
-        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+    private static long queryLong(SQLiteDatabase db, String table, String column,
+                                String selection, String[] selectionArgs) {
+        try (Cursor c = db.query(table, new String[]{column},
+                selection, selectionArgs, null, null, null)) {
             c.moveToFirst();
             return c.getLong(0);
         }
@@ -871,8 +883,8 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    private static int update(SQLiteDatabase db, String table, ContentValues values, long id,
-                              boolean verify) {
+    private static int update(SQLiteDatabase db, String table, ContentValues values,
+                              long id, boolean verify) {
         int rowsAffected = db.update(table, values, SQL_ID_IS, getWhereArgs(id));
         if (verify) {
             verifyUpdate(rowsAffected, table, id);
@@ -880,11 +892,13 @@ public class DbHelper extends SQLiteOpenHelper {
         return rowsAffected;
     }
 
-    private static void update(SQLiteDatabase db, String sql,
-                               String whereClause, Object[] bindArgs,
+    private static void update(SQLiteDatabase db, String sql, Object[] bindArgs,
                                String table, long id) {
-        db.execSQL(appendWhereClause(sql, whereClause, false), bindArgs);
-        verifyUpdate(queryInt(db, "SELECT changes()", null, null), table, id);
+        db.execSQL(sql + " WHERE " + SQL_ID_IS, bindArgs);
+        try (Cursor c = db.rawQuery("SELECT changes()", null)) {
+            c.moveToFirst();
+            verifyUpdate(c.getInt(0), table, id);
+        }
     }
 
     private static void delete(SQLiteDatabase db, String table, long id) {
@@ -901,13 +915,6 @@ public class DbHelper extends SQLiteOpenHelper {
             default:
                 throw new SQLiteException("Duplicate " + table + " row: " + id);
         }
-    }
-
-    private static String appendWhereClause(String sql, String s, boolean and) {
-        if (s != null) {
-            sql += (and ? " AND " : " WHERE ") + s;
-        }
-        return sql;
     }
 
     interface ArtistColumns extends MediaStore.Audio.ArtistColumns {

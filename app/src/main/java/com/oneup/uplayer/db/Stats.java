@@ -87,7 +87,8 @@ public class Stats {
         if (played.songCount > 0) {
             addRow(context, grid, R.string.stats_avg_times_played,
                     formatAvgTimesPlayed(timesPlayed, played.songCount),
-                    played.artistCount == 0 ? null : formatAvgTimesPlayed(timesPlayed, played.artistCount));
+                    played.artistCount == 0 ? null
+                            : formatAvgTimesPlayed(timesPlayed, played.artistCount));
         }
     }
 
@@ -97,7 +98,7 @@ public class Stats {
     }
 
     private static void addRow(Context context, GridLayout grid, int labelId,
-                                     String songs, String artists) {
+                               String songs, String artists) {
         addColumn(context, grid, context.getString(labelId), false);
         addColumn(context, grid, songs, artists == null);
         if (artists != null) {
@@ -113,9 +114,8 @@ public class Stats {
     }
 
     private static void addColumn(Context context, GridLayout grid,
-                                        String text, boolean span) {
+                                  String text, boolean span) {
         TextView view = new TextView(context);
-        view.setBackground(ContextCompat.getDrawable(context, R.drawable.border));
 
         GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
         layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED,
@@ -124,10 +124,12 @@ public class Stats {
         view.setLayoutParams(layoutParams);
 
         int paddingHorizontal = context.getResources().getDimensionPixelSize(
-                R.dimen.stats_text_padding_horizontal);
+                R.dimen.stats_text_padding);
         int paddingVertical = context.getResources().getDimensionPixelSize(
-                R.dimen.stats_text_padding_vertical);
+                R.dimen.stats_text_padding);
         view.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
+
+        view.setBackground(ContextCompat.getDrawable(context, R.drawable.border));
 
         view.setText(text);
         view.setTextColor(ContextCompat.getColor(context, R.color.stats_text));
@@ -166,7 +168,7 @@ public class Stats {
         }
 
         private void addRows(Context context, GridLayout grid,
-                                   int labelId, int remainderLabelId) {
+                             int labelId, int remainderLabelId) {
             addRow(context, grid, labelId);
             if (this != total) {
                 Total remainder = new Total();

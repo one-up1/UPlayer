@@ -74,7 +74,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String SQL_CREATE_PLAYLIST_SONGS =
             "CREATE TABLE " + TABLE_PLAYLIST_SONGS + "(" +
-                    Playlist._ID + " INTEGER PRIMARY KEY," +
+                    Playlist._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                     Playlist.PLAYLIST_ID + " INTEGER," +
                     Playlist.SONG_ID + ")";
 
@@ -110,7 +110,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Artist> queryArtists(String orderBy) {
-        Log.d(TAG, "DbHelper.queryArtists('" + orderBy + "')");
+        Log.d(TAG, "DbHelper.queryArtists(" + orderBy + ")");
         ArrayList<Artist> artists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_ARTISTS, null, null, null, null, null, orderBy)) {
@@ -129,22 +129,8 @@ public class DbHelper extends SQLiteOpenHelper {
         return artists;
     }
 
-    public void queryArtist(Artist artist) {
-        Log.d(TAG, "DbHelper.queryArtist(" + artist + ")");
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_ARTISTS,
-                    new String[]{Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
-                    SQL_ID_IS, getWhereArgs(artist.getId()), null, null, null)) {
-                c.moveToFirst();
-                artist.setLastAdded(c.getLong(0));
-                artist.setLastPlayed(c.getLong(1));
-                artist.setTimesPlayed(c.getInt(2));
-            }
-        }
-    }
-
     public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
-        Log.d(TAG, "DbHelper.querySongs(" + selection + ",'" + orderBy + "')");
+        Log.d(TAG, "DbHelper.querySongs(" + selection + "," + orderBy + ")");
         ArrayList<Song> songs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, null, selection, selectionArgs,
@@ -190,12 +176,13 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public ArrayList<String> querySongTags() {
-        Log.d(TAG, "DbHelper.querySongTags()");
+    public ArrayList<String> querySongTags(String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.querySongTags(" + selection + ")");
         ArrayList<String> tags = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, TABLE_SONGS, new String[]{Song.TAG},
-                    Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
+                    appendSelection(selection, Song.TAG + " IS NOT NULL"), selectionArgs,
+                    null, null, Song.TAG, null)) {
                 while (c.moveToNext()) {
                     tags.add(c.getString(0));
                 }
@@ -288,12 +275,21 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public ArrayList<Playlist> queryPlaylists() {
-        Log.d(TAG, "DbHelper.queryPlaylists()");
+    public ArrayList<Playlist> queryPlaylists(String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryPlaylists(" + selection + ")");
+        if (selection != null) {
+            selection = Playlist._ID + " IN(SELECT " +
+                    Playlist.PLAYLIST_ID + " FROM " + TABLE_PLAYLIST_SONGS +
+                    " WHERE " + Playlist.SONG_ID + " IN(SELECT " + TABLE_SONGS + "." + Song._ID +
+                    " FROM " + TABLE_SONGS + " WHERE " + selection + "))";
+            Log.d(TAG, "selection=" + selection);
+        }
+
         ArrayList<Playlist> playlists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLISTS, null, Playlist.MODIFIED + " IS NOT NULL",
-                    null, null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
+            try (Cursor c = db.query(TABLE_PLAYLISTS, null,
+                    appendSelection(selection, Playlist.MODIFIED + " IS NOT NULL"), selectionArgs,
+                    null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
                 while (c.moveToNext()) {
                     Playlist playlist = new Playlist();
                     playlist.setId(c.getLong(0));
@@ -414,12 +410,12 @@ public class DbHelper extends SQLiteOpenHelper {
         Stats stats = new Stats();
         try (SQLiteDatabase db = getReadableDatabase()) {
             queryTotal(db, stats.getTotal(), artist, selection, selectionArgs);
-            queryTotal(db, stats.getPlayed(), artist, appendSelection(selection,
-                    Song.LAST_PLAYED + " IS NOT NULL"), selectionArgs);
-            queryTotal(db, stats.getBookmarked(), artist, appendSelection(
-                    selection, Song.BOOKMARKED + " IS NOT NULL"), selectionArgs);
-            queryTotal(db, stats.getTagged(), artist, appendSelection(selection,
-                    Song.TAG + " IS NOT NULL"), selectionArgs);
+            queryTotal(db, stats.getPlayed(), artist,
+                    appendSelection(selection, Song.LAST_PLAYED + " IS NOT NULL"), selectionArgs);
+            queryTotal(db, stats.getBookmarked(), artist,
+                    appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL"), selectionArgs);
+            queryTotal(db, stats.getTagged(), artist,
+                    appendSelection(selection, Song.TAG + " IS NOT NULL"), selectionArgs);
 
             try (Cursor c = db.query(TABLE_SONGS,
                     new String[]{
@@ -506,7 +502,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     });
 
             backupTable(backup, db, TABLE_PLAYLIST_SONGS,
-                    new String[]{Playlist.PLAYLIST_ID, Playlist.SONG_ID});
+                    new String[]{Playlist._ID, Playlist.PLAYLIST_ID, Playlist.SONG_ID});
         }
 
         // Write JSONObject to file.
@@ -575,7 +571,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         null, null);
 
                 restoreTable(backup, db, TABLE_PLAYLIST_SONGS, SQL_CREATE_PLAYLIST_SONGS,
-                        new String[]{Playlist.PLAYLIST_ID},
+                        new String[]{Playlist._ID, Playlist.PLAYLIST_ID},
                         Playlist.SONG_ID, songIds);
 
                 db.setTransactionSuccessful();

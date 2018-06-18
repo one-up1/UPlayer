@@ -136,7 +136,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.add_to_playlist:
                 playlistSong = song;
                 startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
-                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(true)),
+                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                        null, null, true)),
                         REQUEST_SELECT_PLAYLIST);
                 break;
             case R.id.mark_played:

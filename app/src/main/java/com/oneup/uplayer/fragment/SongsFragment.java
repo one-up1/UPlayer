@@ -31,12 +31,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public static final int SORT_COLUMN_BOOKMARKED = 7;
 
     private static final String ARG_ARTIST_ID = "artist_id";
-    private static final String ARG_SELECTION = "selection";
-    private static final String ARG_SELECTION_ARGS = "selection_args";
 
     private long artistId;
-    private String selection;
-    private String[] selectionArgs;
 
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
@@ -58,12 +54,10 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         if (args != null) {
             artistId = args.getLong(ARG_ARTIST_ID);
             if (artistId == 0) {
-                selection = args.getString(ARG_SELECTION);
-                selectionArgs = args.getStringArray(ARG_SELECTION_ARGS);
                 setSortColumns(new String[]{null, Song.ARTIST, Song.TITLE});
             } else {
-                selection = Song.ARTIST_ID + "=?";
-                selectionArgs = DbHelper.getWhereArgs(artistId);
+                setSelection(Song.ARTIST_ID + "=?");
+                setSelectionArgs(DbHelper.getWhereArgs(artistId));
                 setSortColumns(new String[]{null, Song.TITLE});
             }
         }
@@ -131,7 +125,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(selection, selectionArgs, getOrderBy());
+        return getDbHelper().querySongs(getSelection(), getSelectionArgs(), getOrderBy());
     }
 
     @Override

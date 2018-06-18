@@ -24,7 +24,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     private static final String TAG = "UPlayer";
 
     public ArtistsFragment() {
-        super(R.layout.list_item_artist, R.menu.list_item_artist, 0, 0, 0,
+        super(R.layout.list_item_artist, 0, 0, 0, 0,
                 new String[]{null, Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
                 new String[]{null, Artist.ARTIST});
     }
@@ -75,19 +75,16 @@ public class ArtistsFragment extends ListFragment<Artist> {
     }
 
     @Override
-    protected void onContextItemSelected(int itemId, int position, Artist artist) {
-        switch (itemId) {
-            case R.id.info:
-                try {
-                    getDbHelper().queryStats(false, Song.ARTIST_ID + "=?",
-                            DbHelper.getWhereArgs(artist.getId()))
-                            .showDialog(getActivity(), artist.getArtist());
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error querying artist stats", ex);
-                    Util.showErrorDialog(getActivity(), ex);
-                }
-                break;
+    protected boolean onListItemLongClick(int position, Artist artist) {
+        try {
+            getDbHelper().queryStats(false, Song.ARTIST_ID + "=?",
+                    DbHelper.getWhereArgs(artist.getId()))
+                    .showDialog(getActivity(), artist.getArtist());
+        } catch (Exception ex) {
+            Log.e(TAG, "Error querying artist stats", ex);
+            Util.showErrorDialog(getActivity(), ex);
         }
+        return true;
     }
 
     public static ArtistsFragment newInstance(int sortColumn, boolean sortDesc) {

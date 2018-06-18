@@ -52,7 +52,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         dbHelper = new DbHelper(this);
 
         song = getIntent().getParcelableExtra(EXTRA_SONG);
-        tags = dbHelper.querySongTags();
+        tags = dbHelper.querySongTags(null, null);
         tags.add(0, "");
 
         etTitle = findViewById(R.id.etTitle);

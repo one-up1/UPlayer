@@ -86,7 +86,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Playlist> loadData() {
-            return getDbHelper().queryPlaylists();
+            return getDbHelper().queryPlaylists(getSelection(), getSelectionArgs());
         }
 
         @Override
@@ -182,8 +182,11 @@ public class PlaylistsActivity extends AppCompatActivity {
                     });
         }
 
-        public static Bundle getArguments(boolean checkboxVisible) {
+        public static Bundle getArguments(String selection, String[] selectionArgs,
+                                          boolean checkboxVisible) {
             Bundle args = new Bundle();
+            args.putString(ARG_SELECTION, selection);
+            args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_CHECKBOX_VISIBLE, checkboxVisible);
             return args;
         }

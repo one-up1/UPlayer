@@ -99,6 +99,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private long minLastPlayed;
     private long maxLastPlayed;
 
+    private String selection;
+    private List<String> selectionArgs;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -297,22 +300,25 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_LAST_PLAYED);
         } else if (v == bQuery) {
+            getSelection();
             query(null, null);
         } else if (v == bTags) {
             showTags();
         } else if (v == bStatistics) {
             try {
-                List<String> selectionArgs = new ArrayList<>();
-                dbHelper.queryStats(true, getSelection(selectionArgs),
-                        selectionArgs.toArray(new String[0]))
+                getSelection();
+                dbHelper.queryStats(true, selection, getSelectionArgs())
                         .showDialog(getActivity(), null);
+                saveQueryParams(null);
             } catch (Exception ex) {
                 Log.e(TAG, "Error querying stats", ex);
                 Util.showErrorDialog(getActivity(), ex);
             }
         } else if (v == bPlaylists) {
+            getSelection();
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
-                            .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(true)),
+                            .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                    selection, getSelectionArgs(), true)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bSyncDatabase) {
             syncDatabase();
@@ -352,38 +358,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                 android.R.layout.simple_spinner_dropdown_item, artists));
     }
 
-    private void query(Set<String> tags, List<Playlist> playlists) {
-        List<String> selectionArgs = new ArrayList<>();
-        String selection = getSelection(selectionArgs);
-        saveQueryParams(tags);
-
-        if (tags != null) {
-            String tagSelection;
-            if (tags.size() == 0) {
-                tagSelection = "IS NULL";
-            } else {
-                tagSelection = DbHelper.getInClause(tags.size());
-                selectionArgs.addAll(tags);
-            }
-            selection = DbHelper.appendSelection(selection, Song.TAG + " " + tagSelection);
-        }
-
-        if (playlists != null) {
-            selection = DbHelper.appendSelection(selection,
-                    DbHelper.getPlaylistSongsInClause(playlists.size()));
-            for (Playlist playlist : playlists) {
-                selectionArgs.add(Long.toString(playlist.getId()));
-            }
-        }
-
-        startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(selection,
-                        selection == null ? null : selectionArgs.toArray(new String[0]),
-                        sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
-    }
-
-    private String getSelection(List<String> selectionArgs) {
-        String selection = null;
+    private void getSelection() {
+        selection = null;
+        selectionArgs = new ArrayList<>();
 
         String title = etTitle.getString();
         if (title != null) {
@@ -446,12 +423,42 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             selection = DbHelper.appendSelection(selection, Song.TIMES_PLAYED + "<=?");
             selectionArgs.add(maxTimesPlayed);
         }
+    }
 
-        return selection;
+    private String[] getSelectionArgs() {
+        return selection == null ? null : selectionArgs.toArray(new String[0]);
+    }
+
+    private void query(Set<String> tags, List<Playlist> playlists) {
+        if (tags != null) {
+            String tagSelection;
+            if (tags.size() == 0) {
+                tagSelection = "IS NULL";
+            } else {
+                tagSelection = DbHelper.getInClause(tags.size());
+                selectionArgs.addAll(tags);
+            }
+            selection = DbHelper.appendSelection(selection, Song.TAG + " " + tagSelection);
+        }
+
+        if (playlists != null) {
+            selection = DbHelper.appendSelection(selection,
+                    DbHelper.getPlaylistSongsInClause(playlists.size()));
+            for (Playlist playlist : playlists) {
+                selectionArgs.add(Long.toString(playlist.getId()));
+            }
+        }
+
+        startActivity(new Intent(getActivity(), SongsActivity.class)
+                .putExtras(SongsFragment.getArguments(selection, getSelectionArgs(),
+                        sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
+        saveQueryParams(tags);
     }
 
     private void showTags() {
-        final String[] tags = dbHelper.querySongTags().toArray(new String[0]);
+        getSelection();
+        final String[] tags = dbHelper.querySongTags(selection, getSelectionArgs())
+                .toArray(new String[0]);
         if (tags.length == 0) {
             Util.showToast(getActivity(), R.string.no_tags);
             return;
@@ -613,7 +620,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         preferences.putString(PREF_MIN_TIMES_PLAYED, etMinTimesPlayed.getString());
         preferences.putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString());
         preferences.putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition());
-        preferences.putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked());;
+        preferences.putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked());
         if (tags != null) {
             preferences.putStringSet(PREF_TAGS, tags);
         }

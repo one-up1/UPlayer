@@ -192,7 +192,7 @@ public class Stats {
             } else {
                 artists = formatCount(artistCount, total.artistCount);
                 if (artistCount > 1) {
-                    artists += "\n" + context.getString(R.string.stats_avg_songs,
+                    artists += "\n" + context.getString(R.string.stats_avg,
                             Util.formatFraction(songCount, artistCount));
                 }
             }

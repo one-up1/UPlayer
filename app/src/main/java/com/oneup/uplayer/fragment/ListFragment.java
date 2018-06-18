@@ -22,7 +22,10 @@ import com.oneup.uplayer.db.DbHelper;
 import java.util.ArrayList;
 
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
-        implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+        implements ListView.OnItemLongClickListener,
+        CompoundButton.OnCheckedChangeListener, View.OnClickListener {
+    protected static final String ARG_SELECTION = "selection";
+    protected static final String ARG_SELECTION_ARGS = "selection_args";
     protected static final String ARG_SORT_COLUMN = "sort_column";
     protected static final String ARG_SORT_DESC = "sort_desc";
     protected static final String ARG_CHECKBOX_VISIBLE = "checkbox_visible";
@@ -39,6 +42,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private String[] sortColumns;
 
     private DbHelper dbHelper;
+    private String selection;
+    private String[] selectionArgs;
     private int sortColumn;
     private boolean sortDesc;
     private boolean checkboxVisible;
@@ -67,6 +72,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
         Bundle args = getArguments();
         if (args != null) {
+            selection = args.getString(ARG_SELECTION);
+            selectionArgs = args.getStringArray(ARG_SELECTION_ARGS);
             sortColumn = args.getInt(ARG_SORT_COLUMN);
             sortDesc = args.getBoolean(ARG_SORT_DESC);
             checkboxVisible = args.getBoolean(ARG_CHECKBOX_VISIBLE);
@@ -79,6 +86,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         if (listItemContextMenuResource != 0) {
             registerForContextMenu(getListView());
         }
+        getListView().setOnItemLongClickListener(this);
     }
 
     @Override
@@ -119,14 +127,20 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     }
 
     @Override
-    public void onClick(View v) {
-        int position = getListItemPosition(v);
-        onListItemViewClick(v.getId(), position, data.get(position));
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        position = getListItemPosition(position);
+        return onListItemLongClick(position, data.get(position));
     }
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         checkedListItems[getListItemPosition(buttonView)] = isChecked;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int position = getListItemPosition(v);
+        onListItemViewClick(v.getId(), position, data.get(position));
     }
 
     public void reloadData() {
@@ -202,6 +216,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     protected void onListItemClick(int position, T item) {
     }
 
+    protected boolean onListItemLongClick(int position, T item) {
+        return false;
+    }
+
     protected void onContextItemSelected(int itemId, int position, T item) {
     }
 
@@ -214,6 +232,22 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected DbHelper getDbHelper() {
         return dbHelper;
+    }
+
+    protected String getSelection() {
+        return selection;
+    }
+
+    protected void setSelection(String selection) {
+        this.selection = selection;
+    }
+
+    protected String[] getSelectionArgs() {
+        return selectionArgs;
+    }
+
+    protected void setSelectionArgs(String[] selectionArgs) {
+        this.selectionArgs = selectionArgs;
     }
 
     protected void setSortColumn(int sortColumn) {

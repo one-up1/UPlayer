@@ -22,6 +22,9 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
+//TODO: Save checked playlists.
+//TODO: Select all/none options for playlists.
+
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
@@ -65,7 +68,7 @@ public class PlaylistsActivity extends AppCompatActivity {
         @Override
         public void onPrepareOptionsMenu(Menu menu) {
             super.onPrepareOptionsMenu(menu);
-            menu.findItem(R.id.select).setVisible(isCheckboxVisible());
+            menu.findItem(R.id.ok).setVisible(isCheckboxVisible());
         }
 
         @Override
@@ -74,7 +77,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                 case R.id.add:
                     add();
                     return true;
-                case R.id.select:
+                case R.id.ok:
                     getActivity().setResult(RESULT_OK, new Intent()
                             .putParcelableArrayListExtra(EXTRA_PLAYLISTS, getCheckedListItems()));
                     getActivity().finish();

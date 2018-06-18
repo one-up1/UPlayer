@@ -92,6 +92,20 @@
     </RadioGroup>
 
     <Button
+        android:id="@+id/bTags"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/select_tags"
+        app:layout_columnWeight="1" />
+
+    <Button
+        android:id="@+id/bPlaylists"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/select_playlists"
+        app:layout_columnWeight="1" />
+
+    <Button
         android:id="@+id/bMinLastPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -143,24 +157,10 @@
         app:layout_columnWeight="1" />
 
     <Button
-        android:id="@+id/bTags"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/select_tags"
-        app:layout_columnWeight="1" />
-
-    <Button
         android:id="@+id/bStatistics"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/statistics"
-        app:layout_columnWeight="1" />
-
-    <Button
-        android:id="@+id/bPlaylists"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/playlists"
         app:layout_columnWeight="1" />
 
     <Button

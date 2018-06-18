@@ -9,8 +9,6 @@
     <string name="last_played">Last played</string>
     <string name="most_played">Most played</string>
 
-    <string name="none">None</string>
-    <string name="all">All</string>
     <string name="title">Title&#8230;</string>
     <string name="artist">Artist&#8230;</string>
     <string name="min_year">Min year&#8230;</string>
@@ -19,15 +17,17 @@
     <string name="select_max_added">Max added&#8230;</string>
     <string name="bookmarked">Bookmarked</string>
     <string name="not_bookmarked">Not bookmarked</string>
+    <string name="select_tags">Tags&#8230;</string>
+    <string name="no_tags">No tags available</string>
+    <string name="none">None</string>
+    <string name="all">All</string>
+    <string name="select_playlists">Playlists&#8230;</string>
     <string name="select_min_last_played">Min last played&#8230;</string>
     <string name="select_max_last_played">Max last played&#8230;</string>
     <string name="min_times_played">Min times played&#8230;</string>
     <string name="max_times_played">Max times played&#8230;</string>
     <string name="desc">Desc</string>
-    <string name="select_tags">Tags&#8230;</string>
-    <string name="no_tags">No tags available</string>
     <string name="statistics">Statistics</string>
-    <string name="playlists">Playlists&#8230;</string>
     <string name="sync_database">Sync database</string>
     <string name="sync_database_confirm">Sync database?</string>
     <string name="sync_completed">Sync completed</string>
@@ -101,7 +101,6 @@
     <string name="playlist_saved">Playlist saved</string>
 
     <string name="add">Add</string>
-    <string name="select">Select</string>
     <string name="rename">Rename</string>
     <string name="name">Name&#8230;</string>
     <string name="delete_playlist_confirm">Delete \'%1$s\'?</string>
@@ -115,6 +114,11 @@
     <plurals name="songs">
         <item quantity="one">%1$d song</item>
         <item quantity="other">%1$d songs</item>
+    </plurals>
+
+    <plurals name="tags">
+        <item quantity="one">%1$d tag</item>
+        <item quantity="other">%1$d tags</item>
     </plurals>
 
     <plurals name="playlists">

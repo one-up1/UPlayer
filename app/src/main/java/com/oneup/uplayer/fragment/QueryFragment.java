@@ -38,9 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-//TODO: Allow showing stats for tagged/playlist songs.
-//TODO: Allow showing songs with tag and on playlist.
-
 public class QueryFragment extends Fragment implements AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";
@@ -63,9 +60,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
     private static final int REQUEST_SELECT_MIN_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
-    private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 3;
-    private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 4;
-    private static final int REQUEST_SELECT_PLAYLISTS = 5;
+    private static final int REQUEST_SELECT_PLAYLISTS = 3;
+    private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 4;
+    private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 5;
 
     private SharedPreferences preferences;
     private DbHelper dbHelper;
@@ -81,6 +78,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private RadioButton rbAll;
     private RadioButton rbBookmarked;
     private RadioButton rbNotBookmarked;
+    private Button bTags;
+    private Button bPlaylists;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
     private EditText etMinTimesPlayed;
@@ -88,14 +87,14 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
     private Button bQuery;
-    private Button bTags;
     private Button bStatistics;
-    private Button bPlaylists;
     private Button bSyncDatabase;
     private Button bBackup;
 
     private long minAdded;
     private long maxAdded;
+    private List<Playlist> playlists;
+    private Set<String> tags;
     private long minLastPlayed;
     private long maxLastPlayed;
 
@@ -158,6 +157,19 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             rbAll.setChecked(true);
         }
 
+        bTags = rootView.findViewById(R.id.bTags);
+        bTags.setOnClickListener(this);
+        bTags.setOnLongClickListener(this);
+        tags = preferences.getStringSet(PREF_TAGS, null);
+        if (tags != null) {
+            bTags.setText(getResources().getQuantityString(
+                    R.plurals.tags, tags.size(), tags.size()));
+        }
+
+        bPlaylists = rootView.findViewById(R.id.bPlaylists);
+        bPlaylists.setOnClickListener(this);
+        bPlaylists.setOnLongClickListener(this);
+
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         bMinLastPlayed.setOnLongClickListener(this);
@@ -189,14 +201,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
 
-        bTags = rootView.findViewById(R.id.bTags);
-        bTags.setOnClickListener(this);
-
         bStatistics = rootView.findViewById(R.id.bStatistics);
         bStatistics.setOnClickListener(this);
-
-        bPlaylists = rootView.findViewById(R.id.bPlaylists);
-        bPlaylists.setOnClickListener(this);
 
         bSyncDatabase = rootView.findViewById(R.id.bSyncDatabase);
         bSyncDatabase.setOnClickListener(this);
@@ -221,14 +227,6 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     maxAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMaxAdded.setText(Util.formatDateTime(maxAdded));
                     break;
-                case REQUEST_SELECT_MIN_LAST_PLAYED:
-                    minLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
-                    break;
-                case REQUEST_SELECT_MAX_LAST_PLAYED:
-                    maxLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
-                    break;
                 case REQUEST_SELECT_PLAYLISTS:
                     if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                         getActivity().startService(new Intent(getActivity(), MainService.class)
@@ -237,9 +235,19 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                                 .putExtra(MainService.EXTRA_PLAYLIST,
                                         data.getParcelableExtra(PlaylistsActivity.EXTRA_PLAYLIST)));
                     } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
-                        query(null, data.<Playlist>getParcelableArrayListExtra(
-                                PlaylistsActivity.EXTRA_PLAYLISTS));
+                        playlists = data.getParcelableArrayListExtra(
+                                PlaylistsActivity.EXTRA_PLAYLISTS);
+                        bPlaylists.setText(getResources().getQuantityString(
+                                R.plurals.playlists, playlists.size(), playlists.size()));
                     }
+                    break;
+                case REQUEST_SELECT_MIN_LAST_PLAYED:
+                    minLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
+                    break;
+                case REQUEST_SELECT_MAX_LAST_PLAYED:
+                    maxLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
                     break;
             }
         }
@@ -247,7 +255,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
     @Override
     public void onDestroy() {
-        saveQueryParams(null);
+        saveQueryParams();
 
         if (dbHelper != null) {
             dbHelper.close();
@@ -285,6 +293,14 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, maxAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
+        } else if (v == bTags) {
+            showTags();
+        } else if (v == bPlaylists) {
+            getSelection(this.tags, null);
+            startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
+                            .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                    selection, getSelectionArgs(), true)),
+                    REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_min_last_played);
@@ -300,26 +316,17 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_LAST_PLAYED);
         } else if (v == bQuery) {
-            getSelection();
-            query(null, null);
-        } else if (v == bTags) {
-            showTags();
+            query();
         } else if (v == bStatistics) {
             try {
-                getSelection();
+                getSelection(this.tags, this.playlists);
                 dbHelper.queryStats(true, selection, getSelectionArgs())
                         .showDialog(getActivity(), null);
-                saveQueryParams(null);
+                saveQueryParams();
             } catch (Exception ex) {
                 Log.e(TAG, "Error querying stats", ex);
                 Util.showErrorDialog(getActivity(), ex);
             }
-        } else if (v == bPlaylists) {
-            getSelection();
-            startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
-                            .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    selection, getSelectionArgs(), true)),
-                    REQUEST_SELECT_PLAYLISTS);
         } else if (v == bSyncDatabase) {
             syncDatabase();
         } else if (v == bBackup) {
@@ -335,6 +342,12 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         } else if (v == bMaxAdded) {
             maxAdded = 0;
             bMaxAdded.setText(R.string.select_max_added);
+        } else if (v == bTags) {
+            tags = null;
+            bTags.setText(R.string.select_tags);
+        } else if (v == bPlaylists) {
+            playlists = null;
+            bPlaylists.setText(R.string.select_playlists);
         } else if (v == bMinLastPlayed) {
             minLastPlayed = 0;
             bMinLastPlayed.setText(R.string.select_min_last_played);
@@ -358,7 +371,87 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                 android.R.layout.simple_spinner_dropdown_item, artists));
     }
 
-    private void getSelection() {
+    private void query() {
+        getSelection(this.tags, this.playlists);
+        startActivity(new Intent(getActivity(), SongsActivity.class)
+                .putExtras(SongsFragment.getArguments(selection, getSelectionArgs(),
+                        sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
+        saveQueryParams();
+    }
+
+    private void showTags() {
+        //TODO: TagsActivity.
+        getSelection(null, this.playlists);
+        final String[] tags = dbHelper.querySongTags(selection, getSelectionArgs())
+                .toArray(new String[0]);
+        if (tags.length == 0) {
+            Util.showToast(getActivity(), R.string.no_tags);
+            return;
+        }
+
+        final ArraySet<String> checkedTags = new ArraySet<>();
+        if (this.tags != null) {
+            checkedTags.addAll(this.tags);
+        }
+        boolean[] checkedItems = new boolean[tags.length];
+        for (int i = 0; i < tags.length; i++) {
+            checkedItems[i] = checkedTags.contains(tags[i]);
+        }
+        final AlertDialog tagsDialog = new AlertDialog.Builder(getActivity())
+                .setTitle(getResources().getQuantityString(
+                        R.plurals.tags, tags.length, tags.length))
+                .setMultiChoiceItems(tags, checkedItems,
+                        new DialogInterface.OnMultiChoiceClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                                int which, boolean isChecked) {
+                                if (isChecked) {
+                                    checkedTags.add(tags[which]);
+                                } else {
+                                    checkedTags.remove(tags[which]);
+                                }
+                            }
+                        })
+                .setNeutralButton(R.string.none, null)
+                .setNegativeButton(R.string.all, null)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        QueryFragment.this.tags = checkedTags;
+                        bTags.setText(getResources().getQuantityString(R.plurals.tags,
+                                checkedTags.size(), checkedTags.size()));
+                    }
+                })
+                .create();
+        tagsDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                final ListView listView = tagsDialog.getListView();
+                final Button bNone = tagsDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+                final Button bAll = tagsDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+                View.OnClickListener buttonOnClickListener = new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        for (int i = 0; i < tags.length; i++) {
+                            if (v == bNone == checkedTags.contains(tags[i])) {
+                                listView.performItemClick(listView, i, i);
+                            }
+                        }
+                    }
+                };
+                bAll.setOnClickListener(buttonOnClickListener);
+                bNone.setOnClickListener(buttonOnClickListener);
+            }
+        });
+        tagsDialog.show();
+    }
+
+    private void getSelection(Set<String> tags, List<Playlist> playlists) {
         selection = null;
         selectionArgs = new ArrayList<>();
 
@@ -423,13 +516,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             selection = DbHelper.appendSelection(selection, Song.TIMES_PLAYED + "<=?");
             selectionArgs.add(maxTimesPlayed);
         }
-    }
 
-    private String[] getSelectionArgs() {
-        return selection == null ? null : selectionArgs.toArray(new String[0]);
-    }
-
-    private void query(Set<String> tags, List<Playlist> playlists) {
         if (tags != null) {
             String tagSelection;
             if (tags.size() == 0) {
@@ -448,75 +535,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                 selectionArgs.add(Long.toString(playlist.getId()));
             }
         }
-
-        startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(selection, getSelectionArgs(),
-                        sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
-        saveQueryParams(tags);
     }
 
-    private void showTags() {
-        getSelection();
-        final String[] tags = dbHelper.querySongTags(selection, getSelectionArgs())
-                .toArray(new String[0]);
-        if (tags.length == 0) {
-            Util.showToast(getActivity(), R.string.no_tags);
-            return;
-        }
-
-        final Set<String> checkedTags = preferences.getStringSet(PREF_TAGS, new ArraySet<String>());
-        boolean[] checkedItems = new boolean[tags.length];
-        for (int i = 0; i < tags.length; i++) {
-            checkedItems[i] = checkedTags.contains(tags[i]);
-        }
-        final AlertDialog tagsDialog = new AlertDialog.Builder(getActivity())
-                .setMultiChoiceItems(tags, checkedItems,
-                        new DialogInterface.OnMultiChoiceClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int which, boolean isChecked) {
-                                if (isChecked) {
-                                    checkedTags.add(tags[which]);
-                                } else {
-                                    checkedTags.remove(tags[which]);
-                                }
-                            }
-                        })
-                .setNeutralButton(R.string.none, null)
-                .setNegativeButton(R.string.all, null)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        query(checkedTags, null);
-                    }
-                })
-                .create();
-        tagsDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-
-            @Override
-            public void onShow(DialogInterface dialog) {
-                final ListView listView = tagsDialog.getListView();
-                final Button bNone = tagsDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
-                final Button bAll = tagsDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-
-                View.OnClickListener buttonOnClickListener = new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        for (int i = 0; i < tags.length; i++) {
-                            if (v == bNone == checkedTags.contains(tags[i])) {
-                                listView.performItemClick(listView, i, i);
-                            }
-                        }
-                    }
-                };
-                bAll.setOnClickListener(buttonOnClickListener);
-                bNone.setOnClickListener(buttonOnClickListener);
-            }
-        });
-        tagsDialog.show();
+    private String[] getSelectionArgs() {
+        return selection == null ? null : selectionArgs.toArray(new String[0]);
     }
 
     private void syncDatabase() {
@@ -605,7 +627,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         });
     }
 
-    private void saveQueryParams(Set<String> tags) {
+    private void saveQueryParams() {
         SharedPreferences.Editor preferences = this.preferences.edit();
         preferences.putString(PREF_TITLE, etTitle.getString());
         preferences.putString(PREF_ARTIST, etArtist.getString());
@@ -621,9 +643,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         preferences.putString(PREF_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString());
         preferences.putInt(PREF_SORT_COLUMN, sSortColumn.getSelectedItemPosition());
         preferences.putBoolean(PREF_SORT_DESC, cbSortDesc.isChecked());
-        if (tags != null) {
-            preferences.putStringSet(PREF_TAGS, tags);
-        }
+        preferences.putStringSet(PREF_TAGS, tags);
         preferences.apply();
     }
 

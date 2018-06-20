@@ -22,8 +22,7 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
-//TODO: Save checked playlists.
-//TODO: Select all/none options for playlists.
+//TODO: Select all options for playlists.
 
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";

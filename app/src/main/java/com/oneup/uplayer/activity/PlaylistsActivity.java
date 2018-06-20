@@ -22,9 +22,6 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
-//TODO: Select all option for playlists.
-//TODO: Delete playlist should be in options menu.
-
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
@@ -68,6 +65,7 @@ public class PlaylistsActivity extends AppCompatActivity {
         @Override
         public void onPrepareOptionsMenu(Menu menu) {
             super.onPrepareOptionsMenu(menu);
+            menu.findItem(R.id.select_all).setVisible(isCheckboxVisible());
             menu.findItem(R.id.ok).setVisible(isCheckboxVisible());
         }
 
@@ -76,6 +74,10 @@ public class PlaylistsActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.add:
                     add();
+                    return true;
+                case R.id.select_all:
+                    setCheckedListItems(getData());
+                    notifyDataSetChanged();
                     return true;
                 case R.id.ok:
                     getActivity().setResult(RESULT_OK, new Intent()

@@ -186,8 +186,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
                         playlists = data.getParcelableArrayListExtra(
                                 PlaylistsActivity.EXTRA_PLAYLISTS);
-                        bPlaylists.setText(Util.getCountString(getActivity(),
-                                R.plurals.playlists, playlists.size()));
+                        bPlaylists.setText(Util.getCountString(getActivity(), playlists,
+                                R.string.no_selected_playlist, R.string.selected_playlists));
                     }
                     break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
@@ -361,8 +361,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
                     @Override
                     public void onDismiss(DialogInterface dialog) {
-                        bTags.setText(Util.getCountString(getActivity(),
-                                R.plurals.tags, QueryFragment.this.tags.size()));
+                        bTags.setText(Util.getCountString(getActivity(), QueryFragment.this.tags,
+                                R.string.no_selected_tag, R.string.selected_tags));
                     }
                 })
                 .create();

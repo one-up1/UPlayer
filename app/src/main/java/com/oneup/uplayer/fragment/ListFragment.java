@@ -21,8 +21,6 @@ import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
 
-//TODO: ListFragment CheckBox implementation.
-
 public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
         implements ListView.OnItemLongClickListener,
         CompoundButton.OnCheckedChangeListener, View.OnClickListener {
@@ -187,6 +185,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         if (listItemCheckBoxId != 0) {
             CheckBox checkBox = rootView.findViewById(listItemCheckBoxId);
             if (checkboxVisible) {
+                checkBox.setOnCheckedChangeListener(null);
                 checkBox.setChecked(checkedListItems[position]);
                 checkBox.setOnCheckedChangeListener(this);
             } else {
@@ -312,6 +311,12 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
             }
         }
         return items;
+    }
+
+    protected void setCheckedListItems(ArrayList<T> items) {
+        for (int i = 0; i < checkedListItems.length; i++) {
+            checkedListItems[i] = items.contains(data.get(i));
+        }
     }
 
     private void setActivityTitle() {

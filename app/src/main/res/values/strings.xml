@@ -20,7 +20,11 @@
     <string name="not_bookmarked">Not bookmarked</string>
     <string name="select_tags">Tags&#8230;</string>
     <string name="no_tags">No tags available</string>
+    <string name="no_selected_tag">Untagged</string>
+    <string name="selected_tags">%1$d tags</string>
     <string name="select_playlists">Playlists&#8230;</string>
+    <string name="no_selected_playlist">Not on playlist</string>
+    <string name="selected_playlists">%1$d playlists</string>
     <string name="select_min_last_played">Min last played&#8230;</string>
     <string name="select_max_last_played">Max last played&#8230;</string>
     <string name="min_times_played">Min times played&#8230;</string>

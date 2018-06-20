@@ -377,7 +377,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                             @Override
                             public void onClick(View v) {
                                 for (int i = 0; i < tags.length; i++) {
-                                    listView.performItemClick(listView, i, i);
+                                    if (!QueryFragment.this.tags.contains(tags[i])) {
+                                        listView.performItemClick(listView, i, i);
+                                    }
                                 }
                             }
                         });

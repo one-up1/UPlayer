@@ -22,7 +22,8 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
-//TODO: Select all options for playlists.
+//TODO: Select all option for playlists.
+//TODO: Delete playlist should be in options menu.
 
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";

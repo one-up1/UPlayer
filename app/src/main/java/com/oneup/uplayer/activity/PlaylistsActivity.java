@@ -44,6 +44,10 @@ public class PlaylistsActivity extends AppCompatActivity {
     }
 
     public static class PlaylistsFragment extends ListFragment<Playlist> {
+        private static final String ARG_ALLOW_ADD = "allow_add";
+
+        private boolean allowAdd;
+
         public PlaylistsFragment() {
             super(R.layout.list_item_playlist, R.menu.list_item_playlist, 0, 0, R.id.checkBox,
                     null, null);
@@ -53,6 +57,12 @@ public class PlaylistsActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setHasOptionsMenu(true);
+
+            Bundle args = getArguments();
+            if (args != null) {
+                allowAdd = args.getBoolean(ARG_ALLOW_ADD);
+            }
+
             reloadData();
         }
 
@@ -65,6 +75,7 @@ public class PlaylistsActivity extends AppCompatActivity {
         @Override
         public void onPrepareOptionsMenu(Menu menu) {
             super.onPrepareOptionsMenu(menu);
+            menu.findItem(R.id.add).setVisible(allowAdd);
             menu.findItem(R.id.select_all).setVisible(isCheckboxVisible());
             menu.findItem(R.id.ok).setVisible(isCheckboxVisible());
         }
@@ -91,7 +102,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Playlist> loadData() {
-            return getDbHelper().queryPlaylists(getSelection(), getSelectionArgs());
+            return getDbHelper().queryPlaylists(!allowAdd, getSelection(), getSelectionArgs());
         }
 
         @Override
@@ -188,11 +199,12 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          boolean checkboxVisible) {
+                                          boolean checkboxVisible, boolean allowAdd) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_CHECKBOX_VISIBLE, checkboxVisible);
+            args.putBoolean(ARG_ALLOW_ADD, allowAdd);
             return args;
         }
 

@@ -100,7 +100,9 @@ public class PlaylistActivity extends AppCompatActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.savePlaylist:
-                    startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class),
+                    startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
+                                    .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                            null, null, false, true)),
                             REQUEST_SELECT_PLAYLIST);
                     return true;
                 default:

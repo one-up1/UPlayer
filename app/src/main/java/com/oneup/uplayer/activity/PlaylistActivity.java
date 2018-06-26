@@ -116,7 +116,7 @@ public class PlaylistActivity extends AppCompatActivity {
             if (resultCode == AppCompatActivity.RESULT_OK) {
                 switch (requestCode) {
                     case REQUEST_SELECT_PLAYLIST:
-                        service.savePlaylist((Playlist) data.getParcelableExtra(
+                        service.setPlaylist((Playlist) data.getParcelableExtra(
                                 PlaylistsActivity.EXTRA_PLAYLIST));
                         Util.showToast(getActivity(), R.string.playlist_saved);
                         break;
@@ -154,7 +154,7 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         protected void onListItemClick(int position, Song song) {
             if (service != null) {
-                service.play(position);
+                service.setSongIndex(position);
             }
         }
 

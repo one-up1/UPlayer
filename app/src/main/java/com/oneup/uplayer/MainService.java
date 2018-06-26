@@ -67,7 +67,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private ArrayList<Song> songs;
     private int songIndex;
-    private Playlist playlist;
+
+    private long playlistId;
+    private int songPosition;
 
     @Override
     public void onCreate() {
@@ -187,10 +189,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onPrepared()");
         
         setVolume();
-        if (playlist != null && playlist.getSongPosition() > 0) {
-            Log.d(TAG, "Seeking to playlist position: " + playlist.getSongPosition());
-            player.seekTo(playlist.getSongPosition());
-            playlist.setSongPosition(0);
+        if (songPosition > 0) {
+            Log.d(TAG, "Seeking to song position: " + songPosition);
+            player.seekTo(songPosition);
+            songPosition = 0;
         }
 
         player.start();
@@ -205,6 +207,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onError(" + what + ", " + extra + ")");
         player.reset();
         prepared = false;
+        songPosition = 0;
         
         setPlayPauseResource(R.drawable.ic_notification_play);
         startForeground(1, notification);
@@ -241,7 +244,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         return songIndex;
     }
 
-    public void play(int songIndex) {
+    public void setSongIndex(int songIndex) {
         this.songIndex = songIndex;
         play();
     }
@@ -286,8 +289,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         update();
     }
 
-    public void savePlaylist(Playlist playlist) {
-        this.playlist = playlist;
+    public void setPlaylist(Playlist playlist) {
+        playlistId = playlist.getId();
         savePlaylist();
     }
 
@@ -298,7 +301,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void play(ArrayList<Song> songs, int songIndex) {
         Log.d(TAG, "MainService.play(" + songs.size() + ", " + songIndex);
         savePlaylist();
-        playlist = null;
+        playlistId = 1;
 
         this.songs = songs;
         this.songIndex = songIndex;
@@ -321,15 +324,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (prepared) {
             update();
         } else {
-            play(this.songs.size() - 1);
+            songIndex = this.songs.size();
+            play();
         }
     }
 
     private void playPlaylist(Playlist playlist) {
-        Log.d(TAG, "MainService.playPlaylist(" + playlist + ", " +
-                playlist.getSongIndex() + ", " + playlist.getSongPosition() + ")");
-        this.playlist = playlist;
-
+        Log.d(TAG, "MainService.playPlaylist(" + playlist + ")");
         songs = dbHelper.queryPlaylistSongs(playlist);
         if (songs.size() == 0) {
             Log.e(TAG, "Playlist is empty");
@@ -337,30 +338,33 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             return;
         }
 
-        if (playlist.getSongIndex() >= songs.size()) {
-            Log.w(TAG, "Invalid song index: " + playlist.getSongIndex());
-            playlist.setSongIndex(0);
-            playlist.setSongPosition(0);
-        } else if (playlist.getSongPosition() <= RESUME_POSITION_OFFSET * 2) {
-            Log.d(TAG, "Ignoring low song position");
-            playlist.setSongPosition(0);
-        } else if (playlist.getSongPosition() >=
-                songs.get(playlist.getSongIndex()).getDuration() - RESUME_POSITION_OFFSET) {
-            Log.d(TAG, "Ignoring high song position");
-            playlist.setSongIndex(playlist.getSongIndex() == songs.size() - 1 ? 0
-                    : playlist.getSongIndex() + 1);
-            playlist.setSongPosition(0);
+        songIndex = playlist.getSongIndex();
+        songPosition = playlist.getSongPosition();
+        playlistId = playlist.getId();
+
+        if (songIndex >= songs.size()) {
+            Log.w(TAG, "Invalid song index: " + songIndex);
+            songIndex = 0;
+        } else if (songPosition <= RESUME_POSITION_OFFSET * 2) {
+            Log.d(TAG, "Ignoring low song position: " + songPosition);
+            songPosition = 0;
+        } else if (songPosition >= songs.get(songIndex).getDuration() - RESUME_POSITION_OFFSET) {
+            Log.d(TAG, "Ignoring high song position: " + songPosition);
+            songIndex = songIndex == songs.size() - 1 ? 0 : songIndex + 1;
+            songPosition = 0;
         } else {
-            playlist.setSongPosition(playlist.getSongPosition() - RESUME_POSITION_OFFSET);
+            Log.d(TAG, "Using song position: " + songPosition);
+            songPosition -= RESUME_POSITION_OFFSET;
         }
 
-        play(playlist.getSongIndex());
+        play();
     }
 
     private void previous() {
         Log.d(TAG, "MainService.previous(), songIndex=" + songIndex);
         if (songIndex > 0) {
-            play(songIndex - 1);
+            songIndex--;
+            play();
         }
     }
 
@@ -387,7 +391,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void next() {
         Log.d(TAG, "MainService.next(), songIndex=" + songIndex);
         if (songIndex < songs.size() - 1) {
-            play(songIndex + 1);
+            songIndex++;
+            play();
         }
     }
 
@@ -467,10 +472,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
-            if (playlist == null) {
-                playlist = new Playlist();
-                playlist.setId(1);
-            }
+            Playlist playlist = new Playlist();
+            playlist.setId(playlistId == 0 ? 1 : playlistId);
             playlist.setModified(Calendar.currentTime());
             playlist.setSongIndex(songIndex);
             playlist.setSongPosition(player.getCurrentPosition());

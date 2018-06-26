@@ -161,8 +161,12 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS,
                     new String[]{
-                            Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
-                            Song.LAST_PLAYED, Song.TIMES_PLAYED
+                            Song.YEAR,
+                            Song.ADDED,
+                            Song.TAG,
+                            Song.BOOKMARKED,
+                            Song.LAST_PLAYED,
+                            Song.TIMES_PLAYED
                     },
                     SQL_ID_IS, getWhereArgs(song.getId()), null, null, null)) {
                 c.moveToFirst();
@@ -259,7 +263,7 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 delete(db, TABLE_SONGS, song.getId());
 
-                // Update artist stats if the artist has other songs, delete it otherwise.
+                // Check if artist has songs.
                 if (queryInt(db, TABLE_SONGS, "COUNT(*)",
                         Song.ARTIST_ID + "=?", getWhereArgs(song.getArtistId())) > 0) {
                     updateArtistStats(db, song);
@@ -318,8 +322,12 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_PLAYLIST_SONGS + "," + TABLE_SONGS,
                     new String[]{
-                            Playlist.SONG_ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
-                            Song.DURATION, Song.TIMES_PLAYED
+                            Playlist.SONG_ID,
+                            Song.TITLE,
+                            Song.ARTIST_ID,
+                            Song.ARTIST,
+                            Song.DURATION,
+                            Song.TIMES_PLAYED
                     },
                     Playlist.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID +
                             " AND " + Playlist.PLAYLIST_ID + "=?",
@@ -363,7 +371,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
                 }
 
-                // Insert playlist songs, deleting any existing playlist songs.
+                // Insert playlist songs, deleting any existing ones.
                 if (songs != null) {
                     if (playlist.getId() > 0) {
                         deletePlaylistSongs(db, playlist);
@@ -466,14 +474,22 @@ public class DbHelper extends SQLiteOpenHelper {
                 long time = Calendar.currentTime();
 
                 results[0] = syncTable(context, MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                        db, TABLE_ARTISTS, new String[]{Artist._ID, Artist.ARTIST},
+                        db, TABLE_ARTISTS,
+                        new String[]{
+                                Artist._ID,
+                                Artist.ARTIST
+                        },
                         null, new int[0], 1, artistIgnore, -1, null, null, 0);
 
                 results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         db, TABLE_SONGS,
                         new String[]{
-                                Song._ID, Song.TITLE, Song.ARTIST_ID, Song.ARTIST,
-                                Song.DURATION, Song.YEAR
+                                Song._ID,
+                                Song.TITLE,
+                                Song.ARTIST_ID,
+                                Song.ARTIST,
+                                Song.DURATION,
+                                Song.YEAR
                         },
                         new int[]{1, 2, 3, 4}, new int[]{5}, -1, null, 2, results[0].ids,
                         Song.ADDED, time);
@@ -498,18 +514,32 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getReadableDatabase()) {
             backupTable(backup, db, TABLE_SONGS,
                     new String[]{
-                            Song._ID, Song.TITLE, Song.ARTIST, Song.YEAR, Song.ADDED,
-                            Song.TAG, Song.BOOKMARKED, Song.LAST_PLAYED, Song.TIMES_PLAYED
+                            Song._ID,
+                            Song.TITLE,
+                            Song.ARTIST,
+                            Song.YEAR,
+                            Song.ADDED,
+                            Song.TAG,
+                            Song.BOOKMARKED,
+                            Song.LAST_PLAYED,
+                            Song.TIMES_PLAYED
                     });
 
             backupTable(backup, db, TABLE_PLAYLISTS,
                     new String[]{
-                            Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
-                            Playlist.SONG_INDEX, Playlist.SONG_POSITION
+                            Playlist._ID,
+                            Playlist.NAME,
+                            Playlist.MODIFIED,
+                            Playlist.SONG_INDEX,
+                            Playlist.SONG_POSITION
                     });
 
             backupTable(backup, db, TABLE_PLAYLIST_SONGS,
-                    new String[]{Playlist._ID, Playlist.PLAYLIST_ID, Playlist.SONG_ID});
+                    new String[]{
+                            Playlist._ID,
+                            Playlist.PLAYLIST_ID,
+                            Playlist.SONG_ID
+                    });
         }
 
         // Write JSONObject to file.
@@ -542,7 +572,10 @@ public class DbHelper extends SQLiteOpenHelper {
                     long id;
                     try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID},
                             Song.TITLE + " LIKE ? AND " + Song.ARTIST + " LIKE ?",
-                            new String[]{song.getString(Song.TITLE), song.getString(Song.ARTIST)},
+                            new String[]{
+                                    song.getString(Song.TITLE),
+                                    song.getString(Song.ARTIST)
+                            },
                             null, null, null)) {
                         if (c.moveToFirst()) {
                             id = c.getLong(0);
@@ -562,8 +595,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     // Get ContentValues from JSONObject and update row.
                     ContentValues values = getValues(song,
                             new String[]{
-                                    Song.YEAR, Song.ADDED, Song.TAG, Song.BOOKMARKED,
-                                    Song.LAST_PLAYED, Song.TIMES_PLAYED
+                                    Song.YEAR,
+                                    Song.ADDED,
+                                    Song.TAG,
+                                    Song.BOOKMARKED,
+                                    Song.LAST_PLAYED,
+                                    Song.TIMES_PLAYED
                             });
                     update(db, TABLE_SONGS, values, id, false);
                 }
@@ -572,13 +609,19 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 restoreTable(backup, db, TABLE_PLAYLISTS, SQL_CREATE_PLAYLISTS,
                         new String[]{
-                                Playlist._ID, Playlist.NAME, Playlist.MODIFIED,
-                                Playlist.SONG_INDEX, Playlist.SONG_POSITION
+                                Playlist._ID,
+                                Playlist.NAME,
+                                Playlist.MODIFIED,
+                                Playlist.SONG_INDEX,
+                                Playlist.SONG_POSITION
                         },
                         null, null);
 
                 restoreTable(backup, db, TABLE_PLAYLIST_SONGS, SQL_CREATE_PLAYLIST_SONGS,
-                        new String[]{Playlist._ID, Playlist.PLAYLIST_ID},
+                        new String[]{
+                                Playlist._ID,
+                                Playlist.PLAYLIST_ID
+                        },
                         Playlist.SONG_ID, songIds);
 
                 db.setTransactionSuccessful();
@@ -641,7 +684,10 @@ public class DbHelper extends SQLiteOpenHelper {
                                    String selection, String[] selectionArgs) {
         Log.d(TAG, "queryTotal(" + artist + "," + selection + ")");
         try (Cursor c = db.query(TABLE_SONGS,
-                new String[]{"COUNT(*)", "SUM(" + Song.DURATION + ")"},
+                new String[]{
+                        "COUNT(*)",
+                        "SUM(" + Song.DURATION + ")"
+                },
                 selection, selectionArgs, null, null, null)) {
             c.moveToFirst();
             total.setSongCount(c.getInt(0));

@@ -324,7 +324,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (prepared) {
             update();
         } else {
-            songIndex = this.songs.size();
+            songIndex = this.songs.size() - 1;
             play();
         }
     }

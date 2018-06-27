@@ -41,8 +41,14 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public SongsFragment() {
         super(R.layout.list_item_song, R.id.llSorting, R.id.llSong,
                 new String[]{
-                        null, Song.ADDED, Song.LAST_PLAYED, Song.TIMES_PLAYED,
-                        Song.DURATION, Song.YEAR, Song.TAG, Song.BOOKMARKED
+                        null,
+                        Song.ADDED,
+                        Song.LAST_PLAYED,
+                        Song.TIMES_PLAYED,
+                        Song.DURATION,
+                        Song.YEAR,
+                        Song.TAG,
+                        Song.BOOKMARKED
                 });
     }
 
@@ -55,11 +61,20 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         if (args != null) {
             artistId = args.getLong(ARG_ARTIST_ID);
             if (artistId == 0) {
-                setSortColumns(new String[]{null, Song.ARTIST, Song.TITLE});
+                setSortColumns(
+                        new String[]{
+                                null,
+                                Song.ARTIST,
+                                Song.TITLE
+                        });
             } else {
                 setSelection(Song.ARTIST_ID + "=?");
                 setSelectionArgs(DbHelper.getWhereArgs(artistId));
-                setSortColumns(new String[]{null, Song.TITLE});
+                setSortColumns(
+                        new String[]{
+                                null,
+                                Song.TITLE
+                        });
             }
         }
     }

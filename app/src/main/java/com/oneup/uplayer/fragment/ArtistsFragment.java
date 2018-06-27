@@ -25,8 +25,16 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     public ArtistsFragment() {
         super(R.layout.list_item_artist, 0, 0, 0, 0,
-                new String[]{null, Artist.LAST_ADDED, Artist.LAST_PLAYED, Artist.TIMES_PLAYED},
-                new String[]{null, Artist.ARTIST});
+                new String[]{
+                        null,
+                        Artist.LAST_ADDED,
+                        Artist.LAST_PLAYED,
+                        Artist.TIMES_PLAYED
+                },
+                new String[]{
+                        null,
+                        Artist.ARTIST
+                });
     }
 
     @Override

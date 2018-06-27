@@ -290,6 +290,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void setPlaylist(Playlist playlist) {
+        Log.d(TAG, "MainService.setPlaylist(" + playlist + ")");
         playlistId = playlist.getId();
         savePlaylist();
     }
@@ -312,6 +313,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.add(" + songs.size() + ", " + next + "), songIndex=" + songIndex);
         if (this.songs == null) {
             this.songs = songs;
+            playlistId = 1;
         } else if (next) {
             this.songs.addAll(songIndex + 1, songs);
         } else {
@@ -331,6 +333,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void playPlaylist(Playlist playlist) {
         Log.d(TAG, "MainService.playPlaylist(" + playlist + ")");
+
+        // Save current playlist only when another one is going to be played.
+        Log.d(TAG, "id=" + playlist.getId() + ", current=" + playlistId);
+        if (playlist.getId() != playlistId) {
+            savePlaylist();
+        }
+
         songs = dbHelper.queryPlaylistSongs(playlist);
         if (songs.size() == 0) {
             Log.e(TAG, "Playlist is empty");
@@ -345,6 +354,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (songIndex >= songs.size()) {
             Log.w(TAG, "Invalid song index: " + songIndex);
             songIndex = 0;
+            songPosition = 0;
         } else if (songPosition <= RESUME_POSITION_OFFSET * 2) {
             Log.d(TAG, "Ignoring low song position: " + songPosition);
             songPosition = 0;
@@ -473,10 +483,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         try {
             Playlist playlist = new Playlist();
-            playlist.setId(playlistId == 0 ? 1 : playlistId);
+            playlist.setId(playlistId);
             playlist.setModified(Calendar.currentTime());
             playlist.setSongIndex(songIndex);
             playlist.setSongPosition(player.getCurrentPosition());
+            Log.d(TAG, "playlistId=" + playlistId + ", songIndex=" + songIndex +
+                    ", songPosition=" + songPosition + ", " + songs.size() + " songs");
             dbHelper.insertOrUpdatePlaylist(playlist, songs);
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);

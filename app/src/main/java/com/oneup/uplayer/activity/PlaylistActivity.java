@@ -60,7 +60,7 @@ public class PlaylistActivity extends AppCompatActivity {
     }
 
     public static class PlaylistFragment extends SongsListFragment
-            implements MainService.OnUpdateListener {
+            implements MainService.OnSongChangeListener {
         private MainService service;
 
         private static final int REQUEST_SELECT_PLAYLIST = 100;
@@ -83,7 +83,7 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onDestroy() {
             Log.d(TAG, "PlaylistActivity.onDestroy()");
             if (service != null) {
-                service.setOnUpdateListener(null);
+                service.setOnSongChangeListener(null);
                 getActivity().unbindService(serviceConnection);
                 service = null;
             }
@@ -125,7 +125,7 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onUpdate() {
+        public void onSongChange() {
             notifyDataSetChanged();
         }
 
@@ -212,7 +212,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                 MainService.MainBinder mainBinder = (MainService.MainBinder) serviceBinder;
                 service = mainBinder.getService();
-                service.setOnUpdateListener(PlaylistFragment.this);
+                service.setOnSongChangeListener(PlaylistFragment.this);
 
                 reloadData();
                 setSelection(service.getSongIndex());
@@ -222,7 +222,7 @@ public class PlaylistActivity extends AppCompatActivity {
             public void onServiceDisconnected(ComponentName name) {
                 Log.d(TAG, "PlaylistFragment.onServiceDisconnected()");
                 if (service != null) {
-                    service.setOnUpdateListener(null);
+                    service.setOnSongChangeListener(null);
                     service = null;
                 }
             }

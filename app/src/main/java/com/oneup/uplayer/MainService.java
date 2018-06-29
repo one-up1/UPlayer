@@ -63,7 +63,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private Notification notification;
 
     private MainReceiver mainReceiver;
-    private OnUpdateListener onUpdateListener;
+    private OnSongChangeListener onSongChangeListener;
 
     private ArrayList<Song> songs;
     private int songIndex;
@@ -167,6 +167,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.stop();
             player.release();
         }
+        prepared = false;
 
         if (mainReceiver != null) {
             unregisterReceiver(mainReceiver);
@@ -199,7 +200,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         prepared = true;
 
         setPlayPauseResource(R.drawable.ic_notification_pause);
-        update();
+        updateCurrentSong();
+        updatePlaylistPosition();
     }
 
     @Override
@@ -260,7 +262,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         Log.d(TAG, "songIndex=" + songIndex);
-        update();
+        updateCurrentSong();
+        startForeground(1, notification);
     }
 
     public void removeSong(int index) {
@@ -286,7 +289,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         Log.d(TAG, "songIndex=" + songIndex);
-        update();
+        updateCurrentSong();
+        startForeground(1, notification);
     }
 
     public void setPlaylist(Playlist playlist) {
@@ -295,8 +299,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         savePlaylist();
     }
 
-    public void setOnUpdateListener(OnUpdateListener onUpdateListener) {
-        this.onUpdateListener = onUpdateListener;
+    public void setOnSongChangeListener(OnSongChangeListener onSongChangeListener) {
+        this.onSongChangeListener = onSongChangeListener;
     }
 
     private void play(ArrayList<Song> songs, int songIndex) {
@@ -324,7 +328,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         // This will start playback of the added song, if it is the first song
         // or is being added to a playlist of which the last song has completed.
         if (prepared) {
-            update();
+            updateCurrentSong();
+            startForeground(1, notification);
         } else {
             songIndex = this.songs.size() - 1;
             play();
@@ -334,7 +339,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void playPlaylist(Playlist playlist) {
         Log.d(TAG, "MainService.playPlaylist(" + playlist + ")");
 
-        // Save current playlist only when another one is going to be played.
+        // Save current playlist only when a different one is going to be played.
         Log.d(TAG, "id=" + playlist.getId() + ", current=" + playlistId);
         if (playlist.getId() != playlistId) {
             savePlaylist();
@@ -383,19 +388,22 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player.isPlaying()) {
             Log.d(TAG, "Pausing");
             player.pause();
+
             setPlayPauseResource(R.drawable.ic_notification_play);
+            startForeground(1, notification);
         } else {
             if (prepared) {
                 Log.d(TAG, "Resuming");
                 player.seekTo(player.getCurrentPosition() <= RESUME_POSITION_OFFSET * 2 ? 0
                         : player.getCurrentPosition() - RESUME_POSITION_OFFSET);
                 player.start();
+
+                setPlayPauseResource(R.drawable.ic_notification_pause);
+                updatePlaylistPosition();
             } else {
                 play();
             }
-            setPlayPauseResource(R.drawable.ic_notification_pause);
         }
-        startForeground(1, notification);
     }
 
     private void next() {
@@ -441,26 +449,42 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         notificationViews.setImageViewResource(R.id.ibPlayPause, srcId);
     }
 
-    private void update() {
-        Log.d(TAG, "MainService.update()");
+    private void updateCurrentSong() {
+        Log.d(TAG, "MainService.updateCurrentSong()");
         Song song = songs.get(songIndex);
 
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
 
-        String left = Util.formatDuration(Song.getDuration(songs, songIndex));
-        if (songIndex < songs.size() - 1) {
-            left += " / " + Util.formatDuration(Song.getDuration(songs, songIndex + 1)) +
-                    " / " + (songs.size() - songIndex - 1);
+        if (onSongChangeListener != null) {
+            onSongChangeListener.onSongChange();
         }
-        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
-                R.string.playlist_position, songIndex + 1, songs.size(), left));
+    }
 
-        startForeground(1, notification);
+    private void updatePlaylistPosition() {
+        Log.d(TAG, "MainService.updatePlaylistPosition()");
+        new Thread(new Runnable() {
 
-        if (onUpdateListener != null) {
-            onUpdateListener.onUpdate();
-        }
+            @Override
+            public void run() {
+                while (prepared && player.isPlaying()) {
+                    String left = Util.formatDuration(Song.getDuration(songs, songIndex)
+                            - player.getCurrentPosition());
+                    if (songIndex < songs.size() - 1) {
+                        left = (songs.size() - songIndex - 1) + " / " + left;
+                    }
+                    notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+                            R.string.playlist_position, songIndex + 1, songs.size(), left));
+                    startForeground(1, notification);
+
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                Log.d(TAG, "MainService.updatePlaylistPosition() exiting");
+            }
+        }).start();
     }
 
     private void play() {
@@ -513,7 +537,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public interface OnUpdateListener {
-        void onUpdate();
+    public interface OnSongChangeListener {
+        void onSongChange();
     }
 }

@@ -316,6 +316,16 @@ public class DbHelper extends SQLiteOpenHelper {
         return playlists;
     }
 
+    public String queryPlaylistName(long id) {
+        Log.d(TAG, "DbHelper.queryPlaylistName(" + id + ")");
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(TABLE_PLAYLISTS, new String[]{Playlist.NAME},
+                    SQL_ID_IS, getWhereArgs(id), null, null, null)) {
+                c.moveToFirst();
+                return c.getString(0);
+            }
+        }
+    }
     public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
         Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
         ArrayList<Song> songs = new ArrayList<>();
@@ -672,7 +682,7 @@ public class DbHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(Playlist.PLAYLIST_ID, playlist.getId());
         values.put(Playlist.SONG_ID, song.getId());
-        Log.d(TAG, "Playlist song inserted: " + db.insert(TABLE_PLAYLIST_SONGS, null, values));
+        db.insert(TABLE_PLAYLIST_SONGS, null, values);
     }
 
     private static void deletePlaylistSongs(SQLiteDatabase db, Playlist playlist) {
@@ -734,8 +744,8 @@ public class DbHelper extends SQLiteOpenHelper {
                 if (refIdColumn != -1) {
                     long refId = c.getLong(refIdColumn);
                     if (!refIds.contains(refId)) {
-                        Log.d(TAG, table + "." + columns[refIdColumn] + " value " +
-                                refId + " ignored: " + id);
+                        Log.d(TAG, table + "." + columns[refIdColumn] +
+                                " value " + refId + " ignored: " + id);
                         result.rowsIgnored++;
                         continue;
                     }

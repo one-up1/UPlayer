@@ -14,6 +14,7 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
@@ -64,6 +65,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private MainReceiver mainReceiver;
     private OnSongChangeListener onSongChangeListener;
+    private Thread updateThread;
 
     private ArrayList<Song> songs;
     private int songIndex;
@@ -297,6 +299,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.setPlaylist(" + playlist + ")");
         playlistId = playlist.getId();
         savePlaylist();
+
+        updateCurrentSong();
+        startForeground(1, notification);
     }
 
     public void setOnSongChangeListener(OnSongChangeListener onSongChangeListener) {
@@ -430,7 +435,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void setVolume(int volume) {
         this.volume = volume;
-
         setVolume();
         preferences.edit().putInt(PREF_VOLUME, volume).apply();
     }
@@ -453,8 +457,18 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.updateCurrentSong()");
         Song song = songs.get(songIndex);
 
+        // Set song title and artist.
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+
+        // Set playlist name.
+        if (playlistId == 1) {
+            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.GONE);
+        } else {
+            notificationViews.setTextViewText(R.id.tvPlaylistName,
+                    dbHelper.queryPlaylistName(playlistId));
+            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.VISIBLE);
+        }
 
         if (onSongChangeListener != null) {
             onSongChangeListener.onSongChange();
@@ -462,29 +476,34 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void updatePlaylistPosition() {
-        Log.d(TAG, "MainService.updatePlaylistPosition()");
-        new Thread(new Runnable() {
+        if (updateThread == null) {
+            Log.d(TAG, "Starting update thread");
+            updateThread = new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                while (prepared && player.isPlaying()) {
-                    String left = Util.formatDuration(Song.getDuration(songs, songIndex)
-                            - player.getCurrentPosition());
-                    if (songIndex < songs.size() - 1) {
-                        left = (songs.size() - songIndex - 1) + " / " + left;
-                    }
-                    notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
-                            R.string.playlist_position, songIndex + 1, songs.size(), left));
-                    startForeground(1, notification);
+                @Override
+                public void run() {
+                    while (prepared && player.isPlaying()) {
+                        // Set playlist position and time left.
+                        String left = Util.formatDuration(Song.getDuration(songs, songIndex)
+                                - player.getCurrentPosition());
+                        if (songIndex < songs.size() - 1) {
+                            left = (songs.size() - songIndex - 1) + " / " + left;
+                        }
+                        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+                                R.string.playlist_position, songIndex + 1, songs.size(), left));
 
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ex) {
+                        startForeground(1, notification);
+                        try { Thread.sleep(500); } catch (InterruptedException ex) { }
                     }
+                    Log.d(TAG, "Update thread exiting");
+                    updateThread = null;
                 }
-                Log.d(TAG, "MainService.updatePlaylistPosition() exiting");
-            }
-        }).start();
+            });
+            updateThread.start();
+        } else {
+            Log.d(TAG, "Interrupting update thread");
+            updateThread.interrupt();
+        }
     }
 
     private void play() {

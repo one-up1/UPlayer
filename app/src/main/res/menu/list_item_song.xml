@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/move"
+        android:title="@string/move"
+        android:visible="false" />
+
+    <item
         android:id="@+id/view_artist"
         android:title="@string/view_artist" />
 

@@ -153,6 +153,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.delete:
                 deleteSong(position, song);
                 break;
+            default:
+                super.onContextItemSelected(itemId, position, song);
+                break;
         }
     }
 

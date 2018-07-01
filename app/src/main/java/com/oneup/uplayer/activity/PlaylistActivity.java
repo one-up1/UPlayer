@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -61,12 +62,15 @@ public class PlaylistActivity extends AppCompatActivity {
 
     public static class PlaylistFragment extends SongsListFragment
             implements MainService.OnSongChangeListener {
+        private static final int REQUEST_SELECT_PLAYLIST = 100;
+
         private MainService service;
 
-        private static final int REQUEST_SELECT_PLAYLIST = 100;
+        private int moveIndex;
 
         public PlaylistFragment() {
             super(R.layout.list_item_playlist_song, 0, 0, null);
+            moveIndex = -1;
         }
 
         @Override
@@ -107,6 +111,25 @@ public class PlaylistActivity extends AppCompatActivity {
                     return true;
                 default:
                     return super.onOptionsItemSelected(item);
+            }
+        }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v,
+                                        ContextMenu.ContextMenuInfo menuInfo) {
+            super.onCreateContextMenu(menu, v, menuInfo);
+            menu.findItem(R.id.move).setVisible(true);
+        }
+
+        @Override
+        protected void onContextItemSelected(int itemId, int position, Song song) {
+            switch (itemId) {
+                case R.id.move:
+                    moveIndex = position;
+                    break;
+                default:
+                    super.onContextItemSelected(itemId, position, song);
+                    break;
             }
         }
 
@@ -154,7 +177,12 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         protected void onListItemClick(int position, Song song) {
             if (service != null) {
-                service.setSongIndex(position);
+                if (moveIndex == -1) {
+                    service.setSongIndex(position);
+                } else {
+                    service.moveSong(moveIndex, position);
+                    moveIndex = -1;
+                }
             }
         }
 
@@ -202,6 +230,7 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         private ServiceConnection serviceConnection = new ServiceConnection() {
+
             @Override
             public void onServiceConnected(ComponentName name, IBinder serviceBinder) {
                 Log.d(TAG, "PlaylistFragment.onServiceConnected()");

@@ -51,6 +51,7 @@
     <string name="move_down">Move down</string>
     <string name="remove">Remove</string>
 
+    <string name="move">Move&#8230;</string>
     <string name="view_artist">Artist&#8230;</string>
 
     <string name="edit">Edit</string>

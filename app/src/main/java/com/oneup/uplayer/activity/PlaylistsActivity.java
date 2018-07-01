@@ -142,6 +142,9 @@ public class PlaylistsActivity extends AppCompatActivity {
                 case R.id.delete:
                     delete(playlist);
                     break;
+                default:
+                    super.onContextItemSelected(itemId, position, playlist);
+                    break;
             }
         }
 

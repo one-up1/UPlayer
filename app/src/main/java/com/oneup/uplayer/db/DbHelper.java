@@ -31,6 +31,8 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: Use Song.IS_MUSIC instead of ignore.txt when syncing DB with Artist.SONG_COUNT column.
+
 public class DbHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
 

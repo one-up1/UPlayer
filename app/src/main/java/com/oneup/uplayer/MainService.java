@@ -171,6 +171,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         prepared = false;
 
+        if (updateThread != null) {
+            updateThread.interrupt();
+        }
+
         if (mainReceiver != null) {
             unregisterReceiver(mainReceiver);
         }
@@ -203,7 +207,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         setPlayPauseResource(R.drawable.ic_notification_pause);
         updateCurrentSong();
-        updatePlaylistPosition();
     }
 
     @Override
@@ -215,7 +218,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         
         setPlayPauseResource(R.drawable.ic_notification_play);
         startForeground(1, notification);
-        
+
         return true; // Or onCompletion() will be called.
     }
 
@@ -265,7 +268,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         Log.d(TAG, "songIndex=" + songIndex);
         updateCurrentSong();
-        startForeground(1, notification);
     }
 
     public void removeSong(int index) {
@@ -292,16 +294,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         Log.d(TAG, "songIndex=" + songIndex);
         updateCurrentSong();
-        startForeground(1, notification);
     }
 
     public void setPlaylist(Playlist playlist) {
         Log.d(TAG, "MainService.setPlaylist(" + playlist + ")");
         playlistId = playlist.getId();
         savePlaylist();
-
         updateCurrentSong();
-        startForeground(1, notification);
     }
 
     public void setOnSongChangeListener(OnSongChangeListener onSongChangeListener) {
@@ -329,12 +328,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             this.songs.addAll(songs);
         }
 
-        // Update when playing or paused (prepared), play the last song when not.
+        // Update current song when playing or paused (prepared), play the last song when not.
         // This will start playback of the added song, if it is the first song
         // or is being added to a playlist of which the last song has completed.
         if (prepared) {
             updateCurrentSong();
-            startForeground(1, notification);
         } else {
             songIndex = this.songs.size() - 1;
             play();
@@ -395,7 +393,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.pause();
 
             setPlayPauseResource(R.drawable.ic_notification_play);
-            startForeground(1, notification);
+            updatePlaylistPosition();
         } else {
             if (prepared) {
                 Log.d(TAG, "Resuming");
@@ -433,10 +431,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void setVolume(int volume) {
-        this.volume = volume;
-        setVolume();
-        preferences.edit().putInt(PREF_VOLUME, volume).apply();
+    private void play() {
+        Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
+        try {
+            player.reset();
+            player.setDataSource(getApplicationContext(), songs.get(songIndex).getContentUri());
+            player.prepareAsync();
+        } catch (Exception ex) {
+            Log.e(TAG, "Error preparing MediaPlayer", ex);
+        }
     }
 
     private void setVolume() {
@@ -447,6 +450,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(this.volume));
         startForeground(1, notification);
+    }
+
+    private void setVolume(int volume) {
+        this.volume = volume;
+        setVolume();
+        preferences.edit().putInt(PREF_VOLUME, volume).apply();
     }
 
     private void setPlayPauseResource(int srcId) {
@@ -470,6 +479,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             notificationViews.setViewVisibility(R.id.tvPlaylistName, View.VISIBLE);
         }
 
+        updatePlaylistPosition();
+
         if (onSongChangeListener != null) {
             onSongChangeListener.onSongChange();
         }
@@ -482,7 +493,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
                 @Override
                 public void run() {
-                    while (prepared && player.isPlaying()) {
+                    while (prepared) {
                         // Set playlist position and time left.
                         String left = Util.formatDuration(Song.getDuration(songs, songIndex)
                                 - player.getCurrentPosition());
@@ -491,8 +502,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                         }
                         notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
                                 R.string.playlist_position, songIndex + 1, songs.size(), left));
-
                         startForeground(1, notification);
+
                         try { Thread.sleep(500); } catch (InterruptedException ex) { }
                     }
                     Log.d(TAG, "Update thread exiting");
@@ -503,17 +514,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else {
             Log.d(TAG, "Interrupting update thread");
             updateThread.interrupt();
-        }
-    }
-
-    private void play() {
-        Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
-        try {
-            player.reset();
-            player.setDataSource(getApplicationContext(), songs.get(songIndex).getContentUri());
-            player.prepareAsync();
-        } catch (Exception ex) {
-            Log.e(TAG, "Error preparing MediaPlayer", ex);
         }
     }
 

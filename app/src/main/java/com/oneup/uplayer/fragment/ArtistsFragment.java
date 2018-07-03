@@ -52,7 +52,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected void setListItemContent(View rootView, int position, Artist artist) {
         super.setListItemContent(rootView, position, artist);
 
-        // Set artist name.
+        // Set artist name, marking unplayed artists.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
         tvArtist.setTextColor(artist.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
         tvArtist.setText(artist.getArtist());

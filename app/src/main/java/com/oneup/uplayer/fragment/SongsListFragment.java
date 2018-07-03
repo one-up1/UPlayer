@@ -93,7 +93,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     protected void setListItemContent(View rootView, int position, Song song) {
         super.setListItemContent(rootView, position, song);
 
-        // Set title.
+        // Set title, marking unplayed songs.
         TextView tvTitle = rootView.findViewById(R.id.tvTitle);
         tvTitle.setText(song.getTitle());
         tvTitle.setTextColor(song.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);

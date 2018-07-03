@@ -114,6 +114,7 @@ public class PlaylistsActivity extends AppCompatActivity {
         protected void setListItemContent(View rootView, int position, Playlist playlist) {
             super.setListItemContent(rootView, position, playlist);
 
+            // Set playlist name.
             TextView tvName = rootView.findViewById(R.id.tvName);
             if (playlist.getName() == null) {
                 tvName.setVisibility(View.GONE);
@@ -122,6 +123,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                 tvName.setVisibility(View.VISIBLE);
             }
 
+            // Set modified date.
             TextView tvModified = rootView.findViewById(R.id.tvModified);
             tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
         }

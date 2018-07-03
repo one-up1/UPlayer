@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
@@ -122,18 +123,6 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onContextItemSelected(int itemId, int position, Song song) {
-            switch (itemId) {
-                case R.id.move:
-                    moveIndex = position;
-                    break;
-                default:
-                    super.onContextItemSelected(itemId, position, song);
-                    break;
-            }
-        }
-
-        @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
             super.onActivityResult(requestCode, resultCode, data);
             if (resultCode == AppCompatActivity.RESULT_OK) {
@@ -162,6 +151,7 @@ public class PlaylistActivity extends AppCompatActivity {
         protected void setListItemContent(View rootView, int position, Song song) {
             super.setListItemContent(rootView, position, song);
 
+            // Underline the current song.
             if (service != null && position == service.getSongIndex()) {
                 TextView tvTitle = rootView.findViewById(R.id.tvTitle);
                 SpannableString underlinedText = new SpannableString(tvTitle.getText());
@@ -169,6 +159,11 @@ public class PlaylistActivity extends AppCompatActivity {
                 tvTitle.setText(underlinedText);
             }
 
+            // Mark the song that is being moved.
+            rootView.setBackground(position == moveIndex ?
+                    ContextCompat.getDrawable(getActivity(), R.drawable.border) : null);
+
+            // Set move up/down and remove buttons.
             setListItemViewOnClickListener(rootView, R.id.ibMoveUp);
             setListItemViewOnClickListener(rootView, R.id.ibMoveDown);
             setListItemViewOnClickListener(rootView, R.id.ibRemove);
@@ -180,9 +175,30 @@ public class PlaylistActivity extends AppCompatActivity {
                 if (moveIndex == -1) {
                     service.setSongIndex(position);
                 } else {
-                    service.moveSong(moveIndex, position);
-                    moveIndex = -1;
+                    if (moveIndex == position) {
+                        Log.d(TAG, "Canceling move");
+                        moveIndex = -1;
+                        notifyDataSetChanged();
+                    } else {
+                        int moveIndex = this.moveIndex;
+                        this.moveIndex = -1;
+                        service.moveSong(moveIndex, position);
+                    }
                 }
+            }
+        }
+
+        @Override
+        protected void onContextItemSelected(int itemId, int position, Song song) {
+            switch (itemId) {
+                case R.id.move:
+                    Log.d(TAG, "Moving " + position + " (" + song + ")");
+                    moveIndex = position;
+                    notifyDataSetChanged();
+                    break;
+                default:
+                    super.onContextItemSelected(itemId, position, song);
+                    break;
             }
         }
 

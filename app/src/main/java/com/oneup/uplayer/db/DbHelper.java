@@ -132,7 +132,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
-        Log.d(TAG, "DbHelper.querySongs(" + selection + "," + orderBy + ")");
+        Log.d(TAG, "DbHelper.querySongs(" + selection + ", " + orderBy + ")");
         ArrayList<Song> songs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(TABLE_SONGS, null, selection, selectionArgs,
@@ -283,7 +283,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public ArrayList<Playlist> queryPlaylists(boolean hasSongs,
                                               String songsSelection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryPlaylists(" + hasSongs + "," + songsSelection + ")");
+        Log.d(TAG, "DbHelper.queryPlaylists(" + hasSongs + ", " + songsSelection + ")");
         String selection;
         if (hasSongs) {
             selection = Playlist._ID + " IN(SELECT " +
@@ -433,7 +433,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public Stats queryStats(boolean artist, String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryStats(" + artist + "," + selection + ")");
+        Log.d(TAG, "DbHelper.queryStats(" + artist + ", " + selection + ")");
         Stats stats = new Stats();
         try (SQLiteDatabase db = getReadableDatabase()) {
             queryTotal(db, stats.getTotal(), artist, selection, selectionArgs);
@@ -694,7 +694,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static void queryTotal(SQLiteDatabase db, Stats.Total total, boolean artist,
                                    String selection, String[] selectionArgs) {
-        Log.d(TAG, "queryTotal(" + artist + "," + selection + ")");
+        Log.d(TAG, "queryTotal(" + artist + ", " + selection + ")");
         try (Cursor c = db.query(TABLE_SONGS,
                 new String[]{
                         "COUNT(*)",

@@ -20,7 +20,7 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-//TODO: Add all to playlist options menu item.
+//TODO: Add all to playlist options menu item, or multiselect in list.
 public class SongsFragment extends SongsListFragment implements AdapterView.OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {
     public static final int SORT_COLUMN_ADDED = 1;

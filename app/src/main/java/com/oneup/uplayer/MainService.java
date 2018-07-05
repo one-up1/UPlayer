@@ -65,7 +65,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private MainReceiver mainReceiver;
     private OnSongChangeListener onSongChangeListener;
-    private Thread updateThread;
 
     private ArrayList<Song> songs;
     private int songIndex;
@@ -101,6 +100,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(R.id.ibVolumeUp, ACTION_VOLUME_UP);
 
         //FIXME: Notification icon is always ic_launcher and channel ID must be set.
+        // Use NotificationManager to update instead of startForeground()?
+        // Start service using startForegroundService()?
         notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setCustomContentView(notificationViews)
@@ -172,10 +173,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         prepared = false;
 
-        if (updateThread != null) {
-            updateThread.interrupt();
-        }
-
         if (mainReceiver != null) {
             unregisterReceiver(mainReceiver);
         }
@@ -230,7 +227,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         prepared = false;
         
         setPlayPauseResource(R.drawable.ic_notification_play);
-        startForeground(1, notification);
+        updatePlaylistPosition();
 
         if (player.getCurrentPosition() == 0) {
             Log.e(TAG, "Current position is 0");
@@ -455,12 +452,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setVolume(volume, volume);
 
         notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(this.volume));
-        startForeground(1, notification);
+        updatePlaylistPosition();
     }
 
     private void setVolume(int volume) {
         this.volume = volume;
-        setVolume();
+        if (prepared) {
+            setVolume();
+        }
         preferences.edit().putInt(PREF_VOLUME, volume).apply();
     }
 
@@ -486,8 +485,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             notificationViews.setViewVisibility(R.id.tvPlaylistName, View.VISIBLE);
         }
 
-        // Set playlist position.
-        notificationViews.setViewVisibility(R.id.tvPlaylistPosition, View.VISIBLE);
         updatePlaylistPosition();
 
         // Update PlaylistActivity.
@@ -497,46 +494,19 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void updatePlaylistPosition() {
-        if (updateThread == null) {
-            Log.d(TAG, "Starting update thread");
-            updateThread = new Thread(new Runnable() {
+        Log.d(TAG, "MainService.updatePlaylistPosition(), songIndex=" + songIndex +
+                ", size=" + songs.size());
 
-                @Override
-                public void run() {
-                    try {
-                        while (prepared) {
-                            // Set playlist position and time left.
-                            String left = Util.formatDuration(
-                                    duration - player.getCurrentPosition());
-                            if (songIndex < songs.size() - 1) {
-                                left = (songs.size() - songIndex - 1) + " / " + left;
-                            }
-                            notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
-                                    R.string.playlist_position, songIndex + 1, songs.size(), left));
-                            startForeground(1, notification);
-
-                            try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException ex) {
-                            }
-                        }
-
-                        // Hide playlist position when playback completes.
-                        notificationViews.setViewVisibility(R.id.tvPlaylistPosition, View.GONE);
-                        startForeground(1, notification);
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error in update thread", ex);
-                    } finally {
-                        Log.d(TAG, "Update thread exiting");
-                        updateThread = null;
-                    }
-                }
-            });
-            updateThread.start();
-        } else {
-            Log.d(TAG, "Interrupting update thread");
-            updateThread.interrupt();
+        // Set song index, song count, songs left and time left.
+        String left = Util.formatDuration(
+                duration - player.getCurrentPosition());
+        if (songIndex < songs.size() - 1) {
+            left = (songs.size() - songIndex - 1) + " / " + left;
         }
+        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+                R.string.playlist_position, songIndex + 1, songs.size(), left));
+
+        startForeground(1, notification);
     }
 
     private void savePlaylist() {

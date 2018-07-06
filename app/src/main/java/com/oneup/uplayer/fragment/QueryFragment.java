@@ -36,8 +36,6 @@ import com.oneup.uplayer.widget.EditText;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: Save (some) query params?
-
 public class QueryFragment extends Fragment implements AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "UPlayer";

@@ -26,6 +26,8 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
+//TODO: Count down time left in notification.
+
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
     public static final String EXTRA_ACTION = "com.oneup.extra.ACTION";
@@ -68,7 +70,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private ArrayList<Song> songs;
     private int songIndex;
-    private long duration;
 
     private long playlistId;
     private int songPosition;
@@ -470,7 +471,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void updateCurrentSong() {
         Log.d(TAG, "MainService.updateCurrentSong(), songIndex=" + songIndex);
         Song song = songs.get(songIndex);
-        duration = Song.getDuration(songs, songIndex);
 
         // Set song title and artist.
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
@@ -499,7 +499,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         // Set song index, song count, songs left and time left.
         String left = Util.formatDuration(
-                duration - player.getCurrentPosition());
+                Song.getDuration(songs, songIndex) - player.getCurrentPosition());
         if (songIndex < songs.size() - 1) {
             left = (songs.size() - songIndex - 1) + " / " + left;
         }

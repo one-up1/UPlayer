@@ -31,8 +31,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: Use Song.IS_MUSIC instead of ignore.txt when syncing DB with Artist.SONG_COUNT column.
-
 public class DbHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
 
@@ -82,7 +80,6 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
-    private static final File ARTIST_IGNORE_FILE = Util.getMusicFile("ignore.txt");
     private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
 
     private Context context;
@@ -462,21 +459,8 @@ public class DbHelper extends SQLiteOpenHelper {
         return stats;
     }
 
-    public SyncResult[] syncWithMediaStore(Context context) throws IOException {
+    public SyncResult[] syncWithMediaStore(Context context) {
         Log.d(TAG, "DbHelper.syncWithMediaStore()");
-
-        // Read artist ignore file.
-        List<String> artistIgnore = new ArrayList<>();
-        if (ARTIST_IGNORE_FILE.exists()) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(ARTIST_IGNORE_FILE)))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    artistIgnore.add(line);
-                }
-            }
-        }
-        Log.d(TAG, artistIgnore.size() + " artists on ignore list");
 
         // Sync artists and songs tables.
         SyncResult[] results = new SyncResult[2];
@@ -491,7 +475,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Artist._ID,
                                 Artist.ARTIST
                         },
-                        null, new int[0], 1, artistIgnore, -1, null, null, 0);
+                        null, new int[0], null, null, -1);
 
                 results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         db, TABLE_SONGS,
@@ -503,11 +487,16 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Song.DURATION,
                                 Song.YEAR
                         },
-                        new int[]{1, 2, 3, 4}, new int[]{5}, -1, null, 2, results[0].ids,
-                        Song.ADDED, time);
+                        new int[]{1, 2, 3, 4}, new int[]{5},
+                        Song.IS_MUSIC + "=1", Song.ADDED, time);
 
                 // Update artists when songs have been inserted or deleted.
                 if (results[1].rowsInserted > 0 || results[1].rowsDeleted > 0) {
+                    int deleted = db.delete(TABLE_ARTISTS, Artist._ID + " NOT IN (SELECT " +
+                            Song.ARTIST_ID + " FROM " + TABLE_SONGS + ")", null);
+                    Log.d(TAG, "Deleted " + deleted + " artists with 0 songs");
+                    results[0].rowCount -= deleted;
+                    results[0].rowsInserted -= deleted;
                     updateArtistStats(db, null);
                 }
 
@@ -713,45 +702,21 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    private static SyncResult syncTable(Context context, Uri contentUri,
-                                        SQLiteDatabase db, String table, String[] columns,
-                                        int[] updateColumns, int[] insertColumns,
-                                        int ignoreColumn, List<String> ignoreValues,
-                                        int refIdColumn, List<Long> refIds,
-                                        String timeColumn, long time) {
+    private static SyncResult syncTable(Context context, Uri uri, SQLiteDatabase db, String table,
+                                        String[] columns, int[] updateColumns, int[] insertColumns,
+                                        String selection, String timeColumn, long time) {
         Log.d(TAG, "DbHelper.syncTable(" + table + ")");
         SyncResult result = new SyncResult();
+        List<Long> ids = new ArrayList<>();
 
         // Insert/update rows from the MediaStore into the database.
-        try (Cursor c = context.getContentResolver().query(contentUri, columns, null, null, null)) {
+        try (Cursor c = context.getContentResolver().query(uri, columns, selection, null, null)) {
             if (c == null) {
                 throw new RuntimeException("No MediaStore cursor");
             }
 
             while (c.moveToNext()) {
                 long id = c.getLong(0);
-
-                // Process ignoring.
-                if (ignoreColumn != -1) {
-                    String ignoreColumnValue = c.getString(ignoreColumn);
-                    if (ignoreValues.contains(ignoreColumnValue)) {
-                        Log.d(TAG, table + "." + columns[ignoreColumn] + " value '" +
-                                ignoreColumnValue + "' ignored: " + id);
-                        result.rowsIgnored++;
-                        continue;
-                    }
-                }
-
-                // Ignore rows with a non-existing ref ID.
-                if (refIdColumn != -1) {
-                    long refId = c.getLong(refIdColumn);
-                    if (!refIds.contains(refId)) {
-                        Log.d(TAG, table + "." + columns[refIdColumn] +
-                                " value " + refId + " ignored: " + id);
-                        result.rowsIgnored++;
-                        continue;
-                    }
-                }
 
                 // Put update column values.
                 ContentValues values = new ContentValues();
@@ -771,7 +736,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Log.d(TAG, table + " row updated: " + id);
                     result.rowsUpdated++;
                 }
-                result.ids.add(id);
+                ids.add(id);
             }
         }
 
@@ -781,16 +746,17 @@ public class DbHelper extends SQLiteOpenHelper {
                 null, null, null, null, null)) {
             while (c.moveToNext()) {
                 long id = c.getLong(0);
-                if (!result.ids.contains(id)) {
+                if (!ids.contains(id)) {
                     delete(db, table, id);
                     result.rowsDeleted++;
                 }
             }
         }
 
-        Log.d(TAG, result.ids.size() + " " + table + " rows synchronized, " +
-                result.rowsIgnored + " ignored, " + result.rowsInserted + " inserted, " +
-                result.rowsUpdated + " updated, " + result.rowsDeleted + " deleted");
+        result.rowCount = ids.size();
+        Log.d(TAG, result.rowCount + " " + table + " rows synchronized, " +
+                result.rowsInserted + " inserted, " + result.rowsUpdated + " updated, " +
+                result.rowsDeleted + " deleted");
         return result;
     }
 
@@ -991,23 +957,16 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public static class SyncResult {
-        private List<Long> ids;
-        private int rowsIgnored;
-
+        private int rowCount;
         private int rowsInserted;
         private int rowsUpdated;
         private int rowsDeleted;
 
         private SyncResult() {
-            ids = new ArrayList<>();
         }
 
         public int getRowCount() {
-            return ids.size();
-        }
-
-        public int getRowsIgnored() {
-            return rowsIgnored;
+            return rowCount;
         }
 
         public int getRowsInserted() {

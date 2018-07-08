@@ -494,12 +494,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                                     Util.showInfoDialog(getActivity(), R.string.sync_completed,
                                             R.string.sync_completed_message,
                                             results[0].getRowCount(),
-                                            results[0].getRowsIgnored(),
                                             results[0].getRowsInserted(),
                                             results[0].getRowsUpdated(),
                                             results[0].getRowsDeleted(),
                                             results[1].getRowCount(),
-                                            results[1].getRowsIgnored(),
                                             results[1].getRowsInserted(),
                                             results[1].getRowsUpdated(),
                                             results[1].getRowsDeleted());

@@ -29,6 +29,9 @@ public class MainReceiver extends BroadcastReceiver {
         }
 
         switch (action) {
+            case Intent.ACTION_SCREEN_ON:
+                screenOn();
+                break;
             case Intent.ACTION_HEADSET_PLUG:
                 headsetPlug(intent.getIntExtra("state", -1));
                 break;
@@ -36,6 +39,14 @@ public class MainReceiver extends BroadcastReceiver {
                 Log.e(TAG, "Invalid broadcast action: '" + action + "'");
                 break;
         }
+    }
+
+    private void screenOn() {
+        Log.d(TAG, "MainReceiver.screenOn()");
+
+        // Refresh playlist position when the screen is turned on.
+        context.startService(new Intent(context, MainService.class)
+                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE_PLAYLIST_POSITION));
     }
 
     private void headsetPlug(int state) {

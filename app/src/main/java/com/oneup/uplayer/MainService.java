@@ -26,8 +26,6 @@ import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-//TODO: Count down time left in notification.
-
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
     public static final String EXTRA_ACTION = "com.oneup.extra.ACTION";
@@ -39,13 +37,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final int ACTION_PLAY = 1;
     public static final int ACTION_ADD = 2;
     public static final int ACTION_PLAY_PLAYLIST = 3;
+    public static final int ACTION_UPDATE_PLAYLIST_POSITION = 4;
 
-    private static final int ACTION_PREVIOUS = 4;
-    private static final int ACTION_PLAY_PAUSE = 5;
-    private static final int ACTION_NEXT = 6;
-    private static final int ACTION_STOP = 7;
-    private static final int ACTION_VOLUME_DOWN = 8;
-    private static final int ACTION_VOLUME_UP = 9;
+    private static final int ACTION_PREVIOUS = 5;
+    private static final int ACTION_PLAY_PAUSE = 6;
+    private static final int ACTION_NEXT = 7;
+    private static final int ACTION_STOP = 8;
+    private static final int ACTION_VOLUME_DOWN = 9;
+    private static final int ACTION_VOLUME_UP = 10;
 
     private static final String TAG = "UPlayer";
     private static final String PREF_VOLUME = "volume";
@@ -114,7 +113,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 .build();
 
         mainReceiver = new MainReceiver();
-        registerReceiver(mainReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_HEADSET_PLUG);
+        registerReceiver(mainReceiver, filter);
     }
 
     @Override
@@ -136,6 +138,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 break;
             case ACTION_PLAY_PLAYLIST:
                 playPlaylist((Playlist) intent.getParcelableExtra(EXTRA_PLAYLIST));
+                break;
+            case ACTION_UPDATE_PLAYLIST_POSITION:
+                updatePlaylistPosition();
                 break;
             case ACTION_PREVIOUS:
                 previous();

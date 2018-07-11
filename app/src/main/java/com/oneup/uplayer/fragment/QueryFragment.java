@@ -307,7 +307,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void loadArtists() {
-        artists = dbHelper.queryArtists(null);
+        artists = dbHelper.queryArtists(Artist.ARTIST);
         Artist nullArtist = new Artist();
         nullArtist.setArtist("");
         artists.add(0, nullArtist);

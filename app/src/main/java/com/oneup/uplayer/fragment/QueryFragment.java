@@ -34,7 +34,6 @@ import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class QueryFragment extends Fragment implements AdapterView.OnItemSelectedListener,
         View.OnClickListener, View.OnLongClickListener {
@@ -51,7 +50,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
     private SharedPreferences preferences;
     private DbHelper dbHelper;
-    private List<Artist> artists;
+    private ArrayList<Artist> artists;
 
     private EditText etTitle;
     private EditText etArtist;
@@ -77,13 +76,13 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
     private long minAdded;
     private long maxAdded;
-    private List<String> tags;
-    private List<Playlist> playlists;
+    private ArrayList<String> tags;
+    private ArrayList<Playlist> playlists;
     private long minLastPlayed;
     private long maxLastPlayed;
 
     private String selection;
-    private List<String> selectionArgs;
+    private ArrayList<String> selectionArgs;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -246,7 +245,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             getSelection(this.tags, null);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    selection, getSelectionArgs(), true, false)),
+                                    selection, getSelectionArgs(), true, false, playlists)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
@@ -334,6 +333,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void showTags() {
+        // Query all tags that match the specified selection.
         getSelection(null, this.playlists);
         final String[] tags = dbHelper.querySongTags(selection, getSelectionArgs())
                 .toArray(new String[0]);
@@ -342,20 +342,32 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             return;
         }
 
-        this.tags = new ArrayList<>();
+        // Create the tags ArrayList if no tag selection is specified,
+        // or create the checkedItems array if at least one tag is selected.
+        boolean[] checkedTags = new boolean[tags.length];
+        if (this.tags == null) {
+            this.tags = new ArrayList<>();
+        } else if (this.tags.size() > 0 ){
+            for (int i = 0; i < tags.length; i++) {
+                checkedTags[i] = this.tags.contains(tags[i]);
+            }
+        }
+
         final AlertDialog tagsDialog = new AlertDialog.Builder(getActivity())
                 .setTitle(Util.getCountString(getActivity(), R.plurals.tags, tags.length))
-                .setMultiChoiceItems(tags, null, new DialogInterface.OnMultiChoiceClickListener() {
+                .setMultiChoiceItems(tags, checkedTags,
+                        new DialogInterface.OnMultiChoiceClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        if (isChecked) {
-                            QueryFragment.this.tags.add(tags[which]);
-                        } else {
-                            QueryFragment.this.tags.remove(tags[which]);
-                        }
-                    }
-                })
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                                int which, boolean isChecked) {
+                                if (isChecked) {
+                                    QueryFragment.this.tags.add(tags[which]);
+                                } else {
+                                    QueryFragment.this.tags.remove(tags[which]);
+                                }
+                            }
+                        })
                 .setPositiveButton(R.string.select_all, null)
                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
 
@@ -388,7 +400,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         tagsDialog.show();
     }
 
-    private void getSelection(List<String> tags, List<Playlist> playlists) {
+    private void getSelection(ArrayList<String> tags, ArrayList<Playlist> playlists) {
         selection = null;
         selectionArgs = new ArrayList<>();
 

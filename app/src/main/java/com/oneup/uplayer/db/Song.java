@@ -6,7 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class Song implements Parcelable,
         DbHelper.SongColumns, DbHelper.PlayedColumns {
@@ -139,7 +139,7 @@ public class Song implements Parcelable,
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
     }
 
-    public static long getDuration(List<Song> songs, int index) {
+    public static long getDuration(ArrayList<Song> songs, int index) {
         long duration = 0;
         for (; index < songs.size(); index++) {
             duration += songs.get(index).duration;

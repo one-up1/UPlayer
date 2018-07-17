@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DbHelper extends SQLiteOpenHelper {
     private static final String TAG = "UPlayer";
@@ -358,7 +357,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return songs;
     }
 
-    public void insertOrUpdatePlaylist(Playlist playlist, List<Song> songs) {
+    public void insertOrUpdatePlaylist(Playlist playlist, ArrayList<Song> songs) {
         Log.d(TAG, "DbHelper.insertOrUpdatePlaylist(" + playlist + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
@@ -707,7 +706,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                         String selection, String timeColumn, long time) {
         Log.d(TAG, "DbHelper.syncTable(" + table + ")");
         SyncResult result = new SyncResult();
-        List<Long> ids = new ArrayList<>();
+        ArrayList<Long> ids = new ArrayList<>();
 
         // Insert/update rows from the MediaStore into the database.
         try (Cursor c = context.getContentResolver().query(uri, columns, selection, null, null)) {

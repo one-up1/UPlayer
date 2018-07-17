@@ -17,7 +17,7 @@ import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
         View.OnLongClickListener, AdapterView.OnItemSelectedListener {
@@ -30,7 +30,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     private Song song;
 
-    private List<String> tags;
+    private ArrayList<String> tags;
 
     private EditText etTitle;
     private EditText etArtist;

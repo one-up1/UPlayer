@@ -107,7 +107,7 @@ public class PlaylistActivity extends AppCompatActivity {
                 case R.id.savePlaylist:
                     startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                     .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                            null, null, false, true)),
+                                            null, null, false, true, null)),
                             REQUEST_SELECT_PLAYLIST);
                     return true;
                 default:

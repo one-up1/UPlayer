@@ -17,7 +17,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 @SuppressLint("SimpleDateFormat")
@@ -144,7 +144,8 @@ public class Util {
         return context.getResources().getQuantityString(id, quantity, quantity);
     }
 
-    public static String getCountString(Context context, List<?> list, int zeroId, int otherId) {
+    public static String getCountString(Context context, ArrayList<?> list,
+                                        int zeroId, int otherId) {
         switch (list.size()) {
             case 0:
                 return context.getString(zeroId);

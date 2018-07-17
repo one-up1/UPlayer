@@ -19,7 +19,7 @@ import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
@@ -60,7 +60,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                             getDbHelper().insertPlaylistSong(playlist, playlistSong);
                             s = "'" + playlist.toString() + "'";
                         } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
-                            List<Playlist> playlists = data.getParcelableArrayListExtra(
+                            ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
                                     PlaylistsActivity.EXTRA_PLAYLISTS);
                             for (Playlist playlist : playlists) {
                                 getDbHelper().insertPlaylistSong(playlist, playlistSong);
@@ -137,7 +137,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 playlistSong = song;
                 startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                 .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                        null, null, true, true)),
+                                        null, null, true, true, null)),
                         REQUEST_SELECT_PLAYLIST);
                 break;
             case R.id.mark_played:

@@ -45,6 +45,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
     public static class PlaylistsFragment extends ListFragment<Playlist> {
         private static final String ARG_ALLOW_ADD = "allow_add";
+        private static final String ARG_CHECKED_ITEMS = "checked_items";
 
         private boolean allowAdd;
 
@@ -59,11 +60,16 @@ public class PlaylistsActivity extends AppCompatActivity {
             setHasOptionsMenu(true);
 
             Bundle args = getArguments();
+            ArrayList<Playlist> checkedItems = null;
             if (args != null) {
                 allowAdd = args.getBoolean(ARG_ALLOW_ADD);
+                checkedItems = args.getParcelableArrayList(ARG_CHECKED_ITEMS);
             }
 
             reloadData();
+            if (checkedItems != null && checkedItems.size() > 0) {
+                setCheckedListItems(checkedItems);
+            }
         }
 
         @Override
@@ -204,12 +210,14 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          boolean checkboxVisible, boolean allowAdd) {
+                                          boolean checkboxVisible, boolean allowAdd,
+                                          ArrayList<Playlist> checkedItems) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_CHECKBOX_VISIBLE, checkboxVisible);
             args.putBoolean(ARG_ALLOW_ADD, allowAdd);
+            args.putParcelableArrayList(ARG_CHECKED_ITEMS, checkedItems);
             return args;
         }
 

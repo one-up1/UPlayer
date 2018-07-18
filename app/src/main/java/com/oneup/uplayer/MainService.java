@@ -337,13 +337,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             this.songs.addAll(songs);
         }
 
-        // Update current song when playing or paused (prepared), play the last song when not.
+        // Update current song when playing or paused (prepared), or play the first added song.
         // This will start playback of the added song, if it is the first song
         // or is being added to a playlist of which the last song has completed.
         if (prepared) {
             updateCurrentSong();
         } else {
-            songIndex = this.songs.size() - 1;
+            songIndex = this.songs.size() - songs.size();
             play();
         }
     }

@@ -20,6 +20,7 @@
     <dimen name="list_item_first_button_padding_start">12dp</dimen>
     <dimen name="list_item_button_padding_start">4dp</dimen>
     <dimen name="list_item_button_padding_end">4dp</dimen>
+    <dimen name="list_item_check_box_padding_end">8dp</dimen>
 
     <dimen name="notification_padding">4dp</dimen>
     <dimen name="notification_button_width">40dp</dimen>

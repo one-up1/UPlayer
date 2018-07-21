@@ -239,7 +239,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             Log.e(TAG, "Current position is 0");
         } else {
             try {
-                dbHelper.updateSongPlayed(songs.get(songIndex));
+                dbHelper.updateSongPlayed(getSong());
                 next();
             } catch (Exception ex) {
                 Log.e(TAG, "Error updating song played", ex);
@@ -260,6 +260,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.setSongIndex(" + songIndex + ")");
         this.songIndex = songIndex;
         play();
+    }
+
+    public Song getSong() {
+        return songs.get(songIndex);
     }
 
     public void moveSong(int index, int toIndex) {
@@ -310,6 +314,41 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         savePlaylist();
         updateCurrentSong();
+    }
+
+    public void updateCurrentSong() {
+        Log.d(TAG, "MainService.updateCurrentSong(), songIndex=" + songIndex);
+        Song song = getSong();
+        dbHelper.querySong(song);
+
+        // Set song title and artist.
+        notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
+        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+
+        // Set tag and playlist name.
+        StringBuilder sbInfo = new StringBuilder();
+        if (song.getTag() != null) {
+            sbInfo.append(song.getTag());
+        }
+        if (playlistId > 1) {
+            if (sbInfo.length() > 0) {
+                sbInfo.append(", ");
+            }
+            sbInfo.append(dbHelper.queryPlaylistName(playlistId));
+        }
+        if (sbInfo.length() == 0) {
+            notificationViews.setViewVisibility(R.id.tvInfo, View.GONE);
+        } else {
+            notificationViews.setTextViewText(R.id.tvInfo, sbInfo.toString());
+            notificationViews.setViewVisibility(R.id.tvInfo, View.VISIBLE);
+        }
+
+        updatePlaylistPosition();
+
+        // Update PlaylistActivity.
+        if (onSongChangeListener != null) {
+            onSongChangeListener.onSongChange();
+        }
     }
 
     public void setOnSongChangeListener(OnSongChangeListener onSongChangeListener) {
@@ -375,7 +414,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else if (songPosition <= RESUME_POSITION_OFFSET * 2) {
             Log.d(TAG, "Ignoring low song position: " + songPosition);
             songPosition = 0;
-        } else if (songPosition >= songs.get(songIndex).getDuration() - RESUME_POSITION_OFFSET) {
+        } else if (songPosition >= getSong().getDuration() - RESUME_POSITION_OFFSET) {
             Log.d(TAG, "Ignoring high song position: " + songPosition);
             songIndex = songIndex == songs.size() - 1 ? 0 : songIndex + 1;
             songPosition = 0;
@@ -444,7 +483,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.play(), " + songs.size() + " songs, songIndex=" + songIndex);
         try {
             player.reset();
-            player.setDataSource(getApplicationContext(), songs.get(songIndex).getContentUri());
+            player.setDataSource(getApplicationContext(), getSong().getContentUri());
             player.prepareAsync();
         } catch (Exception ex) {
             Log.e(TAG, "Error preparing MediaPlayer", ex);
@@ -471,31 +510,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void setPlayPauseResource(int srcId) {
         notificationViews.setImageViewResource(R.id.ibPlayPause, srcId);
-    }
-
-    private void updateCurrentSong() {
-        Log.d(TAG, "MainService.updateCurrentSong(), songIndex=" + songIndex);
-        Song song = songs.get(songIndex);
-
-        // Set song title and artist.
-        notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
-        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
-
-        // Set playlist name.
-        if (playlistId == 1) {
-            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.GONE);
-        } else {
-            notificationViews.setTextViewText(R.id.tvPlaylistName,
-                    dbHelper.queryPlaylistName(playlistId));
-            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.VISIBLE);
-        }
-
-        updatePlaylistPosition();
-
-        // Update PlaylistActivity.
-        if (onSongChangeListener != null) {
-            onSongChangeListener.onSongChange();
-        }
     }
 
     private void updatePlaylistPosition() {

@@ -23,6 +23,29 @@ public class Song implements Parcelable,
     private int timesPlayed;
 
     @Override
+    public int hashCode() {
+        return Long.valueOf(id).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Song song = (Song) obj;
+        return id == song.id;
+    }
+
+    @Override
     public String toString() {
         return title;
     }

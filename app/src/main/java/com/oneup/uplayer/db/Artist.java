@@ -13,6 +13,29 @@ public class Artist implements Parcelable,
     private int timesPlayed;
 
     @Override
+    public int hashCode() {
+        return Long.valueOf(id).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Artist artist = (Artist) obj;
+        return id == artist.id;
+    }
+
+    @Override
     public String toString() {
         return artist;
     }

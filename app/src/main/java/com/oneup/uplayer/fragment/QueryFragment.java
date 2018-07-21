@@ -51,6 +51,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private SharedPreferences preferences;
     private DbHelper dbHelper;
     private ArrayList<Artist> artists;
+    private boolean viewCreated;
 
     private EditText etTitle;
     private EditText etArtist;
@@ -103,7 +104,6 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
         sArtist = rootView.findViewById(R.id.sArtist);
         sArtist.setOnItemSelectedListener(this);
-        loadArtists();
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
 
@@ -112,10 +112,16 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bMinAdded = rootView.findViewById(R.id.bMinAdded);
         bMinAdded.setOnClickListener(this);
         bMinAdded.setOnLongClickListener(this);
+        if (minAdded > 0) {
+            bMinAdded.setText(Util.formatDateTime(minAdded));
+        }
 
         bMaxAdded = rootView.findViewById(R.id.bMaxAdded);
         bMaxAdded.setOnClickListener(this);
         bMaxAdded.setOnLongClickListener(this);
+        if (maxAdded > 0) {
+            bMaxAdded.setText(Util.formatDateTime(maxAdded));
+        }
 
         rbBookmarked = rootView.findViewById(R.id.rbBookmarked);
         rbNotBookmarked = rootView.findViewById(R.id.rbNotBookmarked);
@@ -123,28 +129,46 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bTags = rootView.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
         bTags.setOnLongClickListener(this);
+        if (tags != null) {
+            bTags.setText(Util.getCountString(getActivity(), QueryFragment.this.tags,
+                    R.string.no_selected_tag, R.string.selected_tags));
+        }
 
         bPlaylists = rootView.findViewById(R.id.bPlaylists);
         bPlaylists.setOnClickListener(this);
         bPlaylists.setOnLongClickListener(this);
+        if (playlists != null) {
+            bPlaylists.setText(Util.getCountString(getActivity(), playlists,
+                    R.string.no_selected_playlist, R.string.selected_playlists));
+        }
 
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
         bMinLastPlayed.setOnLongClickListener(this);
+        if (minLastPlayed > 0) {
+            bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
+        }
 
         bMaxLastPlayed = rootView.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
+        if (maxLastPlayed > 0) {
+            bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
+        }
 
         etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
 
         etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
-        sSortColumn.setSelection(preferences.getInt(PREF_SORT_COLUMN, 0));
+        if (!viewCreated) {
+            sSortColumn.setSelection(preferences.getInt(PREF_SORT_COLUMN, 0));
+        }
 
         cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
-        cbSortDesc.setChecked(preferences.getBoolean(PREF_SORT_DESC, false));
+        if (!viewCreated) {
+            cbSortDesc.setChecked(preferences.getBoolean(PREF_SORT_DESC, false));
+        }
 
         bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
@@ -159,7 +183,14 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bBackup.setOnClickListener(this);
         bBackup.setOnLongClickListener(this);
 
+        viewCreated = true;
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadArtists();
     }
 
     @Override
@@ -245,7 +276,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             getSelection(this.tags, null);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    selection, getSelectionArgs(), true, false, playlists)),
+                                    selection, getSelectionArgs(), true, false, playlists,
+                                    R.string.play_playlist_confirm)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
@@ -314,22 +346,6 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         sArtist.setAdapter(new
                 ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, artists));
-    }
-
-    private void query() {
-        getSelection(this.tags, this.playlists);
-        int sortColumn = sSortColumn.getSelectedItemPosition();
-        boolean sortDesc = cbSortDesc.isChecked();
-
-        startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(
-                        selection, getSelectionArgs(),
-                        sortColumn, sortDesc)));
-
-        preferences.edit()
-                .putInt(PREF_SORT_COLUMN, sortColumn)
-                .putBoolean(PREF_SORT_DESC, sortDesc)
-                .apply();
     }
 
     private void showTags() {
@@ -488,6 +504,22 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
     private String[] getSelectionArgs() {
         return selection == null ? null : selectionArgs.toArray(new String[0]);
+    }
+
+    private void query() {
+        getSelection(this.tags, this.playlists);
+        int sortColumn = sSortColumn.getSelectedItemPosition();
+        boolean sortDesc = cbSortDesc.isChecked();
+
+        startActivity(new Intent(getActivity(), SongsActivity.class)
+                .putExtras(SongsFragment.getArguments(
+                        selection, getSelectionArgs(),
+                        sortColumn, sortDesc)));
+
+        preferences.edit()
+                .putInt(PREF_SORT_COLUMN, sortColumn)
+                .putBoolean(PREF_SORT_DESC, sortDesc)
+                .apply();
     }
 
     private void syncDatabase() {

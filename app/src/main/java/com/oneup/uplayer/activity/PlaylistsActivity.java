@@ -46,8 +46,11 @@ public class PlaylistsActivity extends AppCompatActivity {
     public static class PlaylistsFragment extends ListFragment<Playlist> {
         private static final String ARG_ALLOW_ADD = "allow_add";
         private static final String ARG_CHECKED_ITEMS = "checked_items";
+        private static final String ARG_SELECT_PLAYLIST_CONFIRM_ID = "select_playlist_confirm_id";
 
         private boolean allowAdd;
+        private ArrayList<Playlist> checkedItems;
+        private int selectPlaylistConfirmId;
 
         public PlaylistsFragment() {
             super(R.layout.list_item_playlist, R.menu.list_item_playlist, 0, 0, R.id.checkBox,
@@ -60,10 +63,10 @@ public class PlaylistsActivity extends AppCompatActivity {
             setHasOptionsMenu(true);
 
             Bundle args = getArguments();
-            ArrayList<Playlist> checkedItems = null;
             if (args != null) {
                 allowAdd = args.getBoolean(ARG_ALLOW_ADD);
                 checkedItems = args.getParcelableArrayList(ARG_CHECKED_ITEMS);
+                selectPlaylistConfirmId = args.getInt(ARG_SELECT_PLAYLIST_CONFIRM_ID);
             }
 
             reloadData();
@@ -135,10 +138,20 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onListItemClick(int position, Playlist playlist) {
-            getActivity().setResult(RESULT_OK, new Intent()
-                    .putExtra(EXTRA_PLAYLIST, playlist));
-            getActivity().finish();
+        protected void onListItemClick(int position, final Playlist playlist) {
+            if (selectPlaylistConfirmId == 0) {
+                selectPlaylist(playlist);
+            } else {
+                Util.showConfirmDialog(getActivity(),
+                        getString(selectPlaylistConfirmId, playlist),
+                        new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                selectPlaylist(playlist);
+                            }
+                        });
+            }
         }
 
         @Override
@@ -209,15 +222,23 @@ public class PlaylistsActivity extends AppCompatActivity {
                     });
         }
 
+        private void selectPlaylist(Playlist playlist) {
+            getActivity().setResult(RESULT_OK, new Intent()
+                    .putExtra(EXTRA_PLAYLIST, playlist));
+            getActivity().finish();
+        }
+
         public static Bundle getArguments(String selection, String[] selectionArgs,
                                           boolean checkboxVisible, boolean allowAdd,
-                                          ArrayList<Playlist> checkedItems) {
+                                          ArrayList<Playlist> checkedItems,
+                                          int selectPlaylistConfirmId) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_CHECKBOX_VISIBLE, checkboxVisible);
             args.putBoolean(ARG_ALLOW_ADD, allowAdd);
             args.putParcelableArrayList(ARG_CHECKED_ITEMS, checkedItems);
+            args.putInt(ARG_SELECT_PLAYLIST_CONFIRM_ID, selectPlaylistConfirmId);
             return args;
         }
 

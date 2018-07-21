@@ -21,9 +21,6 @@ public class Playlist implements Parcelable, BaseColumns {
     private int songIndex;
     private int songPosition;
 
-    // The hashCode() and equals() methods are needed because PlaylistsFragment uses
-    // ListFragment.setCheckedListItems(), which uses ArrayList.contains().
-
     @Override
     public int hashCode() {
         return Long.valueOf(id).hashCode();

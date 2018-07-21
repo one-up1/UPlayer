@@ -24,7 +24,7 @@ import java.util.ArrayList;
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
-    private static final int REQUEST_EDIT_SONG = 1;
+    protected static final int REQUEST_EDIT_SONG = 1;
     private static final int REQUEST_SELECT_PLAYLIST = 2;
 
     private Song playlistSong;
@@ -137,7 +137,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 playlistSong = song;
                 startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                 .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                        null, null, true, true, null)),
+                                        null, null, true, true, null, 0)),
                         REQUEST_SELECT_PLAYLIST);
                 break;
             case R.id.mark_played:

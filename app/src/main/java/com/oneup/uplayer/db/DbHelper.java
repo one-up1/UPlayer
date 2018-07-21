@@ -324,6 +324,7 @@ public class DbHelper extends SQLiteOpenHelper {
             }
         }
     }
+
     public ArrayList<Song> queryPlaylistSongs(Playlist playlist) {
         Log.d(TAG, "DbHelper.queryPlaylistSongs(" + playlist + ")");
         ArrayList<Song> songs = new ArrayList<>();

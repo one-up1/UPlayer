@@ -107,7 +107,8 @@ public class PlaylistActivity extends AppCompatActivity {
                 case R.id.savePlaylist:
                     startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                     .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                            null, null, false, true, null)),
+                                            null, null, false, true, null,
+                                            R.string.save_playlist_confirm)),
                             REQUEST_SELECT_PLAYLIST);
                     return true;
                 default:
@@ -127,6 +128,12 @@ public class PlaylistActivity extends AppCompatActivity {
             super.onActivityResult(requestCode, resultCode, data);
             if (resultCode == AppCompatActivity.RESULT_OK) {
                 switch (requestCode) {
+                    case REQUEST_EDIT_SONG:
+                        if (data.getParcelableExtra(EditSongActivity.EXTRA_SONG)
+                                .equals(service.getSong())) {
+                            service.updateCurrentSong();
+                        }
+                        break;
                     case REQUEST_SELECT_PLAYLIST:
                         service.setPlaylist((Playlist) data.getParcelableExtra(
                                 PlaylistsActivity.EXTRA_PLAYLIST));

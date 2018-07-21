@@ -139,6 +139,10 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemClick(int position, final Playlist playlist) {
+            if (selectPlaylistConfirmId == -1) {
+                return;
+            }
+
             if (selectPlaylistConfirmId == 0) {
                 selectPlaylist(playlist);
             } else {

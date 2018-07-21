@@ -112,6 +112,12 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.view_playlists:
+                startActivity(new Intent(this, PlaylistsActivity.class)
+                        .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                Song._ID + "=?", DbHelper.getWhereArgs(song.getId()),
+                                false, false, null, -1)));
+                return true;
             case R.id.ok:
                 song.setYear(etYear.getInt());
                 song.setTag(etTag.getString());

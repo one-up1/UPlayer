@@ -15,6 +15,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
+import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
@@ -53,20 +54,32 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     break;
                 case REQUEST_SELECT_PLAYLIST:
                     try {
+                        ArrayList<Playlist> existingPlaylists = getDbHelper().queryPlaylists(true,
+                                Song._ID + "=?", DbHelper.getWhereArgs(playlistSong.getId()));
                         String s;
                         if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                             Playlist playlist = data.getParcelableExtra(
                                     PlaylistsActivity.EXTRA_PLAYLIST);
+                            if (existingPlaylists.contains(playlist)) {
+                                Util.showToast(getActivity(),
+                                        R.string.playlist_already_contains_song,
+                                        playlist, playlistSong);
+                                return;
+                            }
+
                             getDbHelper().insertPlaylistSong(playlist, playlistSong);
                             s = "'" + playlist.toString() + "'";
                         } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
                             ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
                                     PlaylistsActivity.EXTRA_PLAYLISTS);
+                            int count = 0;
                             for (Playlist playlist : playlists) {
-                                getDbHelper().insertPlaylistSong(playlist, playlistSong);
+                                if (!existingPlaylists.contains(playlist)) {
+                                    getDbHelper().insertPlaylistSong(playlist, playlistSong);
+                                    count++;
+                                }
                             }
-                            s = Util.getCountString(getActivity(),
-                                    R.plurals.playlists, playlists.size());
+                            s = Util.getCountString(getActivity(), R.plurals.playlists, count);
                         } else {
                             throw new RuntimeException("No playlists");
                         }

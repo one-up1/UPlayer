@@ -45,8 +45,8 @@
     <string name="play_last">Play last</string>
     <string name="playing_all_next">Playing next</string>
     <string name="playing_all_last">Playing last</string>
-    <string name="playing_song_next">Playing next: %1$s</string>
-    <string name="playing_song_last">Playing last: %1$s</string>
+    <string name="playing_song_next">Playing next: \'%1$s\'</string>
+    <string name="playing_song_last">Playing last: \'%1$s\'</string>
 
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
@@ -57,6 +57,7 @@
 
     <string name="edit">Edit</string>
     <string name="edit_song">Edit song</string>
+    <string name="view_playlists">Playlists&#8230;</string>
     <string name="edit_title">Title:</string>
     <string name="edit_artist">Artist:</string>
     <string name="edit_duration">Duration:</string>
@@ -75,6 +76,7 @@
     <string name="bookmark_cleared">Bookmark cleared</string>
 
     <string name="add_to_playlist">Add to playlist</string>
+    <string name="playlist_already_contains_song">\'%1$s\' already contains \'%2$s\'</string>
     <string name="song_added_to_playlist">\'%1$s\' added to %2$s</string>
 
     <string name="mark_played">Mark played</string>

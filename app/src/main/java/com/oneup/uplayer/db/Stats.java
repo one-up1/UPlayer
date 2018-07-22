@@ -10,8 +10,6 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Util;
 
-//TODO: Column weight.
-
 public class Stats {
     private Total total;
     private Total played;

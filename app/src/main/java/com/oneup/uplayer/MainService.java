@@ -321,26 +321,25 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Song song = getSong();
         dbHelper.querySong(song);
 
-        // Set song title and artist.
+        // Set title and artist.
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
 
-        // Set tag and playlist name.
-        StringBuilder sbInfo = new StringBuilder();
-        if (song.getTag() != null) {
-            sbInfo.append(song.getTag());
-        }
-        if (playlistId > 1) {
-            if (sbInfo.length() > 0) {
-                sbInfo.append(", ");
-            }
-            sbInfo.append(dbHelper.queryPlaylistName(playlistId));
-        }
-        if (sbInfo.length() == 0) {
-            notificationViews.setViewVisibility(R.id.tvInfo, View.GONE);
+        // Set tag.
+        if (song.getTag() == null) {
+            notificationViews.setViewVisibility(R.id.tvTag, View.GONE);
         } else {
-            notificationViews.setTextViewText(R.id.tvInfo, sbInfo.toString());
-            notificationViews.setViewVisibility(R.id.tvInfo, View.VISIBLE);
+            notificationViews.setTextViewText(R.id.tvTag, song.getTag());
+            notificationViews.setViewVisibility(R.id.tvTag, View.VISIBLE);
+        }
+
+        // Set playlist name.
+        if (playlistId == 1) {
+            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.GONE);
+        } else {
+            notificationViews.setTextViewText(R.id.tvPlaylistName,
+                    dbHelper.queryPlaylistName(playlistId));
+            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.VISIBLE);
         }
 
         updatePlaylistPosition();

@@ -325,22 +325,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
 
-        // Set tag.
-        if (song.getTag() == null) {
-            notificationViews.setViewVisibility(R.id.tvTag, View.GONE);
-        } else {
-            notificationViews.setTextViewText(R.id.tvTag, song.getTag());
-            notificationViews.setViewVisibility(R.id.tvTag, View.VISIBLE);
-        }
-
-        // Set playlist name.
-        if (playlistId == 1) {
-            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.GONE);
-        } else {
-            notificationViews.setTextViewText(R.id.tvPlaylistName,
-                    dbHelper.queryPlaylistName(playlistId));
-            notificationViews.setViewVisibility(R.id.tvPlaylistName, View.VISIBLE);
-        }
+        // Set year, tag and playlist name.
+        setOptionalValue(R.id.tvYear, song.getYear() == 0 ? null
+                : Integer.toString(song.getYear()));
+        setOptionalValue(R.id.tvTag, song.getTag());
+        setOptionalValue(R.id.tvPlaylistName, playlistId == 1 ? null
+                : dbHelper.queryPlaylistName(playlistId));
 
         updatePlaylistPosition();
 
@@ -505,6 +495,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             setVolume();
         }
         preferences.edit().putInt(PREF_VOLUME, volume).apply();
+    }
+
+    private void setOptionalValue(int viewId, String s) {
+        if (s == null) {
+            notificationViews.setViewVisibility(viewId, View.GONE);
+        } else {
+            notificationViews.setTextViewText(viewId, s);
+            notificationViews.setViewVisibility(viewId, View.VISIBLE);
+        }
     }
 
     private void setPlayPauseResource(int srcId) {

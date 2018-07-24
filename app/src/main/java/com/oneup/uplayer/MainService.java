@@ -37,7 +37,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final int ACTION_PLAY = 1;
     public static final int ACTION_ADD = 2;
     public static final int ACTION_PLAY_PLAYLIST = 3;
-    public static final int ACTION_UPDATE_PLAYLIST_POSITION = 4;
+    public static final int ACTION_UPDATE = 4;
 
     private static final int ACTION_PREVIOUS = 5;
     private static final int ACTION_PLAY_PAUSE = 6;
@@ -139,8 +139,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             case ACTION_PLAY_PLAYLIST:
                 playPlaylist((Playlist) intent.getParcelableExtra(EXTRA_PLAYLIST));
                 break;
-            case ACTION_UPDATE_PLAYLIST_POSITION:
-                updatePlaylistPosition();
+            case ACTION_UPDATE:
+                update();
                 break;
             case ACTION_PREVIOUS:
                 previous();
@@ -211,7 +211,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         prepared = true;
 
         setPlayPauseResource(R.drawable.ic_notification_pause);
-        updateCurrentSong();
+        update();
     }
 
     @Override
@@ -222,7 +222,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         songPosition = 0;
         
         setPlayPauseResource(R.drawable.ic_notification_play);
-        startForeground(1, notification);
+        update();
 
         return true; // Or onCompletion() will be called.
     }
@@ -233,7 +233,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         prepared = false;
         
         setPlayPauseResource(R.drawable.ic_notification_play);
-        updatePlaylistPosition();
+        update();
 
         if (player.getCurrentPosition() == 0) {
             Log.e(TAG, "Current position is 0");
@@ -280,7 +280,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             // A song below the current song is moved to or above the current song.
             songIndex++;
         }
-        updateCurrentSong();
+        update();
     }
 
     public void removeSong(int index) {
@@ -305,7 +305,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 play();
             }
         }
-        updateCurrentSong();
+        update();
     }
 
     public void setPlaylist(Playlist playlist) {
@@ -313,17 +313,26 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         playlistId = playlist.getId();
 
         savePlaylist();
-        updateCurrentSong();
+        update();
     }
 
-    public void updateCurrentSong() {
-        Log.d(TAG, "MainService.updateCurrentSong(), songIndex=" + songIndex);
+    public void update() {
+        Log.d(TAG, "MainService.update(), songIndex=" + songIndex);
         Song song = getSong();
         dbHelper.querySong(song);
 
         // Set title and artist.
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+
+        // Set playlist position with song index, song count, songs left and time left.
+        String left = Util.formatDuration(
+                Song.getDuration(songs, songIndex) - player.getCurrentPosition());
+        if (songIndex < songs.size() - 1) {
+            left = (songs.size() - songIndex - 1) + " / " + left;
+        }
+        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+                R.string.playlist_position, songIndex + 1, songs.size(), left));
 
         // Set year, tag and playlist name.
         setOptionalValue(R.id.tvYear, song.getYear() == 0 ? null
@@ -332,9 +341,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOptionalValue(R.id.tvPlaylistName, playlistId == 1 ? null
                 : dbHelper.queryPlaylistName(playlistId));
 
-        updatePlaylistPosition();
-
-        // Update PlaylistActivity.
+        // Update notification and PlaylistActivity.
+        startForeground(1, notification);
         if (onSongChangeListener != null) {
             onSongChangeListener.onSongChange();
         }
@@ -369,7 +377,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         // This will start playback of the added song, if it is the first song
         // or is being added to a playlist of which the last song has completed.
         if (prepared) {
-            updateCurrentSong();
+            update();
         } else {
             songIndex = this.songs.size() - songs.size();
             play();
@@ -430,7 +438,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.pause();
 
             setPlayPauseResource(R.drawable.ic_notification_play);
-            updatePlaylistPosition();
+            update();
         } else {
             if (prepared) {
                 Log.d(TAG, "Resuming");
@@ -439,7 +447,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 player.start();
 
                 setPlayPauseResource(R.drawable.ic_notification_pause);
-                updatePlaylistPosition();
+                update();
             } else {
                 play();
             }
@@ -486,7 +494,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setVolume(volume, volume);
 
         notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(this.volume));
-        updatePlaylistPosition();
+        update();
     }
 
     private void setVolume(int volume) {
@@ -508,22 +516,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void setPlayPauseResource(int srcId) {
         notificationViews.setImageViewResource(R.id.ibPlayPause, srcId);
-    }
-
-    private void updatePlaylistPosition() {
-        Log.d(TAG, "MainService.updatePlaylistPosition(), songIndex=" + songIndex +
-                ", size=" + songs.size());
-
-        // Set song index, song count, songs left and time left.
-        String left = Util.formatDuration(
-                Song.getDuration(songs, songIndex) - player.getCurrentPosition());
-        if (songIndex < songs.size() - 1) {
-            left = (songs.size() - songIndex - 1) + " / " + left;
-        }
-        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
-                R.string.playlist_position, songIndex + 1, songs.size(), left));
-
-        startForeground(1, notification);
     }
 
     private void savePlaylist() {

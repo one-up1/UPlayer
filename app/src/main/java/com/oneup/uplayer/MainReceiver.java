@@ -44,9 +44,9 @@ public class MainReceiver extends BroadcastReceiver {
     private void screenOn() {
         Log.d(TAG, "MainReceiver.screenOn()");
 
-        // Refresh playlist position when the screen is turned on.
+        // Update notification when the screen is turned on.
         context.startService(new Intent(context, MainService.class)
-                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE_PLAYLIST_POSITION));
+                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE));
     }
 
     private void headsetPlug(int state) {

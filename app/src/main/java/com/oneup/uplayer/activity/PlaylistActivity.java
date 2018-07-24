@@ -131,7 +131,7 @@ public class PlaylistActivity extends AppCompatActivity {
                     case REQUEST_EDIT_SONG:
                         if (data.getParcelableExtra(EditSongActivity.EXTRA_SONG)
                                 .equals(service.getSong())) {
-                            service.updateCurrentSong();
+                            service.update();
                         }
                         break;
                     case REQUEST_SELECT_PLAYLIST:

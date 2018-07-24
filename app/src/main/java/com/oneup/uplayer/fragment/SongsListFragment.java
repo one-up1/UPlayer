@@ -26,7 +26,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
     protected static final int REQUEST_EDIT_SONG = 1;
-    private static final int REQUEST_SELECT_PLAYLIST = 2;
+    private static final int REQUEST_SELECT_PLAYLISTS = 2;
 
     private Song playlistSong;
 
@@ -52,15 +52,15 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                         Util.showErrorDialog(getActivity(), ex);
                     }
                     break;
-                case REQUEST_SELECT_PLAYLIST:
+                case REQUEST_SELECT_PLAYLISTS:
                     try {
-                        ArrayList<Playlist> existingPlaylists = getDbHelper().queryPlaylists(true,
+                        ArrayList<Playlist> currentPlaylists = getDbHelper().queryPlaylists(true,
                                 Song._ID + "=?", DbHelper.getWhereArgs(playlistSong.getId()));
                         String s;
                         if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                             Playlist playlist = data.getParcelableExtra(
                                     PlaylistsActivity.EXTRA_PLAYLIST);
-                            if (existingPlaylists.contains(playlist)) {
+                            if (currentPlaylists.contains(playlist)) {
                                 Util.showToast(getActivity(),
                                         R.string.playlist_already_contains_song,
                                         playlist, playlistSong);
@@ -74,7 +74,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                     PlaylistsActivity.EXTRA_PLAYLISTS);
                             int count = 0;
                             for (Playlist playlist : playlists) {
-                                if (!existingPlaylists.contains(playlist)) {
+                                if (!currentPlaylists.contains(playlist)) {
                                     getDbHelper().insertPlaylistSong(playlist, playlistSong);
                                     count++;
                                 }
@@ -151,7 +151,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                 .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
                                         null, null, true, true, null, 0)),
-                        REQUEST_SELECT_PLAYLIST);
+                        REQUEST_SELECT_PLAYLISTS);
                 break;
             case R.id.mark_played:
                 try {

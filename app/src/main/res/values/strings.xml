@@ -68,6 +68,7 @@
     <string name="edit_times_played">Times played:</string>
     <string name="select_added">Added&#8230;</string>
     <string name="select_bookmarked">Bookmarked&#8230;</string>
+    <string name="playlist_songs_updated">Song added to %1$s and removed from %2$s</string>
     <string name="song_updated">Song updated</string>
 
     <string name="bookmark">Bookmark</string>

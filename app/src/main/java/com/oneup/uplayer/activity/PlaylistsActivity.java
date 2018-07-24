@@ -180,11 +180,16 @@ public class PlaylistsActivity extends AppCompatActivity {
 
                         @Override
                         public void onOk(EditText view) {
-                            Playlist playlist = new Playlist();
-                            playlist.setName(view.getString());
-                            playlist.setModified(Calendar.currentTime());
-                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
-                            reloadData();
+                            try {
+                                Playlist playlist = new Playlist();
+                                playlist.setName(view.getString());
+                                playlist.setModified(Calendar.currentTime());
+                                getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                                reloadData();
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Error adding playlist", ex);
+                                Util.showErrorDialog(getActivity(), ex);
+                            }
                         }
                     });
         }
@@ -196,9 +201,14 @@ public class PlaylistsActivity extends AppCompatActivity {
 
                         @Override
                         public void onOk(EditText view) {
-                            playlist.setName(view.getString());
-                            getDbHelper().insertOrUpdatePlaylist(playlist, null);
-                            reloadData();
+                            try {
+                                playlist.setName(view.getString());
+                                getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                                reloadData();
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Error renaming playlist", ex);
+                                Util.showErrorDialog(getActivity(), ex);
+                            }
                         }
                     });
         }

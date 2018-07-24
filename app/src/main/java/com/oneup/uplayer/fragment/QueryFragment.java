@@ -502,7 +502,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private String[] getSelectionArgs() {
-        return selection == null ? null : selectionArgs.toArray(new String[0]);
+        return selectionArgs.size() == 0 ? null : selectionArgs.toArray(new String[0]);
     }
 
     private void query() {

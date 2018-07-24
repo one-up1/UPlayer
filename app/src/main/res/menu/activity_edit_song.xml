@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/view_playlists"
+        android:id="@+id/playlists"
         android:title="@string/view_playlists"
-        android:icon="@drawable/ic_menu_view_playlists"
+        android:icon="@drawable/ic_menu_playlists"
         app:showAsAction="ifRoom" />
 
 

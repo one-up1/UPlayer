@@ -3,6 +3,7 @@ package com.oneup.uplayer.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.Spinner;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
@@ -23,14 +25,16 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         View.OnLongClickListener, AdapterView.OnItemSelectedListener {
     public static final String EXTRA_SONG = "com.oneup.uplayer.extra.SONG";
 
+    private static final String TAG = "UPlayer";
+
     private static final int REQUEST_SELECT_ADDED = 1;
     private static final int REQUEST_SELECT_BOOKMARKED = 2;
+    private static final int REQUEST_SELECT_PLAYLISTS = 3;
 
     private DbHelper dbHelper;
-
     private Song song;
-
     private ArrayList<String> tags;
+    private ArrayList<Playlist> playlists;
 
     private EditText etTitle;
     private EditText etArtist;
@@ -112,11 +116,13 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.view_playlists:
-                startActivity(new Intent(this, PlaylistsActivity.class)
+            case R.id.playlists:
+                playlists = dbHelper.queryPlaylists(true, Song._ID + "=?",
+                        DbHelper.getWhereArgs(song.getId()));
+                startActivityForResult(new Intent(this, PlaylistsActivity.class)
                         .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                Song._ID + "=?", DbHelper.getWhereArgs(song.getId()),
-                                false, false, null, -1)));
+                                null, null, true, true, playlists, -1)),
+                        REQUEST_SELECT_PLAYLISTS);
                 return true;
             case R.id.ok:
                 song.setYear(etYear.getInt());
@@ -143,6 +149,33 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 case REQUEST_SELECT_BOOKMARKED:
                     song.setBookmarked(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
                     bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
+                    break;
+                case REQUEST_SELECT_PLAYLISTS:
+                    try {
+                        ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
+                                PlaylistsActivity.EXTRA_PLAYLISTS);
+                        int inserted = 0, deleted = 0;
+
+                        for (Playlist playlist : playlists) {
+                            if (!this.playlists.contains(playlist)) {
+                                dbHelper.insertPlaylistSong(playlist, song);
+                                inserted++;
+                            }
+                        }
+
+                        for (Playlist playlist : this.playlists) {
+                            if (!playlists.contains(playlist)) {
+                                deleted += dbHelper.deletePlaylistSong(playlist, song);
+                            }
+                        }
+
+                        Util.showToast(this, R.string.playlist_songs_updated,
+                                Util.getCountString(this, R.plurals.playlists, inserted),
+                                Util.getCountString(this, R.plurals.playlists, deleted));
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error modifying playlist songs", ex);
+                        Util.showErrorDialog(this, ex);
+                    }
                     break;
             }
         }

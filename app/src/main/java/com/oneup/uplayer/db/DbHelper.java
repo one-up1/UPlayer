@@ -331,7 +331,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public void insertOrUpdatePlaylist(Playlist playlist, ArrayList<Song> songs) {
         Log.d(TAG, "DbHelper.insertOrUpdatePlaylist(" + playlist.getId() + ":" + playlist + ", " +
-                songs.size() + ")");
+                (songs == null ? "null" : songs.size()) + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
@@ -888,7 +888,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     private static void updateArtistStats(SQLiteDatabase db, Song song) {
-        Log.d(TAG, "DbHelper.updateArtistStats(" + song.getId() + ":" + song + ")");
+        Log.d(TAG, "DbHelper.updateArtistStats(" +
+                (song == null ? "null" : song.getId() + ":" + song) + ")");
 
         String sql = "UPDATE " + TABLE_ARTISTS + " SET " +
                 Artist.LAST_ADDED +

@@ -119,7 +119,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     private void deleteSong(final int position, final Song song) {
         Util.showConfirmDialog(getActivity(),
-                getString(R.string.delete_confirm, song.getTitle()),
+                getString(R.string.delete_confirm, song),
                 new DialogInterface.OnClickListener() {
 
                     @Override

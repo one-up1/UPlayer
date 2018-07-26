@@ -131,7 +131,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bTags.setOnLongClickListener(this);
         if (tags != null) {
             bTags.setText(Util.getCountString(getActivity(), QueryFragment.this.tags,
-                    R.string.no_selected_tag, R.string.selected_tags));
+                    false, R.string.no_selected_tag, R.string.selected_tags));
         }
 
         bPlaylists = rootView.findViewById(R.id.bPlaylists);
@@ -139,7 +139,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bPlaylists.setOnLongClickListener(this);
         if (playlists != null) {
             bPlaylists.setText(Util.getCountString(getActivity(), playlists,
-                    R.string.no_selected_playlist, R.string.selected_playlists));
+                    false, R.string.no_selected_playlist, R.string.selected_playlists));
         }
 
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
@@ -217,7 +217,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                         playlists = data.getParcelableArrayListExtra(
                                 PlaylistsActivity.EXTRA_PLAYLISTS);
                         bPlaylists.setText(Util.getCountString(getActivity(), playlists,
-                                R.string.no_selected_playlist, R.string.selected_playlists));
+                                false, R.string.no_selected_playlist, R.string.selected_playlists));
                     }
                     break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
@@ -389,7 +389,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     @Override
                     public void onDismiss(DialogInterface dialog) {
                         bTags.setText(Util.getCountString(getActivity(), QueryFragment.this.tags,
-                                R.string.no_selected_tag, R.string.selected_tags));
+                                false, R.string.no_selected_tag, R.string.selected_tags));
                     }
                 })
                 .create();

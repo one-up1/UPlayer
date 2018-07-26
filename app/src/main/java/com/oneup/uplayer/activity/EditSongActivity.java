@@ -172,17 +172,16 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                             }
                         }
 
-                        // TODO: Toast shown, playlist name in quotes, Util.getCountString() impl.
-                        String added = Util.getCountString(this, inserted, 0, R.string.playlists);
-                        String removed = Util.getCountString(this, deleted, 0, R.string.playlists);
+                        String added = Util.getCountString(this, inserted,
+                                true, 0, R.string.playlists);
+                        String removed = Util.getCountString(this, deleted,
+                                true, 0, R.string.playlists);
 
                         if (added != null && removed == null) {
                             Util.showToast(this, R.string.added_to_playlists, added);
-                        }
-                        if (added == null && removed != null) {
+                        } else if (added == null && removed != null) {
                             Util.showToast(this, R.string.removed_from_playlists, removed);
-                        }
-                        if (added != null && removed != null) {
+                        } else if (added != null) {
                             Util.showToast(this, R.string.added_to_and_removed_from_playlists,
                                     added, removed);
                         }

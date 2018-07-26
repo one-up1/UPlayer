@@ -326,6 +326,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         }
     }
 
+    protected void checkListItem(int position) {
+        checkedListItems[position] = !checkedListItems[position];
+        listAdapter.notifyDataSetChanged();
+    }
+
     private void setActivityTitle() {
         Activity activity = getActivity();
         if (activity != null && !(activity instanceof MainActivity)) {

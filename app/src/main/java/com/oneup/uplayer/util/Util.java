@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Environment;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
@@ -103,7 +104,7 @@ public class Util {
             view.setText(value.toString());
         }
 
-        new AlertDialog.Builder(context)
+        AlertDialog dialog = new AlertDialog.Builder(context)
                 .setTitle(titleId)
                 .setView(view)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
@@ -113,7 +114,9 @@ public class Util {
                         listener.onOk(view);
                     }
                 })
-                .show();
+                .create();
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        dialog.show();
     }
 
     public static String formatDateTime(long seconds) {
@@ -146,12 +149,16 @@ public class Util {
     }
 
     public static String getCountString(Context context, ArrayList<?> list,
-                                        int zeroId, int otherId) {
+                                        boolean quotes, int zeroId, int otherId) {
         switch (list.size()) {
             case 0:
                 return zeroId == 0 ? null : context.getString(zeroId);
             case 1:
-                return list.get(0).toString();
+                String s = list.get(0).toString();
+                if (quotes) {
+                    s = "'" + s + "'";
+                }
+                return s;
             default:
                 return context.getString(otherId, list.size());
         }

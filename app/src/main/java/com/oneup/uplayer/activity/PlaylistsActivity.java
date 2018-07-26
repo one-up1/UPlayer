@@ -21,9 +21,6 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
-//TODO: Check checkbox on item click when selectPlaylistConfirmId is -1;
-//TODO: Show soft input from add/rename input dialog.
-
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
@@ -142,22 +139,26 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemClick(int position, final Playlist playlist) {
-            if (selectPlaylistConfirmId == -1) {
-                return;
-            }
+            switch (selectPlaylistConfirmId) {
+                case 0:
+                    selectPlaylist(playlist);
+                    break;
+                case 1:
+                    Util.showConfirmDialog(getActivity(),
+                            getString(selectPlaylistConfirmId, playlist),
+                            new DialogInterface.OnClickListener() {
 
-            if (selectPlaylistConfirmId == 0) {
-                selectPlaylist(playlist);
-            } else {
-                Util.showConfirmDialog(getActivity(),
-                        getString(selectPlaylistConfirmId, playlist),
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                selectPlaylist(playlist);
-                            }
-                        });
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    selectPlaylist(playlist);
+                                }
+                            });
+                    break;
+                default:
+                    if (isCheckboxVisible()) {
+                        checkListItem(position);
+                    }
+                    break;
             }
         }
 

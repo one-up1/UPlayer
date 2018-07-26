@@ -117,14 +117,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
         }
     }
 
-    protected void onSongRemoved(int position) {
-        getData().remove(position);
-        notifyDataSetChanged();
-    }
-
     private void deleteSong(final int position, final Song song) {
         Util.showConfirmDialog(getActivity(),
-                getString(R.string.delete_song_confirm, song.getArtist(), song.getTitle()),
+                getString(R.string.delete_confirm, song.getTitle()),
                 new DialogInterface.OnClickListener() {
 
                     @Override
@@ -152,8 +147,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                             }
                             getDbHelper().deleteSong(song);
 
-                            Util.showToast(getActivity(), R.string.song_deleted);
-                            onSongRemoved(position);
+                            Util.showToast(getActivity(), R.string.deleted, song);
+                            removeListItem(position);
                         } catch (Exception ex) {
                             Log.e(TAG, "Error deleting song", ex);
                             Util.showErrorDialog(getActivity(), ex);

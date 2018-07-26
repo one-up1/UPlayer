@@ -63,7 +63,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private Notification notification;
 
     private MainReceiver mainReceiver;
-    private OnSongChangeListener onSongChangeListener;
+    private OnUpdateListener onUpdateListener;
 
     private ArrayList<Song> songs;
     private Playlist playlist;
@@ -284,21 +284,20 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (index < playlist.getSongIndex()) {
             // A song above the current song is removed.
             playlist.decrementSongIndex();
-            update();
         } else if (index == playlist.getSongIndex()) {
+            // The current song is removed.
             if (index == songs.size()) {
                 // Stop playback when the current and last song is removed.
                 player.stop();
                 prepared = false;
-
                 playlist.decrementSongIndex();
-                update();
             } else if (player.isPlaying()) {
                 // Play the next song when the current song is removed, only when currently playing,
                 // or playback may start when removing songs while paused.
                 prepare();
             }
         }
+        update();
     }
 
     public void update() {
@@ -332,13 +331,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         // Update notification and PlaylistActivity.
         startForeground(1, notification);
-        if (onSongChangeListener != null) {
-            onSongChangeListener.onSongChange();
+        if (onUpdateListener != null) {
+            onUpdateListener.onUpdate();
         }
     }
 
-    public void setOnSongChangeListener(OnSongChangeListener onSongChangeListener) {
-        this.onSongChangeListener = onSongChangeListener;
+    public void setOnUpdateListener(OnUpdateListener onUpdateListener) {
+        this.onUpdateListener = onUpdateListener;
     }
 
     private void play(ArrayList<Song> songs, Playlist playlist) {
@@ -525,7 +524,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public interface OnSongChangeListener {
-        void onSongChange();
+    public interface OnUpdateListener {
+        void onUpdate();
     }
 }

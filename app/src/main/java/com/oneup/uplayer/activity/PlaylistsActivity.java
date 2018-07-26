@@ -168,7 +168,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                     rename(playlist);
                     break;
                 case R.id.delete:
-                    delete(playlist);
+                    delete(position, playlist);
                     break;
                 default:
                     super.onContextItemSelected(itemId, position, playlist);
@@ -221,21 +221,23 @@ public class PlaylistsActivity extends AppCompatActivity {
                     });
         }
 
-        private void delete(final Playlist playlist) {
+        private void delete(final int position, final Playlist playlist) {
             if (playlist.isDefault()) {
                 Util.showToast(getActivity(), R.string.cannot_delete_default_playlist);
                 return;
             }
 
             Util.showConfirmDialog(getActivity(),
-                    getString(R.string.delete_playlist_confirm, playlist),
+                    getString(R.string.delete_confirm, playlist),
                     new DialogInterface.OnClickListener() {
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 getDbHelper().deletePlaylist(playlist);
-                                reloadData();
+
+                                Util.showToast(getActivity(), R.string.deleted, playlist);
+                                removeListItem(position);
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error deleting playlist", ex);
                                 Util.showErrorDialog(getActivity(), ex);

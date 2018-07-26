@@ -229,6 +229,11 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     protected void onListItemViewClick(int viewId, int position, T item) {
     }
 
+    protected void removeListItem(int position) {
+        getData().remove(position);
+        notifyDataSetChanged();
+    }
+
     protected void setSortColumns(String[] sortColumns) {
         this.sortColumns = sortColumns;
     }

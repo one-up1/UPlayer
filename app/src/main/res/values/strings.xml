@@ -81,9 +81,6 @@
     <string name="mark_played">Mark played</string>
     <string name="times_played">Times played: %1$d</string>
 
-    <string name="delete_song_confirm">Delete \'%1$s - %2$s\'?</string>
-    <string name="song_deleted">Song deleted</string>
-
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
     <string name="previous">Previous</string>
     <string name="pause_play">Pause / Play</string>
@@ -112,13 +109,14 @@
     <string name="rename">Rename</string>
     <string name="rename_playlist">Rename playlist</string>
     <string name="name">Name&#8230;</string>
-    <string name="delete_playlist_confirm">Delete \'%1$s\'?</string>
     <string name="cannot_delete_default_playlist">Cannot delete the default playlist</string>
 
     <string name="ok">OK</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="delete">Delete</string>
+    <string name="delete_confirm">Delete \'%1$s\'?</string>
+    <string name="deleted">\'%1$s\' deleted</string>
     <string name="select_all">Select all</string>
 
     <plurals name="songs">

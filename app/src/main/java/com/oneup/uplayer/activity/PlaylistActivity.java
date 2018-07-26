@@ -62,7 +62,7 @@ public class PlaylistActivity extends AppCompatActivity {
     }
 
     public static class PlaylistFragment extends SongsListFragment
-            implements MainService.OnSongChangeListener {
+            implements MainService.OnUpdateListener {
         private static final int REQUEST_SELECT_PLAYLIST = 100;
 
         private MainService service;
@@ -88,7 +88,7 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onDestroy() {
             Log.d(TAG, "PlaylistActivity.onDestroy()");
             if (service != null) {
-                service.setOnSongChangeListener(null);
+                service.setOnUpdateListener(null);
                 getActivity().unbindService(serviceConnection);
                 service = null;
             }
@@ -129,6 +129,7 @@ public class PlaylistActivity extends AppCompatActivity {
             if (resultCode == AppCompatActivity.RESULT_OK) {
                 switch (requestCode) {
                     case REQUEST_EDIT_SONG:
+                        // Update service when the current song is updated.
                         if (data.getParcelableExtra(EditSongActivity.EXTRA_SONG)
                                 .equals(service.getSong())) {
                             service.update();
@@ -144,7 +145,7 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onSongChange() {
+        public void onUpdate() {
             notifyDataSetChanged();
         }
 
@@ -219,13 +220,13 @@ public class PlaylistActivity extends AppCompatActivity {
                     moveDown(position);
                     break;
                 case R.id.ibRemove:
-                    onSongRemoved(position);
+                    removeListItem(position);
                     break;
             }
         }
 
         @Override
-        protected void onSongRemoved(int index) {
+        protected void removeListItem(int index) {
             if (service != null) {
                 if (getCount() > 1) {
                     service.removeSong(index);
@@ -264,7 +265,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                 MainService.MainBinder mainBinder = (MainService.MainBinder) serviceBinder;
                 service = mainBinder.getService();
-                service.setOnSongChangeListener(PlaylistFragment.this);
+                service.setOnUpdateListener(PlaylistFragment.this);
 
                 reloadData();
                 setSelection(service.getPlaylist().getSongIndex());
@@ -274,7 +275,7 @@ public class PlaylistActivity extends AppCompatActivity {
             public void onServiceDisconnected(ComponentName name) {
                 Log.d(TAG, "PlaylistFragment.onServiceDisconnected()");
                 if (service != null) {
-                    service.setOnSongChangeListener(null);
+                    service.setOnUpdateListener(null);
                     service = null;
                 }
             }

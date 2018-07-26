@@ -280,6 +280,7 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    //TODO: DbHelper playlists methods impl.
     public ArrayList<Playlist> queryPlaylists(String songsSelection, String[] selectionArgs) {
         Log.d(TAG, "DbHelper.queryPlaylists(" + songsSelection + ", " +
                 Arrays.toString(selectionArgs) + ")");
@@ -326,13 +327,13 @@ public class DbHelper extends SQLiteOpenHelper {
                 if (songs == null) {
                     values.put(Playlist.NAME, playlist.getName());
                 }
-                values.put(Playlist.MODIFIED, playlist.getModified());
+                putValue(values, Playlist.MODIFIED, playlist.getModified());
+                putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
+                putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
                 if (playlist.getId() == 0) {
                     playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
                     Log.d(TAG, "Playlist inserted: " + playlist.getId());
                 } else {
-                    values.put(Playlist.SONG_INDEX, playlist.getSongIndex());
-                    values.put(Playlist.SONG_POSITION, playlist.getSongPosition());
                     update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
                 }
 
@@ -407,9 +408,9 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                ContentValues values = new ContentValues();
+                /*ContentValues values = new ContentValues();
                 values.put(Playlist.MODIFIED, Calendar.currentTime());
-                update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);
+                update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);*/
 
                 Log.d(TAG, "Playlist song inserted: " + insertPlaylistSong(db, playlist, song));
                 db.setTransactionSuccessful();
@@ -419,7 +420,7 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public int deletePlaylistSong(Playlist playlist, Song song) {
+    public boolean deletePlaylistSong(Playlist playlist, Song song) {
         Log.d(TAG, "DbHelper.deletePlaylistSong(" + playlist.getId() + ":" + playlist + ", " +
                 song.getId() + ":" + song + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
@@ -430,7 +431,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         new String[]{Long.toString(playlist.getId()), Long.toString(song.getId())});
                 Log.d(TAG, rowsAffected + " playlist songs deleted");
                 db.setTransactionSuccessful();
-                return rowsAffected;
+                return rowsAffected > 0;
             } finally {
                 db.endTransaction();
             }

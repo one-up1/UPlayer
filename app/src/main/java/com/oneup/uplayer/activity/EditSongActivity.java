@@ -154,24 +154,38 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                     try {
                         ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
                                 PlaylistsActivity.EXTRA_PLAYLISTS);
-                        int inserted = 0, deleted = 0;
 
+                        ArrayList<Playlist> inserted = new ArrayList<>();
                         for (Playlist playlist : playlists) {
                             if (!this.playlists.contains(playlist)) {
                                 dbHelper.insertPlaylistSong(playlist, song);
-                                inserted++;
+                                inserted.add(playlist);
                             }
                         }
 
+                        ArrayList<Playlist> deleted = new ArrayList<>();
                         for (Playlist playlist : this.playlists) {
                             if (!playlists.contains(playlist)) {
-                                deleted += dbHelper.deletePlaylistSong(playlist, song);
+                                if (dbHelper.deletePlaylistSong(playlist, song)) {
+                                    deleted.add(playlist);
+                                }
                             }
                         }
 
-                        Util.showToast(this, R.string.playlist_songs_updated,
-                                Util.getCountString(this, R.plurals.playlists, inserted),
-                                Util.getCountString(this, R.plurals.playlists, deleted));
+                        // TODO: Toast shown, playlist name in quotes, Util.getCountString() impl.
+                        String added = Util.getCountString(this, inserted, 0, R.string.playlists);
+                        String removed = Util.getCountString(this, deleted, 0, R.string.playlists);
+
+                        if (added != null && removed == null) {
+                            Util.showToast(this, R.string.added_to_playlists, added);
+                        }
+                        if (added == null && removed != null) {
+                            Util.showToast(this, R.string.removed_from_playlists, removed);
+                        }
+                        if (added != null && removed != null) {
+                            Util.showToast(this, R.string.added_to_and_removed_from_playlists,
+                                    added, removed);
+                        }
                     } catch (Exception ex) {
                         Log.e(TAG, "Error modifying playlist songs", ex);
                         Util.showErrorDialog(this, ex);

@@ -149,7 +149,7 @@ public class Util {
                                         int zeroId, int otherId) {
         switch (list.size()) {
             case 0:
-                return context.getString(zeroId);
+                return zeroId == 0 ? null : context.getString(zeroId);
             case 1:
                 return list.get(0).toString();
             default:

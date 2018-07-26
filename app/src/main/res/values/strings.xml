@@ -68,16 +68,15 @@
     <string name="edit_times_played">Times played:</string>
     <string name="select_added">Added&#8230;</string>
     <string name="select_bookmarked">Bookmarked&#8230;</string>
-    <string name="playlist_songs_updated">Song added to %1$s and removed from %2$s</string>
+    <string name="added_to_playlists">Added to %1$s</string>
+    <string name="removed_from_playlists">Removed from %1$s</string>
+    <string name="added_to_and_removed_from_playlists">Added to %1$s and removed from %2$s</string>
+    <string name="playlists">%1$d playlists</string>
     <string name="song_updated">Song updated</string>
 
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_cleared">Bookmark cleared</string>
-
-    <string name="add_to_playlist">Add to playlist</string>
-    <string name="playlist_already_contains_song">\'%1$s\' already contains \'%2$s\'</string>
-    <string name="song_added_to_playlist">\'%1$s\' added to %2$s</string>
 
     <string name="mark_played">Mark played</string>
     <string name="times_played">Times played: %1$d</string>

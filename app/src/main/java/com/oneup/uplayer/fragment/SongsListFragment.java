@@ -13,22 +13,14 @@ import android.widget.TextView;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
-import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
-import com.oneup.uplayer.db.DbHelper;
-import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
-
-import java.util.ArrayList;
 
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
     protected static final int REQUEST_EDIT_SONG = 1;
-    private static final int REQUEST_SELECT_PLAYLISTS = 2;
-
-    private Song playlistSong;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
@@ -50,46 +42,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     } catch (Exception ex) {
                         Log.e(TAG, "Error updating song", ex);
                         Util.showErrorDialog(getActivity(), ex);
-                    }
-                    break;
-                case REQUEST_SELECT_PLAYLISTS:
-                    try {
-                        ArrayList<Playlist> currentPlaylists = getDbHelper().queryPlaylists(
-                                Song._ID + "=?", DbHelper.getWhereArgs(playlistSong.getId()));
-                        String s;
-                        if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
-                            Playlist playlist = data.getParcelableExtra(
-                                    PlaylistsActivity.EXTRA_PLAYLIST);
-                            if (currentPlaylists.contains(playlist)) {
-                                Util.showToast(getActivity(),
-                                        R.string.playlist_already_contains_song,
-                                        playlist, playlistSong);
-                                return;
-                            }
-
-                            getDbHelper().insertPlaylistSong(playlist, playlistSong);
-                            s = "'" + playlist.toString() + "'";
-                        } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
-                            ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
-                                    PlaylistsActivity.EXTRA_PLAYLISTS);
-                            int count = 0;
-                            for (Playlist playlist : playlists) {
-                                if (!currentPlaylists.contains(playlist)) {
-                                    getDbHelper().insertPlaylistSong(playlist, playlistSong);
-                                    count++;
-                                }
-                            }
-                            s = Util.getCountString(getActivity(), R.plurals.playlists, count);
-                        } else {
-                            throw new RuntimeException("No playlists");
-                        }
-                        Util.showToast(getActivity(), R.string.song_added_to_playlist,
-                                playlistSong, s);
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error adding song to playlist", ex);
-                        Util.showErrorDialog(getActivity(), ex);
-                    } finally {
-                        playlistSong = null;
                     }
                     break;
             }
@@ -145,13 +97,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     Log.e(TAG, "Error bookmarking song", ex);
                     Util.showErrorDialog(getActivity(), ex);
                 }
-                break;
-            case R.id.add_to_playlist:
-                playlistSong = song;
-                startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
-                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                        null, null, true, null, 0)),
-                        REQUEST_SELECT_PLAYLISTS);
                 break;
             case R.id.mark_played:
                 try {

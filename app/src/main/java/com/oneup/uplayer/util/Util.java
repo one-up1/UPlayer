@@ -94,16 +94,17 @@ public class Util {
                 ex.getMessage());
     }
 
-    public static void showInputDialog(Context context, int inputType, int hintId,
-                                       String text, final InputDialogListener listener) {
+    public static void showInputDialog(Context context, int titleId, int inputType, int hintId,
+                                       Object value, final InputDialogListener listener) {
         final EditText view = new EditText(context);
         view.setInputType(inputType);
         view.setHint(hintId);
-        if (text != null) {
-            view.setText(text);
+        if (value != null) {
+            view.setText(value.toString());
         }
+
         new AlertDialog.Builder(context)
-                .setTitle(R.string.add)
+                .setTitle(titleId)
                 .setView(view)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 

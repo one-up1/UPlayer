@@ -54,7 +54,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     break;
                 case REQUEST_SELECT_PLAYLISTS:
                     try {
-                        ArrayList<Playlist> currentPlaylists = getDbHelper().queryPlaylists(true,
+                        ArrayList<Playlist> currentPlaylists = getDbHelper().queryPlaylists(
                                 Song._ID + "=?", DbHelper.getWhereArgs(playlistSong.getId()));
                         String s;
                         if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
@@ -150,7 +150,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 playlistSong = song;
                 startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                 .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                        null, null, true, true, null, 0)),
+                                        null, null, true, null, 0)),
                         REQUEST_SELECT_PLAYLISTS);
                 break;
             case R.id.mark_played:
@@ -184,7 +184,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d(TAG, "Deleting song: '" + song + "' (" + song.getId() + ")");
+                        Log.d(TAG, "Deleting song " + song.getId() + ":" + song);
                         try {
                             ContentResolver resolver = getActivity().getContentResolver();
                             Uri uri = song.getContentUri();

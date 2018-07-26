@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.fragment.ListFragment;
-import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
@@ -44,11 +43,9 @@ public class PlaylistsActivity extends AppCompatActivity {
     }
 
     public static class PlaylistsFragment extends ListFragment<Playlist> {
-        private static final String ARG_ALLOW_ADD = "allow_add";
         private static final String ARG_CHECKED_ITEMS = "checked_items";
         private static final String ARG_SELECT_PLAYLIST_CONFIRM_ID = "select_playlist_confirm_id";
 
-        private boolean allowAdd;
         private ArrayList<Playlist> checkedItems;
         private int selectPlaylistConfirmId;
 
@@ -64,7 +61,6 @@ public class PlaylistsActivity extends AppCompatActivity {
 
             Bundle args = getArguments();
             if (args != null) {
-                allowAdd = args.getBoolean(ARG_ALLOW_ADD);
                 checkedItems = args.getParcelableArrayList(ARG_CHECKED_ITEMS);
                 selectPlaylistConfirmId = args.getInt(ARG_SELECT_PLAYLIST_CONFIRM_ID);
             }
@@ -84,7 +80,6 @@ public class PlaylistsActivity extends AppCompatActivity {
         @Override
         public void onPrepareOptionsMenu(Menu menu) {
             super.onPrepareOptionsMenu(menu);
-            menu.findItem(R.id.add).setVisible(allowAdd);
             menu.findItem(R.id.select_all).setVisible(isCheckboxVisible());
             menu.findItem(R.id.ok).setVisible(isCheckboxVisible());
         }
@@ -111,7 +106,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Playlist> loadData() {
-            return getDbHelper().queryPlaylists(!allowAdd, getSelection(), getSelectionArgs());
+            return getDbHelper().queryPlaylists(getSelection(), getSelectionArgs());
         }
 
         @Override
@@ -125,16 +120,16 @@ public class PlaylistsActivity extends AppCompatActivity {
 
             // Set playlist name.
             TextView tvName = rootView.findViewById(R.id.tvName);
-            if (playlist.getName() == null) {
-                tvName.setVisibility(View.GONE);
-            } else {
-                tvName.setText(playlist.getName());
-                tvName.setVisibility(View.VISIBLE);
-            }
+            tvName.setText(playlist.getName());
 
-            // Set modified date.
+            // Set (or hide) modified date.
             TextView tvModified = rootView.findViewById(R.id.tvModified);
-            tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
+            if (playlist.getModified() == 0) {
+                tvModified.setVisibility(View.GONE);
+            } else {
+                tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
+                tvModified.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -174,47 +169,52 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         private void add() {
-            Util.showInputDialog(getActivity(),
+            Util.showInputDialog(getActivity(), R.string.add_playlist,
                     InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
                     R.string.name, null, new Util.InputDialogListener() {
 
                         @Override
                         public void onOk(EditText view) {
-                            try {
-                                Playlist playlist = new Playlist();
-                                playlist.setName(view.getString());
-                                playlist.setModified(Calendar.currentTime());
-                                getDbHelper().insertOrUpdatePlaylist(playlist, null);
-                                reloadData();
-                            } catch (Exception ex) {
-                                Log.e(TAG, "Error adding playlist", ex);
-                                Util.showErrorDialog(getActivity(), ex);
+                            String name = view.getString();
+                            if (name != null) {
+                                try {
+                                    Playlist playlist = new Playlist();
+                                    playlist.setName(name);
+                                    getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                                    reloadData();
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Error adding playlist", ex);
+                                    Util.showErrorDialog(getActivity(), ex);
+                                }
                             }
                         }
                     });
         }
 
         private void rename(final Playlist playlist) {
-            Util.showInputDialog(getActivity(),
+            Util.showInputDialog(getActivity(), R.string.rename_playlist,
                     InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
                     R.string.name, playlist.getName(), new Util.InputDialogListener() {
 
                         @Override
                         public void onOk(EditText view) {
-                            try {
-                                playlist.setName(view.getString());
-                                getDbHelper().insertOrUpdatePlaylist(playlist, null);
-                                reloadData();
-                            } catch (Exception ex) {
-                                Log.e(TAG, "Error renaming playlist", ex);
-                                Util.showErrorDialog(getActivity(), ex);
+                            String name = view.getString();
+                            if (name != null) {
+                                try {
+                                    playlist.setName(view.getString());
+                                    getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                                    reloadData();
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Error renaming playlist", ex);
+                                    Util.showErrorDialog(getActivity(), ex);
+                                }
                             }
                         }
                     });
         }
 
         private void delete(final Playlist playlist) {
-            if (playlist.getId() == 1) {
+            if (playlist.isDefault()) {
                 Util.showToast(getActivity(), R.string.cannot_delete_default_playlist);
                 return;
             }
@@ -243,14 +243,12 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          boolean checkboxVisible, boolean allowAdd,
-                                          ArrayList<Playlist> checkedItems,
+                                          boolean checkboxVisible, ArrayList<Playlist> checkedItems,
                                           int selectPlaylistConfirmId) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_CHECKBOX_VISIBLE, checkboxVisible);
-            args.putBoolean(ARG_ALLOW_ADD, allowAdd);
             args.putParcelableArrayList(ARG_CHECKED_ITEMS, checkedItems);
             args.putInt(ARG_SELECT_PLAYLIST_CONFIRM_ID, selectPlaylistConfirmId);
             return args;

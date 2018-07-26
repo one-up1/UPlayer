@@ -15,12 +15,12 @@ import android.widget.Spinner;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-//TODO: Add all to playlist options menu item, or multiselect in list.
 public class SongsFragment extends SongsListFragment implements AdapterView.OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {
     public static final int SORT_COLUMN_ADDED = 1;
@@ -192,10 +192,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected void onListItemClick(int position, Song song) {
+        Playlist playlist = Playlist.getDefault();
+        playlist.setSongIndex(position);
         getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
                 .putExtra(MainService.EXTRA_SONGS, getData())
-                .putExtra(MainService.EXTRA_SONG_INDEX, position));
+                .putExtra(MainService.EXTRA_PLAYLIST, playlist));
     }
 
     @Override
@@ -213,10 +215,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     }
 
     private void add(ArrayList<Song> songs, boolean next) {
-        getActivity().startService(new Intent(getActivity(), MainService.class)
-                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_ADD)
-                .putExtra(MainService.EXTRA_SONGS, songs)
-                .putExtra(MainService.EXTRA_NEXT, next));
+        if (songs.size() > 0) {
+            getActivity().startService(new Intent(getActivity(), MainService.class)
+                    .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_ADD)
+                    .putExtra(MainService.EXTRA_SONGS, songs)
+                    .putExtra(MainService.EXTRA_NEXT, next));
+        }
     }
 
     private void add(Song song, boolean next) {

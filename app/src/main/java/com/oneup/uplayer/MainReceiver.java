@@ -35,9 +35,6 @@ public class MainReceiver extends BroadcastReceiver {
             case Intent.ACTION_HEADSET_PLUG:
                 headsetPlug(intent.getIntExtra("state", -1));
                 break;
-            default:
-                Log.e(TAG, "Invalid broadcast action: '" + action + "'");
-                break;
         }
     }
 

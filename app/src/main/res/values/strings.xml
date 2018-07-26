@@ -87,7 +87,7 @@
 
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
     <string name="previous">Previous</string>
-    <string name="play_pause">Play/Pause</string>
+    <string name="pause_play">Pause / Play</string>
     <string name="next">Next</string>
     <string name="stop">Stop</string>
 
@@ -109,7 +109,9 @@
     <string name="playlist_saved">Playlist saved</string>
 
     <string name="add">Add</string>
+    <string name="add_playlist">Add playlist</string>
     <string name="rename">Rename</string>
+    <string name="rename_playlist">Rename playlist</string>
     <string name="name">Name&#8230;</string>
     <string name="delete_playlist_confirm">Delete \'%1$s\'?</string>
     <string name="cannot_delete_default_playlist">Cannot delete the default playlist</string>

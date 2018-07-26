@@ -107,7 +107,7 @@ public class PlaylistActivity extends AppCompatActivity {
                 case R.id.savePlaylist:
                     startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                     .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                            null, null, false, true, null,
+                                            null, null, false, null,
                                             R.string.save_playlist_confirm)),
                             REQUEST_SELECT_PLAYLIST);
                     return true;
@@ -159,7 +159,7 @@ public class PlaylistActivity extends AppCompatActivity {
             super.setListItemContent(rootView, position, song);
 
             // Underline the current song.
-            if (service != null && position == service.getSongIndex()) {
+            if (service != null && position == service.getPlaylist().getSongIndex()) {
                 TextView tvTitle = rootView.findViewById(R.id.tvTitle);
                 SpannableString underlinedText = new SpannableString(tvTitle.getText());
                 underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
@@ -180,7 +180,7 @@ public class PlaylistActivity extends AppCompatActivity {
         protected void onListItemClick(int position, Song song) {
             if (service != null) {
                 if (moveIndex == -1) {
-                    service.setSongIndex(position);
+                    service.play(position);
                 } else {
                     if (moveIndex == position) {
                         Log.d(TAG, "Canceling move");
@@ -267,7 +267,7 @@ public class PlaylistActivity extends AppCompatActivity {
                 service.setOnSongChangeListener(PlaylistFragment.this);
 
                 reloadData();
-                setSelection(service.getSongIndex());
+                setSelection(service.getPlaylist().getSongIndex());
             }
 
             @Override

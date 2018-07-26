@@ -117,11 +117,11 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.playlists:
-                playlists = dbHelper.queryPlaylists(true, Song._ID + "=?",
+                playlists = dbHelper.queryPlaylists(Song._ID + "=?",
                         DbHelper.getWhereArgs(song.getId()));
                 startActivityForResult(new Intent(this, PlaylistsActivity.class)
                         .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                null, null, true, true, playlists, -1)),
+                                null, null, true, playlists, -1)),
                         REQUEST_SELECT_PLAYLISTS);
                 return true;
             case R.id.ok:

@@ -97,9 +97,9 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_PLAYLISTS);
         db.execSQL(SQL_CREATE_PLAYLIST_SONGS);
 
-        // Insert default playlist.
+        // Insert the default playlist.
         ContentValues values = new ContentValues();
-        values.put(Playlist._ID, 1L);
+        values.put(Playlist._ID, Playlist.DEFAULT_PLAYLIST_ID);
         values.put(Playlist.NAME, context.getString(R.string.default_playlist));
         db.insert(TABLE_PLAYLISTS, null, values);
     }
@@ -269,7 +269,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         Song.ARTIST_ID + "=?", getWhereArgs(song.getArtistId())) > 0) {
                     updateArtistStats(db, song);
                 } else {
-                    Log.d(TAG, "Deleting artist: '" + song.getArtist() + "'");
+                    Log.d(TAG, "Deleting artist " + song.getArtistId() + ":" + song.getArtist());
                     delete(db, TABLE_ARTISTS, song.getArtistId());
                 }
 
@@ -280,20 +280,15 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public ArrayList<Playlist> queryPlaylists(boolean hasSongs,
-                                              String songsSelection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryPlaylists(" + hasSongs + ", " + songsSelection + ", " +
+    public ArrayList<Playlist> queryPlaylists(String songsSelection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryPlaylists(" + songsSelection + ", " +
                 Arrays.toString(selectionArgs) + ")");
         String selection;
-        if (hasSongs) {
+        if (songsSelection != null) {
             selection = Playlist._ID + " IN(SELECT " +
-                    Playlist.PLAYLIST_ID + " FROM " + TABLE_PLAYLIST_SONGS;
-            if (songsSelection != null) {
-                selection += " WHERE " + Playlist.SONG_ID + " IN(SELECT " +
-                        TABLE_SONGS + "." + Song._ID + " FROM " + TABLE_SONGS +
-                        " WHERE " + songsSelection + ")";
-            }
-            selection += ")";
+                    Playlist.PLAYLIST_ID + " FROM " + TABLE_PLAYLIST_SONGS + " WHERE " +
+                    Playlist.SONG_ID + " IN(SELECT " + TABLE_SONGS + "." + Song._ID +
+                    " FROM " + TABLE_SONGS + " WHERE " + songsSelection + "))";
         } else {
             selection = null;
         }
@@ -316,17 +311,6 @@ public class DbHelper extends SQLiteOpenHelper {
         }
         Log.d(TAG, playlists.size() + " playlists queried");
         return playlists;
-    }
-
-    public String queryPlaylistName(long id) {
-        Log.d(TAG, "DbHelper.queryPlaylistName(" + id + ")");
-        try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLISTS, new String[]{Playlist.NAME},
-                    SQL_ID_IS, getWhereArgs(id), null, null, null)) {
-                c.moveToFirst();
-                return c.getString(0);
-            }
-        }
     }
 
     public void insertOrUpdatePlaylist(Playlist playlist, ArrayList<Song> songs) {

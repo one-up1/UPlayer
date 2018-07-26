@@ -4,8 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.BaseColumns;
 
-import com.oneup.uplayer.util.Util;
-
 public class Playlist implements Parcelable, BaseColumns {
     public static final String NAME = "name";
     public static final String MODIFIED = "modified";
@@ -14,6 +12,8 @@ public class Playlist implements Parcelable, BaseColumns {
 
     public static final String PLAYLIST_ID = "playlist_id";
     public static final String SONG_ID = "song_id";
+
+    static final int DEFAULT_PLAYLIST_ID = 1;
 
     private long id;
     private String name;
@@ -46,7 +46,7 @@ public class Playlist implements Parcelable, BaseColumns {
 
     @Override
     public String toString() {
-        return name == null ? Util.formatDateTime(modified) : name;
+        return name;
     }
 
     @Override
@@ -65,6 +65,10 @@ public class Playlist implements Parcelable, BaseColumns {
 
     public long getId() {
         return id;
+    }
+
+    public boolean isDefault() {
+        return id == DEFAULT_PLAYLIST_ID;
     }
 
     public void setId(long id) {
@@ -95,12 +99,31 @@ public class Playlist implements Parcelable, BaseColumns {
         this.songIndex = songIndex;
     }
 
+    public void incrementSongIndex() {
+        songIndex++;
+    }
+
+    public void decrementSongIndex() {
+        songIndex--;
+    }
+
     public int getSongPosition() {
         return songPosition;
     }
 
     public void setSongPosition(int songPosition) {
         this.songPosition = songPosition;
+    }
+
+    public void reset() {
+        songIndex = 0;
+        songPosition = 0;
+    }
+
+    public static Playlist getDefault() {
+        Playlist playlist = new Playlist();
+        playlist.id = DEFAULT_PLAYLIST_ID;
+        return playlist;
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

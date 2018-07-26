@@ -101,7 +101,7 @@
     <string name="stats_avg_times_played">Avg times played:</string>
 
     <string name="save_playlist">Save playlist</string>
-    <string name="save_playlist_confirm">Save to playlist \'%1$s\'?</string>
+    <string name="save_playlist_confirm">Save to \'%1$s\'?</string>
     <string name="playlist_saved">Playlist saved</string>
 
     <string name="add">Add</string>

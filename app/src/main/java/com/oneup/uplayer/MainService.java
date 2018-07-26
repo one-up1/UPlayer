@@ -246,9 +246,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     public void setPlaylist(Playlist playlist) {
         Log.d(TAG, "MainService.setPlaylist(" + playlist.getId() + ":" + playlist + ")");
+        playlist.setSongIndex(this.playlist.getSongIndex());
         this.playlist = playlist;
-
         savePlaylist();
+
+        playlist.setSongPosition(0);
         update();
     }
 
@@ -302,6 +304,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     public void update() {
         Log.d(TAG, "MainService.update()");
+        Log.d(TAG, "songIndex=" + playlist.getSongIndex());
         Song song = getSong();
         dbHelper.querySong(song);
 

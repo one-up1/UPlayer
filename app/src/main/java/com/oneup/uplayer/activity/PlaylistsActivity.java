@@ -143,7 +143,12 @@ public class PlaylistsActivity extends AppCompatActivity {
                 case 0:
                     selectPlaylist(playlist);
                     break;
-                case 1:
+                case -1:
+                    if (isCheckboxVisible()) {
+                        checkListItem(position);
+                    }
+                    break;
+                default:
                     Util.showConfirmDialog(getActivity(),
                             getString(selectPlaylistConfirmId, playlist),
                             new DialogInterface.OnClickListener() {
@@ -153,11 +158,6 @@ public class PlaylistsActivity extends AppCompatActivity {
                                     selectPlaylist(playlist);
                                 }
                             });
-                    break;
-                default:
-                    if (isCheckboxVisible()) {
-                        checkListItem(position);
-                    }
                     break;
             }
         }

@@ -247,6 +247,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void setPlaylist(Playlist playlist) {
         Log.d(TAG, "MainService.setPlaylist(" + playlist.getId() + ":" + playlist + ")");
         playlist.setSongIndex(this.playlist.getSongIndex());
+
         this.playlist = playlist;
         savePlaylist();
 

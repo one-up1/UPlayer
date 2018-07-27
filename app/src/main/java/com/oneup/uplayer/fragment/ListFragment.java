@@ -2,6 +2,7 @@ package com.oneup.uplayer.fragment;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -21,16 +22,15 @@ import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
 
-//FIXME: Multiselect implementation, selection is lost when data is reloaded.
-
-public abstract class ListFragment<T> extends android.support.v4.app.ListFragment
+public abstract class ListFragment<T extends Parcelable>
+        extends android.support.v4.app.ListFragment
         implements ListView.OnItemLongClickListener,
         CompoundButton.OnCheckedChangeListener, View.OnClickListener {
     protected static final String ARG_SELECTION = "selection";
     protected static final String ARG_SELECTION_ARGS = "selection_args";
     protected static final String ARG_SORT_COLUMN = "sort_column";
     protected static final String ARG_SORT_DESC = "sort_desc";
-    protected static final String ARG_CHECKBOX_VISIBLE = "checkbox_visible";
+    protected static final String ARG_CHECKED_LIST_ITEMS = "checkedListItems";
 
     private static final String TAG = "UPlayer";
 
@@ -48,11 +48,10 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
     private String[] selectionArgs;
     private int sortColumn;
     private boolean sortDesc;
-    private boolean checkboxVisible;
+    private ArrayList<T> checkedListItems;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
-    private boolean[] checkedListItems;
 
     protected ListFragment(int listItemResource, int listItemContextMenuResource,
                            int listItemHeaderId, int listItemContentId,
@@ -78,7 +77,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
             selectionArgs = args.getStringArray(ARG_SELECTION_ARGS);
             sortColumn = args.getInt(ARG_SORT_COLUMN);
             sortDesc = args.getBoolean(ARG_SORT_DESC);
-            checkboxVisible = args.getBoolean(ARG_CHECKBOX_VISIBLE);
+            checkedListItems = args.getParcelableArrayList(ARG_CHECKED_LIST_ITEMS);
         }
     }
 
@@ -136,7 +135,7 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        checkedListItems[getListItemPosition(buttonView)] = isChecked;
+        setListItemChecked(data.get(getListItemPosition(buttonView)), isChecked);
     }
 
     @Override
@@ -147,11 +146,8 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     public void reloadData() {
         data = loadData();
-        if (listItemCheckBoxId != 0) {
-            checkedListItems = new boolean[data.size()];
-        }
-
         setActivityTitle();
+
         if (listAdapter == null) {
             listAdapter = new ListAdapter();
             setListAdapter(listAdapter);
@@ -186,9 +182,9 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         // Set CheckBox if specified.
         if (listItemCheckBoxId != 0) {
             CheckBox checkBox = rootView.findViewById(listItemCheckBoxId);
-            if (checkboxVisible) {
+            if (isMultiselect()) {
                 checkBox.setOnCheckedChangeListener(null);
-                checkBox.setChecked(checkedListItems[position]);
+                checkBox.setChecked(checkedListItems.contains(item));
                 checkBox.setOnCheckedChangeListener(this);
             } else {
                 checkBox.setVisibility(View.GONE);
@@ -289,8 +285,30 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
         return orderBy.toString();
     }
 
-    protected boolean isCheckboxVisible() {
-        return checkboxVisible;
+    protected boolean isMultiselect() {
+        return checkedListItems != null;
+    }
+
+    protected ArrayList<T> getCheckedListItems() {
+        return checkedListItems;
+    }
+
+    protected void setCheckedListItems(ArrayList<T> checkedListItems) {
+        this.checkedListItems = checkedListItems;
+        listAdapter.notifyDataSetChanged();
+    }
+
+    protected boolean isListItemChecked(T item) {
+        return checkedListItems.contains(item);
+    }
+
+    protected void setListItemChecked(T item, boolean checked) {
+        if (checked) {
+            checkedListItems.add(item);
+        } else {
+            checkedListItems.remove(item);
+        }
+        listAdapter.notifyDataSetChanged();
     }
 
     protected void notifyDataSetChanged() {
@@ -308,27 +326,6 @@ public abstract class ListFragment<T> extends android.support.v4.app.ListFragmen
 
     protected int getCount() {
         return data.size();
-    }
-
-    protected ArrayList<T> getCheckedListItems() {
-        ArrayList<T> items = new ArrayList<>();
-        for (int i = 0; i < checkedListItems.length; i++) {
-            if (checkedListItems[i]) {
-                items.add(data.get(i));
-            }
-        }
-        return items;
-    }
-
-    protected void setCheckedListItems(ArrayList<T> items) {
-        for (int i = 0; i < checkedListItems.length; i++) {
-            checkedListItems[i] = items.contains(data.get(i));
-        }
-    }
-
-    protected void checkListItem(int position) {
-        checkedListItems[position] = !checkedListItems[position];
-        listAdapter.notifyDataSetChanged();
     }
 
     private void setActivityTitle() {

@@ -280,7 +280,6 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    //TODO: DbHelper playlists methods impl.
     public ArrayList<Playlist> queryPlaylists(String songsSelection, String[] selectionArgs) {
         Log.d(TAG, "DbHelper.queryPlaylists(" + songsSelection + ", " +
                 Arrays.toString(selectionArgs) + ")");
@@ -408,10 +407,6 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
-                /*ContentValues values = new ContentValues();
-                values.put(Playlist.MODIFIED, Calendar.currentTime());
-                update(db, TABLE_PLAYLISTS, values, playlist.getId(), true);*/
-
                 Log.d(TAG, "Playlist song inserted: " + insertPlaylistSong(db, playlist, song));
                 db.setTransactionSuccessful();
             } finally {

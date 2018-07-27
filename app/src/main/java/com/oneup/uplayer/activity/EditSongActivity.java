@@ -121,7 +121,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                         DbHelper.getWhereArgs(song.getId()));
                 startActivityForResult(new Intent(this, PlaylistsActivity.class)
                         .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                null, null, true, playlists, -1)),
+                                null, null, playlists, -1)),
                         REQUEST_SELECT_PLAYLISTS);
                 return true;
             case R.id.ok:

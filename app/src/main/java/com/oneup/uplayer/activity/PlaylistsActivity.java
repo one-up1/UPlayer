@@ -43,11 +43,9 @@ public class PlaylistsActivity extends AppCompatActivity {
     }
 
     public static class PlaylistsFragment extends ListFragment<Playlist> {
-        private static final String ARG_CHECKED_ITEMS = "checked_items";
-        private static final String ARG_SELECT_PLAYLIST_CONFIRM_ID = "select_playlist_confirm_id";
+        private static final String ARG_SELECT_CONFIRM_ID = "select_confirm_id";
 
-        private ArrayList<Playlist> checkedItems;
-        private int selectPlaylistConfirmId;
+        private int selectConfirmId;
 
         public PlaylistsFragment() {
             super(R.layout.list_item_playlist, R.menu.list_item_playlist, 0, 0, R.id.checkBox,
@@ -61,8 +59,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
             Bundle args = getArguments();
             if (args != null) {
-                checkedItems = args.getParcelableArrayList(ARG_CHECKED_ITEMS);
-                selectPlaylistConfirmId = args.getInt(ARG_SELECT_PLAYLIST_CONFIRM_ID);
+                selectConfirmId = args.getInt(ARG_SELECT_CONFIRM_ID);
             }
         }
 
@@ -70,10 +67,6 @@ public class PlaylistsActivity extends AppCompatActivity {
         public void onResume() {
             super.onResume();
             reloadData();
-
-            if (checkedItems != null && checkedItems.size() > 0) {
-                setCheckedListItems(checkedItems);
-            }
         }
 
         @Override
@@ -85,8 +78,8 @@ public class PlaylistsActivity extends AppCompatActivity {
         @Override
         public void onPrepareOptionsMenu(Menu menu) {
             super.onPrepareOptionsMenu(menu);
-            menu.findItem(R.id.select_all).setVisible(isCheckboxVisible());
-            menu.findItem(R.id.ok).setVisible(isCheckboxVisible());
+            menu.findItem(R.id.select_all).setVisible(isMultiselect());
+            menu.findItem(R.id.ok).setVisible(isMultiselect());
         }
 
         @Override
@@ -97,7 +90,6 @@ public class PlaylistsActivity extends AppCompatActivity {
                     return true;
                 case R.id.select_all:
                     setCheckedListItems(getData());
-                    notifyDataSetChanged();
                     return true;
                 case R.id.ok:
                     getActivity().setResult(RESULT_OK, new Intent()
@@ -139,23 +131,23 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemClick(int position, final Playlist playlist) {
-            switch (selectPlaylistConfirmId) {
+            switch (selectConfirmId) {
                 case 0:
-                    selectPlaylist(playlist);
+                    select(playlist);
                     break;
                 case -1:
-                    if (isCheckboxVisible()) {
-                        checkListItem(position);
+                    if (isMultiselect()) {
+                        setListItemChecked(playlist, !isListItemChecked(playlist));
                     }
                     break;
                 default:
                     Util.showConfirmDialog(getActivity(),
-                            getString(selectPlaylistConfirmId, playlist),
+                            getString(selectConfirmId, playlist),
                             new DialogInterface.OnClickListener() {
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    selectPlaylist(playlist);
+                                    select(playlist);
                                 }
                             });
                     break;
@@ -247,21 +239,20 @@ public class PlaylistsActivity extends AppCompatActivity {
                     });
         }
 
-        private void selectPlaylist(Playlist playlist) {
+        private void select(Playlist playlist) {
             getActivity().setResult(RESULT_OK, new Intent()
                     .putExtra(EXTRA_PLAYLIST, playlist));
             getActivity().finish();
         }
 
         public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          boolean checkboxVisible, ArrayList<Playlist> checkedItems,
-                                          int selectPlaylistConfirmId) {
+                                          ArrayList<Playlist> checkedListItems,
+                                          int selectConfirmId) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
-            args.putBoolean(ARG_CHECKBOX_VISIBLE, checkboxVisible);
-            args.putParcelableArrayList(ARG_CHECKED_ITEMS, checkedItems);
-            args.putInt(ARG_SELECT_PLAYLIST_CONFIRM_ID, selectPlaylistConfirmId);
+            args.putParcelableArrayList(ARG_CHECKED_LIST_ITEMS, checkedListItems);
+            args.putInt(ARG_SELECT_CONFIRM_ID, selectConfirmId);
             return args;
         }
 

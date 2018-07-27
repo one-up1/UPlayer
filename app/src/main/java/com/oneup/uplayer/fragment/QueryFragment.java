@@ -276,7 +276,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             getSelection(this.tags, null);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    selection, getSelectionArgs(), true, playlists, 0)),
+                                    selection, getSelectionArgs(),
+                                    playlists == null ? new ArrayList<Playlist>() : playlists, 0)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);

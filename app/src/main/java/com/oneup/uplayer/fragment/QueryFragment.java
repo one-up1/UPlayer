@@ -1,6 +1,5 @@
 package com.oneup.uplayer.fragment;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,7 +15,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 
@@ -26,6 +24,7 @@ import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.MainActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
+import com.oneup.uplayer.activity.TagsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -44,9 +43,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
     private static final int REQUEST_SELECT_MIN_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
-    private static final int REQUEST_SELECT_PLAYLISTS = 3;
-    private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 4;
-    private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 5;
+    private static final int REQUEST_SELECT_TAGS = 3;
+    private static final int REQUEST_SELECT_PLAYLISTS = 4;
+    private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 5;
+    private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 6;
 
     private SharedPreferences preferences;
     private DbHelper dbHelper;
@@ -130,8 +130,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bTags.setOnClickListener(this);
         bTags.setOnLongClickListener(this);
         if (tags != null) {
-            bTags.setText(Util.getCountString(getActivity(), QueryFragment.this.tags,
-                    false, R.string.no_selected_tag, R.string.selected_tags));
+            bTags.setText(Util.getCountString(getActivity(), tags, false, R.string.no_selected_tag, R.string.selected_tags));
         }
 
         bPlaylists = rootView.findViewById(R.id.bPlaylists);
@@ -206,6 +205,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     maxAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMaxAdded.setText(Util.formatDateTime(maxAdded));
                     break;
+                case REQUEST_SELECT_TAGS:
+                    tags = data.getStringArrayListExtra(TagsActivity.EXTRA_TAGS);
+                    bTags.setText(Util.getCountString(getActivity(), tags, false,
+                            R.string.no_selected_tag, R.string.selected_tags));
                 case REQUEST_SELECT_PLAYLISTS:
                     if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                         getActivity().startService(new Intent(getActivity(), MainService.class)
@@ -271,13 +274,18 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
         } else if (v == bTags) {
-            showTags();
+            getSelection(null, playlists);
+            startActivityForResult(new Intent(getActivity(), TagsActivity.class)
+                            .putExtras(TagsActivity.TagsFragment.getArguments(
+                                    selection, getSelectionArgs(),
+                                    tags == null ? new ArrayList<String>() : tags)),
+                    REQUEST_SELECT_TAGS);
         } else if (v == bPlaylists) {
-            getSelection(this.tags, null);
+            getSelection(tags, null);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    selection, getSelectionArgs(),
-                                    playlists == null ? new ArrayList<Playlist>() : playlists, 0)),
+                                    selection, getSelectionArgs(), 0,
+                                    playlists == null ? new ArrayList<Playlist>() : playlists)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
@@ -297,7 +305,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             query();
         } else if (v == bStatistics) {
             try {
-                getSelection(this.tags, this.playlists);
+                getSelection(tags, playlists);
                 dbHelper.queryStats(true, selection, getSelectionArgs())
                         .showDialog(getActivity(), null);
             } catch (Exception ex) {
@@ -346,74 +354,6 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         sArtist.setAdapter(new
                 ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, artists));
-    }
-
-    private void showTags() {
-        // Query all tags that match the specified selection.
-        getSelection(null, this.playlists);
-        final String[] tags = dbHelper.querySongTags(selection, getSelectionArgs())
-                .toArray(new String[0]);
-        if (tags.length == 0) {
-            Util.showToast(getActivity(), R.string.no_tags);
-            return;
-        }
-
-        // Create the tags ArrayList if no tag selection is specified,
-        // or create the checkedItems array if at least one tag is selected.
-        boolean[] checkedTags = new boolean[tags.length];
-        if (this.tags == null) {
-            this.tags = new ArrayList<>();
-        } else if (this.tags.size() > 0 ){
-            for (int i = 0; i < tags.length; i++) {
-                checkedTags[i] = this.tags.contains(tags[i]);
-            }
-        }
-
-        final AlertDialog tagsDialog = new AlertDialog.Builder(getActivity())
-                .setTitle(Util.getCountString(getActivity(), R.plurals.tags, tags.length))
-                .setMultiChoiceItems(tags, checkedTags,
-                        new DialogInterface.OnMultiChoiceClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int which, boolean isChecked) {
-                                if (isChecked) {
-                                    QueryFragment.this.tags.add(tags[which]);
-                                } else {
-                                    QueryFragment.this.tags.remove(tags[which]);
-                                }
-                            }
-                        })
-                .setPositiveButton(R.string.select_all, null)
-                .setOnDismissListener(new DialogInterface.OnDismissListener() {
-
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        bTags.setText(Util.getCountString(getActivity(), QueryFragment.this.tags,
-                                false, R.string.no_selected_tag, R.string.selected_tags));
-                    }
-                })
-                .create();
-        tagsDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-
-            @Override
-            public void onShow(DialogInterface dialog) {
-                final ListView listView = tagsDialog.getListView();
-                tagsDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
-                        new View.OnClickListener() {
-
-                            @Override
-                            public void onClick(View v) {
-                                for (int i = 0; i < tags.length; i++) {
-                                    if (!QueryFragment.this.tags.contains(tags[i])) {
-                                        listView.performItemClick(listView, i, i);
-                                    }
-                                }
-                            }
-                        });
-            }
-        });
-        tagsDialog.show();
     }
 
     private void getSelection(ArrayList<String> tags, ArrayList<Playlist> playlists) {
@@ -507,7 +447,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void query() {
-        getSelection(this.tags, this.playlists);
+        getSelection(tags, playlists);
         int sortColumn = sSortColumn.getSelectedItemPosition();
         boolean sortDesc = cbSortDesc.isChecked();
 

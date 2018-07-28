@@ -18,25 +18,11 @@
         android:paddingEnd="@dimen/list_item_check_box_padding_end"
         tools:ignore="RtlSymmetry" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvTag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/tvName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/list_item_text_large"
-            android:textColor="@color/list_item_text" />
-
-        <TextView
-            android:id="@+id/tvModified"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/list_item_text_small"
-            android:textColor="@color/list_item_text" />
-
-    </LinearLayout>
+        android:textSize="@dimen/list_item_text_large"
+        android:textColor="@color/list_item_text" />
 
 </LinearLayout>

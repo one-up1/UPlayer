@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
-import com.oneup.uplayer.fragment.ListFragment;
+import com.oneup.uplayer.fragment.SelectListFragment;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
 
@@ -42,24 +42,24 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
     }
 
-    public static class PlaylistsFragment extends ListFragment<Playlist> {
+    public static class PlaylistsFragment extends SelectListFragment<Playlist> {
         private static final String ARG_SELECT_CONFIRM_ID = "select_confirm_id";
+        private static final String ARG_CHECKED_PLAYLISTS = "checked_playlists";
 
         private int selectConfirmId;
 
         public PlaylistsFragment() {
-            super(R.layout.list_item_playlist, R.menu.list_item_playlist, 0, 0, R.id.checkBox,
-                    null, null);
+            super(R.layout.list_item_playlist, R.menu.list_item_playlist, R.id.checkBox);
         }
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            setHasOptionsMenu(true);
 
             Bundle args = getArguments();
             if (args != null) {
                 selectConfirmId = args.getInt(ARG_SELECT_CONFIRM_ID);
+                setCheckedListItems(args.<Playlist>getParcelableArrayList(ARG_CHECKED_PLAYLISTS));
             }
         }
 
@@ -76,23 +76,13 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onPrepareOptionsMenu(Menu menu) {
-            super.onPrepareOptionsMenu(menu);
-            menu.findItem(R.id.select_all).setVisible(isMultiselect());
-            menu.findItem(R.id.ok).setVisible(isMultiselect());
-        }
-
-        @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.add:
                     add();
                     return true;
-                case R.id.select_all:
-                    setCheckedListItems(getData());
-                    return true;
                 case R.id.ok:
-                    getActivity().setResult(RESULT_OK, new Intent()
+                    getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
                             .putParcelableArrayListExtra(EXTRA_PLAYLISTS, getCheckedListItems()));
                     getActivity().finish();
                     return true;
@@ -136,9 +126,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                     select(playlist);
                     break;
                 case -1:
-                    if (isMultiselect()) {
-                        setListItemChecked(playlist, !isListItemChecked(playlist));
-                    }
+                    super.onListItemClick(position, playlist);
                     break;
                 default:
                     Util.showConfirmDialog(getActivity(),
@@ -167,6 +155,12 @@ public class PlaylistsActivity extends AppCompatActivity {
                     super.onContextItemSelected(itemId, position, playlist);
                     break;
             }
+        }
+
+        private void select(Playlist playlist) {
+            getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
+                    .putExtra(EXTRA_PLAYLIST, playlist));
+            getActivity().finish();
         }
 
         private void add() {
@@ -239,19 +233,13 @@ public class PlaylistsActivity extends AppCompatActivity {
                     });
         }
 
-        private void select(Playlist playlist) {
-            getActivity().setResult(RESULT_OK, new Intent()
-                    .putExtra(EXTRA_PLAYLIST, playlist));
-            getActivity().finish();
-        }
-
         public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          ArrayList<Playlist> checkedListItems,
-                                          int selectConfirmId) {
+                                          int selectConfirmId,
+                                          ArrayList<Playlist> checkedPlaylists) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
-            args.putParcelableArrayList(ARG_CHECKED_LIST_ITEMS, checkedListItems);
+            args.putParcelableArrayList(ARG_CHECKED_PLAYLISTS, checkedPlaylists);
             args.putInt(ARG_SELECT_CONFIRM_ID, selectConfirmId);
             return args;
         }

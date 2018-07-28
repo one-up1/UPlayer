@@ -24,7 +24,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
-        super(listItemResource, R.menu.list_item_song, listItemHeaderId, listItemContentId, 0,
+        super(listItemResource, R.menu.list_item_song, listItemHeaderId, listItemContentId,
                 columns, null);
     }
 

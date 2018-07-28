@@ -29,6 +29,9 @@
             android:name=".activity.SongsActivity" />
 
         <activity
+            android:name=".activity.TagsActivity" />
+
+        <activity
             android:name=".activity.PlaylistsActivity" />
 
         <activity

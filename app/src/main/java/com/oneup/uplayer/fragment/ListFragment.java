@@ -2,7 +2,6 @@ package com.oneup.uplayer.fragment;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -11,8 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -22,15 +19,13 @@ import com.oneup.uplayer.db.DbHelper;
 
 import java.util.ArrayList;
 
-public abstract class ListFragment<T extends Parcelable>
+public abstract class ListFragment<T>
         extends android.support.v4.app.ListFragment
-        implements ListView.OnItemLongClickListener,
-        CompoundButton.OnCheckedChangeListener, View.OnClickListener {
+        implements ListView.OnItemLongClickListener, View.OnClickListener {
     protected static final String ARG_SELECTION = "selection";
     protected static final String ARG_SELECTION_ARGS = "selection_args";
     protected static final String ARG_SORT_COLUMN = "sort_column";
     protected static final String ARG_SORT_DESC = "sort_desc";
-    protected static final String ARG_CHECKED_LIST_ITEMS = "checkedListItems";
 
     private static final String TAG = "UPlayer";
 
@@ -38,7 +33,6 @@ public abstract class ListFragment<T extends Parcelable>
     private int listItemContextMenuResource;
     private int listItemHeaderId;
     private int listItemContentId;
-    private int listItemCheckBoxId;
 
     private String[] columns;
     private String[] sortColumns;
@@ -48,19 +42,17 @@ public abstract class ListFragment<T extends Parcelable>
     private String[] selectionArgs;
     private int sortColumn;
     private boolean sortDesc;
-    private ArrayList<T> checkedListItems;
 
     private ListAdapter listAdapter;
     private ArrayList<T> data;
 
     protected ListFragment(int listItemResource, int listItemContextMenuResource,
                            int listItemHeaderId, int listItemContentId,
-                           int listItemCheckBoxId, String[] columns, String[] sortColumns) {
+                           String[] columns, String[] sortColumns) {
         this.listItemResource = listItemResource;
         this.listItemContextMenuResource = listItemContextMenuResource;
         this.listItemHeaderId = listItemHeaderId;
         this.listItemContentId = listItemContentId;
-        this.listItemCheckBoxId = listItemCheckBoxId;
 
         this.columns = columns;
         this.sortColumns = sortColumns;
@@ -77,7 +69,6 @@ public abstract class ListFragment<T extends Parcelable>
             selectionArgs = args.getStringArray(ARG_SELECTION_ARGS);
             sortColumn = args.getInt(ARG_SORT_COLUMN);
             sortDesc = args.getBoolean(ARG_SORT_DESC);
-            checkedListItems = args.getParcelableArrayList(ARG_CHECKED_LIST_ITEMS);
         }
     }
 
@@ -134,11 +125,6 @@ public abstract class ListFragment<T extends Parcelable>
     }
 
     @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        setListItemChecked(data.get(getListItemPosition(buttonView)), isChecked);
-    }
-
-    @Override
     public void onClick(View v) {
         int position = getListItemPosition(v);
         onListItemViewClick(v.getId(), position, data.get(position));
@@ -179,18 +165,6 @@ public abstract class ListFragment<T extends Parcelable>
     }
 
     protected void setListItemContent(View rootView, int position, T item) {
-        // Set CheckBox if specified.
-        if (listItemCheckBoxId != 0) {
-            CheckBox checkBox = rootView.findViewById(listItemCheckBoxId);
-            if (isMultiselect()) {
-                checkBox.setOnCheckedChangeListener(null);
-                checkBox.setChecked(checkedListItems.contains(item));
-                checkBox.setOnCheckedChangeListener(this);
-            } else {
-                checkBox.setVisibility(View.GONE);
-            }
-        }
-
         // Set (or hide) sort column value if sort columns are specified.
         if (columns != null && sortColumns != null) {
             TextView tvSortColumnValue = rootView.findViewById(R.id.tvSortColumnValue);
@@ -285,32 +259,6 @@ public abstract class ListFragment<T extends Parcelable>
         return orderBy.toString();
     }
 
-    protected boolean isMultiselect() {
-        return checkedListItems != null;
-    }
-
-    protected ArrayList<T> getCheckedListItems() {
-        return checkedListItems;
-    }
-
-    protected void setCheckedListItems(ArrayList<T> checkedListItems) {
-        this.checkedListItems = checkedListItems;
-        listAdapter.notifyDataSetChanged();
-    }
-
-    protected boolean isListItemChecked(T item) {
-        return checkedListItems.contains(item);
-    }
-
-    protected void setListItemChecked(T item, boolean checked) {
-        if (checked) {
-            checkedListItems.add(item);
-        } else {
-            checkedListItems.remove(item);
-        }
-        listAdapter.notifyDataSetChanged();
-    }
-
     protected void notifyDataSetChanged() {
         Log.d(TAG, "ListFragment.notifyDataSetChanged()");
         setActivityTitle();
@@ -328,6 +276,10 @@ public abstract class ListFragment<T extends Parcelable>
         return data.size();
     }
 
+    protected int getListItemPosition(View v) {
+        return getListItemPosition(getListView().getPositionForView((View) v.getParent()));
+    }
+
     private void setActivityTitle() {
         Activity activity = getActivity();
         if (activity != null && !(activity instanceof MainActivity)) {
@@ -337,10 +289,6 @@ public abstract class ListFragment<T extends Parcelable>
 
     private int getListItemPosition(int position) {
         return listItemHeaderId == 0 ? position : position - 1;
-    }
-
-    private int getListItemPosition(View v) {
-        return getListItemPosition(getListView().getPositionForView((View) v.getParent()));
     }
 
     private class ListAdapter extends BaseAdapter {

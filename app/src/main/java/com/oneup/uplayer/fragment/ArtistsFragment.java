@@ -24,7 +24,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     private static final String TAG = "UPlayer";
 
     public ArtistsFragment() {
-        super(R.layout.list_item_artist, 0, 0, 0, 0,
+        super(R.layout.list_item_artist, 0, 0, 0,
                 new String[]{
                         null,
                         Artist.LAST_ADDED,

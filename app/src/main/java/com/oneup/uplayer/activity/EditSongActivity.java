@@ -178,11 +178,11 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                                 true, 0, R.string.playlists);
 
                         if (added != null && removed == null) {
-                            Util.showToast(this, R.string.added_to_playlists, added);
+                            Util.showSnackbar(this, R.string.added_to_playlists, added);
                         } else if (added == null && removed != null) {
-                            Util.showToast(this, R.string.removed_from_playlists, removed);
+                            Util.showSnackbar(this, R.string.removed_from_playlists, removed);
                         } else if (added != null) {
-                            Util.showToast(this, R.string.added_to_and_removed_from_playlists,
+                            Util.showSnackbar(this, R.string.added_to_and_removed_from_playlists,
                                     added, removed);
                         }
                     } catch (Exception ex) {

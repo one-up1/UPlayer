@@ -33,11 +33,13 @@
     <string name="statistics">Statistics</string>
     <string name="sync_database">Sync database</string>
     <string name="sync_database_confirm">Sync database?</string>
+    <string name="synchronizing_database">Synchronizing database&#8230;</string>
     <string name="sync_completed">Sync completed</string>
     <string name="sync_completed_message" tools:ignore="PluralsCandidate">%1$d artists\n%2$d inserted, %3$d updated, %4$d deleted\n\n%5$d songs\n%6$d inserted, %7$d updated, %8$d deleted</string>
     <string name="backup">Backup&#8230;</string>
     <string name="backup_completed">Backup completed</string>
     <string name="restore_backup_confirm">Restore backup?</string>
+    <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
 
     <string name="play_next">Play next</string>

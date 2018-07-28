@@ -1,5 +1,6 @@
 package com.oneup.uplayer.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -463,6 +464,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void syncDatabase() {
+        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                getString(R.string.synchronizing_database), null, true, false);
         Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
                 new DialogInterface.OnClickListener() {
 
@@ -475,6 +478,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                                     DbHelper.SyncResult[] results =
                                             dbHelper.syncWithMediaStore(getActivity());
                                     reload();
+
+                                    progressDialog.dismiss();
                                     Util.showInfoDialog(getActivity(), R.string.sync_completed,
                                             R.string.sync_completed_message,
                                             results[0].getRowCount(),
@@ -512,6 +517,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void restoreBackup() {
+        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                getString(R.string.restoring_backup), null, true, false);
         Util.showConfirmDialog(getActivity(), R.string.restore_backup_confirm,
                 new DialogInterface.OnClickListener() {
 
@@ -524,6 +531,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                                 try {
                                     dbHelper.restoreBackup();
                                     reload();
+
+                                    progressDialog.dismiss();
                                     Util.showToast(getActivity(), R.string.backup_restored);
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error restoring backup", ex);

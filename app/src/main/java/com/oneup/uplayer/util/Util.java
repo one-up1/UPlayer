@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -64,6 +65,12 @@ public class Util {
                 toast.show();
             }
         });
+    }
+
+    public static void showSnackbar(Activity context, int resId, Object... formatArgs) {
+        Snackbar.make(context.findViewById(R.id.view),
+                context.getString(resId, formatArgs),
+                Snackbar.LENGTH_INDEFINITE).show();
     }
 
     public static void showConfirmDialog(Context context, int messageId,

@@ -649,14 +649,13 @@ public class DbHelper extends SQLiteOpenHelper {
         return sb.toString();
     }
 
-    public static String getPlaylistSongsInClause(int count) {
-        String s = "IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS;
-        if (count == 0) {
+    public static String getPlaylistSongsInClause(int count, boolean not) {
+        String s = "IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS +
+                " WHERE " + Playlist.PLAYLIST_ID + " " + getInClause(count) + ")";
+        if (not) {
             s = "NOT " + s;
-        } else {
-            s += " WHERE " + Playlist.PLAYLIST_ID + " " + getInClause(count);
         }
-        return Song._ID + " " + s + ")";
+        return Song._ID + " " + s;
     }
 
     public static String appendSelection(String selection, String s) {

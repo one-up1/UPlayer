@@ -63,7 +63,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private Button bMaxAdded;
     private RadioButton rbBookmarked;
     private RadioButton rbNotBookmarked;
+    private CheckBox cbTagsNot;
     private Button bTags;
+    private CheckBox cbPlaylistsNot;
     private Button bPlaylists;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
@@ -127,19 +129,23 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         rbBookmarked = rootView.findViewById(R.id.rbBookmarked);
         rbNotBookmarked = rootView.findViewById(R.id.rbNotBookmarked);
 
+        cbTagsNot = rootView.findViewById(R.id.cbTagsNot);
+
         bTags = rootView.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
         bTags.setOnLongClickListener(this);
-        if (tags != null) {
-            bTags.setText(Util.getCountString(getActivity(), tags, false, R.string.no_selected_tag, R.string.selected_tags));
+        if (tags != null && tags.size() > 0) {
+            bTags.setText(Util.getCountString(getActivity(), tags, false, R.string.selected_tags));
         }
+
+        cbPlaylistsNot = rootView.findViewById(R.id.cbPlaylistsNot);
 
         bPlaylists = rootView.findViewById(R.id.bPlaylists);
         bPlaylists.setOnClickListener(this);
         bPlaylists.setOnLongClickListener(this);
-        if (playlists != null) {
-            bPlaylists.setText(Util.getCountString(getActivity(), playlists,
-                    false, R.string.no_selected_playlist, R.string.selected_playlists));
+        if (playlists != null && playlists.size() > 0) {
+            bPlaylists.setText(Util.getCountString(getActivity(), playlists, false,
+                    R.string.selected_playlists));
         }
 
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
@@ -208,8 +214,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     break;
                 case REQUEST_SELECT_TAGS:
                     tags = data.getStringArrayListExtra(TagsActivity.EXTRA_TAGS);
-                    bTags.setText(Util.getCountString(getActivity(), tags, false,
-                            R.string.no_selected_tag, R.string.selected_tags));
+                    bTags.setText(tags.size() > 0 ?
+                            Util.getCountString(getActivity(), tags,
+                                    false, R.string.selected_tags)
+                            : getString(R.string.select_tags));
                 case REQUEST_SELECT_PLAYLISTS:
                     if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                         getActivity().startService(new Intent(getActivity(), MainService.class)
@@ -220,8 +228,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
                         playlists = data.getParcelableArrayListExtra(
                                 PlaylistsActivity.EXTRA_PLAYLISTS);
-                        bPlaylists.setText(Util.getCountString(getActivity(), playlists,
-                                false, R.string.no_selected_playlist, R.string.selected_playlists));
+                        bPlaylists.setText(playlists.size() > 0 ?
+                                Util.getCountString(getActivity(), playlists,
+                                        false, R.string.selected_playlists)
+                                : getString(R.string.select_playlists));
                     }
                     break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
@@ -423,20 +433,18 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             selectionArgs.add(maxTimesPlayed);
         }
 
-        if (tags != null) {
-            String tagSelection;
-            if (tags.size() == 0) {
-                tagSelection = "IS NULL";
-            } else {
-                tagSelection = DbHelper.getInClause(tags.size());
-                selectionArgs.addAll(tags);
+        if (tags != null && tags.size() > 0) {
+            String tagSelection = DbHelper.getInClause(tags.size());
+            if (cbTagsNot.isChecked()) {
+                tagSelection = "IS NULL OR " + Song.TAG + " NOT " + tagSelection;
             }
             selection = DbHelper.appendSelection(selection, Song.TAG + " " + tagSelection);
+            selectionArgs.addAll(tags);
         }
 
-        if (playlists != null) {
-            selection = DbHelper.appendSelection(selection,
-                    DbHelper.getPlaylistSongsInClause(playlists.size()));
+        if (playlists != null && playlists.size() > 0) {
+            selection = DbHelper.appendSelection(selection, DbHelper.getPlaylistSongsInClause(
+                    playlists.size(), cbPlaylistsNot.isChecked()));
             for (Playlist playlist : playlists) {
                 selectionArgs.add(Long.toString(playlist.getId()));
             }

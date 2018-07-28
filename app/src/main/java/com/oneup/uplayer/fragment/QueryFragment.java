@@ -63,10 +63,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private Button bMaxAdded;
     private RadioButton rbBookmarked;
     private RadioButton rbNotBookmarked;
-    private CheckBox cbTagsNot;
     private Button bTags;
-    private CheckBox cbPlaylistsNot;
+    private CheckBox cbTagsNot;
     private Button bPlaylists;
+    private CheckBox cbPlaylistsNot;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
     private EditText etMinTimesPlayed;
@@ -129,8 +129,6 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         rbBookmarked = rootView.findViewById(R.id.rbBookmarked);
         rbNotBookmarked = rootView.findViewById(R.id.rbNotBookmarked);
 
-        cbTagsNot = rootView.findViewById(R.id.cbTagsNot);
-
         bTags = rootView.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
         bTags.setOnLongClickListener(this);
@@ -138,7 +136,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             bTags.setText(Util.getCountString(getActivity(), tags, false, R.string.selected_tags));
         }
 
-        cbPlaylistsNot = rootView.findViewById(R.id.cbPlaylistsNot);
+        cbTagsNot = rootView.findViewById(R.id.cbTagsNot);
 
         bPlaylists = rootView.findViewById(R.id.bPlaylists);
         bPlaylists.setOnClickListener(this);
@@ -147,6 +145,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             bPlaylists.setText(Util.getCountString(getActivity(), playlists, false,
                     R.string.selected_playlists));
         }
+
+        cbPlaylistsNot = rootView.findViewById(R.id.cbPlaylistsNot);
 
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);

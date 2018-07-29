@@ -156,17 +156,19 @@ public class Util {
     }
 
     public static String getCountString(Context context, ArrayList<?> list,
-                                        boolean quotes, int resId) {
-        String s;
-        if (list.size() == 1) {
-            s = list.get(0).toString();
-            if (quotes) {
-                s = "'" + s + "'";
-            }
-        } else {
-            s = context.getString(resId, list.size());
+                                        boolean quotes, int zeroId, int otherId) {
+        switch (list.size()) {
+            case 0:
+                return zeroId == 0 ? null : context.getString(zeroId);
+            case 1:
+                String s = list.get(0).toString();
+                if (quotes) {
+                    s = "'" + s + "'";
+                }
+                return s;
+            default:
+                return context.getString(otherId, list.size());
         }
-        return s;
     }
 
     public static void hideSoftInput(Context context, View view) {

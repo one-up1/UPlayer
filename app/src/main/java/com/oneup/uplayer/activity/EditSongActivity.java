@@ -173,9 +173,9 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                         }
 
                         String added = Util.getCountString(this, inserted,
-                                true, R.string.playlists);
+                                true, 0, R.string.playlists);
                         String removed = Util.getCountString(this, deleted,
-                                true, R.string.playlists);
+                                true, 0, R.string.playlists);
 
                         if (added != null && removed == null) {
                             Util.showSnackbar(this, R.string.added_to_playlists, added);

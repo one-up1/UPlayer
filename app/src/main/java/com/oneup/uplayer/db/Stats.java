@@ -15,6 +15,7 @@ public class Stats {
     private Total played;
     private Total bookmarked;
     private Total tagged;
+    private Total playlisted;
 
     private long lastAdded;
     private long lastPlayed;
@@ -23,13 +24,18 @@ public class Stats {
 
     Stats() {
         total = new Total();
+        played = new Total();
         bookmarked = new Total();
         tagged = new Total();
-        played = new Total();
+        playlisted = new Total();
     }
 
     Total getTotal() {
         return total;
+    }
+
+    Total getPlayed() {
+        return played;
     }
 
     Total getBookmarked() {
@@ -40,8 +46,8 @@ public class Stats {
         return tagged;
     }
 
-    Total getPlayed() {
-        return played;
+    Total getPlaylisted() {
+        return playlisted;
     }
 
     void setLastAdded(long lastAdded) {
@@ -62,8 +68,7 @@ public class Stats {
 
     public void showDialog(Context context, String title) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
-                .setView(R.layout.dialog_stats)
-                .setPositiveButton(R.string.ok, null);
+                .setView(R.layout.dialog_stats);
         if (title != null) {
             dialogBuilder.setTitle(title);
         }
@@ -74,6 +79,7 @@ public class Stats {
         played.addRows(context, grid, R.string.stats_played, R.string.stats_unplayed);
         bookmarked.addRows(context, grid, R.string.stats_bookmarked, R.string.stats_unbookmarked);
         tagged.addRows(context, grid, R.string.stats_tagged, R.string.stats_untagged);
+        playlisted.addRows(context, grid, R.string.stats_playlisted, R.string.stats_unplaylisted);
 
         addRow(context, grid, R.string.stats_last_added, lastAdded);
         addRow(context, grid, R.string.stats_last_played, lastPlayed);

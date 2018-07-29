@@ -185,7 +185,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     @Override
-    public void onPrepared(MediaPlayer mp) {
+    public void onPrepared(MediaPlayer player) {
         Log.d(TAG, "MainService.onPrepared()");
 
         // Seek to the saved song position of the playlist.
@@ -203,7 +203,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
+    public boolean onError(MediaPlayer player, int what, int extra) {
         Log.d(TAG, "MainService.onError(" + what + ", " + extra + ")");
         player.reset();
         prepared = false;
@@ -215,7 +215,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     @Override
-    public void onCompletion(MediaPlayer mp) {
+    public void onCompletion(MediaPlayer player) {
         Log.d(TAG, "MainService.onCompletion()");
         prepared = false;
 

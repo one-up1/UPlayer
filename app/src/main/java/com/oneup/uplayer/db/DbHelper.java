@@ -445,6 +445,10 @@ public class DbHelper extends SQLiteOpenHelper {
                     appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL"), selectionArgs);
             queryTotal(db, stats.getTagged(), artist,
                     appendSelection(selection, Song.TAG + " IS NOT NULL"), selectionArgs);
+            queryTotal(db, stats.getPlaylisted(), artist, appendSelection(selection,
+                    Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS +
+                            " WHERE " + Playlist.PLAYLIST_ID + " != " +
+                            Playlist.DEFAULT_PLAYLIST_ID + ")"), selectionArgs);
 
             try (Cursor c = db.query(TABLE_SONGS,
                     new String[]{

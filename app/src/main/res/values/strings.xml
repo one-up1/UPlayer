@@ -19,7 +19,6 @@
     <string name="bookmarked">Bookmarked</string>
     <string name="not_bookmarked">Not bookmarked</string>
     <string name="select_tags">Tags&#8230;</string>
-    <string name="no_tags">No tags available</string>
     <string name="selected_tags" tools:ignore="PluralsCandidate">%1$d tags</string>
     <string name="select_playlists">Playlists&#8230;</string>
     <string name="selected_playlists" tools:ignore="PluralsCandidate">%1$d playlists</string>
@@ -72,7 +71,7 @@
     <string name="added_to_playlists">Added to %1$s</string>
     <string name="removed_from_playlists">Removed from %1$s</string>
     <string name="added_to_and_removed_from_playlists">Added to %1$s and removed from %2$s</string>
-    <string name="playlists">%1$d playlists</string>
+    <string name="playlists" tools:ignore="PluralsCandidate">%1$d playlists</string>
     <string name="song_updated">Song updated</string>
 
     <string name="bookmark">Bookmark</string>

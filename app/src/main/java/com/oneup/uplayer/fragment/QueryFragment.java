@@ -479,13 +479,13 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void syncDatabase() {
-        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                getString(R.string.synchronizing_database), null, true, false);
         Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
                 new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                                getString(R.string.synchronizing_database), null, true, false);
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
@@ -532,13 +532,13 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void restoreBackup() {
-        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                getString(R.string.restoring_backup), null, true, false);
         Util.showConfirmDialog(getActivity(), R.string.restore_backup_confirm,
                 new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                                getString(R.string.restoring_backup), null, true, false);
                         new Thread(new Runnable() {
 
                             @Override

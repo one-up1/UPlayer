@@ -493,8 +493,6 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                                     DbHelper.SyncResult[] results =
                                             dbHelper.syncWithMediaStore(getActivity());
                                     reload();
-
-                                    progressDialog.dismiss();
                                     Util.showInfoDialog(getActivity(), R.string.sync_completed,
                                             R.string.sync_completed_message,
                                             results[0].getRowCount(),
@@ -508,6 +506,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error synchronizing database", ex);
                                     Util.showErrorDialog(getActivity(), ex);
+                                } finally {
+                                    progressDialog.dismiss();
                                 }
                             }
                         }).start();
@@ -546,12 +546,12 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                                 try {
                                     dbHelper.restoreBackup();
                                     reload();
-
-                                    progressDialog.dismiss();
                                     Util.showToast(getActivity(), R.string.backup_restored);
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error restoring backup", ex);
                                     Util.showErrorDialog(getActivity(), ex);
+                                } finally {
+                                    progressDialog.dismiss();
                                 }
                             }
                         }).start();

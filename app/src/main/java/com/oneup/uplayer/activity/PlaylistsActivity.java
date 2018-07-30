@@ -82,8 +82,12 @@ public class PlaylistsActivity extends AppCompatActivity {
                     add();
                     return true;
                 case R.id.ok:
-                    getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
-                            .putParcelableArrayListExtra(EXTRA_PLAYLISTS, getCheckedListItems()));
+                    Intent data = new Intent();
+                    if (isNotVisible()) {
+                        data.putExtra(ARG_NOT, isNotChecked());
+                    }
+                    data.putExtra(EXTRA_PLAYLISTS, getCheckedListItems());
+                    getActivity().setResult(AppCompatActivity.RESULT_OK, data);
                     getActivity().finish();
                     return true;
                 default:
@@ -234,11 +238,14 @@ public class PlaylistsActivity extends AppCompatActivity {
         }
 
         public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          int selectConfirmId,
-                                          ArrayList<Playlist> checkedPlaylists) {
+                                          Boolean not, ArrayList<Playlist> checkedPlaylists,
+                                          int selectConfirmId) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
+            if (not != null) {
+                args.putBoolean(ARG_NOT, not);
+            }
             args.putParcelableArrayList(ARG_CHECKED_PLAYLISTS, checkedPlaylists);
             args.putInt(ARG_SELECT_CONFIRM_ID, selectConfirmId);
             return args;

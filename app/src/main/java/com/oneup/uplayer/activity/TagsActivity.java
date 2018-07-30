@@ -60,6 +60,7 @@ public class TagsActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.ok:
                     getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
+                            .putExtra(ARG_NOT, isNotChecked())
                             .putStringArrayListExtra(EXTRA_TAGS, getCheckedListItems()));
                     getActivity().finish();
                     return true;
@@ -87,10 +88,11 @@ public class TagsActivity extends AppCompatActivity {
         }
 
         public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          ArrayList<String> checkedTags) {
+                                          boolean not, ArrayList<String> checkedTags) {
             Bundle args = new Bundle();
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
+            args.putBoolean(ARG_NOT, not);
             args.putStringArrayList(ARG_CHECKED_TAGS, checkedTags);
             return args;
         }

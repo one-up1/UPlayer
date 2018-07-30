@@ -64,9 +64,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private RadioButton rbBookmarked;
     private RadioButton rbNotBookmarked;
     private Button bTags;
-    private CheckBox cbTagsNot;
     private Button bPlaylists;
-    private CheckBox cbPlaylistsNot;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
     private EditText etMinTimesPlayed;
@@ -81,7 +79,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private long minAdded;
     private long maxAdded;
     private ArrayList<String> tags;
+    private boolean tagsNot;
     private ArrayList<Playlist> playlists;
+    private boolean playlistsNot;
     private long minLastPlayed;
     private long maxLastPlayed;
 
@@ -133,21 +133,17 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         bTags.setOnClickListener(this);
         bTags.setOnLongClickListener(this);
         if (tags != null) {
-            bTags.setText(Util.getCountString(getActivity(), tags, false,
-                    R.string.select_tags, R.string.selected_tags));
+            setCountString(bTags, tags, R.string.select_tags,
+                    R.string.selected_tags, tagsNot);
         }
-
-        cbTagsNot = rootView.findViewById(R.id.cbTagsNot);
 
         bPlaylists = rootView.findViewById(R.id.bPlaylists);
         bPlaylists.setOnClickListener(this);
         bPlaylists.setOnLongClickListener(this);
         if (playlists != null) {
-            bPlaylists.setText(Util.getCountString(getActivity(), playlists, false,
-                    R.string.select_playlists, R.string.selected_playlists));
+            setCountString(bPlaylists, playlists, R.string.select_playlists,
+                    R.string.selected_playlists, playlistsNot);
         }
-
-        cbPlaylistsNot = rootView.findViewById(R.id.cbPlaylistsNot);
 
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
@@ -215,8 +211,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     break;
                 case REQUEST_SELECT_TAGS:
                     tags = data.getStringArrayListExtra(TagsActivity.EXTRA_TAGS);
-                    bTags.setText(Util.getCountString(getActivity(), tags, false,
-                            R.string.select_tags, R.string.selected_tags));
+                    tagsNot = data.getBooleanExtra(TagsActivity.TagsFragment.ARG_NOT, false);
+                    setCountString(bTags, tags, R.string.select_tags,
+                            R.string.selected_tags, tagsNot);
                 case REQUEST_SELECT_PLAYLISTS:
                     if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                         getActivity().startService(new Intent(getActivity(), MainService.class)
@@ -227,8 +224,10 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
                     } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
                         playlists = data.getParcelableArrayListExtra(
                                 PlaylistsActivity.EXTRA_PLAYLISTS);
-                        bPlaylists.setText(Util.getCountString(getActivity(), playlists, false,
-                                        R.string.select_playlists, R.string.selected_playlists));
+                        playlistsNot = data.getBooleanExtra(
+                                PlaylistsActivity.PlaylistsFragment.ARG_NOT, false);
+                        setCountString(bPlaylists, playlists, R.string.select_playlists,
+                                R.string.selected_playlists, playlistsNot);
                     }
                     break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
@@ -285,15 +284,15 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             getSelection(null, playlists);
             startActivityForResult(new Intent(getActivity(), TagsActivity.class)
                             .putExtras(TagsActivity.TagsFragment.getArguments(
-                                    selection, getSelectionArgs(),
+                                    selection, getSelectionArgs(), tagsNot,
                                     tags == null ? new ArrayList<String>() : tags)),
                     REQUEST_SELECT_TAGS);
         } else if (v == bPlaylists) {
             getSelection(tags, null);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    selection, getSelectionArgs(), 0,
-                                    playlists == null ? new ArrayList<Playlist>() : playlists)),
+                                    selection, getSelectionArgs(), playlistsNot,
+                                    playlists == null ? new ArrayList<Playlist>() : playlists, 0)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
@@ -337,9 +336,11 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             bMaxAdded.setText(R.string.select_max_added);
         } else if (v == bTags) {
             tags = null;
+            tagsNot = false;
             bTags.setText(R.string.select_tags);
         } else if (v == bPlaylists) {
             playlists = null;
+            playlistsNot = false;
             bPlaylists.setText(R.string.select_playlists);
         } else if (v == bMinLastPlayed) {
             minLastPlayed = 0;
@@ -362,6 +363,15 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         sArtist.setAdapter(new
                 ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, artists));
+    }
+
+    private void setCountString(Button b, ArrayList<?> list, int zeroId, int otherId,
+                                      boolean not) {
+        String s = Util.getCountString(getActivity(), list, false, zeroId, otherId);
+        if (not) {
+            s = getString(R.string.not_selected, s);
+        }
+        b.setText(s);
     }
 
     private void getSelection(ArrayList<String> tags, ArrayList<Playlist> playlists) {
@@ -432,7 +442,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
         if (tags != null && tags.size() > 0) {
             String tagSelection = DbHelper.getInClause(tags.size());
-            if (cbTagsNot.isChecked()) {
+            if (tagsNot) {
                 tagSelection = "IS NULL OR " + Song.TAG + " NOT " + tagSelection;
             }
             selection = DbHelper.appendSelection(selection, Song.TAG + " " + tagSelection);
@@ -441,7 +451,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
         if (playlists != null && playlists.size() > 0) {
             selection = DbHelper.appendSelection(selection, DbHelper.getPlaylistSongsInClause(
-                    playlists.size(), cbPlaylistsNot.isChecked()));
+                    playlists.size(), playlistsNot));
             for (Playlist playlist : playlists) {
                 selectionArgs.add(Long.toString(playlist.getId()));
             }

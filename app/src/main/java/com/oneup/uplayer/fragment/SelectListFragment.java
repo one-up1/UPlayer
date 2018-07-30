@@ -42,6 +42,12 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
         if (args != null) {
             if (args.containsKey(ARG_NOT)) {
                 cbNot = new CheckBox(getActivity());
+                ActionBar.LayoutParams params = new ActionBar.LayoutParams(
+                        ActionBar.LayoutParams.WRAP_CONTENT,
+                        ActionBar.LayoutParams.WRAP_CONTENT);
+                params.setMargins(getResources().getDimensionPixelSize(
+                        R.dimen.action_bar_view_margin_start), 0, 0, 0);
+                cbNot.setLayoutParams(params);
                 cbNot.setText(R.string.not);
                 cbNot.setTextColor(Color.WHITE);
                 cbNot.setChecked(args.getBoolean(ARG_NOT));

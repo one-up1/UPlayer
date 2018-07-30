@@ -445,7 +445,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             if (tagsNot) {
                 tagSelection = "IS NULL OR " + Song.TAG + " NOT " + tagSelection;
             }
-            selection = DbHelper.appendSelection(selection, Song.TAG + " " + tagSelection);
+            selection = DbHelper.appendSelection(selection,
+                    "(" + Song.TAG + " " + tagSelection + ")");
             selectionArgs.addAll(tags);
         }
 

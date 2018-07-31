@@ -281,14 +281,14 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
         } else if (v == bTags) {
-            getSelection(null, playlists);
+            getSelection(true, false, true);
             startActivityForResult(new Intent(getActivity(), TagsActivity.class)
                             .putExtras(TagsActivity.TagsFragment.getArguments(
                                     selection, getSelectionArgs(), tagsNot,
                                     tags == null ? new ArrayList<String>() : tags)),
                     REQUEST_SELECT_TAGS);
         } else if (v == bPlaylists) {
-            getSelection(tags, null);
+            getSelection(true, true, false);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
                                     selection, getSelectionArgs(), playlistsNot,
@@ -312,7 +312,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             query();
         } else if (v == bStatistics) {
             try {
-                getSelection(tags, playlists);
+                getSelection();
                 dbHelper.queryStats(true, selection, getSelectionArgs())
                         .showDialog(getActivity(), null);
             } catch (Exception ex) {
@@ -355,7 +355,8 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void loadArtists() {
-        artists = dbHelper.queryArtists(Artist.ARTIST);
+        getSelection(false, true, true);
+        artists = dbHelper.queryArtists(selection, getSelectionArgs(), Artist.ARTIST);
         Artist nullArtist = new Artist();
         nullArtist.setArtist("");
         artists.add(0, nullArtist);
@@ -374,7 +375,11 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         b.setText(s);
     }
 
-    private void getSelection(ArrayList<String> tags, ArrayList<Playlist> playlists) {
+    private void getSelection() {
+        getSelection(true, true, true);
+    }
+
+    private void getSelection(boolean artist, boolean tags, boolean playlists) {
         selection = null;
         selectionArgs = new ArrayList<>();
 
@@ -384,10 +389,12 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             selectionArgs.add("%" + title + "%");
         }
 
-        String artist = etArtist.getString();
-        if (artist != null) {
-            selection = DbHelper.appendSelection(selection, Song.ARTIST + " LIKE ?");
-            selectionArgs.add("%" + artist + "%");
+        if (artist) {
+            String sArtist = etArtist.getString();
+            if (sArtist != null) {
+                selection = DbHelper.appendSelection(selection, Song.ARTIST + " LIKE ?");
+                selectionArgs.add("%" + sArtist + "%");
+            }
         }
 
         String minYear = etMinYear.getString();
@@ -440,20 +447,20 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             selectionArgs.add(maxTimesPlayed);
         }
 
-        if (tags != null && tags.size() > 0) {
-            String tagSelection = DbHelper.getInClause(tags.size());
+        if (tags && this.tags != null && this.tags.size() > 0) {
+            String tagSelection = DbHelper.getInClause(this.tags.size());
             if (tagsNot) {
                 tagSelection = "IS NULL OR " + Song.TAG + " NOT " + tagSelection;
             }
             selection = DbHelper.appendSelection(selection,
                     "(" + Song.TAG + " " + tagSelection + ")");
-            selectionArgs.addAll(tags);
+            selectionArgs.addAll(this.tags);
         }
 
-        if (playlists != null && playlists.size() > 0) {
+        if (playlists && this.playlists != null && this.playlists.size() > 0) {
             selection = DbHelper.appendSelection(selection, DbHelper.getPlaylistSongsInClause(
-                    playlists.size(), playlistsNot));
-            for (Playlist playlist : playlists) {
+                    this.playlists.size(), playlistsNot));
+            for (Playlist playlist : this.playlists) {
                 selectionArgs.add(Long.toString(playlist.getId()));
             }
         }
@@ -464,7 +471,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void query() {
-        getSelection(tags, playlists);
+        getSelection();
         int sortColumn = sSortColumn.getSelectedItemPosition();
         boolean sortDesc = cbSortDesc.isChecked();
 

@@ -55,7 +55,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Song._ID + " INTEGER PRIMARY KEY," +
                     Song.TITLE + " TEXT," +
                     Song.ARTIST_ID + " INTEGER," +
-                    Song.ARTIST + " INTEGER," +
+                    Song.ARTIST + " TEXT," +
                     Song.DURATION + " INTEGER," +
                     Song.YEAR + " INTEGER," +
                     Song.ADDED + " INTEGER," +
@@ -108,11 +108,23 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public ArrayList<Artist> queryArtists(String orderBy) {
-        Log.d(TAG, "DbHelper.queryArtists(" + orderBy + ")");
+    public ArrayList<Artist> queryArtists(String songsSelection, String[] selectionArgs,
+                                          String orderBy) {
+        Log.d(TAG, "DbHelper.queryArtists(" + songsSelection + ", " +
+                Arrays.toString(selectionArgs) + ", " +orderBy + ")");
+        String selection;
+        if (songsSelection == null) {
+            selection = null;
+        } else {
+            selection = TABLE_ARTISTS + "." + Artist._ID + " IN(SELECT " + Song.ARTIST_ID +
+                    " FROM " + TABLE_SONGS + " WHERE " + songsSelection + ")";
+            Log.d(TAG, "selection=" + selection);
+        }
+
         ArrayList<Artist> artists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_ARTISTS, null, null, null, null, null, orderBy)) {
+            try (Cursor c = db.query(TABLE_ARTISTS, null, selection, selectionArgs,
+                    null, null, orderBy)) {
                 while (c.moveToNext()) {
                     Artist artist = new Artist();
                     artist.setId(c.getLong(0));
@@ -284,15 +296,15 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.queryPlaylists(" + songsSelection + ", " +
                 Arrays.toString(selectionArgs) + ")");
         String selection;
-        if (songsSelection != null) {
-            selection = Playlist._ID + " IN(SELECT " +
+        if (songsSelection == null) {
+            selection = null;
+        } else {
+            selection = TABLE_PLAYLISTS + "." + Playlist._ID + " IN(SELECT " +
                     Playlist.PLAYLIST_ID + " FROM " + TABLE_PLAYLIST_SONGS + " WHERE " +
                     Playlist.SONG_ID + " IN(SELECT " + TABLE_SONGS + "." + Song._ID +
                     " FROM " + TABLE_SONGS + " WHERE " + songsSelection + "))";
-        } else {
-            selection = null;
+            Log.d(TAG, "selection=" + selection);
         }
-        Log.d(TAG, "selection=" + selection);
 
         ArrayList<Playlist> playlists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
@@ -325,10 +337,11 @@ public class DbHelper extends SQLiteOpenHelper {
                 values = new ContentValues();
                 if (songs == null) {
                     values.put(Playlist.NAME, playlist.getName());
+                } else {
+                    putValue(values, Playlist.MODIFIED, playlist.getModified());
+                    putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
+                    putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
                 }
-                putValue(values, Playlist.MODIFIED, playlist.getModified());
-                putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
-                putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
                 if (playlist.getId() == 0) {
                     playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
                     Log.d(TAG, "Playlist inserted: " + playlist.getId());
@@ -446,8 +459,8 @@ public class DbHelper extends SQLiteOpenHelper {
             queryTotal(db, stats.getTagged(), artist,
                     appendSelection(selection, Song.TAG + " IS NOT NULL"), selectionArgs);
             queryTotal(db, stats.getPlaylisted(), artist, appendSelection(selection,
-                    Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " + TABLE_PLAYLIST_SONGS +
-                            " WHERE " + Playlist.PLAYLIST_ID + " != " +
+                    TABLE_SONGS + "." + Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " +
+                            TABLE_PLAYLIST_SONGS + " WHERE " + Playlist.PLAYLIST_ID + " != " +
                             Playlist.DEFAULT_PLAYLIST_ID + ")"), selectionArgs);
 
             try (Cursor c = db.query(TABLE_SONGS,
@@ -659,7 +672,7 @@ public class DbHelper extends SQLiteOpenHelper {
         if (not) {
             s = "NOT " + s;
         }
-        return Song._ID + " " + s;
+        return TABLE_SONGS + "." + Song._ID + " " + s;
     }
 
     public static String appendSelection(String selection, String s) {

@@ -115,6 +115,7 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
     @Override
     protected void onListItemClick(int position, final T item) {
         setListItemChecked(item, !checkedListItems.contains(item));
+        notifyDataSetChanged();
     }
 
     protected boolean isNotVisible() {
@@ -133,12 +134,11 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
         this.checkedListItems = checkedListItems;
     }
 
-    protected void setListItemChecked(T item, boolean checked) {
+    private void setListItemChecked(T item, boolean checked) {
         if (checked) {
             checkedListItems.add(item);
         } else {
             checkedListItems.remove(item);
         }
-        notifyDataSetChanged();
     }
 }

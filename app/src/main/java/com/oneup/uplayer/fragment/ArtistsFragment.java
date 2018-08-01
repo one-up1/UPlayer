@@ -85,7 +85,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     @Override
     protected boolean onListItemLongClick(int position, Artist artist) {
         try {
-            getDbHelper().queryStats(false, Song.ARTIST_ID + "=?",
+            getDbHelper().queryStats(false, true, true, true, Song.ARTIST_ID + "=?",
                     DbHelper.getWhereArgs(artist.getId()))
                     .showDialog(getActivity(), artist.getArtist());
         } catch (Exception ex) {

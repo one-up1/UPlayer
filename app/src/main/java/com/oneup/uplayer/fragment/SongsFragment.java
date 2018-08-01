@@ -95,12 +95,16 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.play_next:
-                add(getData(), true);
-                Util.showToast(getActivity(), R.string.playing_all_next);
+                if (!getData().isEmpty()) {
+                    add(getData(), true);
+                    Util.showToast(getActivity(), R.string.playing_all_next);
+                }
                 return true;
             case R.id.play_last:
-                add(getData(), false);
-                Util.showToast(getActivity(), R.string.playing_all_last);
+                if (!getData().isEmpty()) {
+                    add(getData(), false);
+                    Util.showToast(getActivity(), R.string.playing_all_last);
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -215,12 +219,10 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     }
 
     private void add(ArrayList<Song> songs, boolean next) {
-        if (songs.size() > 0) {
-            getActivity().startService(new Intent(getActivity(), MainService.class)
-                    .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_ADD)
-                    .putExtra(MainService.EXTRA_SONGS, songs)
-                    .putExtra(MainService.EXTRA_NEXT, next));
-        }
+        getActivity().startService(new Intent(getActivity(), MainService.class)
+                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_ADD)
+                .putExtra(MainService.EXTRA_SONGS, songs)
+                .putExtra(MainService.EXTRA_NEXT, next));
     }
 
     private void add(Song song, boolean next) {

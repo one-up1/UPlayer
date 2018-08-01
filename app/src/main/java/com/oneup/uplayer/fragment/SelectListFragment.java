@@ -80,10 +80,9 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
         switch (item.getItemId()) {
             case R.id.select_all:
                 if (checkedListItems.size() < getData().size()) {
-                    checkedListItems.clear();
-                    checkedListItems.addAll(getData());
+                    checkedListItems = new ArrayList<>(getData());
                 } else {
-                    checkedListItems.clear();
+                    checkedListItems = new ArrayList<>();
                 }
                 notifyDataSetChanged();
                 return true;

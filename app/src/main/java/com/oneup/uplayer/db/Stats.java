@@ -25,9 +25,6 @@ public class Stats {
     Stats() {
         total = new Total();
         played = new Total();
-        bookmarked = new Total();
-        tagged = new Total();
-        playlisted = new Total();
     }
 
     Total getTotal() {
@@ -39,14 +36,23 @@ public class Stats {
     }
 
     Total getBookmarked() {
+        if (bookmarked == null) {
+            bookmarked = new Total();
+        }
         return bookmarked;
     }
 
     Total getTagged() {
+        if (tagged == null) {
+            tagged = new Total();
+        }
         return tagged;
     }
 
     Total getPlaylisted() {
+        if (playlisted == null) {
+            playlisted = new Total();
+        }
         return playlisted;
     }
 
@@ -76,10 +82,20 @@ public class Stats {
         GridLayout grid = dialog.findViewById(R.id.grid);
 
         total.addRows(context, grid, R.string.stats_total, 0);
-        played.addRows(context, grid, R.string.stats_played, R.string.stats_unplayed);
-        bookmarked.addRows(context, grid, R.string.stats_bookmarked, R.string.stats_unbookmarked);
-        tagged.addRows(context, grid, R.string.stats_tagged, R.string.stats_untagged);
-        playlisted.addRows(context, grid, R.string.stats_playlisted, R.string.stats_unplaylisted);
+        played.addRows(context, grid,
+                R.string.stats_played, R.string.stats_unplayed);
+        if (bookmarked != null) {
+            bookmarked.addRows(context, grid,
+                    R.string.stats_bookmarked, R.string.stats_unbookmarked);
+        }
+        if (tagged != null) {
+            tagged.addRows(context, grid,
+                    R.string.stats_tagged, R.string.stats_untagged);
+        }
+        if (playlisted != null) {
+            playlisted.addRows(context, grid,
+                    R.string.stats_playlisted, R.string.stats_unplaylisted);
+        }
 
         addRow(context, grid, R.string.stats_last_added, lastAdded);
         addRow(context, grid, R.string.stats_last_played, lastPlayed);
@@ -191,14 +207,14 @@ public class Stats {
             }
 
             String artists;
-            if (total.artistCount == 0) {
-                artists = null;
-            } else {
+            if (total.artistCount > 1) {
                 artists = formatCount(artistCount, total.artistCount);
                 if (artistCount > 1) {
                     artists += "\n" + context.getString(R.string.stats_avg,
                             Util.formatFraction(songCount, artistCount));
                 }
+            } else {
+                artists = null;
             }
 
             Stats.addRow(context, grid, labelId, songs, artists);

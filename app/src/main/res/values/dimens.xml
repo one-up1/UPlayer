@@ -30,6 +30,7 @@
 
     <dimen name="edit_time_number_width">30dp</dimen>
 
+    <dimen name="stats_dialog_padding">12dp</dimen>
     <dimen name="stats_border_width">1dp</dimen>
     <dimen name="stats_text_padding_horizontal">6dp</dimen>
     <dimen name="stats_text_padding_vertical">4dp</dimen>

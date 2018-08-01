@@ -23,7 +23,7 @@ class NumberFilter implements InputFilter {
         // Here the string may contain multiple points,
         // causing Double.parseDouble() to throw an exception.
         try {
-            return s.length() == 0 || (inclusive ? Double.parseDouble(s) <= max :
+            return s.isEmpty() || (inclusive ? Double.parseDouble(s) <= max :
                     Double.parseDouble(s) < max) ? null : "";
         } catch (Exception ex) {
             return "";

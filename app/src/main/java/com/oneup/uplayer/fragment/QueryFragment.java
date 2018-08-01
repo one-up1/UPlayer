@@ -61,6 +61,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     private EditText etMaxYear;
     private Button bMinAdded;
     private Button bMaxAdded;
+    private RadioButton rbAll;
     private RadioButton rbBookmarked;
     private RadioButton rbNotBookmarked;
     private Button bTags;
@@ -94,6 +95,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
 
         preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         dbHelper = new DbHelper(getActivity());
+
+        tags = new ArrayList<>();
+        playlists = new ArrayList<>();
     }
 
     @Override
@@ -126,24 +130,21 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             bMaxAdded.setText(Util.formatDateTime(maxAdded));
         }
 
+        rbAll = rootView.findViewById(R.id.rbAll);
         rbBookmarked = rootView.findViewById(R.id.rbBookmarked);
         rbNotBookmarked = rootView.findViewById(R.id.rbNotBookmarked);
 
         bTags = rootView.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
         bTags.setOnLongClickListener(this);
-        if (tags != null) {
-            setCountString(bTags, tags, R.string.select_tags,
-                    R.string.selected_tags, tagsNot);
-        }
+        setCountString(bTags, tags, R.string.select_tags,
+                R.string.selected_tags, tagsNot);
 
         bPlaylists = rootView.findViewById(R.id.bPlaylists);
         bPlaylists.setOnClickListener(this);
         bPlaylists.setOnLongClickListener(this);
-        if (playlists != null) {
-            setCountString(bPlaylists, playlists, R.string.select_playlists,
-                    R.string.selected_playlists, playlistsNot);
-        }
+        setCountString(bPlaylists, playlists, R.string.select_playlists,
+                R.string.selected_playlists, playlistsNot);
 
         bMinLastPlayed = rootView.findViewById(R.id.bMinLastPlayed);
         bMinLastPlayed.setOnClickListener(this);
@@ -284,15 +285,13 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             getSelection(true, false, true);
             startActivityForResult(new Intent(getActivity(), TagsActivity.class)
                             .putExtras(TagsActivity.TagsFragment.getArguments(
-                                    selection, getSelectionArgs(), tagsNot,
-                                    tags == null ? new ArrayList<String>() : tags)),
+                                    selection, getSelectionArgs(), tagsNot, tags)),
                     REQUEST_SELECT_TAGS);
         } else if (v == bPlaylists) {
             getSelection(true, true, false);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    selection, getSelectionArgs(), playlistsNot,
-                                    playlists == null ? new ArrayList<Playlist>() : playlists, 0)),
+                                    selection, getSelectionArgs(), playlistsNot, playlists, 0)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
@@ -313,7 +312,9 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
         } else if (v == bStatistics) {
             try {
                 getSelection();
-                dbHelper.queryStats(true, selection, getSelectionArgs())
+                dbHelper.queryStats(true,
+                        rbAll.isChecked(), tags.isEmpty(), playlists.isEmpty(),
+                        selection, getSelectionArgs())
                         .showDialog(getActivity(), null);
             } catch (Exception ex) {
                 Log.e(TAG, "Error querying stats", ex);
@@ -335,11 +336,11 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             maxAdded = 0;
             bMaxAdded.setText(R.string.select_max_added);
         } else if (v == bTags) {
-            tags = null;
+            tags = new ArrayList<>();
             tagsNot = false;
             bTags.setText(R.string.select_tags);
         } else if (v == bPlaylists) {
-            playlists = null;
+            playlists = new ArrayList<>();
             playlistsNot = false;
             bPlaylists.setText(R.string.select_playlists);
         } else if (v == bMinLastPlayed) {
@@ -367,7 +368,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private void setCountString(Button b, ArrayList<?> list, int zeroId, int otherId,
-                                      boolean not) {
+                                boolean not) {
         String s = Util.getCountString(getActivity(), list, false, zeroId, otherId);
         if (not) {
             s = getString(R.string.not_selected, s);
@@ -447,7 +448,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             selectionArgs.add(maxTimesPlayed);
         }
 
-        if (tags && this.tags != null && this.tags.size() > 0) {
+        if (tags && !this.tags.isEmpty()) {
             String tagSelection = DbHelper.getInClause(this.tags.size());
             if (tagsNot) {
                 tagSelection = "IS NULL OR " + Song.TAG + " NOT " + tagSelection;
@@ -457,7 +458,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
             selectionArgs.addAll(this.tags);
         }
 
-        if (playlists && this.playlists != null && this.playlists.size() > 0) {
+        if (playlists && !this.playlists.isEmpty()) {
             selection = DbHelper.appendSelection(selection, DbHelper.getPlaylistSongsInClause(
                     this.playlists.size(), playlistsNot));
             for (Playlist playlist : this.playlists) {
@@ -467,7 +468,7 @@ public class QueryFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private String[] getSelectionArgs() {
-        return selectionArgs.size() == 0 ? null : selectionArgs.toArray(new String[0]);
+        return selectionArgs.isEmpty() ? null : selectionArgs.toArray(new String[0]);
     }
 
     private void query() {

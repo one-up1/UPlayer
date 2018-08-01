@@ -446,22 +446,33 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Stats queryStats(boolean artist, String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryStats(" + artist + ", " + selection + ", " +
-                Arrays.toString(selectionArgs) + ")");
+    public Stats queryStats(boolean artist, boolean bookmarked, boolean tagged, boolean playlisted,
+                            String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryStats(" + artist + ", " + bookmarked + ", " + tagged + ", " +
+                playlisted + ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
         Stats stats = new Stats();
         try (SQLiteDatabase db = getReadableDatabase()) {
             queryTotal(db, stats.getTotal(), artist, selection, selectionArgs);
             queryTotal(db, stats.getPlayed(), artist,
-                    appendSelection(selection, Song.LAST_PLAYED + " IS NOT NULL"), selectionArgs);
-            queryTotal(db, stats.getBookmarked(), artist,
-                    appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL"), selectionArgs);
-            queryTotal(db, stats.getTagged(), artist,
-                    appendSelection(selection, Song.TAG + " IS NOT NULL"), selectionArgs);
-            queryTotal(db, stats.getPlaylisted(), artist, appendSelection(selection,
-                    TABLE_SONGS + "." + Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " +
-                            TABLE_PLAYLIST_SONGS + " WHERE " + Playlist.PLAYLIST_ID + " != " +
-                            Playlist.DEFAULT_PLAYLIST_ID + ")"), selectionArgs);
+                    appendSelection(selection, Song.LAST_PLAYED + " IS NOT NULL"),
+                    selectionArgs);
+            if (bookmarked) {
+                queryTotal(db, stats.getBookmarked(), artist,
+                        appendSelection(selection, Song.BOOKMARKED + " IS NOT NULL"),
+                        selectionArgs);
+            }
+            if (tagged) {
+                queryTotal(db, stats.getTagged(), artist,
+                        appendSelection(selection, Song.TAG + " IS NOT NULL"),
+                        selectionArgs);
+            }
+            if (playlisted) {
+                queryTotal(db, stats.getPlaylisted(), artist, appendSelection(selection,
+                        TABLE_SONGS + "." + Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " +
+                                TABLE_PLAYLIST_SONGS + " WHERE " + Playlist.PLAYLIST_ID + " != " +
+                                Playlist.DEFAULT_PLAYLIST_ID + ")"),
+                        selectionArgs);
+            }
 
             try (Cursor c = db.query(TABLE_SONGS,
                     new String[]{

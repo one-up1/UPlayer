@@ -53,8 +53,8 @@ public class EditText extends AppCompatEditText implements View.OnLongClickListe
     }
 
     public String getString() {
-        String s = getText().toString().trim();
-        return s.length() == 0 ? null : s;
+        String s = getText().toString();
+        return s.isEmpty() ? null : s;
     }
 
     public void setString(String s) {

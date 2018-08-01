@@ -351,7 +351,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         // Use playlist songs from DB when no songs are specified.
         if (songs == null) {
             songs = dbHelper.queryPlaylistSongs(playlist);
-            if (songs.size() == 0) {
+            if (songs.isEmpty()) {
                 Log.w(TAG, "Playlist is empty");
                 if (this.songs == null) {
                     stopSelf();
@@ -463,7 +463,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void savePlaylist() {
         Log.d(TAG, "MainService.savePlaylist()");
-        if (songs == null || songs.size() == 0) {
+        if (songs == null || songs.isEmpty()) {
             Log.d(TAG, "No playlist to save");
             return;
         }

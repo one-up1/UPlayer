@@ -17,6 +17,7 @@
         android:id="@+id/etTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:inputType="textCapWords"
         android:hint="@string/title"
         app:layout_columnSpan="2"
         app:layout_columnWeight="1" />
@@ -25,6 +26,7 @@
         android:id="@+id/etArtist"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:inputType="textCapWords"
         android:hint="@string/artist"
         app:layout_columnWeight="1" />
 
@@ -46,8 +48,8 @@
         android:id="@+id/etMaxYear"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="@string/max_year"
         android:inputType="number"
+        android:hint="@string/max_year"
         app:layout_columnWeight="1" />
 
     <Button
@@ -126,16 +128,16 @@
         android:id="@+id/etMinTimesPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="@string/min_times_played"
         android:inputType="number"
+        android:hint="@string/min_times_played"
         app:layout_columnWeight="1" />
 
     <com.oneup.uplayer.widget.EditText
         android:id="@+id/etMaxTimesPlayed"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="@string/max_times_played"
         android:inputType="number"
+        android:hint="@string/max_times_played"
         app:layout_columnWeight="1" />
 
     <Spinner

@@ -101,12 +101,14 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
         super.setListItemContent(rootView, position, item);
 
         CheckBox checkBox = rootView.findViewById(listItemCheckBoxId);
-        if (checkedListItems != null) {
+        if (checkedListItems == null) {
+            checkBox.setVisibility(View.GONE);
+        } else {
             checkBox.setOnCheckedChangeListener(null);
             checkBox.setChecked(checkedListItems.contains(item));
             checkBox.setOnCheckedChangeListener(this);
-        } else {
-            checkBox.setVisibility(View.GONE);
+
+            checkBox.setVisibility(View.VISIBLE);
         }
     }
 

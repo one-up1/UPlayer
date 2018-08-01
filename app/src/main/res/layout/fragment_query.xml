@@ -99,7 +99,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/select_tags"
-        android:singleLine="true"
+        android:maxLines="1"
+        android:ellipsize="end"
         app:layout_columnWeight="1" />
 
     <Button
@@ -107,7 +108,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/select_playlists"
-        android:singleLine="true"
+        android:maxLines="1"
+        android:ellipsize="end"
         app:layout_columnWeight="1" />
 
     <Button

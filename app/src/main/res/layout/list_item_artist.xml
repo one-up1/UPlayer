@@ -14,7 +14,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/list_item_text_large"
-        android:textColor="@color/list_item_text" />
+        android:textColor="@color/list_item_text"
+        android:maxLines="1"
+        android:ellipsize="end" />
 
     <TextView
         android:id="@+id/tvSortColumnValue"

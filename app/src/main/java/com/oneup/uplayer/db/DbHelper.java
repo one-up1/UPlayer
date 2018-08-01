@@ -285,6 +285,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     delete(db, TABLE_ARTISTS, song.getArtistId());
                 }
 
+                deleteOrphanedPlaylistSongs(db, song);
+
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -533,6 +535,11 @@ public class DbHelper extends SQLiteOpenHelper {
                     updateArtistStats(db, null);
                 }
 
+                // Delete orphaned playlist songs when songs have been deleted.
+                if (results[1].rowsDeleted > 0) {
+                    deleteOrphanedPlaylistSongs(db, null);
+                }
+
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -711,6 +718,21 @@ public class DbHelper extends SQLiteOpenHelper {
     private static void deletePlaylistSongs(SQLiteDatabase db, Playlist playlist) {
         Log.d(TAG, db.delete(TABLE_PLAYLIST_SONGS, Playlist.PLAYLIST_ID + "=?",
                 getWhereArgs(playlist.getId())) + " playlist songs deleted");
+    }
+
+    private static void deleteOrphanedPlaylistSongs(SQLiteDatabase db, Song song) {
+        String whereClause;
+        String[] whereArgs;
+        if (song == null) {
+            whereClause = Playlist.SONG_ID + " NOT IN(SELECT " +
+                    TABLE_SONGS + "." + Song._ID + " FROM " + TABLE_SONGS + ")";
+            whereArgs = null;
+        } else {
+            whereClause = Playlist.SONG_ID + "=?";
+            whereArgs = getWhereArgs(song.getId());
+        }
+        Log.d(TAG, db.delete(TABLE_PLAYLIST_SONGS, whereClause, whereArgs) +
+                " orphaned playlist songs deleted");
     }
 
     private static void queryTotal(SQLiteDatabase db, Stats.Total total, boolean artist,

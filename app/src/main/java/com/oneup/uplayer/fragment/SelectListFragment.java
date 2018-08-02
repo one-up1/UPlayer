@@ -127,6 +127,12 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
     }
 
     protected ArrayList<T> getCheckedListItems() {
+        ArrayList<T> checkedListItems = new ArrayList<>();
+        for (T item : this.checkedListItems) {
+            if (getData().contains(item)) {
+                checkedListItems.add(item);
+            }
+        }
         return checkedListItems;
     }
 

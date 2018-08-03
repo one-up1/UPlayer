@@ -6,9 +6,9 @@ import android.provider.BaseColumns;
 
 public class Playlist implements Parcelable, BaseColumns {
     public static final String NAME = "name";
-    public static final String MODIFIED = "modified";
     public static final String SONG_INDEX = "song_index";
     public static final String SONG_POSITION = "song_position";
+    public static final String LAST_PLAYED = "last_played";
 
     public static final String PLAYLIST_ID = "playlist_id";
     public static final String SONG_ID = "song_id";
@@ -17,9 +17,10 @@ public class Playlist implements Parcelable, BaseColumns {
 
     private long id;
     private String name;
-    private long modified;
     private int songIndex;
     private int songPosition;
+    private long lastPlayed;
+    private int songCount;
 
     @Override
     public int hashCode() {
@@ -58,9 +59,10 @@ public class Playlist implements Parcelable, BaseColumns {
     public void writeToParcel(Parcel out, int flags) {
         out.writeLong(id);
         out.writeString(name);
-        out.writeLong(modified);
         out.writeInt(songIndex);
         out.writeInt(songPosition);
+        out.writeLong(lastPlayed);
+        out.writeInt(songCount);
     }
 
     public long getId() {
@@ -81,14 +83,6 @@ public class Playlist implements Parcelable, BaseColumns {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public long getModified() {
-        return modified;
-    }
-
-    public void setModified(long modified) {
-        this.modified = modified;
     }
 
     public int getSongIndex() {
@@ -115,6 +109,22 @@ public class Playlist implements Parcelable, BaseColumns {
         this.songPosition = songPosition;
     }
 
+    public long getLastPlayed() {
+        return lastPlayed;
+    }
+
+    public void setLastPlayed(long lastPlayed) {
+        this.lastPlayed = lastPlayed;
+    }
+
+    public int getSongCount() {
+        return songCount;
+    }
+
+    public void setSongCount(int songCount) {
+        this.songCount = songCount;
+    }
+
     public void reset() {
         songIndex = 0;
         songPosition = 0;
@@ -133,9 +143,10 @@ public class Playlist implements Parcelable, BaseColumns {
             Playlist playlist = new Playlist();
             playlist.id = in.readLong();
             playlist.name = in.readString();
-            playlist.modified = in.readLong();
             playlist.songIndex = in.readInt();
             playlist.songPosition = in.readInt();
+            playlist.lastPlayed = in.readLong();
+            playlist.songCount = in.readInt();
             return playlist;
         }
 

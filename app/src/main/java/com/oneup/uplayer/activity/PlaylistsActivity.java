@@ -113,12 +113,17 @@ public class PlaylistsActivity extends AppCompatActivity {
             TextView tvName = rootView.findViewById(R.id.tvName);
             tvName.setText(playlist.getName());
 
-            // Set (or hide) modified date.
+            // Set song count.
+            TextView tvSongCount = rootView.findViewById(R.id.tvSongCount);
+            tvSongCount.setText(Util.getCountString(getActivity(),
+                    R.plurals.songs, playlist.getSongCount()));
+
+            // Set (or hide) last played.
             TextView tvModified = rootView.findViewById(R.id.tvModified);
-            if (playlist.getModified() == 0) {
+            if (playlist.getLastPlayed() == 0) {
                 tvModified.setVisibility(View.GONE);
             } else {
-                tvModified.setText(Util.formatDateTimeAgo(playlist.getModified()));
+                tvModified.setText(Util.formatTimeAgo(playlist.getLastPlayed()));
                 tvModified.setVisibility(View.VISIBLE);
             }
         }

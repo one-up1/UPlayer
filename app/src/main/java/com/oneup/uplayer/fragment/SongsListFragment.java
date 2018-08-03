@@ -72,6 +72,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                 PlaylistsActivity.EXTRA_PLAYLIST);
                         playlist.setSongIndex(0);
                         playlist.setSongPosition(0);
+                        playlist.setLastPlayed(0);
                         getDbHelper().insertOrUpdatePlaylist(playlist, getData());
                         Util.showToast(getActivity(), R.string.playlist_saved);
                     } catch (Exception ex) {

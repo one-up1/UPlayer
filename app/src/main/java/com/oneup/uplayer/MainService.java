@@ -465,8 +465,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
-            playlist.setModified(Calendar.currentTime());
             playlist.setSongPosition(player.getCurrentPosition());
+            playlist.setLastPlayed(Calendar.currentTime());
             Log.d(TAG, "songIndex=" + playlist.getSongIndex() +
                     ", songPosition=" + playlist.getSongPosition());
             dbHelper.insertOrUpdatePlaylist(playlist, songs);

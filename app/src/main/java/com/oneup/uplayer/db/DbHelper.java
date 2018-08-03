@@ -68,9 +68,9 @@ public class DbHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_PLAYLISTS + "(" +
                     Playlist._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                     Playlist.NAME + " TEXT," +
-                    Playlist.MODIFIED + " INTEGER," +
                     Playlist.SONG_INDEX + " INTEGER," +
-                    Playlist.SONG_POSITION + " INTEGER)";
+                    Playlist.SONG_POSITION + " INTEGER," +
+                    Playlist.LAST_PLAYED + " INTEGER)";
 
     private static final String SQL_CREATE_PLAYLIST_SONGS =
             "CREATE TABLE " + TABLE_PLAYLIST_SONGS + "(" +
@@ -310,17 +310,32 @@ public class DbHelper extends SQLiteOpenHelper {
 
         ArrayList<Playlist> playlists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLISTS, null, selection, selectionArgs,
-                    null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
+            try (Cursor c = db.query(TABLE_PLAYLISTS,
+                    new String[]{
+                            Playlist._ID,
+                            Playlist.NAME,
+                            Playlist.SONG_INDEX,
+                            Playlist.SONG_POSITION,
+                            Playlist.LAST_PLAYED,
+                            "(SELECT COUNT(*) FROM " + TABLE_PLAYLIST_SONGS +
+                                    " WHERE " + Playlist.PLAYLIST_ID + "=" +
+                                    TABLE_PLAYLISTS + "." + Playlist._ID + ")"
+                    },
+                    selection, selectionArgs, null, null,
+                    Playlist.LAST_PLAYED + " DESC," + Playlist.NAME)) {
                 while (c.moveToNext()) {
-                    //TODO: Default playlist first
                     Playlist playlist = new Playlist();
                     playlist.setId(c.getLong(0));
                     playlist.setName(c.getString(1));
-                    playlist.setModified(c.getLong(2));
-                    playlist.setSongIndex(c.getInt(3));
-                    playlist.setSongPosition(c.getInt(4));
-                    playlists.add(playlist);
+                    playlist.setSongIndex(c.getInt(2));
+                    playlist.setSongPosition(c.getInt(3));
+                    playlist.setLastPlayed(c.getLong(4));
+                    playlist.setSongCount(c.getInt(5));
+                    if (playlist.isDefault()) {
+                        playlists.add(0, playlist);
+                    } else {
+                        playlists.add(playlist);
+                    }
                 }
             }
         }
@@ -341,10 +356,9 @@ public class DbHelper extends SQLiteOpenHelper {
                 if (songs == null) {
                     values.put(Playlist.NAME, playlist.getName());
                 } else {
-                    //TODO: Always update modified or just remove it?
-                    putValue(values, Playlist.MODIFIED, playlist.getModified());
                     putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
                     putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
+                    putValue(values, Playlist.LAST_PLAYED, playlist.getLastPlayed());
                 }
                 if (playlist.getId() == 0) {
                     playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
@@ -570,9 +584,9 @@ public class DbHelper extends SQLiteOpenHelper {
                     new String[]{
                             Playlist._ID,
                             Playlist.NAME,
-                            Playlist.MODIFIED,
                             Playlist.SONG_INDEX,
-                            Playlist.SONG_POSITION
+                            Playlist.SONG_POSITION,
+                            Playlist.LAST_PLAYED,
                     });
 
             backupTable(backup, db, TABLE_PLAYLIST_SONGS,
@@ -652,9 +666,9 @@ public class DbHelper extends SQLiteOpenHelper {
                         new String[]{
                                 Playlist._ID,
                                 Playlist.NAME,
-                                Playlist.MODIFIED,
                                 Playlist.SONG_INDEX,
-                                Playlist.SONG_POSITION
+                                Playlist.SONG_POSITION,
+                                Playlist.LAST_PLAYED,
                         },
                         null, null);
 

@@ -92,6 +92,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.savePlaylist).setVisible(artistId == 0);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.play_next:

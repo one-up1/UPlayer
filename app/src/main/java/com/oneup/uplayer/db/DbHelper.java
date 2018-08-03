@@ -313,6 +313,7 @@ public class DbHelper extends SQLiteOpenHelper {
             try (Cursor c = db.query(TABLE_PLAYLISTS, null, selection, selectionArgs,
                     null, null, Playlist.MODIFIED + " DESC," + Playlist.NAME)) {
                 while (c.moveToNext()) {
+                    //TODO: Default playlist first
                     Playlist playlist = new Playlist();
                     playlist.setId(c.getLong(0));
                     playlist.setName(c.getString(1));
@@ -340,6 +341,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 if (songs == null) {
                     values.put(Playlist.NAME, playlist.getName());
                 } else {
+                    //TODO: Always update modified or just remove it?
                     putValue(values, Playlist.MODIFIED, playlist.getModified());
                     putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
                     putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
@@ -353,9 +355,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 // Insert playlist songs, deleting any existing ones.
                 if (songs != null) {
-                    if (playlist.getId() > 0) {
-                        deletePlaylistSongs(db, playlist);
-                    }
+                    deletePlaylistSongs(db, playlist);
                     for (Song song : songs) {
                         insertPlaylistSong(db, playlist, song);
                     }

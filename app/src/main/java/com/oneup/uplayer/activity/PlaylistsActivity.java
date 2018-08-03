@@ -71,8 +71,8 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-            super.onCreateOptionsMenu(menu, inflater);
             inflater.inflate(R.menu.fragment_playlists, menu);
+            super.onCreateOptionsMenu(menu, inflater);
         }
 
         @Override

@@ -6,21 +6,28 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
+import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
+import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
-    protected static final int REQUEST_EDIT_SONG = 1;
+    protected static final int REQUEST_SELECT_PLAYLIST = 1;
+    protected static final int REQUEST_EDIT_SONG = 2;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
@@ -29,10 +36,48 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.fragment_songs_list, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.savePlaylist:
+                startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
+                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                        null, null, null, null, R.string.save_playlist_confirm)),
+                        REQUEST_SELECT_PLAYLIST);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
+                case REQUEST_SELECT_PLAYLIST:
+                    try {
+                        Playlist playlist = data.getParcelableExtra(
+                                PlaylistsActivity.EXTRA_PLAYLIST);
+                        playlist.setSongIndex(0);
+                        playlist.setSongPosition(0);
+                        getDbHelper().insertOrUpdatePlaylist(playlist, getData());
+                        Util.showToast(getActivity(), R.string.playlist_saved);
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error saving playlist", ex);
+                    }
+                    break;
                 case REQUEST_EDIT_SONG:
                     try {
                         getDbHelper().updateSong((Song)
@@ -50,8 +95,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     @Override
     protected String getActivityTitle() {
-        return Util.getCountString(getActivity(), R.plurals.songs, getCount())
-                + ", " + Util.formatDuration(Song.getDuration(getData(), 0));
+        return Util.getCountString(getActivity(), R.plurals.songs, getCount());
     }
 
     @Override

@@ -87,8 +87,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_songs, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

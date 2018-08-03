@@ -11,9 +11,6 @@ import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -63,8 +60,6 @@ public class PlaylistActivity extends AppCompatActivity {
 
     public static class PlaylistFragment extends SongsListFragment
             implements MainService.OnUpdateListener {
-        private static final int REQUEST_SELECT_PLAYLIST = 100;
-
         private MainService service;
 
         private int moveIndex;
@@ -78,7 +73,6 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             Log.d(TAG, "PlaylistFragment.onCreate()");
             super.onCreate(savedInstanceState);
-            setHasOptionsMenu(true);
 
             getActivity().bindService(new Intent(getActivity(), MainService.class),
                     serviceConnection, BIND_AUTO_CREATE);
@@ -96,30 +90,10 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-            super.onCreateOptionsMenu(menu, inflater);
-            inflater.inflate(R.menu.fragment_playlist, menu);
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.savePlaylist:
-                    startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
-                                    .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                            null, null, null, null, R.string.save_playlist_confirm)),
-                            REQUEST_SELECT_PLAYLIST);
-                    return true;
-                default:
-                    return super.onOptionsItemSelected(item);
-            }
-        }
-
-        @Override
         public void onCreateContextMenu(ContextMenu menu, View v,
                                         ContextMenu.ContextMenuInfo menuInfo) {
+            getActivity().getMenuInflater().inflate(R.menu.list_item_playlist_song, menu);
             super.onCreateContextMenu(menu, v, menuInfo);
-            menu.findItem(R.id.move).setVisible(true);
         }
 
         @Override
@@ -137,7 +111,6 @@ public class PlaylistActivity extends AppCompatActivity {
                     case REQUEST_SELECT_PLAYLIST:
                         service.setPlaylist((Playlist) data.getParcelableExtra(
                                 PlaylistsActivity.EXTRA_PLAYLIST));
-                        Util.showToast(getActivity(), R.string.playlist_saved);
                         break;
                 }
             }
@@ -152,6 +125,12 @@ public class PlaylistActivity extends AppCompatActivity {
         protected ArrayList<Song> loadData() {
             Log.d(TAG, "PlaylistFragment.loadData()");
             return service.getSongs();
+        }
+
+        @Override
+        protected String getActivityTitle() {
+            return super.getActivityTitle() + ", " +
+                    Util.formatDuration(Song.getDuration(getData(), 0));
         }
 
         @Override

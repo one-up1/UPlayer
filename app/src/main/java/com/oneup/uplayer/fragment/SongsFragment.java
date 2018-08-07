@@ -2,6 +2,7 @@ package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,6 +15,7 @@ import android.widget.Spinner;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.activity.FilterActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
@@ -33,7 +35,13 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     private static final String ARG_ARTIST_ID = "artist_id";
 
+    private static final int REQUEST_SELECT_FILTER = 100;
+
     private long artistId;
+
+    private Bundle filterValues;
+    private String filterSelection;
+    private String[] filterSelectionArgs;
 
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
@@ -95,6 +103,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.savePlaylist).setVisible(artistId == 0);
+        menu.findItem(R.id.clear_filter).setVisible(filterValues != null);
     }
 
     @Override
@@ -112,6 +121,19 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                     Util.showToast(getActivity(), R.string.playing_all_last);
                 }
                 return true;
+            case R.id.filter:
+                startActivityForResult(new Intent(getActivity(), FilterActivity.class)
+                                .putExtra(FilterActivity.EXTRA_VALUES, filterValues)
+                                .putExtra(FilterActivity.EXTRA_SELECTION, getSelection())
+                                .putExtra(FilterActivity.EXTRA_SELECTION_ARGS, getSelectionArgs()),
+                        REQUEST_SELECT_FILTER);
+                return true;
+            case R.id.clear_filter:
+                filterValues = null;
+                filterSelection = null;
+                filterSelectionArgs = null;
+                reloadData();
+                getActivity().invalidateOptionsMenu();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -122,6 +144,22 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.findItem(R.id.view_artist).setVisible(artistId == 0);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == AppCompatActivity.RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_SELECT_FILTER:
+                    filterValues = data.getBundleExtra(FilterActivity.EXTRA_VALUES);
+                    filterSelection = data.getStringExtra(FilterActivity.EXTRA_SELECTION);
+                    filterSelectionArgs = data.getStringArrayExtra(
+                            FilterActivity.EXTRA_SELECTION_ARGS);
+                    getActivity().invalidateOptionsMenu();
+                    break;
+            }
+        }
     }
 
     @Override
@@ -151,7 +189,10 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(getSelection(), getSelectionArgs(), getOrderBy());
+        return getDbHelper().querySongs(
+                DbHelper.concatSelection(getSelection(), filterSelection),
+                DbHelper.concatSelectionArgs(getSelectionArgs(), filterSelectionArgs),
+                getOrderBy());
     }
 
     @Override

@@ -43,6 +43,10 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".activity.FilterActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activity.DateTimeActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />

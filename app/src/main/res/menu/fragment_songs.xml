@@ -15,6 +15,10 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/artist_info"
+        android:title="@string/artist_info" />
+
+    <item
         android:id="@+id/filter"
         android:title="@string/filter" />
 

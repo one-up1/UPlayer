@@ -276,6 +276,10 @@ public abstract class ListFragment<T>
         return data.size();
     }
 
+    protected T getListItem(int position) {
+        return data.get(position);
+    }
+
     protected int getListItemPosition(View v) {
         return getListItemPosition(getListView().getPositionForView((View) v.getParent()));
     }

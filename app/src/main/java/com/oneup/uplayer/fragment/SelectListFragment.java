@@ -93,7 +93,7 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        setListItemChecked(getData().get(getListItemPosition(buttonView)), isChecked);
+        setListItemChecked(getListItem(getListItemPosition(buttonView)), isChecked);
     }
 
     @Override

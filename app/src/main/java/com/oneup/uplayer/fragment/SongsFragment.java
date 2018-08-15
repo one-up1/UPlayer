@@ -3,6 +3,7 @@ package com.oneup.uplayer.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +33,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public static final int SORT_COLUMN_YEAR = 5;
     public static final int SORT_COLUMN_TAG = 6;
     public static final int SORT_COLUMN_BOOKMARKED = 7;
+
+    private static final String TAG = "UPlayer";
 
     private static final String ARG_ARTIST_ID = "artist_id";
 
@@ -102,8 +105,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.savePlaylist).setVisible(artistId == 0);
+        menu.findItem(R.id.artist_info).setVisible(artistId != 0);
         menu.findItem(R.id.clear_filter).setVisible(filterValues != null);
+        menu.findItem(R.id.savePlaylist).setVisible(artistId == 0);
     }
 
     @Override
@@ -119,6 +123,16 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 if (!getData().isEmpty()) {
                     add(getData(), false);
                     Util.showToast(getActivity(), R.string.playing_all_last);
+                }
+                return true;
+            case R.id.artist_info:
+                try {
+                    getDbHelper().queryStats(false, true, true, true, Song.ARTIST_ID + "=?",
+                            DbHelper.getWhereArgs(artistId))
+                            .showDialog(getActivity(), getListItem(0).getArtist());
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error querying artist stats", ex);
+                    Util.showErrorDialog(getActivity(), ex);
                 }
                 return true;
             case R.id.filter:

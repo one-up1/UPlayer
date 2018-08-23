@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.oneup.uplayer">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -51,7 +52,10 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />
 
-        <service android:name=".MainService" />
+        <service
+            android:name=".MainService"
+            android:exported="true"
+            tools:ignore="ExportedService" />
 
         <receiver android:name=".MainReceiver">
             <intent-filter>

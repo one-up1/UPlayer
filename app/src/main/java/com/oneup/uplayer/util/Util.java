@@ -73,17 +73,12 @@ public class Util {
                 Snackbar.LENGTH_INDEFINITE).show();
     }
 
-    public static void showConfirmDialog(Context context, int messageId,
-                                         DialogInterface.OnClickListener listener) {
-        showConfirmDialog(context, context.getString(messageId), listener);
-    }
-
-    public static void showConfirmDialog(Context context, String message,
-                                         DialogInterface.OnClickListener listener) {
+    public static void showConfirmDialog(Context context, DialogInterface.OnClickListener listener,
+                                         int messageId, Object... formatArgs) {
         new AlertDialog.Builder(context)
                 .setIcon(R.drawable.ic_dialog_warning)
                 .setTitle(R.string.app_name)
-                .setMessage(message)
+                .setMessage(context.getString(messageId, formatArgs))
                 .setPositiveButton(R.string.yes, listener)
                 .setNegativeButton(R.string.no, null)
                 .show();

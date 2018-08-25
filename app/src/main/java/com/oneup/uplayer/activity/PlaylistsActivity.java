@@ -139,14 +139,13 @@ public class PlaylistsActivity extends AppCompatActivity {
                     break;
                 default:
                     Util.showConfirmDialog(getActivity(),
-                            getString(selectConfirmId, playlist),
                             new DialogInterface.OnClickListener() {
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     select(playlist);
                                 }
-                            });
+                            }, selectConfirmId, playlist);
                     break;
             }
         }
@@ -224,7 +223,6 @@ public class PlaylistsActivity extends AppCompatActivity {
             }
 
             Util.showConfirmDialog(getActivity(),
-                    getString(R.string.delete_confirm, playlist),
                     new DialogInterface.OnClickListener() {
 
                         @Override
@@ -239,7 +237,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                                 Util.showErrorDialog(getActivity(), ex);
                             }
                         }
-                    });
+                    }, R.string.delete_confirm, playlist);
         }
 
         public static Bundle getArguments(String selection, String[] selectionArgs,

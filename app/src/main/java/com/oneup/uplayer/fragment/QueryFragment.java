@@ -144,7 +144,7 @@ public class QueryFragment extends Fragment
     }
 
     private void syncDatabase() {
-        Util.showConfirmDialog(getActivity(), R.string.sync_database_confirm,
+        Util.showConfirmDialog(getActivity(),
                 new DialogInterface.OnClickListener() {
 
                     @Override
@@ -177,7 +177,7 @@ public class QueryFragment extends Fragment
                             }
                         }).start();
                     }
-                });
+                }, R.string.sync_database_confirm);
     }
 
     private void backup() {
@@ -197,7 +197,7 @@ public class QueryFragment extends Fragment
     }
 
     private void restoreBackup() {
-        Util.showConfirmDialog(getActivity(), R.string.restore_backup_confirm,
+        Util.showConfirmDialog(getActivity(),
                 new DialogInterface.OnClickListener() {
 
                     @Override
@@ -221,7 +221,7 @@ public class QueryFragment extends Fragment
                             }
                         }).start();
                     }
-                });
+                }, R.string.restore_backup_confirm);
     }
 
     private void reload() {

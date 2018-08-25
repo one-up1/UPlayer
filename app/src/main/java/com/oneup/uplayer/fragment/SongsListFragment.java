@@ -114,7 +114,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     }
 
     @Override
-    protected void onContextItemSelected(int itemId, int position, Song song) {
+    protected void onContextItemSelected(int itemId, int position, final Song song) {
         switch (itemId) {
             case R.id.view_artist:
                 startActivity(new Intent(getActivity(), SongsActivity.class)
@@ -144,14 +144,21 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 }
                 break;
             case R.id.mark_played:
-                try {
-                    getDbHelper().updateSongPlayed(song);
-                    Util.showToast(getActivity(), R.string.times_played, song.getTimesPlayed());
-                    reloadData();
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error updating song played", ex);
-                    Util.showErrorDialog(getActivity(), ex);
-                }
+                Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            getDbHelper().updateSongPlayed(song);
+                            Util.showToast(getActivity(), R.string.times_played,
+                                    song.getTimesPlayed());
+                            reloadData();
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error updating song played", ex);
+                            Util.showErrorDialog(getActivity(), ex);
+                        }
+                    }
+                }, R.string.mark_played_confirm, song);
                 break;
             case R.id.delete:
                 deleteSong(position, song);
@@ -164,7 +171,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     private void deleteSong(final int position, final Song song) {
         Util.showConfirmDialog(getActivity(),
-                getString(R.string.delete_confirm, song),
                 new DialogInterface.OnClickListener() {
 
                     @Override
@@ -199,6 +205,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                             Util.showErrorDialog(getActivity(), ex);
                         }
                     }
-                });
+                }, R.string.delete_confirm, song);
     }
 }

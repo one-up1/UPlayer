@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.SpannableString;
-import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
@@ -137,12 +135,10 @@ public class PlaylistActivity extends AppCompatActivity {
         protected void setListItemContent(View rootView, int position, Song song) {
             super.setListItemContent(rootView, position, song);
 
-            // Underline the current song.
+            // Mark the current song.
             if (service != null && position == service.getPlaylist().getSongIndex()) {
                 TextView tvTitle = rootView.findViewById(R.id.tvTitle);
-                SpannableString underlinedText = new SpannableString(tvTitle.getText());
-                underlinedText.setSpan(new UnderlineSpan(), 0, underlinedText.length(), 0);
-                tvTitle.setText(underlinedText);
+                tvTitle.setText(Util.underline(tvTitle.getText()));
             }
 
             // Mark the song that is being moved.

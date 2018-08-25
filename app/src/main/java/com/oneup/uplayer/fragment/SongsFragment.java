@@ -127,8 +127,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 return true;
             case R.id.artist_info:
                 try {
-                    getDbHelper().queryStats(false, true, true, true, Song.ARTIST_ID + "=?",
-                            DbHelper.getWhereArgs(artistId))
+                    getDbHelper().queryStats(artistId)
                             .showDialog(getActivity(), getListItem(0).getArtist());
                 } catch (Exception ex) {
                     Log.e(TAG, "Error querying artist stats", ex);

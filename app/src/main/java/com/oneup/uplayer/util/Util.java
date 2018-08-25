@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -164,6 +166,12 @@ public class Util {
             default:
                 return context.getString(otherId, list.size());
         }
+    }
+
+    public static SpannableString underline(CharSequence text) {
+        SpannableString ss = new SpannableString(text);
+        ss.setSpan(new UnderlineSpan(), 0, text.length(), 0);
+        return ss;
     }
 
     public static void hideSoftInput(Context context, View view) {

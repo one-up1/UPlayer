@@ -244,16 +244,15 @@ public abstract class ListFragment<T>
 
         StringBuilder orderBy = new StringBuilder();
         for (String sortColumn : sortColumns) {
-            if (sortColumn == null) {
-                continue;
-            }
-            if (orderBy.length() > 0) {
-                orderBy.append(',');
-            }
-            orderBy.append(sortColumn);
-            if (sortDesc) {
-                orderBy.append(" DESC");
-                sortDesc = false;
+            if (sortColumn != null) {
+                if (orderBy.length() > 0) {
+                    orderBy.append(',');
+                }
+                orderBy.append(sortColumn);
+                if (sortDesc) {
+                    orderBy.append(" DESC");
+                    sortDesc = false;
+                }
             }
         }
         return orderBy.toString();

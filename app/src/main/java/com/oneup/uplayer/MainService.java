@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -302,10 +303,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void update() {
         Log.d(TAG, "MainService.update()");
         Log.d(TAG, "songIndex=" + playlist.getSongIndex());
+
+        // Get song from playlist and query it to refresh any fields that may have changed.
         Song song = getSong();
         dbHelper.querySong(song);
 
-        // Set title and artist.
+        // Set song title and artist.
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
 
@@ -318,11 +321,30 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
                 R.string.playlist_position, playlist.getSongIndex() + 1, songs.size(), left));
 
-        // Set year, tag and playlist name.
-        setOptionalValue(R.id.tvYear, song.getYear() == 0 ? null
+        // Set song year and tag.
+        setOptionalValue(R.id.tvSongYear, song.getYear() == 0 ? null
                 : Integer.toString(song.getYear()));
-        setOptionalValue(R.id.tvTag, song.getTag());
-        setOptionalValue(R.id.tvPlaylistName, playlist.isDefault() ? null : playlist.getName());
+        setOptionalValue(R.id.tvSongTag, song.getTag());
+
+        // Set the names of the playlists the song is on, marking the current playlist.
+        SpannableStringBuilder playlistNames = new SpannableStringBuilder();
+        for (Playlist playlist : dbHelper.queryPlaylists(song)) {
+            if (!playlist.isDefault()) {
+                if (playlist.equals(this.playlist)) {
+                    if (playlistNames.length() > 0) {
+                        playlistNames.insert(0, ", ");
+                    }
+                    playlistNames.insert(0, Util.underline(playlist.getName()));
+                } else {
+                    if (playlistNames.length() > 0) {
+                        playlistNames.append(", ");
+                    }
+                    playlistNames.append(playlist.getName());
+                }
+            }
+        }
+        setOptionalValue(R.id.tvSongPlaylistNames,
+                playlistNames.length() == 0 ? null : playlistNames);
 
         // Set play/pause image and volume.
         notificationViews.setImageViewResource(R.id.ibPausePlay, prepared && player.isPlaying() ?
@@ -509,11 +531,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
-    private void setOptionalValue(int viewId, String s) {
-        if (s == null) {
+    private void setOptionalValue(int viewId, CharSequence text) {
+        if (text == null) {
             notificationViews.setViewVisibility(viewId, View.GONE);
         } else {
-            notificationViews.setTextViewText(viewId, s);
+            notificationViews.setTextViewText(viewId, text);
             notificationViews.setViewVisibility(viewId, View.VISIBLE);
         }
     }

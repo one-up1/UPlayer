@@ -294,6 +294,10 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    public ArrayList<Playlist> queryPlaylists(Song song) {
+        return queryPlaylists(Song._ID + "=?", getWhereArgs(song.getId()));
+    }
+
     public ArrayList<Playlist> queryPlaylists(String songsSelection, String[] selectionArgs) {
         Log.d(TAG, "DbHelper.queryPlaylists(" + songsSelection + ", " +
                 Arrays.toString(selectionArgs) + ")");
@@ -467,6 +471,11 @@ public class DbHelper extends SQLiteOpenHelper {
                 db.endTransaction();
             }
         }
+    }
+
+    public Stats queryStats(long artistId) {
+        return queryStats(false, true, true, true,
+                Song.ARTIST_ID + "=?", getWhereArgs(artistId));
     }
 
     public Stats queryStats(boolean artist, boolean bookmarked, boolean tagged, boolean playlisted,

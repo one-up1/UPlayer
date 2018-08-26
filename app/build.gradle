@@ -6,8 +6,8 @@ android {
         applicationId "com.oneup.uplayer"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 334
-        versionName "6.4.334"
+        versionCode 335
+        versionName "6.5.335"
     }
     buildTypes {
         release {

@@ -105,7 +105,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.artist_info).setVisible(artistId != 0);
+        menu.findItem(R.id.artist_info).setVisible(artistId > 0);
         menu.findItem(R.id.clear_filter).setVisible(filterValues != null);
         menu.findItem(R.id.savePlaylist).setVisible(artistId == 0);
     }
@@ -247,8 +247,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
             case SORT_COLUMN_TAG:
                 return song.getTag();
             case SORT_COLUMN_BOOKMARKED:
-                return song.getBookmarked() == 0 ? null
-                        : Util.formatTimeAgo(song.getBookmarked());
+                return song.getBookmarked() == 0 ? null : Util.formatTimeAgo(song.getBookmarked());
             default:
                 return null;
         }

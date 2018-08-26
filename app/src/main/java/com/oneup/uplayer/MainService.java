@@ -308,8 +308,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Song song = getSong();
         dbHelper.querySong(song);
 
-        // Set song title and artist.
-        notificationViews.setTextViewText(R.id.tvSongTitle, song.getTitle());
+        // Set song title and artist, marking bookmarked songs.
+        notificationViews.setTextViewText(R.id.tvSongTitle,
+                song.getBookmarked() == 0 ? song.getTitle() : Util.underline(song.getTitle()));
         notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
 
         // Set playlist position with song index, song count, songs left and time left.

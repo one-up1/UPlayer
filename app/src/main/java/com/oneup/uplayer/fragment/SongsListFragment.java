@@ -135,8 +135,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.bookmark:
                 try {
                     getDbHelper().bookmarkSong(song);
-                    Util.showToast(getActivity(), song.getBookmarked() > 0 ?
-                                    R.string.bookmark_set : R.string.bookmark_cleared);
+                    Util.showToast(getActivity(), song.getBookmarked() == 0 ?
+                            R.string.bookmark_cleared : R.string.bookmark_set);
                     reloadData();
                 } catch (Exception ex) {
                     Log.e(TAG, "Error bookmarking song", ex);

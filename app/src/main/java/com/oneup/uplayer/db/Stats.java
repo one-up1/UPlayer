@@ -129,7 +129,7 @@ public class Stats {
     }
 
     private static void addRow(Context context, GridLayout grid, int labelId, long time) {
-        if (time > 0) {
+        if (time != 0) {
             addRow(context, grid, labelId, Util.formatDateTimeAgo(time), null);
         }
     }

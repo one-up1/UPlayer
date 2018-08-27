@@ -69,12 +69,12 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         etDuration.setString(Util.formatDuration(song.getDuration()));
 
         etYear = findViewById(R.id.etYear);
-        if (song.getYear() > 0) {
+        if (song.getYear() != 0) {
             etYear.setInt(song.getYear());
         }
 
         bAdded = findViewById(R.id.bAdded);
-        if (song.getAdded() > 0) {
+        if (song.getAdded() != 0) {
             bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
         }
         bAdded.setOnClickListener(this);
@@ -91,14 +91,14 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         sTag.setOnItemSelectedListener(this);
 
         bBookmarked = findViewById(R.id.bBookmarked);
-        if (song.getBookmarked() > 0) {
+        if (song.getBookmarked() != 0) {
             bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
         }
         bBookmarked.setOnClickListener(this);
         bBookmarked.setOnLongClickListener(this);
 
         bLastPlayed = findViewById(R.id.bLastPlayed);
-        if (song.getLastPlayed() > 0) {
+        if (song.getLastPlayed() != 0) {
             bLastPlayed.setText(Util.formatDateTimeAgo(song.getLastPlayed()));
         }
 
@@ -206,14 +206,14 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         if (v == bAdded) {
             Intent intent = new Intent(this, DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_added);
-            if (song.getAdded() > 0) {
+            if (song.getAdded() != 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getAdded());
             }
             startActivityForResult(intent, REQUEST_SELECT_ADDED);
         } else if (v == bBookmarked) {
             Intent intent = new Intent(this, DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_bookmarked);
-            if (song.getBookmarked() > 0) {
+            if (song.getBookmarked() != 0) {
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getBookmarked());
             }
             startActivityForResult(intent, REQUEST_SELECT_BOOKMARKED);

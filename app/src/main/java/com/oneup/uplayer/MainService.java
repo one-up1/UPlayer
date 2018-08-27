@@ -220,16 +220,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onCompletion()");
         prepared = false;
 
-        if (player.getCurrentPosition() == 0) {
-            Log.e(TAG, "Current position is 0");
-            update();
-        } else {
+        if (player.getCurrentPosition() > 0) {
             try {
                 dbHelper.updateSongPlayed(getSong());
                 next();
             } catch (Exception ex) {
                 Log.e(TAG, "Error updating song played", ex);
             }
+        } else {
+            Log.e(TAG, "Current position is " + player.getCurrentPosition());
+            update();
         }
     }
 

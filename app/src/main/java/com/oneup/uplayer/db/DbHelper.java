@@ -316,7 +316,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     playlistSongsSelection + ")";
             Log.d(TAG, "selection=" + selection);
             countQuery = concatSelection(countQuery, playlistSongsSelection);
-            selectionArgs = concatSelectionArgs(selectionArgs, selectionArgs);
+            selectionArgs = concatWhereArgs(selectionArgs, selectionArgs);
         }
         countQuery += ")";
         Log.d(TAG, "countQuery=" + countQuery);
@@ -702,6 +702,19 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    public static String getMinSelection(String column) {
+        return column + ">=?";
+    }
+
+    public static String getMaxSelection(String column, boolean hasMin) {
+        String s = "<=?";
+        return hasMin ? column + s : getNullOrSelection(column, s);
+    }
+
+    public static String getNullOrSelection(String column, String s) {
+        return "(" + column + " IS NULL OR " + column + s + ")";
+    }
+
     public static String getInClause(int count) {
         StringBuilder sb = new StringBuilder("IN(");
         for (int i = 0; i < count; i++) {
@@ -733,7 +746,11 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public static String[] concatSelectionArgs(String[] a, String[] b) {
+    public static String[] getWhereArgs(long id) {
+        return new String[]{Long.toString(id)};
+    }
+
+    public static String[] concatWhereArgs(String[] a, String[] b) {
         if (a == null) {
             return b;
         } else if (b == null) {
@@ -744,10 +761,6 @@ public class DbHelper extends SQLiteOpenHelper {
             System.arraycopy(b, 0, selectionArgs, a.length, b.length);
             return selectionArgs;
         }
-    }
-
-    public static String[] getWhereArgs(long id) {
-        return new String[]{Long.toString(id)};
     }
 
     private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {

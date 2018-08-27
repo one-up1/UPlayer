@@ -414,23 +414,27 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
 
         String minYear = etMinYear.getString();
         if (minYear != null) {
-            selection = DbHelper.concatSelection(selection, Song.YEAR + ">=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMinSelection(Song.YEAR));
             selectionArgs.add(minYear);
         }
 
         String maxYear = etMaxYear.getString();
         if (maxYear != null) {
-            selection = DbHelper.concatSelection(selection, Song.YEAR + "<=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMaxSelection(Song.YEAR, minYear != null));
             selectionArgs.add(maxYear);
         }
 
         if (values.containsKey(VAL_MIN_ADDED)) {
-            selection = DbHelper.concatSelection(selection, Song.ADDED + ">=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMinSelection(Song.ADDED));
             selectionArgs.add(Long.toString(values.getLong(VAL_MIN_ADDED)));
         }
 
         if (values.containsKey(VAL_MAX_ADDED)) {
-            selection = DbHelper.concatSelection(selection, Song.ADDED + "<=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMaxSelection(Song.ADDED, values.containsKey(VAL_MIN_ADDED)));
             selectionArgs.add(Long.toString(values.getLong(VAL_MAX_ADDED)));
         }
 
@@ -441,24 +445,29 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
         }
 
         if (values.containsKey(VAL_MIN_LAST_PLAYED)) {
-            selection = DbHelper.concatSelection(selection, Song.LAST_PLAYED + ">=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMinSelection(Song.LAST_PLAYED));
             selectionArgs.add(Long.toString(values.getLong(VAL_MIN_LAST_PLAYED)));
         }
 
         if (values.containsKey(VAL_MAX_LAST_PLAYED)) {
-            selection = DbHelper.concatSelection(selection, Song.LAST_PLAYED + "<=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMaxSelection(Song.LAST_PLAYED,
+                            values.containsKey(VAL_MIN_LAST_PLAYED)));
             selectionArgs.add(Long.toString(values.getLong(VAL_MAX_LAST_PLAYED)));
         }
 
         String minTimesPlayed = etMinTimesPlayed.getString();
         if (minTimesPlayed != null) {
-            selection = DbHelper.concatSelection(selection, Song.TIMES_PLAYED + ">=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMinSelection(Song.TIMES_PLAYED));
             selectionArgs.add(minTimesPlayed);
         }
 
         String maxTimesPlayed = etMaxTimesPlayed.getString();
         if (maxTimesPlayed != null) {
-            selection = DbHelper.concatSelection(selection, Song.TIMES_PLAYED + "<=?");
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMaxSelection(Song.TIMES_PLAYED, minTimesPlayed != null));
             selectionArgs.add(maxTimesPlayed);
         }
 
@@ -466,11 +475,9 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
             ArrayList<String> tags = values.getStringArrayList(VAL_TAGS);
             if (!tags.isEmpty()) {
                 String tagSelection = DbHelper.getInClause(tags.size());
-                if (values.getBoolean(VAL_TAGS_NOT)) {
-                    tagSelection = "IS NULL OR " + Song.TAG + " NOT " + tagSelection;
-                }
-                selection = DbHelper.concatSelection(selection,
-                        "(" + Song.TAG + " " + tagSelection + ")");
+                selection = DbHelper.concatSelection(selection, values.getBoolean(VAL_TAGS_NOT)
+                        ? DbHelper.getNullOrSelection(Song.TAG, " NOT " + tagSelection)
+                        : Song.TAG + " " + tagSelection);
                 selectionArgs.addAll(tags);
             }
         }
@@ -493,7 +500,7 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
     }
 
     private String[] getCombinedSelectionArgs() {
-        return DbHelper.concatSelectionArgs(getActivity().getIntent().getStringArrayExtra(
+        return DbHelper.concatWhereArgs(getActivity().getIntent().getStringArrayExtra(
                         FilterActivity.EXTRA_SELECTION_ARGS), getSelectionArgs());
     }
 

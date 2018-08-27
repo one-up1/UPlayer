@@ -204,7 +204,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     protected ArrayList<Song> loadData() {
         return getDbHelper().querySongs(
                 DbHelper.concatSelection(getSelection(), filterSelection),
-                DbHelper.concatSelectionArgs(getSelectionArgs(), filterSelectionArgs),
+                DbHelper.concatWhereArgs(getSelectionArgs(), filterSelectionArgs),
                 getOrderBy());
     }
 

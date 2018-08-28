@@ -26,8 +26,8 @@ import com.oneup.uplayer.util.Util;
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
-    protected static final int REQUEST_SELECT_PLAYLIST = 1;
-    protected static final int REQUEST_EDIT_SONG = 2;
+    private static final int REQUEST_SELECT_PLAYLIST = 1;
+    private static final int REQUEST_EDIT_SONG = 2;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
@@ -74,6 +74,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                         playlist.setSongPosition(0);
                         playlist.setLastPlayed(0);
                         getDbHelper().insertOrUpdatePlaylist(playlist, getData());
+                        onPlaylistSelected(playlist);
                         Util.showToast(getActivity(), R.string.playlist_saved);
                     } catch (Exception ex) {
                         Log.e(TAG, "Error saving playlist", ex);
@@ -81,8 +82,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     break;
                 case REQUEST_EDIT_SONG:
                     try {
-                        getDbHelper().updateSong((Song)
-                                data.getParcelableExtra(EditSongActivity.EXTRA_SONG));
+                        Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
+                        getDbHelper().updateSong(song);
+                        onSongUpdated(song);
                         Util.showToast(getActivity(), R.string.song_updated);
                         // UI will update in onResume().
                     } catch (Exception ex) {
@@ -117,9 +119,10 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     protected void onContextItemSelected(int itemId, int position, final Song song) {
         switch (itemId) {
             case R.id.view_artist:
-                startActivity(new Intent(getActivity(), SongsActivity.class)
+                //FIXME: When just using startActivity(), wrong activity may be returned to.
+                startActivityForResult(new Intent(getActivity(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(song.getArtistId(),
-                                getSortColumn(), isSortDesc())));
+                                getSortColumn(), isSortDesc())), 0);
                 break;
             case R.id.edit:
                 try {
@@ -135,6 +138,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.bookmark:
                 try {
                     getDbHelper().bookmarkSong(song);
+                    onSongUpdated(song);
                     Util.showToast(getActivity(), song.getBookmarked() == 0 ?
                             R.string.bookmark_cleared : R.string.bookmark_set);
                     reloadData();
@@ -150,6 +154,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     public void onClick(DialogInterface dialog, int which) {
                         try {
                             getDbHelper().updateSongPlayed(song);
+                            onSongUpdated(song);
                             Util.showToast(getActivity(), R.string.times_played,
                                     song.getTimesPlayed());
                             reloadData();
@@ -167,6 +172,12 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 super.onContextItemSelected(itemId, position, song);
                 break;
         }
+    }
+
+    protected void onPlaylistSelected(Playlist playlist) {
+    }
+
+    protected void onSongUpdated(Song song) {
     }
 
     private void deleteSong(final int position, final Song song) {

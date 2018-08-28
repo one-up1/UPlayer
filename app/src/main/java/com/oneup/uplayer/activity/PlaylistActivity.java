@@ -95,26 +95,6 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            super.onActivityResult(requestCode, resultCode, data);
-            if (resultCode == AppCompatActivity.RESULT_OK) {
-                switch (requestCode) {
-                    case REQUEST_EDIT_SONG:
-                        // Update service when the current song is updated.
-                        if (data.getParcelableExtra(EditSongActivity.EXTRA_SONG)
-                                .equals(service.getSong())) {
-                            service.update();
-                        }
-                        break;
-                    case REQUEST_SELECT_PLAYLIST:
-                        service.setPlaylist((Playlist) data.getParcelableExtra(
-                                PlaylistsActivity.EXTRA_PLAYLIST));
-                        break;
-                }
-            }
-        }
-
-        @Override
         public void onUpdate() {
             notifyDataSetChanged();
         }
@@ -208,6 +188,19 @@ public class PlaylistActivity extends AppCompatActivity {
                     getActivity().finish();
                     getActivity().stopService(new Intent(getActivity(), MainService.class));
                 }
+            }
+        }
+
+        @Override
+        protected void onPlaylistSelected(Playlist playlist) {
+            service.setPlaylist(playlist);
+        }
+
+        @Override
+        protected void onSongUpdated(Song song) {
+            // Update service when the current song is updated.
+            if (song.equals(service.getSong())) {
+                service.update();
             }
         }
 

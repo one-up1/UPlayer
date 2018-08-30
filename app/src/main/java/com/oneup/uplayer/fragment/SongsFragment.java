@@ -105,7 +105,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.artist_info).setVisible(artistId != 0);
+        menu.findItem(R.id.play_next).setVisible(!getData().isEmpty());
+        menu.findItem(R.id.play_last).setVisible(!getData().isEmpty());
+        menu.findItem(R.id.artist_info).setVisible(artistId != 0 && !getData().isEmpty());
         menu.findItem(R.id.clear_filter).setVisible(filterValues != null);
         menu.findItem(R.id.savePlaylist).setVisible(artistId == 0);
     }
@@ -114,16 +116,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.play_next:
-                if (!getData().isEmpty()) {
-                    add(getData(), true);
-                    Util.showToast(getActivity(), R.string.playing_all_next);
-                }
+                add(getData(), true);
+                Util.showToast(getActivity(), R.string.playing_all_next);
                 return true;
             case R.id.play_last:
-                if (!getData().isEmpty()) {
-                    add(getData(), false);
-                    Util.showToast(getActivity(), R.string.playing_all_last);
-                }
+                add(getData(), false);
+                Util.showToast(getActivity(), R.string.playing_all_last);
                 return true;
             case R.id.artist_info:
                 try {
@@ -146,7 +144,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 filterSelection = null;
                 filterSelectionArgs = null;
                 reloadData();
-                getActivity().invalidateOptionsMenu();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -169,7 +166,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                     filterSelection = data.getStringExtra(FilterActivity.EXTRA_SELECTION);
                     filterSelectionArgs = data.getStringArrayExtra(
                             FilterActivity.EXTRA_SELECTION_ARGS);
-                    getActivity().invalidateOptionsMenu();
                     break;
             }
         }

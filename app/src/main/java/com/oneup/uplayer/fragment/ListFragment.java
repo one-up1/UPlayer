@@ -140,6 +140,8 @@ public abstract class ListFragment<T>
         } else {
             listAdapter.notifyDataSetChanged();
         }
+
+        getActivity().invalidateOptionsMenu();
     }
 
     public void reverseSortOrder() {

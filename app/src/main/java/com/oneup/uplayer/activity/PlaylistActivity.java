@@ -9,6 +9,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -21,6 +24,7 @@ import com.oneup.uplayer.fragment.SongsListFragment;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class PlaylistActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
@@ -71,9 +75,16 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             Log.d(TAG, "PlaylistFragment.onCreate()");
             super.onCreate(savedInstanceState);
+            setHasOptionsMenu(true);
 
             getActivity().bindService(new Intent(getActivity(), MainService.class),
                     serviceConnection, BIND_AUTO_CREATE);
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            inflater.inflate(R.menu.fragment_playlist, menu);
+            super.onCreateOptionsMenu(menu, inflater);
         }
 
         @Override
@@ -147,6 +158,18 @@ public class PlaylistActivity extends AppCompatActivity {
                         service.moveSong(moveIndex, position);
                     }
                 }
+            }
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.shuffle:
+                    Collections.shuffle(getData());
+                    service.play(0);
+                    return true;
+                default:
+                    return super.onOptionsItemSelected(item);
             }
         }
 

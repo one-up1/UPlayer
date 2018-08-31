@@ -106,6 +106,8 @@
     <string name="stats_times_played">Times played:</string>
     <string name="stats_avg_times_played">Avg times played:</string>
 
+    <string name="shuffle">Shuffle</string>
+
     <string name="save_playlist">Save playlist</string>
     <string name="save_playlist_confirm">Overwrite \'%1$s\'?</string>
     <string name="playlist_saved">Playlist saved</string>

@@ -108,23 +108,11 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public ArrayList<Artist> queryArtists(String songsSelection, String[] selectionArgs,
-                                          String orderBy) {
-        Log.d(TAG, "DbHelper.queryArtists(" + songsSelection + ", " +
-                Arrays.toString(selectionArgs) + ", " +orderBy + ")");
-        String selection;
-        if (songsSelection == null) {
-            selection = null;
-        } else {
-            selection = TABLE_ARTISTS + "." + Artist._ID + " IN(SELECT " + Song.ARTIST_ID +
-                    " FROM " + TABLE_SONGS + " WHERE " + songsSelection + ")";
-            Log.d(TAG, "selection=" + selection);
-        }
-
+    public ArrayList<Artist> queryArtists(String orderBy) {
+        Log.d(TAG, "DbHelper.queryArtists(" + orderBy + ")");
         ArrayList<Artist> artists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_ARTISTS, null, selection, selectionArgs,
-                    null, null, orderBy)) {
+            try (Cursor c = db.query(TABLE_ARTISTS, null, null, null, null, null, orderBy)) {
                 while (c.moveToNext()) {
                     Artist artist = new Artist();
                     artist.setId(c.getLong(0));

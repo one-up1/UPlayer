@@ -282,7 +282,7 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
         } else if (v == bTags) {
-            getSelection(true, false, true);
+            getSelection(false, true);
             startActivityForResult(new Intent(getActivity(), TagsActivity.class)
                             .putExtras(TagsActivity.TagsFragment.getArguments(
                                     getCombinedSelection(),
@@ -291,7 +291,7 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
                                     values.getStringArrayList(VAL_TAGS))),
                     REQUEST_SELECT_TAGS);
         } else if (v == bPlaylists) {
-            getSelection(true, true, false);
+            getSelection(true, false);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
                                     getCombinedSelection(),
@@ -344,9 +344,7 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
     }
 
     public void loadArtists() {
-        getSelection(false, true, true);
-        artists = dbHelper.queryArtists(getCombinedSelection(),
-                getCombinedSelectionArgs(), Artist.ARTIST);
+        artists = dbHelper.queryArtists(Artist.ARTIST);
         Artist nullArtist = new Artist();
         nullArtist.setArtist("");
         artists.add(0, nullArtist);
@@ -374,7 +372,7 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
     }
 
     public String getSelection() {
-        getSelection(true, true, true);
+        getSelection(true, true);
         return selection;
     }
 
@@ -394,7 +392,7 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
         return !values.getParcelableArrayList(VAL_PLAYLISTS).isEmpty();
     }
 
-    private void getSelection(boolean selectArtist, boolean selectTag, boolean selectPlaylist) {
+    private void getSelection(boolean selectTag, boolean selectPlaylist) {
         selection = null;
         selectionArgs = new ArrayList<>();
 
@@ -404,12 +402,10 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
             selectionArgs.add("%" + title + "%");
         }
 
-        if (selectArtist) {
-            String sArtist = etArtist.getString();
-            if (sArtist != null) {
-                selection = DbHelper.concatSelection(selection, Song.ARTIST + " LIKE ?");
-                selectionArgs.add("%" + sArtist + "%");
-            }
+        String sArtist = etArtist.getString();
+        if (sArtist != null) {
+            selection = DbHelper.concatSelection(selection, Song.ARTIST + " LIKE ?");
+            selectionArgs.add("%" + sArtist + "%");
         }
 
         String minYear = etMinYear.getString();

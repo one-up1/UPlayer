@@ -43,7 +43,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     @Override
     protected ArrayList<Artist> loadData() {
-        return getDbHelper().queryArtists(null, null, getOrderBy());
+        return getDbHelper().queryArtists(getOrderBy());
     }
 
     @Override

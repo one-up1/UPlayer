@@ -320,8 +320,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Playlist.LAST_PLAYED,
                             countQuery
                     },
-                    selection, selectionArgs, null, null,
-                    Playlist.LAST_PLAYED + " DESC," + Playlist.NAME)) {
+                    selection, selectionArgs, null, null, Playlist.NAME)) {
                 while (c.moveToNext()) {
                     Playlist playlist = new Playlist();
                     playlist.setId(c.getLong(0));

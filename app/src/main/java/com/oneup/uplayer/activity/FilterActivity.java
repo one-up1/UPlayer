@@ -15,6 +15,11 @@ public class FilterActivity extends AppCompatActivity {
     public static final String EXTRA_VALUES = "com.oneup.extra.VALUES";
     public static final String EXTRA_SELECTION = "com.oneup.extra.SELECTION";
     public static final String EXTRA_SELECTION_ARGS = "com.oneup.extra.SELECTION_ARGS";
+    public static final String EXTRA_HAS_BOOKMARKED_SELECTION =
+            "com.oneup.extra.HAS_BOOKMARKED_SELECTION";
+    public static final String EXTRA_HAS_TAG_SELECTION = "com.oneup.extra.HAS_TAG_SELECTION";
+    public static final String EXTRA_HAS_PLAYLIST_SELECTION =
+            "com.oneup.extra.HAS_PLAYLIST_SELECTION";
 
     private FilterFragment filterFragment;
 
@@ -44,7 +49,12 @@ public class FilterActivity extends AppCompatActivity {
                 setResult(RESULT_OK, new Intent()
                         .putExtra(EXTRA_VALUES, filterFragment.getValues())
                         .putExtra(EXTRA_SELECTION, filterFragment.getSelection())
-                        .putExtra(EXTRA_SELECTION_ARGS, filterFragment.getSelectionArgs()));
+                        .putExtra(EXTRA_SELECTION_ARGS, filterFragment.getSelectionArgs())
+                        .putExtra(EXTRA_HAS_BOOKMARKED_SELECTION,
+                                filterFragment.hasBookmarkedSelection())
+                        .putExtra(EXTRA_HAS_TAG_SELECTION, filterFragment.hasTagSelection())
+                        .putExtra(EXTRA_HAS_PLAYLIST_SELECTION,
+                                filterFragment.hasPlaylistSelection()));
                 finish();
                 return true;
             default:

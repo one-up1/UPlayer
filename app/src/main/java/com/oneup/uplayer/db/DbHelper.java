@@ -460,11 +460,6 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Stats queryStats(long artistId) {
-        return queryStats(false, true, true, true,
-                Song.ARTIST_ID + "=?", getWhereArgs(artistId));
-    }
-
     public Stats queryStats(boolean artist, boolean bookmarked, boolean tagged, boolean playlisted,
                             String selection, String[] selectionArgs) {
         Log.d(TAG, "DbHelper.queryStats(" + artist + ", " + bookmarked + ", " + tagged + ", " +

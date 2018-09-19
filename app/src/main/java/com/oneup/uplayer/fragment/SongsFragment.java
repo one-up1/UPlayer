@@ -45,6 +45,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     private Bundle filterValues;
     private String filterSelection;
     private String[] filterSelectionArgs;
+    private boolean hasBookmarkedSelection;
+    private boolean hasTagSelection;
+    private boolean hasPlaylistSelection;
 
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
@@ -125,7 +128,11 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 return true;
             case R.id.artist_info:
                 try {
-                    getDbHelper().queryStats(artistId)
+                    getDbHelper().queryStats(false,
+                            !hasBookmarkedSelection,
+                            !hasTagSelection,
+                            !hasPlaylistSelection,
+                            getCombinedSelection(), getCombinedSelectionArgs())
                             .showDialog(getActivity(), getListItem(0).getArtist());
                 } catch (Exception ex) {
                     Log.e(TAG, "Error querying artist stats", ex);
@@ -166,6 +173,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                     filterSelection = data.getStringExtra(FilterActivity.EXTRA_SELECTION);
                     filterSelectionArgs = data.getStringArrayExtra(
                             FilterActivity.EXTRA_SELECTION_ARGS);
+                    hasBookmarkedSelection = data.getBooleanExtra(
+                            FilterActivity.EXTRA_HAS_BOOKMARKED_SELECTION, false);
+                    hasTagSelection = data.getBooleanExtra(
+                            FilterActivity.EXTRA_HAS_TAG_SELECTION, false);
+                    hasPlaylistSelection = data.getBooleanExtra(
+                            FilterActivity.EXTRA_HAS_PLAYLIST_SELECTION, false);
                     break;
             }
         }
@@ -198,9 +211,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(
-                DbHelper.concatSelection(getSelection(), filterSelection),
-                DbHelper.concatWhereArgs(getSelectionArgs(), filterSelectionArgs),
+        return getDbHelper().querySongs(getCombinedSelection(), getCombinedSelectionArgs(),
                 getOrderBy());
     }
 
@@ -284,6 +295,14 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         ArrayList<Song> songs = new ArrayList<>();
         songs.add(song);
         add(songs, next);
+    }
+
+    private String getCombinedSelection() {
+        return DbHelper.concatSelection(getSelection(), filterSelection);
+    }
+
+    private String[] getCombinedSelectionArgs() {
+        return DbHelper.concatWhereArgs(getSelectionArgs(), filterSelectionArgs);
     }
 
     public static Bundle getArguments(long artistId, int sortColumn, boolean sortDesc) {

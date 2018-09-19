@@ -106,8 +106,7 @@ public class QueryFragment extends Fragment
                         !filterFragment.hasBookmarkedSelection(),
                         !filterFragment.hasTagSelection(),
                         !filterFragment.hasPlaylistSelection(),
-                        filterFragment.getSelection(),
-                        filterFragment.getSelectionArgs())
+                        filterFragment.getSelection(), filterFragment.getSelectionArgs())
                         .showDialog(getActivity(), null);
             } catch (Exception ex) {
                 Log.e(TAG, "Error querying stats", ex);

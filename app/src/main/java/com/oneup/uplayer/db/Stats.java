@@ -106,11 +106,11 @@ public class Stats {
                             " (" + Util.formatDuration(playedDuration) + ")", null);
         }
 
-        if (played.songCount > 0) {
+        if (played.songCount > 1) {
             addRow(context, grid, R.string.stats_avg_times_played,
                     formatAvgTimesPlayed(timesPlayed, played.songCount),
-                    played.artistCount == 0 ? null
-                            : formatAvgTimesPlayed(timesPlayed, played.artistCount));
+                    played.artistCount > 1 ?
+                            formatAvgTimesPlayed(timesPlayed, played.artistCount) : null);
         }
     }
 

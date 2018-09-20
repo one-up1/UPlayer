@@ -282,20 +282,14 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
         } else if (v == bTags) {
-            getSelection(false, true);
             startActivityForResult(new Intent(getActivity(), TagsActivity.class)
                             .putExtras(TagsActivity.TagsFragment.getArguments(
-                                    getCombinedSelection(),
-                                    getCombinedSelectionArgs(),
                                     values.getBoolean(VAL_TAGS_NOT),
                                     values.getStringArrayList(VAL_TAGS))),
                     REQUEST_SELECT_TAGS);
         } else if (v == bPlaylists) {
-            getSelection(true, false);
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    getCombinedSelection(),
-                                    getCombinedSelectionArgs(),
                                     values.getBoolean(VAL_PLAYLISTS_NOT),
                                     values.<Playlist>getParcelableArrayList(VAL_PLAYLISTS),
                                     selectPlaylistConfirmId)),
@@ -372,27 +366,6 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
     }
 
     public String getSelection() {
-        getSelection(true, true);
-        return selection;
-    }
-
-    public String[] getSelectionArgs() {
-        return selectionArgs.isEmpty() ? null : selectionArgs.toArray(new String[0]);
-    }
-
-    public boolean hasBookmarkedSelection() {
-        return !rbAll.isChecked();
-    }
-
-    public boolean hasTagSelection() {
-        return !values.getStringArrayList(VAL_TAGS).isEmpty();
-    }
-
-    public boolean hasPlaylistSelection() {
-        return !values.getParcelableArrayList(VAL_PLAYLISTS).isEmpty();
-    }
-
-    private void getSelection(boolean selectTag, boolean selectPlaylist) {
         selection = null;
         selectionArgs = new ArrayList<>();
 
@@ -467,37 +440,41 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
             selectionArgs.add(maxTimesPlayed);
         }
 
-        if (selectTag) {
-            ArrayList<String> tags = values.getStringArrayList(VAL_TAGS);
-            if (!tags.isEmpty()) {
-                String tagSelection = DbHelper.getInClause(tags.size());
-                selection = DbHelper.concatSelection(selection, values.getBoolean(VAL_TAGS_NOT)
-                        ? DbHelper.getNullOrSelection(Song.TAG, " NOT " + tagSelection)
-                        : Song.TAG + " " + tagSelection);
-                selectionArgs.addAll(tags);
+        ArrayList<String> tags = values.getStringArrayList(VAL_TAGS);
+        if (!tags.isEmpty()) {
+            String tagSelection = DbHelper.getInClause(tags.size());
+            selection = DbHelper.concatSelection(selection, values.getBoolean(VAL_TAGS_NOT)
+                    ? DbHelper.getNullOrSelection(Song.TAG, " NOT " + tagSelection)
+                    : Song.TAG + " " + tagSelection);
+            selectionArgs.addAll(tags);
+        }
+
+        ArrayList<Playlist> playlists = values.getParcelableArrayList(VAL_PLAYLISTS);
+        if (!playlists.isEmpty()) {
+            selection = DbHelper.concatSelection(selection, DbHelper.getPlaylistSongsInClause(
+                    playlists.size(), values.getBoolean(VAL_PLAYLISTS_NOT)));
+            for (Playlist playlist : playlists) {
+                selectionArgs.add(Long.toString(playlist.getId()));
             }
         }
 
-        if (selectPlaylist) {
-            ArrayList<Playlist> playlists = values.getParcelableArrayList(VAL_PLAYLISTS);
-            if (!playlists.isEmpty()) {
-                selection = DbHelper.concatSelection(selection, DbHelper.getPlaylistSongsInClause(
-                        playlists.size(), values.getBoolean(VAL_PLAYLISTS_NOT)));
-                for (Playlist playlist : playlists) {
-                    selectionArgs.add(Long.toString(playlist.getId()));
-                }
-            }
-        }
+        return selection;
     }
 
-    private String getCombinedSelection() {
-        return DbHelper.concatSelection(getActivity().getIntent().getStringExtra(
-                FilterActivity.EXTRA_SELECTION), selection);
+    public String[] getSelectionArgs() {
+        return selectionArgs.isEmpty() ? null : selectionArgs.toArray(new String[0]);
     }
 
-    private String[] getCombinedSelectionArgs() {
-        return DbHelper.concatWhereArgs(getActivity().getIntent().getStringArrayExtra(
-                        FilterActivity.EXTRA_SELECTION_ARGS), getSelectionArgs());
+    public boolean hasBookmarkedSelection() {
+        return !rbAll.isChecked();
+    }
+
+    public boolean hasTagSelection() {
+        return !values.getStringArrayList(VAL_TAGS).isEmpty();
+    }
+
+    public boolean hasPlaylistSelection() {
+        return !values.getParcelableArrayList(VAL_PLAYLISTS).isEmpty();
     }
 
     private void setListButton(Button b, ArrayList<?> list, int defaultId, int otherId,

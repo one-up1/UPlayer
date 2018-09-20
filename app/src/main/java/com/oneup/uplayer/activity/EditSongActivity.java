@@ -56,7 +56,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         dbHelper = new DbHelper(this);
 
         song = getIntent().getParcelableExtra(EXTRA_SONG);
-        tags = dbHelper.querySongTags(null, null);
+        tags = dbHelper.querySongTags();
         tags.add(0, "");
 
         etTitle = findViewById(R.id.etTitle);
@@ -120,7 +120,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 playlists = dbHelper.queryPlaylists(song);
                 startActivityForResult(new Intent(this, PlaylistsActivity.class)
                         .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                null, null, null, playlists, -1)),
+                                null, playlists, -1)),
                         REQUEST_SELECT_PLAYLISTS);
                 return true;
             case R.id.ok:

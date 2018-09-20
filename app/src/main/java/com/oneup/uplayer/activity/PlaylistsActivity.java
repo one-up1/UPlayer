@@ -97,7 +97,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Playlist> loadData() {
-            return getDbHelper().queryPlaylists(getSelection(), getSelectionArgs());
+            return getDbHelper().queryPlaylists(null);
         }
 
         @Override
@@ -240,12 +240,9 @@ public class PlaylistsActivity extends AppCompatActivity {
                     }, R.string.delete_confirm, playlist);
         }
 
-        public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          Boolean not, ArrayList<Playlist> checkedPlaylists,
+        public static Bundle getArguments(Boolean not, ArrayList<Playlist> checkedPlaylists,
                                           int selectConfirmId) {
             Bundle args = new Bundle();
-            args.putString(ARG_SELECTION, selection);
-            args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             if (not != null) {
                 args.putBoolean(ARG_NOT, not);
             }

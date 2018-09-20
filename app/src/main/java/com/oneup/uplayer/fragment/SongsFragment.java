@@ -132,7 +132,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                             !hasBookmarkedSelection,
                             !hasTagSelection,
                             !hasPlaylistSelection,
-                            getCombinedSelection(), getCombinedSelectionArgs())
+                            getSelection(), getSelectionArgs())
                             .showDialog(getActivity(), getListItem(0).getArtist());
                 } catch (Exception ex) {
                     Log.e(TAG, "Error querying artist stats", ex);
@@ -141,9 +141,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 return true;
             case R.id.filter:
                 startActivityForResult(new Intent(getActivity(), FilterActivity.class)
-                                .putExtra(FilterActivity.EXTRA_VALUES, filterValues)
-                                .putExtra(FilterActivity.EXTRA_SELECTION, getSelection())
-                                .putExtra(FilterActivity.EXTRA_SELECTION_ARGS, getSelectionArgs()),
+                                .putExtra(FilterActivity.EXTRA_VALUES, filterValues),
                         REQUEST_SELECT_FILTER);
                 return true;
             case R.id.clear_filter:
@@ -211,8 +209,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(getCombinedSelection(), getCombinedSelectionArgs(),
-                getOrderBy());
+        return getDbHelper().querySongs(getSelection(), getSelectionArgs(), getOrderBy());
     }
 
     @Override
@@ -284,6 +281,16 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         }
     }
 
+    @Override
+    protected String getSelection() {
+        return DbHelper.concatSelection(super.getSelection(), filterSelection);
+    }
+
+    @Override
+    protected String[] getSelectionArgs() {
+        return DbHelper.concatWhereArgs(super.getSelectionArgs(), filterSelectionArgs);
+    }
+
     private void add(ArrayList<Song> songs, boolean next) {
         getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_ADD)
@@ -295,14 +302,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         ArrayList<Song> songs = new ArrayList<>();
         songs.add(song);
         add(songs, next);
-    }
-
-    private String getCombinedSelection() {
-        return DbHelper.concatSelection(getSelection(), filterSelection);
-    }
-
-    private String[] getCombinedSelectionArgs() {
-        return DbHelper.concatWhereArgs(getSelectionArgs(), filterSelectionArgs);
     }
 
     public static Bundle getArguments(long artistId, int sortColumn, boolean sortDesc) {

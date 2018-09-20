@@ -71,7 +71,7 @@ public class TagsActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<String> loadData() {
-            return getDbHelper().querySongTags(getSelection(), getSelectionArgs());
+            return getDbHelper().querySongTags();
         }
 
         @Override
@@ -87,11 +87,8 @@ public class TagsActivity extends AppCompatActivity {
             tvTag.setText(tag);
         }
 
-        public static Bundle getArguments(String selection, String[] selectionArgs,
-                                          boolean not, ArrayList<String> checkedTags) {
+        public static Bundle getArguments(boolean not, ArrayList<String> checkedTags) {
             Bundle args = new Bundle();
-            args.putString(ARG_SELECTION, selection);
-            args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_NOT, not);
             args.putStringArrayList(ARG_CHECKED_TAGS, checkedTags);
             return args;

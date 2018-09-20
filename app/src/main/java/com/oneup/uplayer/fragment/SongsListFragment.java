@@ -53,7 +53,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.savePlaylist:
                 startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                                 .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                        null, null, null, null, R.string.save_playlist_confirm)),
+                                        null, null, R.string.save_playlist_confirm)),
                         REQUEST_SELECT_PLAYLIST);
                 return true;
             default:

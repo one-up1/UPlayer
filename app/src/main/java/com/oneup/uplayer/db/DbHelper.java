@@ -180,14 +180,12 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public ArrayList<String> querySongTags(String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.querySongTags(" + selection + ", " +
-                Arrays.toString(selectionArgs) + ")");
+    public ArrayList<String> querySongTags() {
+        Log.d(TAG, "DbHelper.querySongTags()");
         ArrayList<String> tags = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
             try (Cursor c = db.query(true, TABLE_SONGS, new String[]{Song.TAG},
-                    concatSelection(selection, Song.TAG + " IS NOT NULL"), selectionArgs,
-                    null, null, Song.TAG, null)) {
+                    Song.TAG + " IS NOT NULL", null, null, null, Song.TAG, null)) {
                 while (c.moveToNext()) {
                     tags.add(c.getString(0));
                 }
@@ -283,31 +281,21 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Playlist> queryPlaylists(Song song) {
-        return queryPlaylists(Song._ID + "=?", getWhereArgs(song.getId()));
-    }
+        Log.d(TAG, "DbHelper.queryPlaylists(" +
+                (song == null ? "null" : song.getId() + ":" + song) + ")");
 
-    public ArrayList<Playlist> queryPlaylists(String songsSelection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryPlaylists(" + songsSelection + ", " +
-                Arrays.toString(selectionArgs) + ")");
         String selection;
-        String countQuery = "(SELECT COUNT(*) FROM " + TABLE_PLAYLIST_SONGS +
-                " WHERE " + Playlist.PLAYLIST_ID + "=" +
-                TABLE_PLAYLISTS + "." + Playlist._ID;
-        if (songsSelection == null) {
+        String[] selectionArgs;
+        if (song == null) {
             selection = null;
+            selectionArgs = null;
         } else {
-            String playlistSongsSelection = Playlist.SONG_ID + " IN(SELECT " +
-                    TABLE_SONGS + "." + Song._ID + " FROM " + TABLE_SONGS +
-                    " WHERE " + songsSelection + ")";
             selection = TABLE_PLAYLISTS + "." + Playlist._ID + " IN(SELECT " +
-                    Playlist.PLAYLIST_ID + " FROM " + TABLE_PLAYLIST_SONGS + " WHERE " +
-                    playlistSongsSelection + ")";
+                    Playlist.PLAYLIST_ID + " FROM " + TABLE_PLAYLIST_SONGS +
+                    " WHERE " + Playlist.SONG_ID + "=?" + ")";
             Log.d(TAG, "selection=" + selection);
-            countQuery = concatSelection(countQuery, playlistSongsSelection);
-            selectionArgs = concatWhereArgs(selectionArgs, selectionArgs);
+            selectionArgs = getWhereArgs(song.getId());
         }
-        countQuery += ")";
-        Log.d(TAG, "countQuery=" + countQuery);
 
         ArrayList<Playlist> playlists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
@@ -318,7 +306,9 @@ public class DbHelper extends SQLiteOpenHelper {
                             Playlist.SONG_INDEX,
                             Playlist.SONG_POSITION,
                             Playlist.LAST_PLAYED,
-                            countQuery
+                            "(SELECT COUNT(*) FROM " + TABLE_PLAYLIST_SONGS +
+                                    " WHERE " + Playlist.PLAYLIST_ID + "=" +
+                                    TABLE_PLAYLISTS + "." + Playlist._ID + ")"
                     },
                     selection, selectionArgs, null, null, Playlist.NAME)) {
                 while (c.moveToNext()) {

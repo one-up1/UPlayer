@@ -15,8 +15,8 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/artist_info"
-        android:title="@string/artist_info" />
+        android:id="@+id/statistics"
+        android:title="@string/songs_statistics" />
 
     <item
         android:id="@+id/filter"

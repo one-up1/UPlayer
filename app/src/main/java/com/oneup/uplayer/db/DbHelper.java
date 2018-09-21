@@ -69,8 +69,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Playlist._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                     Playlist.NAME + " TEXT," +
                     Playlist.SONG_INDEX + " INTEGER," +
-                    Playlist.SONG_POSITION + " INTEGER," +
-                    Playlist.LAST_PLAYED + " INTEGER)";
+                    Playlist.SONG_POSITION + " INTEGER)";
 
     private static final String SQL_CREATE_PLAYLIST_SONGS =
             "CREATE TABLE " + TABLE_PLAYLIST_SONGS + "(" +
@@ -126,6 +125,24 @@ public class DbHelper extends SQLiteOpenHelper {
         }
         Log.d(TAG, artists.size() + " artists queried");
         return artists;
+    }
+
+    public Artist queryArtist(Song song) {
+        Log.d(TAG, "DbHelper.queryArtist(" + song.getId() + ":" + song +
+                ":" + song.getArtistId() + ")");
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            try (Cursor c = db.query(TABLE_ARTISTS, null, SQL_ID_IS,
+                    getWhereArgs(song.getArtistId()), null, null, null)) {
+                c.moveToFirst();
+                Artist artist = new Artist();
+                artist.setId(c.getLong(0));
+                artist.setArtist(c.getString(1));
+                artist.setLastAdded(c.getLong(2));
+                artist.setLastPlayed(c.getLong(3));
+                artist.setTimesPlayed(c.getInt(4));
+                return artist;
+            }
+        }
     }
 
     public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
@@ -304,11 +321,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Playlist._ID,
                             Playlist.NAME,
                             Playlist.SONG_INDEX,
-                            Playlist.SONG_POSITION,
-                            Playlist.LAST_PLAYED,
-                            "(SELECT COUNT(*) FROM " + TABLE_PLAYLIST_SONGS +
-                                    " WHERE " + Playlist.PLAYLIST_ID + "=" +
-                                    TABLE_PLAYLISTS + "." + Playlist._ID + ")"
+                            Playlist.SONG_POSITION
                     },
                     selection, selectionArgs, null, null, Playlist.NAME)) {
                 while (c.moveToNext()) {
@@ -317,8 +330,6 @@ public class DbHelper extends SQLiteOpenHelper {
                     playlist.setName(c.getString(1));
                     playlist.setSongIndex(c.getInt(2));
                     playlist.setSongPosition(c.getInt(3));
-                    playlist.setLastPlayed(c.getLong(4));
-                    playlist.setSongCount(c.getInt(5));
                     if (playlist.isDefault()) {
                         playlists.add(0, playlist);
                     } else {
@@ -346,7 +357,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 } else {
                     putValue(values, Playlist.SONG_INDEX, playlist.getSongIndex());
                     putValue(values, Playlist.SONG_POSITION, playlist.getSongPosition());
-                    putValue(values, Playlist.LAST_PLAYED, playlist.getLastPlayed());
                 }
                 if (playlist.getId() == 0) {
                     playlist.setId(db.insert(TABLE_PLAYLISTS, null, values));
@@ -573,8 +583,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Playlist._ID,
                             Playlist.NAME,
                             Playlist.SONG_INDEX,
-                            Playlist.SONG_POSITION,
-                            Playlist.LAST_PLAYED,
+                            Playlist.SONG_POSITION
                     });
 
             backupTable(backup, db, TABLE_PLAYLIST_SONGS,
@@ -655,8 +664,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Playlist._ID,
                                 Playlist.NAME,
                                 Playlist.SONG_INDEX,
-                                Playlist.SONG_POSITION,
-                                Playlist.LAST_PLAYED,
+                                Playlist.SONG_POSITION
                         },
                         null, null);
 

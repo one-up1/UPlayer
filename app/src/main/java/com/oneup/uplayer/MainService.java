@@ -22,7 +22,6 @@ import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
-import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
@@ -489,7 +488,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         try {
             playlist.setSongPosition(player.getCurrentPosition());
-            playlist.setLastPlayed(Calendar.currentTime());
             Log.d(TAG, "songIndex=" + playlist.getSongIndex() +
                     ", songPosition=" + playlist.getSongPosition());
             dbHelper.insertOrUpdatePlaylist(playlist, songs);

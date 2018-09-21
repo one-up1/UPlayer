@@ -72,7 +72,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                 PlaylistsActivity.EXTRA_PLAYLIST);
                         playlist.setSongIndex(0);
                         playlist.setSongPosition(0);
-                        playlist.setLastPlayed(0);
                         getDbHelper().insertOrUpdatePlaylist(playlist, getData());
                         onPlaylistSelected(playlist);
                         Util.showToast(getActivity(), R.string.playlist_saved);
@@ -123,7 +122,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 // "fixed" using startActivityForResult
                 // https://inthecheesefactory.com/blog/understand-android-activity-launchmode/en
                 startActivityForResult(new Intent(getActivity(), SongsActivity.class)
-                        .putExtras(SongsFragment.getArguments(song.getArtistId(),
+                        .putExtras(SongsFragment.getArguments(getDbHelper().queryArtist(song),
                                 getSortColumn(), isSortDesc())), 0);
                 break;
             case R.id.edit:

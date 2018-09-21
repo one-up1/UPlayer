@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
@@ -113,18 +114,13 @@ public class PlaylistsActivity extends AppCompatActivity {
             TextView tvName = rootView.findViewById(R.id.tvName);
             tvName.setText(playlist.getName());
 
-            // Set song count.
-            TextView tvSongCount = rootView.findViewById(R.id.tvSongCount);
-            tvSongCount.setText(Util.getCountString(getActivity(),
-                    R.plurals.songs, playlist.getSongCount()));
-
-            // Set (or hide) last played.
-            TextView tvModified = rootView.findViewById(R.id.tvModified);
-            if (playlist.getLastPlayed() == 0) {
-                tvModified.setVisibility(View.GONE);
+            // Set play button.
+            ImageButton ibPlay = rootView.findViewById(R.id.ibPlay);
+            if (selectConfirmId == -1) {
+                ibPlay.setVisibility(View.VISIBLE);
+                setListItemViewOnClickListener(rootView, R.id.ibPlay);
             } else {
-                tvModified.setText(Util.formatTimeAgo(playlist.getLastPlayed()));
-                tvModified.setVisibility(View.VISIBLE);
+                ibPlay.setVisibility(View.GONE);
             }
         }
 
@@ -146,6 +142,15 @@ public class PlaylistsActivity extends AppCompatActivity {
                                     select(playlist);
                                 }
                             }, selectConfirmId, playlist);
+                    break;
+            }
+        }
+
+        @Override
+        protected void onListItemViewClick(int viewId, int position, Playlist playlist) {
+            switch (viewId) {
+                case R.id.ibPlay:
+                    select(playlist);
                     break;
             }
         }

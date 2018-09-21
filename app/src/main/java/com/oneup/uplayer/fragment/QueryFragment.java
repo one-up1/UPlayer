@@ -59,6 +59,7 @@ public class QueryFragment extends Fragment
         FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         filterFragment = (FilterFragment) fragmentManager.findFragmentById(R.id.filterFragment);
+        filterFragment.setSelectPlaylistConfirmId(-1);
         fragmentTransaction.commit();
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);

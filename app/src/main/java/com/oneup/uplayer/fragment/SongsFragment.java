@@ -17,6 +17,7 @@ import android.widget.Spinner;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.FilterActivity;
+import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
@@ -36,11 +37,11 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     private static final String TAG = "UPlayer";
 
-    private static final String ARG_ARTIST_ID = "artist_id";
+    private static final String ARG_ARTIST = "artist";
 
     private static final int REQUEST_SELECT_FILTER = 100;
 
-    private long artistId;
+    private Artist artist;
 
     private Bundle filterValues;
     private String filterSelection;
@@ -73,8 +74,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
         Bundle args = getArguments();
         if (args != null) {
-            artistId = args.getLong(ARG_ARTIST_ID);
-            if (artistId == 0) {
+            artist = args.getParcelable(ARG_ARTIST);
+            if (artist == null) {
                 setSortColumns(
                         new String[]{
                                 null,
@@ -83,7 +84,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                         });
             } else {
                 setSelection(Song.ARTIST_ID + "=?");
-                setSelectionArgs(DbHelper.getWhereArgs(artistId));
+                setSelectionArgs(DbHelper.getWhereArgs(artist.getId()));
                 setSortColumns(
                         new String[]{
                                 null,
@@ -110,9 +111,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.play_next).setVisible(!getData().isEmpty());
         menu.findItem(R.id.play_last).setVisible(!getData().isEmpty());
-        menu.findItem(R.id.artist_info).setVisible(artistId != 0 && !getData().isEmpty());
         menu.findItem(R.id.clear_filter).setVisible(filterValues != null);
-        menu.findItem(R.id.savePlaylist).setVisible(artistId == 0);
     }
 
     @Override
@@ -126,14 +125,14 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 add(getData(), false);
                 Util.showToast(getActivity(), R.string.playing_all_last);
                 return true;
-            case R.id.artist_info:
+            case R.id.statistics:
                 try {
                     getDbHelper().queryStats(false,
                             !hasBookmarkedSelection,
                             !hasTagSelection,
                             !hasPlaylistSelection,
                             getSelection(), getSelectionArgs())
-                            .showDialog(getActivity(), getListItem(0).getArtist());
+                            .showDialog(getActivity(), artist == null ? null : artist.getArtist());
                 } catch (Exception ex) {
                     Log.e(TAG, "Error querying artist stats", ex);
                     Util.showErrorDialog(getActivity(), ex);
@@ -158,7 +157,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.findItem(R.id.view_artist).setVisible(artistId == 0);
+        menu.findItem(R.id.view_artist).setVisible(artist == null);
     }
 
     @Override
@@ -304,9 +303,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         add(songs, next);
     }
 
-    public static Bundle getArguments(long artistId, int sortColumn, boolean sortDesc) {
+    public static Bundle getArguments(Artist artist, int sortColumn, boolean sortDesc) {
         Bundle args = new Bundle();
-        args.putLong(ARG_ARTIST_ID, artistId);
+        args.putParcelable(ARG_ARTIST, artist);
         args.putInt(ARG_SORT_COLUMN, sortColumn);
         args.putBoolean(ARG_SORT_DESC, sortDesc);
         args.putInt(ARG_SORT_COLUMN, sortColumn);

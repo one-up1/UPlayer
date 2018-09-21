@@ -78,8 +78,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
     @Override
     protected void onListItemClick(int position, Artist artist) {
         startActivity(new Intent(getActivity(), SongsActivity.class)
-                .putExtras(SongsFragment.getArguments(artist.getId(),
-                        getSortColumn(), isSortDesc())));
+                .putExtras(SongsFragment.getArguments(artist, getSortColumn(), isSortDesc())));
     }
 
     @Override

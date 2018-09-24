@@ -64,6 +64,7 @@ public class PlaylistActivity extends AppCompatActivity {
             implements MainService.OnUpdateListener {
         private MainService service;
 
+        private boolean updateService;
         private int moveIndex;
 
         public PlaylistFragment() {
@@ -85,6 +86,26 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             inflater.inflate(R.menu.fragment_playlist, menu);
             super.onCreateOptionsMenu(menu, inflater);
+        }
+
+        @Override
+        public void onStart() {
+            Log.d(TAG, "PlaylistActivity.onStart()");
+            super.onStart();
+            updateService = false;
+        }
+
+        @Override
+        public void onResume() {
+            Log.d(TAG, "PlaylistActivity.onResume()");
+            super.onResume();
+
+            // This will update the service only when onResume() is called without onStart() being
+            // called, when the notification is tapped with PlaylistActivity already open.
+            if (updateService) {
+                service.update();
+            }
+            updateService = true;
         }
 
         @Override
@@ -255,6 +276,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                 MainService.MainBinder mainBinder = (MainService.MainBinder) serviceBinder;
                 service = mainBinder.getService();
+                service.update();
                 service.setOnUpdateListener(PlaylistFragment.this);
 
                 reloadData();

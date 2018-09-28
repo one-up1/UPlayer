@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import com.oneup.uplayer.activity.EditSongActivity;
 import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -37,8 +38,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public static final int ACTION_ADD = 2;
     public static final int ACTION_UPDATE = 3;
 
-    private static final int ACTION_PAUSE_PLAY = 4;
-    private static final int ACTION_PREVIOUS = 5;
+    private static final int ACTION_EDIT_SONG = 4;
+    private static final int ACTION_PAUSE_PLAY = 5;
     private static final int ACTION_NEXT = 6;
     private static final int ACTION_STOP = 7;
     private static final int ACTION_VOLUME_DOWN = 8;
@@ -49,6 +50,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private static final int MAX_VOLUME = 100;
     private static final int RESUME_POSITION_OFFSET = 8000;
+
+    private static boolean running;
 
     private final IBinder mainBinder = new MainBinder();
 
@@ -87,7 +90,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         notificationViews = new RemoteViews(getApplicationContext().getPackageName(),
                 R.layout.notification);
-        setOnClickPendingIntent(R.id.ibPrevious, ACTION_PREVIOUS);
+        setOnClickPendingIntent(R.id.ibEditSong, ACTION_EDIT_SONG);
         setOnClickPendingIntent(R.id.ibPausePlay, ACTION_PAUSE_PLAY);
         setOnClickPendingIntent(R.id.ibNext, ACTION_NEXT);
         setOnClickPendingIntent(R.id.ibStop, ACTION_STOP);
@@ -112,6 +115,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(mainReceiver, filter);
+
+        running = true;
     }
 
     @Override
@@ -134,11 +139,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             case ACTION_UPDATE:
                 update();
                 break;
+            case ACTION_EDIT_SONG:
+                editSong();
+                break;
             case ACTION_PAUSE_PLAY:
                 pausePlay();
-                break;
-            case ACTION_PREVIOUS:
-                previous();
                 break;
             case ACTION_NEXT:
                 next();
@@ -160,6 +165,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     @Override
     public void onDestroy() {
         Log.d(TAG, "MainService.onDestroy()");
+        running = false;
         savePlaylist();
 
         if (player != null) {
@@ -418,6 +424,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
+    private void editSong() {
+        Log.d(TAG, "MainService.editSong()");
+        startActivity(new Intent(this, EditSongActivity.class)
+                .putExtra(EditSongActivity.EXTRA_SONG, getSong())
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+
+        // Close the status bar.
+        sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+    }
+
     private void pausePlay() {
         Log.d(TAG, "MainService.pausePlay()");
         if (player.isPlaying()) {
@@ -434,17 +450,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             } else {
                 prepare();
             }
-        }
-    }
-
-    private void previous() {
-        Log.d(TAG, "MainService.previous()");
-        Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
-        if (playlist.getSongIndex() > 0) {
-            playlist.decrementSongIndex();
-            prepare();
-        } else {
-            update();
         }
     }
 
@@ -537,6 +542,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             notificationViews.setTextViewText(viewId, text);
             notificationViews.setViewVisibility(viewId, View.VISIBLE);
         }
+    }
+
+    public static boolean isRunning() {
+        return running;
     }
 
     public class MainBinder extends Binder {

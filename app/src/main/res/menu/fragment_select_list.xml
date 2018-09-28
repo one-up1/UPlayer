@@ -6,12 +6,12 @@
         android:id="@+id/select_all"
         android:title="@string/select_all"
         android:icon="@drawable/ic_menu_select_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/ok"
         android:title="@string/ok"
         android:icon="@drawable/ic_menu_ok"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>

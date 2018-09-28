@@ -6,12 +6,12 @@
         android:id="@+id/playlists"
         android:title="@string/view_playlists"
         android:icon="@drawable/ic_menu_playlists"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/ok"
         android:title="@string/ok"
         android:icon="@drawable/ic_menu_ok"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>

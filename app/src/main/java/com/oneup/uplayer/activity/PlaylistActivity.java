@@ -101,7 +101,9 @@ public class PlaylistActivity extends AppCompatActivity {
             super.onResume();
 
             // This will update the service only when onResume() is called without onStart() being
-            // called, when the notification is tapped with PlaylistActivity already open.
+            // called, when the notification is tapped with the activity already open. The service
+            // is also updated when the activity is started for the first time in
+            // onServiceConnected(), because onServiceConnected() is called after onResume().
             if (updateService) {
                 service.update();
             }
@@ -242,10 +244,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onSongUpdated(Song song) {
-            // Update service when the current song is updated.
-            if (song.equals(service.getSong())) {
-                service.update();
-            }
+            service.update();
         }
 
         private void moveUp(int songIndex) {

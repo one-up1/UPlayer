@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -56,6 +57,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         dbHelper = new DbHelper(this);
 
         song = getIntent().getParcelableExtra(EXTRA_SONG);
+        dbHelper.querySong(song);
+
         tags = dbHelper.querySongTags();
         tags.add(0, "");
 
@@ -126,6 +129,13 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             case R.id.ok:
                 song.setYear(etYear.getInt());
                 song.setTag(etTag.getString());
+                dbHelper.updateSong(song);
+
+                Util.showToast(this, R.string.song_updated);
+                if (MainService.isRunning()) {
+                    startService(new Intent(this, MainService.class)
+                            .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE));
+                }
 
                 setResult(RESULT_OK, new Intent()
                         .putExtra(EXTRA_SONG, song));

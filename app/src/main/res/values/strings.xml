@@ -86,7 +86,6 @@
     <string name="times_played">Times played: %1$d</string>
 
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
-    <string name="previous">Previous</string>
     <string name="pause_play">Pause / Play</string>
     <string name="next">Next</string>
     <string name="stop">Stop</string>

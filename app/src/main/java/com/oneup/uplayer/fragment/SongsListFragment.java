@@ -27,7 +27,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
     private static final int REQUEST_SELECT_PLAYLIST = 1;
-    private static final int REQUEST_EDIT_SONG = 2;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 String[] columns) {
@@ -79,18 +78,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                         Log.e(TAG, "Error saving playlist", ex);
                     }
                     break;
-                case REQUEST_EDIT_SONG:
-                    try {
-                        Song song = data.getParcelableExtra(EditSongActivity.EXTRA_SONG);
-                        getDbHelper().updateSong(song);
-                        onSongUpdated(song);
-                        Util.showToast(getActivity(), R.string.song_updated);
-                        // UI will update in onResume().
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error updating song", ex);
-                        Util.showErrorDialog(getActivity(), ex);
-                    }
-                    break;
             }
         }
     }
@@ -126,15 +113,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                 getSortColumn(), isSortDesc())), 0);
                 break;
             case R.id.edit:
-                try {
-                    getDbHelper().querySong(song);
-                    startActivityForResult(new Intent(getActivity(), EditSongActivity.class)
-                                    .putExtra(EditSongActivity.EXTRA_SONG, song),
-                            REQUEST_EDIT_SONG);
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error querying song", ex);
-                    Util.showErrorDialog(getActivity(), ex);
-                }
+                startActivity(new Intent(getActivity(), EditSongActivity.class)
+                        .putExtra(EditSongActivity.EXTRA_SONG, song));
                 break;
             case R.id.bookmark:
                 try {

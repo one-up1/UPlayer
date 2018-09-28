@@ -74,11 +74,11 @@
         android:paddingTop="@dimen/notification_padding">
 
         <ImageButton
-            android:id="@+id/ibPrevious"
+            android:id="@+id/ibEditSong"
             android:layout_width="@dimen/notification_button_width"
             android:layout_height="@dimen/notification_button_height"
-            android:src="@drawable/ic_notification_previous"
-            android:contentDescription="@string/previous" />
+            android:src="@drawable/ic_notification_edit_song"
+            android:contentDescription="@string/edit_song" />
 
         <ImageButton
             android:id="@+id/ibPausePlay"

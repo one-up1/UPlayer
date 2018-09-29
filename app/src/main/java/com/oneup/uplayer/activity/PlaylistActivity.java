@@ -104,7 +104,7 @@ public class PlaylistActivity extends AppCompatActivity {
             // called, when the notification is tapped with the activity already open. The service
             // is also updated when the activity is started for the first time in
             // onServiceConnected(), because onServiceConnected() is called after onResume().
-            if (updateService) {
+            if (updateService && service != null) {
                 service.update();
             }
             updateService = true;

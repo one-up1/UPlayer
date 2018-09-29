@@ -41,7 +41,8 @@
 
         <activity
             android:name=".activity.EditSongActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:showOnLockScreen="true" />
 
         <activity
             android:name=".activity.FilterActivity"

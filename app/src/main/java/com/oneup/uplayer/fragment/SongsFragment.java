@@ -147,6 +147,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 filterValues = null;
                 filterSelection = null;
                 filterSelectionArgs = null;
+                hasBookmarkedSelection = false;
+                hasTagSelection = false;
+                hasPlaylistSelection = false;
                 reloadData();
             default:
                 return super.onOptionsItemSelected(item);

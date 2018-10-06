@@ -36,8 +36,8 @@
             android:name=".activity.PlaylistsActivity" />
 
         <activity
-            android:name=".activity.PlaylistActivity"
-            android:launchMode="singleInstance" />
+            android:name=".activity.PlaylistActivity" />
+        <!-- android:launchMode="singleInstance" -->
 
         <activity
             android:name=".activity.EditSongActivity"

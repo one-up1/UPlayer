@@ -105,12 +105,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     protected void onContextItemSelected(int itemId, int position, final Song song) {
         switch (itemId) {
             case R.id.view_artist:
-                //FIXME: When just using startActivity(), wrong activity may be returned to.
-                // "fixed" using startActivityForResult
-                // https://inthecheesefactory.com/blog/understand-android-activity-launchmode/en
-                startActivityForResult(new Intent(getActivity(), SongsActivity.class)
+                startActivity(new Intent(getActivity(), SongsActivity.class)
                         .putExtras(SongsFragment.getArguments(getDbHelper().queryArtist(song),
-                                getSortColumn(), isSortDesc())), 0);
+                                getSortColumn(), isSortDesc())));
                 break;
             case R.id.edit:
                 startActivity(new Intent(getActivity(), EditSongActivity.class)

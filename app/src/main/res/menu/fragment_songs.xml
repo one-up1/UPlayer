@@ -18,7 +18,7 @@
         android:id="@+id/statistics"
         android:title="@string/songs_statistics"
         android:icon="@drawable/ic_menu_statistics"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/filter"

@@ -179,6 +179,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                             FilterActivity.EXTRA_HAS_TAG_SELECTION, false);
                     hasPlaylistSelection = data.getBooleanExtra(
                             FilterActivity.EXTRA_HAS_PLAYLIST_SELECTION, false);
+                    //TODO: Don't use has... booleans but look in filterValues.
                     break;
             }
         }

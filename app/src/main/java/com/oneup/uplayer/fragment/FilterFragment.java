@@ -7,11 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
-import android.widget.Spinner;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -19,7 +16,6 @@ import com.oneup.uplayer.activity.DateTimeActivity;
 import com.oneup.uplayer.activity.FilterActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.TagsActivity;
-import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
@@ -28,8 +24,8 @@ import com.oneup.uplayer.widget.EditText;
 
 import java.util.ArrayList;
 
-public class FilterFragment extends Fragment implements AdapterView.OnItemSelectedListener,
-        View.OnClickListener, View.OnLongClickListener {
+public class FilterFragment extends Fragment
+        implements View.OnClickListener, View.OnLongClickListener {
     private static final String VAL_TITLE = "title";
     private static final String VAL_ARTIST = "artist";
     private static final String VAL_MIN_YEAR = "min_year";
@@ -55,12 +51,8 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
     private static final int REQUEST_SELECT_MIN_LAST_PLAYED = 5;
     private static final int REQUEST_SELECT_MAX_LAST_PLAYED = 6;
 
-    private DbHelper dbHelper;
-    private ArrayList<Artist> artists;
-
     private EditText etTitle;
     private EditText etArtist;
-    private Spinner sArtist;
     private EditText etMinYear;
     private EditText etMaxYear;
     private Button bMinAdded;
@@ -85,8 +77,6 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        dbHelper = new DbHelper(getActivity());
-
         values = getActivity().getIntent().getBundleExtra(FilterActivity.EXTRA_VALUES);
     }
 
@@ -98,9 +88,8 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
         etTitle = rootView.findViewById(R.id.etTitle);
 
         etArtist = rootView.findViewById(R.id.etArtist);
-
-        sArtist = rootView.findViewById(R.id.sArtist);
-        sArtist.setOnItemSelectedListener(this);
+        etArtist.setVisibility(getActivity().getIntent().getBooleanExtra(
+                FilterActivity.EXTRA_SHOW_ARTIST_FILTER, true) ? View.VISIBLE : View.GONE);
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
 
@@ -183,12 +172,6 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        loadArtists();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == AppCompatActivity.RESULT_OK) {
@@ -241,28 +224,6 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
                     break;
             }
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        if (dbHelper != null) {
-            dbHelper.close();
-        }
-        super.onDestroy();
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == sArtist) {
-            if (position > 0) {
-                etArtist.setString(artists.get(position).getArtist());
-                sArtist.setSelection(0);
-            }
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
     }
 
     @Override
@@ -335,17 +296,6 @@ public class FilterFragment extends Fragment implements AdapterView.OnItemSelect
             values.remove(VAL_MAX_LAST_PLAYED);
         }
         return true;
-    }
-
-    public void loadArtists() {
-        artists = dbHelper.queryArtists(Artist.ARTIST);
-        Artist nullArtist = new Artist();
-        nullArtist.setArtist("");
-        artists.add(0, nullArtist);
-
-        sArtist.setAdapter(new
-                ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, artists));
     }
 
     public void setSelectPlaylistConfirmId(int selectPlaylistConfirmId) {

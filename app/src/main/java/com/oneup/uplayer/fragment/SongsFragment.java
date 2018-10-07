@@ -140,6 +140,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 return true;
             case R.id.filter:
                 startActivityForResult(new Intent(getActivity(), FilterActivity.class)
+                                .putExtra(FilterActivity.EXTRA_SHOW_ARTIST_FILTER, artist == null)
                                 .putExtra(FilterActivity.EXTRA_VALUES, filterValues),
                         REQUEST_SELECT_FILTER);
                 return true;

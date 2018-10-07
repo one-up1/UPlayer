@@ -12,6 +12,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.fragment.FilterFragment;
 
 public class FilterActivity extends AppCompatActivity {
+    public static final String EXTRA_SHOW_ARTIST_FILTER = "com.oneup.extra.SHOW_ARTIST_FILTER";
     public static final String EXTRA_VALUES = "com.oneup.extra.VALUES";
     public static final String EXTRA_SELECTION = "com.oneup.extra.SELECTION";
     public static final String EXTRA_SELECTION_ARGS = "com.oneup.extra.SELECTION_ARGS";

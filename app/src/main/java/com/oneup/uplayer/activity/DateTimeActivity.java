@@ -14,8 +14,8 @@ import com.oneup.uplayer.widget.EditTime;
 
 import java.util.concurrent.TimeUnit;
 
-public class DateTimeActivity extends AppCompatActivity implements
-        CalendarView.OnDateChangeListener {
+public class DateTimeActivity extends AppCompatActivity
+        implements CalendarView.OnDateChangeListener {
     public static final String EXTRA_TITLE_ID = "com.oneup.extra.TITLE_ID";
     public static final String EXTRA_TIME =  "com.oneup.extra.TIME";
 

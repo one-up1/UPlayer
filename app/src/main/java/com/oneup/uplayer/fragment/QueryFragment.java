@@ -230,7 +230,6 @@ public class QueryFragment extends Fragment
             @Override
             public void run() {
                 ((MainActivity) getActivity()).reload();
-                filterFragment.loadArtists();
             }
         });
     }

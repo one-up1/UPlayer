@@ -68,6 +68,7 @@ public class FilterFragment extends Fragment
     private EditText etMaxTimesPlayed;
 
     private int selectPlaylistConfirmId;
+    private boolean showArtistFilter;
     private Bundle values;
     private String selection;
     private ArrayList<String> selectionArgs;
@@ -77,6 +78,8 @@ public class FilterFragment extends Fragment
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        showArtistFilter = getActivity().getIntent().getBooleanExtra(
+                FilterActivity.EXTRA_SHOW_ARTIST_FILTER, true);
         values = getActivity().getIntent().getBundleExtra(FilterActivity.EXTRA_VALUES);
     }
 
@@ -88,8 +91,7 @@ public class FilterFragment extends Fragment
         etTitle = rootView.findViewById(R.id.etTitle);
 
         etArtist = rootView.findViewById(R.id.etArtist);
-        etArtist.setVisibility(getActivity().getIntent().getBooleanExtra(
-                FilterActivity.EXTRA_SHOW_ARTIST_FILTER, true) ? View.VISIBLE : View.GONE);
+        etArtist.setVisibility(showArtistFilter ? View.VISIBLE : View.GONE);
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
 
@@ -140,7 +142,9 @@ public class FilterFragment extends Fragment
             bMaxLastPlayed.setText(R.string.select_max_last_played);
         } else {
             etTitle.setString(values.getString(VAL_TITLE));
-            etArtist.setString(values.getString(VAL_ARTIST));
+            if (showArtistFilter) {
+                etArtist.setString(values.getString(VAL_ARTIST));
+            }
             etMinYear.setString(values.getString(VAL_MIN_YEAR));
             etMaxYear.setString(values.getString(VAL_MAX_YEAR));
             bMinAdded.setText(values.containsKey(VAL_MIN_ADDED)
@@ -304,7 +308,9 @@ public class FilterFragment extends Fragment
 
     public Bundle getValues() {
         values.putString(VAL_TITLE, etTitle.getString());
-        values.putString(VAL_ARTIST, etArtist.getString());
+        if (showArtistFilter) {
+            values.putString(VAL_ARTIST, etArtist.getString());
+        }
         values.putString(VAL_MIN_YEAR, etMinYear.getString());
         values.putString(VAL_MAX_YEAR, etMaxYear.getString());
         values.putBoolean(VAL_ALL, rbAll.isChecked());
@@ -325,10 +331,12 @@ public class FilterFragment extends Fragment
             selectionArgs.add("%" + title + "%");
         }
 
-        String sArtist = etArtist.getString();
-        if (sArtist != null) {
-            selection = DbHelper.concatSelection(selection, Song.ARTIST + " LIKE ?");
-            selectionArgs.add("%" + sArtist + "%");
+        if (showArtistFilter) {
+            String sArtist = etArtist.getString();
+            if (sArtist != null) {
+                selection = DbHelper.concatSelection(selection, Song.ARTIST + " LIKE ?");
+                selectionArgs.add("%" + sArtist + "%");
+            }
         }
 
         String minYear = etMinYear.getString();

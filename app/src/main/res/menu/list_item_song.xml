@@ -14,10 +14,6 @@
         android:title="@string/bookmark" />
 
     <item
-        android:id="@+id/mark_played"
-        android:title="@string/mark_played" />
-
-    <item
         android:id="@+id/delete"
         android:title="@string/delete" />
 

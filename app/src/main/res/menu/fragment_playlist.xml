@@ -5,4 +5,8 @@
         android:id="@+id/shuffle"
         android:title="@string/shuffle" />
 
+    <item
+        android:id="@+id/mark_played"
+        android:title="@string/mark_played" />
+
 </menu>

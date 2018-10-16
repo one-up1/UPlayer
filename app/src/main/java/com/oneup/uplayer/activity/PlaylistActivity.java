@@ -1,6 +1,7 @@
 package com.oneup.uplayer.activity;
 
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -191,6 +192,24 @@ public class PlaylistActivity extends AppCompatActivity {
                     Collections.shuffle(getData());
                     service.play(0);
                     return true;
+                case R.id.mark_played:
+                    final Song song = service.getSong();
+                    Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            try {
+                                getDbHelper().updateSongPlayed(song);
+                                Util.showToast(getActivity(), R.string.times_played,
+                                        song.getTimesPlayed());
+                                stop();
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Error updating song played", ex);
+                                Util.showErrorDialog(getActivity(), ex);
+                            }
+                        }
+                    }, R.string.mark_played_confirm, song);
+                    return true;
                 default:
                     return super.onOptionsItemSelected(item);
             }
@@ -231,8 +250,7 @@ public class PlaylistActivity extends AppCompatActivity {
                 if (getCount() > 1) {
                     service.removeSong(index);
                 } else {
-                    getActivity().finish();
-                    getActivity().stopService(new Intent(getActivity(), MainService.class));
+                    stop();
                 }
             }
         }
@@ -257,6 +275,11 @@ public class PlaylistActivity extends AppCompatActivity {
             if (service != null && songIndex < getCount() - 1) {
                 service.moveSong(songIndex, songIndex + 1);
             }
+        }
+
+        private void stop() {
+            getActivity().finish();
+            getActivity().stopService(new Intent(getActivity(), MainService.class));
         }
 
         private static PlaylistFragment newInstance() {

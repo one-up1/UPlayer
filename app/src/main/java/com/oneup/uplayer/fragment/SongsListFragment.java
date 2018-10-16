@@ -125,24 +125,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     Util.showErrorDialog(getActivity(), ex);
                 }
                 break;
-            case R.id.mark_played:
-                Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            getDbHelper().updateSongPlayed(song);
-                            onSongUpdated(song);
-                            Util.showToast(getActivity(), R.string.times_played,
-                                    song.getTimesPlayed());
-                            reloadData();
-                        } catch (Exception ex) {
-                            Log.e(TAG, "Error updating song played", ex);
-                            Util.showErrorDialog(getActivity(), ex);
-                        }
-                    }
-                }, R.string.mark_played_confirm, song);
-                break;
             case R.id.delete:
                 deleteSong(position, song);
                 break;

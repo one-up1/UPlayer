@@ -287,7 +287,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         songs.remove(index);
 
         if (index < playlist.getSongIndex()) {
-            // A song below the current song is removed.
+            // A song above the current song is removed.
             playlist.decrementSongIndex();
             update();
         } else if (index == playlist.getSongIndex()) {
@@ -307,7 +307,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 stop();
             }
         } else {
-            // A song above the current song is removed.
+            // A song below the current song is removed.
             update();
         }
     }

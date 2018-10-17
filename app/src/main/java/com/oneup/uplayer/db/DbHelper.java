@@ -345,6 +345,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public void insertOrUpdatePlaylist(Playlist playlist, ArrayList<Song> songs) {
         Log.d(TAG, "DbHelper.insertOrUpdatePlaylist(" + playlist.getId() + ":" + playlist + ", " +
                 (songs == null ? "null" : songs.size()) + ")");
+        Log.d(TAG, "songIndex=" + playlist.getSongIndex() +
+                ", songPosition=" + playlist.getSongPosition());
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {

@@ -302,7 +302,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 }
             } else {
                 // Stop playback when the current and last song is removed.
-                playlist.setSongIndex(0);
+                playlist.reset();
                 prepared = false; // Or savePlaylist() will set the song position.
                 stop();
             }
@@ -499,9 +499,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
 
         try {
-            playlist.setSongPosition(prepared ? player.getCurrentPosition() : 0);
-            Log.d(TAG, "songIndex=" + playlist.getSongIndex() +
-                    ", songPosition=" + playlist.getSongPosition());
+            if (prepared) {
+                playlist.setSongPosition(player.getCurrentPosition());
+            }
             dbHelper.insertOrUpdatePlaylist(playlist, songs);
         } catch (Exception ex) {
             Log.e(TAG, "Error saving playlist", ex);

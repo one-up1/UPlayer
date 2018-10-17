@@ -287,22 +287,29 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         songs.remove(index);
 
         if (index < playlist.getSongIndex()) {
-            // A song above the current song is removed.
+            // A song below the current song is removed.
             playlist.decrementSongIndex();
+            update();
         } else if (index == playlist.getSongIndex()) {
             // The current song is removed.
-            if (index == songs.size()) {
-                // Stop playback when the current and last song is removed.
-                player.stop();
-                prepared = false;
-                playlist.decrementSongIndex();
-            } else if (player.isPlaying()) {
+            if (index < songs.size()) {
                 // Play the next song when the current song is removed, only when currently playing,
                 // or playback may start when removing songs while paused.
-                prepare();
+                if (player.isPlaying()) {
+                    prepare();
+                } else {
+                    update();
+                }
+            } else {
+                // Stop playback when the current and last song is removed.
+                playlist.setSongIndex(0);
+                prepared = false; // Or savePlaylist() will set the song position.
+                stop();
             }
+        } else {
+            // A song above the current song is removed.
+            update();
         }
-        update();
     }
 
     public void update() {
@@ -364,6 +371,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
+    public void stop() {
+        Log.d(TAG, "MainService.stop()");
+        PlaylistActivity.finishIfRunning();
+        stopSelf();
+    }
+
     public void setOnUpdateListener(OnUpdateListener onUpdateListener) {
         this.onUpdateListener = onUpdateListener;
     }
@@ -378,7 +391,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             if (songs.isEmpty()) {
                 Log.w(TAG, "Playlist is empty");
                 if (this.songs == null) {
-                    stopSelf();
+                    stop();
                 }
                 return;
             }
@@ -464,12 +477,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void stop() {
-        Log.d(TAG, "MainService.stop()");
-        PlaylistActivity.finishIfRunning();
-        stopSelf();
-    }
-
     private void volumeDown() {
         Log.d(TAG, "MainService.volumeDown()");
         if (volume > 0) {
@@ -486,13 +493,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void savePlaylist() {
         Log.d(TAG, "MainService.savePlaylist()");
-        if (songs == null || songs.isEmpty()) {
+        if (songs == null) {
             Log.d(TAG, "No playlist to save");
             return;
         }
 
         try {
-            playlist.setSongPosition(player.getCurrentPosition());
+            playlist.setSongPosition(prepared ? player.getCurrentPosition() : 0);
             Log.d(TAG, "songIndex=" + playlist.getSongIndex() +
                     ", songPosition=" + playlist.getSongPosition());
             dbHelper.insertOrUpdatePlaylist(playlist, songs);

@@ -64,8 +64,6 @@ public class PlaylistActivity extends AppCompatActivity {
     public static class PlaylistFragment extends SongsListFragment
             implements MainService.OnUpdateListener {
         private MainService service;
-
-        private boolean updateService;
         private int moveIndex;
 
         public PlaylistFragment() {
@@ -87,28 +85,6 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             inflater.inflate(R.menu.fragment_playlist, menu);
             super.onCreateOptionsMenu(menu, inflater);
-        }
-
-        @Override
-        public void onStart() {
-            Log.d(TAG, "PlaylistActivity.onStart()");
-            super.onStart();
-            updateService = false;
-        }
-
-        @Override
-        public void onResume() {
-            Log.d(TAG, "PlaylistActivity.onResume()");
-            super.onResume();
-
-            // This will update the service only when onResume() is called without onStart() being
-            // called, when the notification is tapped with the activity already open. The service
-            // is also updated when the activity is started for the first time in
-            // onServiceConnected(), because onServiceConnected() is called after onResume().
-            if (updateService && service != null) {
-                service.update();
-            }
-            updateService = true;
         }
 
         @Override
@@ -151,7 +127,7 @@ public class PlaylistActivity extends AppCompatActivity {
             super.setListItemContent(rootView, position, song);
 
             // Mark the current song.
-            if (service != null && position == service.getPlaylist().getSongIndex()) {
+            if (position == service.getPlaylist().getSongIndex()) {
                 TextView tvTitle = rootView.findViewById(R.id.tvTitle);
                 tvTitle.setText(Util.underline(tvTitle.getText()));
             }
@@ -168,19 +144,17 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemClick(int position, Song song) {
-            if (service != null) {
-                if (moveIndex == -1) {
-                    service.play(position);
+            if (moveIndex == -1) {
+                service.play(position);
+            } else {
+                if (moveIndex == position) {
+                    Log.d(TAG, "Canceling move");
+                    moveIndex = -1;
+                    notifyDataSetChanged();
                 } else {
-                    if (moveIndex == position) {
-                        Log.d(TAG, "Canceling move");
-                        moveIndex = -1;
-                        notifyDataSetChanged();
-                    } else {
-                        int moveIndex = this.moveIndex;
-                        this.moveIndex = -1;
-                        service.moveSong(moveIndex, position);
-                    }
+                    int moveIndex = this.moveIndex;
+                    this.moveIndex = -1;
+                    service.moveSong(moveIndex, position);
                 }
             }
         }
@@ -202,7 +176,7 @@ public class PlaylistActivity extends AppCompatActivity {
                                 getDbHelper().updateSongPlayed(song);
                                 Util.showToast(getActivity(), R.string.times_played,
                                         song.getTimesPlayed());
-                                stop();
+                                service.stop();
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error updating song played", ex);
                                 Util.showErrorDialog(getActivity(), ex);
@@ -233,10 +207,14 @@ public class PlaylistActivity extends AppCompatActivity {
         protected void onListItemViewClick(int viewId, int position, Song song) {
             switch (viewId) {
                 case R.id.ibMoveUp:
-                    moveUp(position);
+                    if (position > 0) {
+                        service.moveSong(position, position - 1);
+                    }
                     break;
                 case R.id.ibMoveDown:
-                    moveDown(position);
+                    if (position < getCount() - 1) {
+                        service.moveSong(position, position + 1);
+                    }
                     break;
                 case R.id.ibRemove:
                     removeListItem(position);
@@ -246,13 +224,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void removeListItem(int index) {
-            if (service != null) {
-                if (getCount() > 1) {
-                    service.removeSong(index);
-                } else {
-                    stop();
-                }
-            }
+            service.removeSong(index);
         }
 
         @Override
@@ -263,23 +235,6 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         protected void onSongUpdated(Song song) {
             service.update();
-        }
-
-        private void moveUp(int songIndex) {
-            if (service != null && songIndex > 0) {
-                service.moveSong(songIndex, songIndex - 1);
-            }
-        }
-
-        private void moveDown(int songIndex) {
-            if (service != null && songIndex < getCount() - 1) {
-                service.moveSong(songIndex, songIndex + 1);
-            }
-        }
-
-        private void stop() {
-            getActivity().finish();
-            getActivity().stopService(new Intent(getActivity(), MainService.class));
         }
 
         private static PlaylistFragment newInstance() {

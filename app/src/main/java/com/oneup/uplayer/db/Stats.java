@@ -11,6 +11,7 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Util;
 
 public class Stats {
+    private Total grandTotal;
     private Total total;
     private Total played;
     private Total bookmarked;
@@ -25,6 +26,13 @@ public class Stats {
     Stats() {
         total = new Total();
         played = new Total();
+    }
+
+    Total getGrandTotal() {
+        if (grandTotal == null) {
+            grandTotal = new Total();
+        }
+        return grandTotal;
     }
 
     Total getTotal() {
@@ -81,20 +89,22 @@ public class Stats {
         AlertDialog dialog = dialogBuilder.show();
         GridLayout grid = dialog.findViewById(R.id.grid);
 
-        total.addRows(context, grid, R.string.stats_total, 0);
+        total.addRows(context, grid,
+                R.string.stats_total, R.string.stats_rest,
+                grandTotal == null ? total : grandTotal);
         played.addRows(context, grid,
-                R.string.stats_played, R.string.stats_unplayed);
+                R.string.stats_played, R.string.stats_unplayed, total);
         if (bookmarked != null) {
             bookmarked.addRows(context, grid,
-                    R.string.stats_bookmarked, R.string.stats_unbookmarked);
+                    R.string.stats_bookmarked, R.string.stats_unbookmarked, total);
         }
         if (tagged != null) {
             tagged.addRows(context, grid,
-                    R.string.stats_tagged, R.string.stats_untagged);
+                    R.string.stats_tagged, R.string.stats_untagged, total);
         }
         if (playlisted != null) {
             playlisted.addRows(context, grid,
-                    R.string.stats_playlisted, R.string.stats_unplaylisted);
+                    R.string.stats_playlisted, R.string.stats_unplaylisted, total);
         }
 
         addRow(context, grid, R.string.stats_last_added, lastAdded);
@@ -168,7 +178,7 @@ public class Stats {
         return s;
     }
 
-    public class Total {
+    class Total {
         private int songCount;
         private long songsDuration;
         private int artistCount;
@@ -189,26 +199,27 @@ public class Stats {
         }
 
         private void addRows(Context context, GridLayout grid,
-                             int labelId, int remainderLabelId) {
-            addRow(context, grid, labelId);
-            if (this != total) {
+                             int labelId, int remainderLabelId,
+                             Total grandTotal) {
+            addRow(context, grid, labelId, grandTotal);
+            if (this != grandTotal) {
                 Total remainder = new Total();
-                remainder.songCount = total.songCount - songCount;
-                remainder.songsDuration = total.songsDuration - songsDuration;
-                remainder.artistCount = total.artistCount - artistCount;
-                remainder.addRow(context, grid, remainderLabelId);
+                remainder.songCount = grandTotal.songCount - songCount;
+                remainder.songsDuration = grandTotal.songsDuration - songsDuration;
+                remainder.artistCount = grandTotal.artistCount - artistCount;
+                remainder.addRow(context, grid, remainderLabelId, grandTotal);
             }
         }
 
-        private void addRow(Context context, GridLayout grid, int labelId) {
-            String songs = formatCount(songCount, total.songCount);
+        private void addRow(Context context, GridLayout grid, int labelId, Total grandTotal) {
+            String songs = formatCount(songCount, grandTotal.songCount);
             if (songsDuration > 0) {
                 songs += "\n" + Util.formatDuration(songsDuration);
             }
 
             String artists;
-            if (total.artistCount > 1) {
-                artists = formatCount(artistCount, total.artistCount);
+            if (grandTotal.artistCount > 1) {
+                artists = formatCount(artistCount, grandTotal.artistCount);
                 if (artistCount > 1) {
                     artists += "\n" + context.getString(R.string.stats_avg,
                             Util.formatFraction(songCount, artistCount));

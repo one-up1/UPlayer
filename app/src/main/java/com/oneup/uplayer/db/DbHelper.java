@@ -463,11 +463,22 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public Stats queryStats(boolean artist, boolean bookmarked, boolean tagged, boolean playlisted,
+                            String baseSelection, String[] baseSelectionArgs,
                             String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryStats(" + artist + ", " + bookmarked + ", " + tagged + ", " +
-                playlisted + ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
+        Log.d(TAG, "DbHelper.queryStats(" + artist + ", " +
+                bookmarked + ", " + tagged + ", " + playlisted + ", " +
+                baseSelection + ", " + Arrays.toString(baseSelectionArgs) + ", " +
+                selection + ", " + Arrays.toString(selectionArgs) + ")");
         Stats stats = new Stats();
         try (SQLiteDatabase db = getReadableDatabase()) {
+            if (selection == null) {
+                selection = baseSelection;
+                selectionArgs = baseSelectionArgs;
+            } else {
+                queryTotal(db, stats.getGrandTotal(), artist, baseSelection, baseSelectionArgs);
+                selection = concatSelection(baseSelection, selection);
+                selectionArgs = concatWhereArgs(baseSelectionArgs, selectionArgs);
+            }
             queryTotal(db, stats.getTotal(), artist, selection, selectionArgs);
             queryTotal(db, stats.getPlayed(), artist,
                     concatSelection(selection, Song.LAST_PLAYED + " IS NOT NULL"),

@@ -107,6 +107,7 @@ public class QueryFragment extends Fragment
                         !filterFragment.hasBookmarkedSelection(),
                         !filterFragment.hasTagSelection(),
                         !filterFragment.hasPlaylistSelection(),
+                        null, null,
                         filterFragment.getSelection(), filterFragment.getSelectionArgs())
                         .showDialog(getActivity(), null);
             } catch (Exception ex) {

@@ -131,7 +131,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                             !hasBookmarkedSelection,
                             !hasTagSelection,
                             !hasPlaylistSelection,
-                            getSelection(), getSelectionArgs())
+                            getSelection(), getSelectionArgs(),
+                            filterSelection, filterSelectionArgs)
                             .showDialog(getActivity(), artist == null ? null : artist.getArtist());
                 } catch (Exception ex) {
                     Log.e(TAG, "Error querying artist stats", ex);
@@ -213,7 +214,10 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(getSelection(), getSelectionArgs(), getOrderBy());
+        return getDbHelper().querySongs(
+                DbHelper.concatSelection(getSelection(), filterSelection),
+                DbHelper.concatWhereArgs(getSelectionArgs(), filterSelectionArgs),
+                getOrderBy());
     }
 
     @Override
@@ -283,16 +287,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 Util.showToast(getActivity(), R.string.playing_song_last, song);
                 break;
         }
-    }
-
-    @Override
-    protected String getSelection() {
-        return DbHelper.concatSelection(super.getSelection(), filterSelection);
-    }
-
-    @Override
-    protected String[] getSelectionArgs() {
-        return DbHelper.concatWhereArgs(super.getSelectionArgs(), filterSelectionArgs);
     }
 
     private void add(ArrayList<Song> songs, boolean next) {

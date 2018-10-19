@@ -87,6 +87,7 @@
     <string name="stop">Stop</string>
 
     <string name="stats_total">Total:</string>
+    <string name="stats_rest">Rest:</string>
     <string name="stats_played">Played:</string>
     <string name="stats_unplayed">Unplayed:</string>
     <string name="stats_bookmarked">Bookmarked:</string>

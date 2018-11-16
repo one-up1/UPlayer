@@ -75,6 +75,7 @@
         android:id="@+id/bAdded"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:enabled="false"
         app:layout_columnWeight="1" />
 
     <TextView

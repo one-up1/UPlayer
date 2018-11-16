@@ -219,7 +219,6 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 ContentValues values = new ContentValues();
                 putValue(values, Song.YEAR, song.getYear());
-                putValue(values, Song.ADDED, song.getAdded());
                 values.put(Song.TAG, song.getTag());
                 putValue(values, Song.BOOKMARKED, song.getBookmarked());
 

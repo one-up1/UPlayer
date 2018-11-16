@@ -29,9 +29,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     private static final String TAG = "UPlayer";
 
-    private static final int REQUEST_SELECT_ADDED = 1;
-    private static final int REQUEST_SELECT_BOOKMARKED = 2;
-    private static final int REQUEST_SELECT_PLAYLISTS = 3;
+    private static final int REQUEST_SELECT_BOOKMARKED = 1;
+    private static final int REQUEST_SELECT_PLAYLISTS = 2;
 
     private DbHelper dbHelper;
     private Song song;
@@ -84,8 +83,6 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         if (song.getAdded() != 0) {
             bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
         }
-        bAdded.setOnClickListener(this);
-        bAdded.setOnLongClickListener(this);
 
         etTag = findViewById(R.id.etTag);
         if (song.getTag() != null) {
@@ -155,10 +152,6 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_SELECT_ADDED:
-                    song.setAdded(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
-                    bAdded.setText(Util.formatDateTimeAgo(song.getAdded()));
-                    break;
                 case REQUEST_SELECT_BOOKMARKED:
                     song.setBookmarked(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
                     bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
@@ -217,14 +210,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        if (v == bAdded) {
-            Intent intent = new Intent(this, DateTimeActivity.class);
-            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_added);
-            if (song.getAdded() != 0) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getAdded());
-            }
-            startActivityForResult(intent, REQUEST_SELECT_ADDED);
-        } else if (v == bBookmarked) {
+        if (v == bBookmarked) {
             Intent intent = new Intent(this, DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_bookmarked);
             if (song.getBookmarked() != 0) {
@@ -236,10 +222,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public boolean onLongClick(View v) {
-        if (v == bAdded) {
-            song.setAdded(0);
-            bAdded.setText("");
-        } else if (v == bBookmarked) {
+        if (v == bBookmarked) {
             song.setBookmarked(0);
             bBookmarked.setText("");
         }

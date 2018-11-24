@@ -104,11 +104,6 @@ public class Playlist implements Parcelable, BaseColumns {
         this.songPosition = songPosition;
     }
 
-    public void reset() {
-        songIndex = 0;
-        songPosition = 0;
-    }
-
     public static Playlist getDefault() {
         Playlist playlist = new Playlist();
         playlist.id = DEFAULT_PLAYLIST_ID;

@@ -69,7 +69,6 @@
     <string name="edit_bookmarked">Bookmarked:</string>
     <string name="edit_last_played">Last played:</string>
     <string name="edit_times_played">Times played:</string>
-    <string name="select_added">Added&#8230;</string>
     <string name="select_bookmarked">Bookmarked&#8230;</string>
     <string name="added_to_playlists">Added to %1$s</string>
     <string name="removed_from_playlists">Removed from %1$s</string>

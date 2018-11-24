@@ -173,12 +173,11 @@ public class PlaylistActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             try {
-                                getDbHelper().updateSongPlayed(song);
+                                service.stop(true);
                                 Util.showToast(getActivity(), R.string.times_played,
                                         song.getTimesPlayed());
-                                service.stop();
                             } catch (Exception ex) {
-                                Log.e(TAG, "Error updating song played", ex);
+                                Log.e(TAG, "Error marking song played", ex);
                                 Util.showErrorDialog(getActivity(), ex);
                             }
                         }

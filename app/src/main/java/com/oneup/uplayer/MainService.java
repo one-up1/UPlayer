@@ -49,7 +49,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final String PREF_VOLUME = "volume";
 
     private static final int MAX_VOLUME = 100;
-    private static final int SONG_POSITION_OFFSET = 8000;
+    private static final int SONG_POSITION_OFFSET = 12000;
 
     private static boolean running;
 

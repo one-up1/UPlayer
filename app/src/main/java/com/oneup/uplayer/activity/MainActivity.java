@@ -1,8 +1,6 @@
 package com.oneup.uplayer.activity;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -19,6 +17,7 @@ import com.oneup.uplayer.fragment.ArtistsFragment;
 import com.oneup.uplayer.fragment.ListFragment;
 import com.oneup.uplayer.fragment.QueryFragment;
 import com.oneup.uplayer.fragment.SongsFragment;
+import com.oneup.uplayer.util.Settings;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "UPlayer";
@@ -30,11 +29,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private static final int TAB_LAST_PLAYED = 4;
     private static final int TAB_MOST_PLAYED = 5;
 
-    private static final String PREF_CURRENT_ITEM = "current_item";
-    private static final String PREF_BOOKMARKS_SORT_COLUMN = "bookmarks_sort_column";
-    private static final String PREF_BOOKMARKS_SORT_DESC = "bookmarks_sort_desc";
-
-    private SharedPreferences preferences;
+    private Settings settings;
 
     private SectionsPagerAdapter tabAdapter;
     private ViewPager viewPager;
@@ -45,13 +40,13 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        preferences = getPreferences(Context.MODE_PRIVATE);
+        settings = Settings.get(this);
 
         tabAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         viewPager = findViewById(R.id.container);
         viewPager.setAdapter(tabAdapter);
-        viewPager.setCurrentItem(preferences.getInt(PREF_CURRENT_ITEM, 2));
+        viewPager.setCurrentItem(settings.getInt(R.string.key_selected_tab, TAB_ARTISTS));
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -69,14 +64,14 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         Log.d(TAG, "MainActivity.onDestroy()");
 
         // Save the current tab position and the sort options of the bookmarks tab.
-        SharedPreferences.Editor preferences = this.preferences.edit();
-        preferences.putInt(PREF_CURRENT_ITEM, viewPager.getCurrentItem());
+        Settings.Editor settings = this.settings.edit();
+        settings.putInt(R.string.key_selected_tab, viewPager.getCurrentItem());
         SongsFragment bookmarksFragment = (SongsFragment) tabAdapter.items[TAB_BOOKMARKS];
         if (bookmarksFragment != null) {
-            preferences.putInt(PREF_BOOKMARKS_SORT_COLUMN, bookmarksFragment.getSortColumn());
-            preferences.putBoolean(PREF_BOOKMARKS_SORT_DESC, bookmarksFragment.isSortDesc());
+            settings.putInt(R.string.key_bookmarks_sort_column, bookmarksFragment.getSortColumn());
+            settings.putBoolean(R.string.key_bookmarks_sort_desc, bookmarksFragment.isSortDesc());
         }
-        preferences.apply();
+        settings.apply();
 
         super.onDestroy();
     }
@@ -95,16 +90,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         Fragment fragment = tabAdapter.getItem(tab.getPosition());
         if (fragment instanceof ListFragment) {
             ((ListFragment) fragment).reverseSortOrder();
-        }
-    }
-
-    public void reload() {
-        Log.d(TAG, "MainActivity.reload()");
-        for (Fragment fragment : tabAdapter.items) {
-            // Reload all ListFragments.
-            if (fragment instanceof ListFragment) {
-                ((ListFragment) fragment).reloadData();
-            }
         }
     }
 
@@ -128,9 +113,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (items[position] == null) {
                         items[position] = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                preferences.getInt(PREF_BOOKMARKS_SORT_COLUMN,
+                                settings.getInt(R.string.key_bookmarks_sort_column,
                                         SongsFragment.SORT_COLUMN_BOOKMARKED),
-                                preferences.getBoolean(PREF_BOOKMARKS_SORT_DESC, true));
+                                settings.getBoolean(R.string.key_bookmarks_sort_desc, true));
                     }
                     break;
                 case TAB_ARTISTS:

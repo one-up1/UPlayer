@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_selected_tab">selected_tab</string>
+    <string name="key_bookmarks_sort_column">bookmarks_sort_column</string>
+    <string name="key_bookmarks_sort_desc">bookmarks_sort_desc</string>
+    <string name="key_query_sort_column">query_sort_column</string>
+    <string name="key_query_sort_desc">query_sort_desc</string>
+
+    <string name="key_headset_state">headset_state</string>
+    <string name="key_volume">volume</string>
+
+    <string name="key_sync_database">sync_database</string>
+    <string name="key_backup">backup</string>
+    <string name="key_restore_backup">restore_backup</string>
+
+    <string name="key_resume_offset_song">resume_offset_song</string>
+    <string name="key_resume_offset_playlist">resume_offset_playlist</string>
+</resources>

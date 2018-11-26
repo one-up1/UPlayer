@@ -1,10 +1,6 @@
 package com.oneup.uplayer.fragment;
 
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,19 +14,16 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.activity.MainActivity;
+import com.oneup.uplayer.activity.SettingsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.util.Settings;
 import com.oneup.uplayer.util.Util;
 
-public class QueryFragment extends Fragment
-        implements View.OnClickListener, View.OnLongClickListener {
+public class QueryFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "UPlayer";
 
-    private static final String PREF_SORT_COLUMN = "sort_column";
-    private static final String PREF_SORT_DESC = "sort_desc";
-
-    private SharedPreferences preferences;
+    private Settings settings;
     private DbHelper dbHelper;
     private boolean viewCreated;
 
@@ -40,14 +33,13 @@ public class QueryFragment extends Fragment
     private CheckBox cbSortDesc;
     private Button bQuery;
     private Button bStatistics;
-    private Button bSyncDatabase;
-    private Button bBackup;
+    private Button bSettings;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        settings = Settings.get(getActivity());
         dbHelper = new DbHelper(getActivity());
     }
 
@@ -64,12 +56,12 @@ public class QueryFragment extends Fragment
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
         if (!viewCreated) {
-            sSortColumn.setSelection(preferences.getInt(PREF_SORT_COLUMN, 0));
+            sSortColumn.setSelection(settings.getInt(R.string.key_query_sort_column, 0));
         }
 
         cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
         if (!viewCreated) {
-            cbSortDesc.setChecked(preferences.getBoolean(PREF_SORT_DESC, false));
+            cbSortDesc.setChecked(settings.getBoolean(R.string.key_query_sort_desc, false));
         }
 
         bQuery = rootView.findViewById(R.id.bQuery);
@@ -78,12 +70,8 @@ public class QueryFragment extends Fragment
         bStatistics = rootView.findViewById(R.id.bStatistics);
         bStatistics.setOnClickListener(this);
 
-        bSyncDatabase = rootView.findViewById(R.id.bSyncDatabase);
-        bSyncDatabase.setOnClickListener(this);
-
-        bBackup = rootView.findViewById(R.id.bBackup);
-        bBackup.setOnClickListener(this);
-        bBackup.setOnLongClickListener(this);
+        bSettings = rootView.findViewById(R.id.bSettings);
+        bSettings.setOnClickListener(this);
 
         viewCreated = true;
         return rootView;
@@ -114,19 +102,9 @@ public class QueryFragment extends Fragment
                 Log.e(TAG, "Error querying stats", ex);
                 Util.showErrorDialog(getActivity(), ex);
             }
-        } else if (v == bSyncDatabase) {
-            syncDatabase();
-        } else if (v == bBackup) {
-            backup();
+        } else if (v == bSettings) {
+            startActivity(new Intent(getActivity(), SettingsActivity.class));
         }
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        if (v == bBackup) {
-            restoreBackup();
-        }
-        return true;
     }
 
     private void query() {
@@ -138,101 +116,10 @@ public class QueryFragment extends Fragment
                         filterFragment.getSelection(), filterFragment.getSelectionArgs(),
                         sortColumn, sortDesc)));
 
-        preferences.edit()
-                .putInt(PREF_SORT_COLUMN, sortColumn)
-                .putBoolean(PREF_SORT_DESC, sortDesc)
+        settings.edit()
+                .putInt(R.string.key_query_sort_column, sortColumn)
+                .putBoolean(R.string.key_query_sort_desc, sortDesc)
                 .apply();
-    }
-
-    private void syncDatabase() {
-        Util.showConfirmDialog(getActivity(),
-                new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                                getString(R.string.synchronizing_database), null, true, false);
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    DbHelper.SyncResult[] results =
-                                            dbHelper.syncWithMediaStore(getActivity());
-                                    reload();
-                                    Util.showInfoDialog(getActivity(), R.string.sync_completed,
-                                            R.string.sync_completed_message,
-                                            results[0].getRowCount(),
-                                            results[0].getRowsInserted(),
-                                            results[0].getRowsUpdated(),
-                                            results[0].getRowsDeleted(),
-                                            results[1].getRowCount(),
-                                            results[1].getRowsInserted(),
-                                            results[1].getRowsUpdated(),
-                                            results[1].getRowsDeleted());
-                                } catch (Exception ex) {
-                                    Log.e(TAG, "Error synchronizing database", ex);
-                                    Util.showErrorDialog(getActivity(), ex);
-                                } finally {
-                                    progressDialog.dismiss();
-                                }
-                            }
-                        }).start();
-                    }
-                }, R.string.sync_database_confirm);
-    }
-
-    private void backup() {
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    dbHelper.backup();
-                    Util.showToast(getActivity(), R.string.backup_completed);
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error running backup", ex);
-                    Util.showErrorDialog(getActivity(), ex);
-                }
-            }
-        }).start();
-    }
-
-    private void restoreBackup() {
-        Util.showConfirmDialog(getActivity(),
-                new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                                getString(R.string.restoring_backup), null, true, false);
-                        new Thread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                try {
-                                    dbHelper.restoreBackup();
-                                    reload();
-                                    Util.showToast(getActivity(), R.string.backup_restored);
-                                } catch (Exception ex) {
-                                    Log.e(TAG, "Error restoring backup", ex);
-                                    Util.showErrorDialog(getActivity(), ex);
-                                } finally {
-                                    progressDialog.dismiss();
-                                }
-                            }
-                        }).start();
-                    }
-                }, R.string.restore_backup_confirm);
-    }
-
-    private void reload() {
-        getActivity().runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                ((MainActivity) getActivity()).reload();
-            }
-        });
     }
 
     public static QueryFragment newInstance() {

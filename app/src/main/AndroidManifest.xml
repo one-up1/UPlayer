@@ -20,23 +20,18 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
 
-        <activity
-            android:name=".activity.SongsActivity" />
+        <activity android:name=".activity.SongsActivity" />
 
-        <activity
-            android:name=".activity.TagsActivity" />
+        <activity android:name=".activity.TagsActivity" />
 
-        <activity
-            android:name=".activity.PlaylistsActivity" />
+        <activity android:name=".activity.PlaylistsActivity" />
 
-        <activity
-            android:name=".activity.PlaylistActivity" />
+        <activity android:name=".activity.PlaylistActivity" />
         <!-- android:launchMode="singleInstance" -->
 
         <activity
@@ -51,6 +46,8 @@
             android:name=".activity.DateTimeActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />
+
+        <activity android:name=".activity.SettingsActivity" />
 
         <service
             android:name=".MainService"

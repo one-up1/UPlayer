@@ -55,17 +55,11 @@
             app:layout_columnWeight="1" />
 
         <Button
-            android:id="@+id/bSyncDatabase"
+            android:id="@+id/bSettings"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/sync_database"
-            app:layout_columnWeight="1" />
-
-        <Button
-            android:id="@+id/bBackup"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/backup"
+            android:text="@string/settings"
+            app:layout_columnSpan="2"
             app:layout_columnWeight="1" />
 
     </android.support.v7.widget.GridLayout>

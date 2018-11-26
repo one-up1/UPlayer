@@ -5,13 +5,11 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.text.SpannableStringBuilder;
 import android.util.Log;
@@ -23,6 +21,7 @@ import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
+import com.oneup.uplayer.util.Settings;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
@@ -46,16 +45,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final int ACTION_VOLUME_UP = 9;
 
     private static final String TAG = "UPlayer";
-    private static final String PREF_VOLUME = "volume";
-
     private static final int MAX_VOLUME = 100;
-    private static final int SONG_POSITION_OFFSET = 12000;
 
     private static boolean running;
 
     private final IBinder mainBinder = new MainBinder();
 
-    private SharedPreferences preferences;
+    private Settings settings;
     private DbHelper dbHelper;
 
     private MediaPlayer player;
@@ -76,7 +72,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onCreate()");
         super.onCreate();
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        settings = Settings.get(this);
         dbHelper = new DbHelper(this);
 
         player = new MediaPlayer();
@@ -86,7 +82,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
 
-        volume = preferences.getInt(PREF_VOLUME, MAX_VOLUME);
+        volume = settings.getInt(R.string.key_volume, MAX_VOLUME);
 
         notificationViews = new RemoteViews(getApplicationContext().getPackageName(),
                 R.layout.notification);
@@ -193,12 +189,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void onPrepared(MediaPlayer player) {
         Log.d(TAG, "MainService.onPrepared()");
 
-        // Seek to the saved song position of the playlist.
-        if (playlist.getSongPosition() > 0) {
-            Log.d(TAG, "Seeking to saved song position: " + playlist.getSongPosition());
-            player.seekTo(playlist.getSongPosition());
-            playlist.setSongPosition(0);
-        }
+        seekTo(playlist.getSongPosition(), R.string.key_resume_offset_playlist);
+        playlist.setSongPosition(0);
 
         setVolume();
         player.start();
@@ -460,6 +452,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else {
             if (prepared) {
                 Log.d(TAG, "Resuming");
+                seekTo(player.getCurrentPosition(), R.string.key_resume_offset_song);
                 player.start();
                 update();
             } else {
@@ -502,11 +495,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         try {
             if (prepared) {
-                playlist.setSongPosition(player.getCurrentPosition() - SONG_POSITION_OFFSET);
-                if (playlist.getSongPosition() < SONG_POSITION_OFFSET) {
-                    Log.d(TAG, "Ignoring low song position: " + player.getCurrentPosition());
-                    playlist.setSongPosition(0);
-                }
+                playlist.setSongPosition(player.getCurrentPosition());
             } else if (completed) {
                 playlist.setSongIndex(0);
             }
@@ -528,6 +517,22 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
+    private void seekTo(int position, int offsetKeyId) {
+        Log.d(TAG, "seekTo(" + position + ")");
+        if (position > 0) {
+            int offset = settings.getXmlInt(offsetKeyId, 0) * 1000;
+            if (offset > 0) {
+                position -= offset;
+                if (position < offset) {
+                    position = 0;
+                }
+
+                Log.d(TAG, "Seeking to position: " + position + " (offset=" + offset + ")");
+                player.seekTo(position);
+            }
+        }
+    }
+
     private void setVolume() {
         float volume = (float)
                 (1 - (Math.log(MAX_VOLUME + 1 - this.volume) / Math.log(MAX_VOLUME)));
@@ -541,7 +546,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             setVolume();
         }
         update();
-        preferences.edit().putInt(PREF_VOLUME, volume).apply();
+        settings.edit().putInt(R.string.key_volume, volume).apply();
     }
 
     private void setOnClickPendingIntent(int viewId, int action) {

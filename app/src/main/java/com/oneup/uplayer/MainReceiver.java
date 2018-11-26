@@ -3,24 +3,22 @@ package com.oneup.uplayer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
+import com.oneup.uplayer.util.Settings;
 
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
-
-    private static final String PREF_HEADSET_STATE = "headset_state";
+    private static final String STATE = "state";
 
     private Context context;
-    private SharedPreferences preferences;
+    private Settings settings;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         this.context = context;
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        settings = Settings.get(context);
 
         String action = intent.getAction();
         if (action == null) {
@@ -33,7 +31,7 @@ public class MainReceiver extends BroadcastReceiver {
                 screenOn();
                 break;
             case Intent.ACTION_HEADSET_PLUG:
-                headsetPlug(intent.getIntExtra("state", -1));
+                headsetPlug(intent.getIntExtra(STATE, -1));
                 break;
         }
     }
@@ -49,7 +47,7 @@ public class MainReceiver extends BroadcastReceiver {
     private void headsetPlug(int state) {
         Log.d(TAG, "MainReceiver.headsetPlug(" + state + ")");
 
-        int prevState = preferences.getInt(PREF_HEADSET_STATE, 0);
+        int prevState = settings.getInt(R.string.key_headset_state, 0);
         Log.d(TAG, "prevState=" + prevState);
 
         // Stop playback when the headset is unplugged and was previously plugged in.
@@ -58,6 +56,6 @@ public class MainReceiver extends BroadcastReceiver {
             context.stopService(new Intent(context, MainService.class));
         }
 
-        preferences.edit().putInt(PREF_HEADSET_STATE, state).apply();
+        settings.edit().putInt(R.string.key_headset_state, state).apply();
     }
 }

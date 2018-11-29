@@ -21,7 +21,7 @@
 
     <android.support.v7.widget.GridLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:descendantFocusability="beforeDescendants"
         android:focusableInTouchMode="true"
         app:columnCount="2">
@@ -60,7 +60,8 @@
             android:layout_height="wrap_content"
             android:text="@string/settings"
             app:layout_columnSpan="2"
-            app:layout_columnWeight="1" />
+            app:layout_columnWeight="1"
+            app:layout_gravity="bottom" />
 
     </android.support.v7.widget.GridLayout>
 

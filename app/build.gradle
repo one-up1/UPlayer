@@ -6,10 +6,10 @@ android {
         applicationId "com.oneup.uplayer"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 369
-        versionName "6.12.369"
+        versionCode 370
+        versionName "6.13.370"
     }
-    buildTypes {
+    buildTypes {1
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

@@ -25,9 +25,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private static final int TAB_QUERY = 0;
     private static final int TAB_BOOKMARKS = 1;
     private static final int TAB_ARTISTS = 2;
-    private static final int TAB_LAST_PLAYED = 3;
-    private static final int TAB_MOST_PLAYED = 4;
-    private static final int TAB_LAST_ADDED = 5;
+    private static final int TAB_LAST_ADDED = 3;
+    private static final int TAB_LAST_PLAYED = 4;
+    private static final int TAB_MOST_PLAYED = 5;
 
     private Settings settings;
 
@@ -123,6 +123,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                         items[position] = ArtistsFragment.newInstance(0, false);
                     }
                     break;
+                case TAB_LAST_ADDED:
+                    if (items[position] == null) {
+                        items[position] = ArtistsFragment.newInstance(
+                                ArtistsFragment.SORT_COLUMN_LAST_ADDED, true);
+                    }
+                    break;
                 case TAB_LAST_PLAYED:
                     if (items[position] == null) {
                         items[position] = ArtistsFragment.newInstance(
@@ -133,12 +139,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (items[position] == null) {
                         items[position] = ArtistsFragment.newInstance(
                                 ArtistsFragment.SORT_COLUMN_TIMES_PLAYED, true);
-                    }
-                    break;
-                case TAB_LAST_ADDED:
-                    if (items[position] == null) {
-                        items[position] = ArtistsFragment.newInstance(
-                                ArtistsFragment.SORT_COLUMN_LAST_ADDED, true);
                     }
                     break;
             }
@@ -159,12 +159,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     return getString(R.string.bookmarks);
                 case TAB_ARTISTS:
                     return getString(R.string.artists);
+                case TAB_LAST_ADDED:
+                    return getString(R.string.last_added);
                 case TAB_LAST_PLAYED:
                     return getString(R.string.last_played);
                 case TAB_MOST_PLAYED:
                     return getString(R.string.most_played);
-                case TAB_LAST_ADDED:
-                    return getString(R.string.last_added);
                 default:
                     return null;
             }

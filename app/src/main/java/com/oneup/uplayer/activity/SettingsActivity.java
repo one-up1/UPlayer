@@ -34,11 +34,6 @@ public class SettingsActivity extends AppCompatActivity {
         private Preference pRestoreBackup;
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-        }
-
-        @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             addPreferencesFromResource(R.xml.settings);
 

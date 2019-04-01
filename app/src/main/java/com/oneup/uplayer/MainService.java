@@ -142,10 +142,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 pausePlay();
                 break;
             case ACTION_NEXT:
-                next();
+                next(false, false);
                 break;
             case ACTION_STOP:
-                stop(false);
+                stop();
                 break;
             case ACTION_VOLUME_DOWN:
                 volumeDown();
@@ -215,12 +215,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         completed = true;
 
         if (player.getCurrentPosition() > 0) {
-            try {
-                dbHelper.updateSongPlayed(getSong());
-                next();
-            } catch (Exception ex) {
-                Log.e(TAG, "Error updating song played", ex);
-            }
+            next(true, false);
         } else {
             Log.e(TAG, "Current position is " + player.getCurrentPosition());
             update();
@@ -250,6 +245,24 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.play(" + songIndex + ")");
         playlist.setSongIndex(songIndex);
         prepare();
+    }
+
+    public void next(boolean markPlayed, boolean stop) {
+        Log.d(TAG, "MainService.next(" + markPlayed + "," + stop + ")");
+        Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
+
+        if (markPlayed) {
+            dbHelper.updateSongPlayed(getSong());
+        }
+
+        if (hasSongsLeft()) {
+            playlist.incrementSongIndex();
+            prepare();
+        } else if (stop) {
+            stop();
+        } else {
+            update();
+        }
     }
 
     public void moveSong(int index, int toIndex) {
@@ -293,7 +306,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 // Stop playback when the current and last song is removed.
                 prepared = false;
                 completed = true;
-                stop(false);
+                stop();
             }
         } else {
             // A song below the current song is removed.
@@ -317,7 +330,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         // Set playlist position with song index, song count, songs left and time left.
         String left = Util.formatDuration(
                 Song.getDuration(songs, playlist.getSongIndex()) - player.getCurrentPosition());
-        if (playlist.getSongIndex() < songs.size() - 1) {
+        if (hasSongsLeft()) {
             left = (songs.size() - playlist.getSongIndex() - 1) + " / " + left;
         }
         notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
@@ -360,21 +373,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public void stop(boolean markPlayed) {
-        Log.d(TAG, "MainService.stop(" + markPlayed + ")");
-        Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
-
-        if (markPlayed) {
-            dbHelper.updateSongPlayed(getSong());
-            prepared = false;
-
-            if (playlist.getSongIndex() < songs.size() - 1) {
-                playlist.incrementSongIndex();
-            } else {
-                completed = true;
-            }
-        }
-
+    public void stop() {
+        Log.d(TAG, "MainService.stop()");
         PlaylistActivity.finishIfRunning();
         stopSelf();
     }
@@ -393,7 +393,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             if (songs.isEmpty()) {
                 Log.w(TAG, "Playlist is empty");
                 if (this.songs == null) {
-                    stop(false);
+                    stop();
                 }
                 return;
             }
@@ -461,17 +461,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void next() {
-        Log.d(TAG, "MainService.next()");
-        Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
-        if (playlist.getSongIndex() < songs.size() - 1) {
-            playlist.incrementSongIndex();
-            prepare();
-        } else {
-            update();
-        }
-    }
-
     private void volumeDown() {
         Log.d(TAG, "MainService.volumeDown()");
         if (volume > 0) {
@@ -493,16 +482,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             return;
         }
 
-        try {
-            if (prepared) {
-                playlist.setSongPosition(player.getCurrentPosition());
-            } else if (completed) {
-                playlist.setSongIndex(0);
-            }
-            dbHelper.insertOrUpdatePlaylist(playlist, songs);
-        } catch (Exception ex) {
-            Log.e(TAG, "Error saving playlist", ex);
+        if (prepared) {
+            playlist.setSongPosition(player.getCurrentPosition());
+        } else if (completed) {
+            playlist.setSongIndex(0);
         }
+        dbHelper.insertOrUpdatePlaylist(playlist, songs);
     }
 
     private void prepare() {
@@ -547,6 +532,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
         update();
         settings.edit().putInt(R.string.key_volume, volume).apply();
+    }
+
+    private boolean hasSongsLeft() {
+        return playlist.getSongIndex() < songs.size() - 1;
     }
 
     private void setOnClickPendingIntent(int viewId, int action) {

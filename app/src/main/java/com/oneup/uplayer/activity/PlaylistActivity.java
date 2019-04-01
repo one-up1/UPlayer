@@ -162,10 +162,6 @@ public class PlaylistActivity extends AppCompatActivity {
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.shuffle:
-                    Collections.shuffle(getData());
-                    service.play(0);
-                    return true;
                 case R.id.mark_played:
                     final Song song = service.getSong();
                     Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
@@ -173,7 +169,7 @@ public class PlaylistActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             try {
-                                service.stop(true);
+                                service.next(true, true);
                                 Util.showToast(getActivity(), R.string.times_played,
                                         song.getTimesPlayed());
                             } catch (Exception ex) {
@@ -182,6 +178,10 @@ public class PlaylistActivity extends AppCompatActivity {
                             }
                         }
                     }, R.string.mark_played_confirm, song);
+                    return true;
+                case R.id.shuffle:
+                    Collections.shuffle(getData());
+                    service.play(0);
                     return true;
                 default:
                     return super.onOptionsItemSelected(item);

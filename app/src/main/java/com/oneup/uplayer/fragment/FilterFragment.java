@@ -32,17 +32,18 @@ public class FilterFragment extends Fragment
     private static final String VAL_MAX_YEAR = "max_year";
     private static final String VAL_MIN_ADDED = "min_added";
     private static final String VAL_MAX_ADDED = "max_added";
-    private static final String VAL_ALL = "all";
+    private static final String VAL_ALL_BOOKMARKED = "all_bookmarked";
     private static final String VAL_BOOKMARKED = "bookmarked";
-    private static final String VAL_NOT_BOOKMARKED = "not_bookmarked";
+    private static final String VAL_UNBOOKMARKED = "unbookmarked";
+    private static final String VAL_ALL_ARCHIVED = "all_archived";
+    private static final String VAL_ARCHIVED = "archived";
+    private static final String VAL_UNARCHIVED = "unarchived";
     private static final String VAL_TAGS = "tags";
     private static final String VAL_TAGS_NOT = "tags_not";
     private static final String VAL_PLAYLISTS = "playlists";
     private static final String VAL_PLAYLISTS_NOT = "playlists_not";
     private static final String VAL_MIN_LAST_PLAYED = "min_last_played";
     private static final String VAL_MAX_LAST_PLAYED = "max_last_played";
-    private static final String VAL_MIN_TIMES_PLAYED = "min_times_played";
-    private static final String VAL_MAX_TIMES_PLAYED = "max_times_played";
 
     private static final int REQUEST_SELECT_MIN_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
@@ -57,15 +58,16 @@ public class FilterFragment extends Fragment
     private EditText etMaxYear;
     private Button bMinAdded;
     private Button bMaxAdded;
-    private RadioButton rbAll;
+    private RadioButton rbAllBookmarked;
     private RadioButton rbBookmarked;
-    private RadioButton rbNotBookmarked;
+    private RadioButton rbUnbookmarked;
+    private RadioButton rbAllArchived;
+    private RadioButton rbArchived;
+    private RadioButton rbUnarchived;
     private Button bTags;
     private Button bPlaylists;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
-    private EditText etMinTimesPlayed;
-    private EditText etMaxTimesPlayed;
 
     private int selectPlaylistConfirmId;
     private boolean showArtistFilter;
@@ -105,9 +107,13 @@ public class FilterFragment extends Fragment
         bMaxAdded.setOnClickListener(this);
         bMaxAdded.setOnLongClickListener(this);
 
-        rbAll = rootView.findViewById(R.id.rbAll);
+        rbAllBookmarked = rootView.findViewById(R.id.rbAllBookmarked);
         rbBookmarked = rootView.findViewById(R.id.rbBookmarked);
-        rbNotBookmarked = rootView.findViewById(R.id.rbNotBookmarked);
+        rbUnbookmarked = rootView.findViewById(R.id.rbUnbookmarked);
+
+        rbAllArchived = rootView.findViewById(R.id.rbAllArchived);
+        rbArchived = rootView.findViewById(R.id.rbArchived);
+        rbUnarchived = rootView.findViewById(R.id.rbUnarchived);
 
         bTags = rootView.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
@@ -124,10 +130,6 @@ public class FilterFragment extends Fragment
         bMaxLastPlayed = rootView.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
-
-        etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
-
-        etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
 
         if (values == null) {
             values = new Bundle();
@@ -153,17 +155,18 @@ public class FilterFragment extends Fragment
             bMaxAdded.setText(values.containsKey(VAL_MAX_ADDED)
                     ? Util.formatDateTime(values.getLong(VAL_MAX_ADDED))
                     : getString(R.string.select_max_added));
-            rbAll.setChecked(values.getBoolean(VAL_ALL, true));
+            rbAllBookmarked.setChecked(values.getBoolean(VAL_ALL_BOOKMARKED, true));
             rbBookmarked.setChecked(values.getBoolean(VAL_BOOKMARKED));
-            rbNotBookmarked.setChecked(values.getBoolean(VAL_NOT_BOOKMARKED));
+            rbUnbookmarked.setChecked(values.getBoolean(VAL_UNBOOKMARKED));
+            rbAllArchived.setChecked(values.getBoolean(VAL_ALL_ARCHIVED));
+            rbArchived.setChecked(values.getBoolean(VAL_ARCHIVED));
+            rbUnarchived.setChecked(values.getBoolean(VAL_UNARCHIVED, true));
             setListButton(bTags, values.getStringArrayList(VAL_TAGS),
                     R.string.select_tags, R.string.selected_tags,
                     values.getBoolean(VAL_TAGS_NOT));
             setListButton(bPlaylists, values.getParcelableArrayList(VAL_PLAYLISTS),
                     R.string.select_playlists, R.string.selected_playlists,
                     values.getBoolean(VAL_PLAYLISTS_NOT));
-            etMinTimesPlayed.setString(values.getString(VAL_MIN_TIMES_PLAYED));
-            etMaxTimesPlayed.setString(values.getString(VAL_MAX_TIMES_PLAYED));
             bMinLastPlayed.setText(values.containsKey(VAL_MIN_LAST_PLAYED)
                     ? Util.formatDateTime(values.getLong(VAL_MIN_LAST_PLAYED))
                     : getString(R.string.select_min_last_played));
@@ -313,11 +316,12 @@ public class FilterFragment extends Fragment
         }
         values.putString(VAL_MIN_YEAR, etMinYear.getString());
         values.putString(VAL_MAX_YEAR, etMaxYear.getString());
-        values.putBoolean(VAL_ALL, rbAll.isChecked());
+        values.putBoolean(VAL_ALL_BOOKMARKED, rbAllBookmarked.isChecked());
         values.putBoolean(VAL_BOOKMARKED, rbBookmarked.isChecked());
-        values.putBoolean(VAL_NOT_BOOKMARKED, rbNotBookmarked.isChecked());
-        values.putString(VAL_MIN_TIMES_PLAYED, etMinTimesPlayed.getString());
-        values.putString(VAL_MAX_TIMES_PLAYED, etMaxTimesPlayed.getString());
+        values.putBoolean(VAL_UNBOOKMARKED, rbUnbookmarked.isChecked());
+        values.putBoolean(VAL_ALL_ARCHIVED, rbAllArchived.isChecked());
+        values.putBoolean(VAL_ARCHIVED, rbArchived.isChecked());
+        values.putBoolean(VAL_UNARCHIVED, rbUnarchived.isChecked());
         return values;
     }
 
@@ -367,8 +371,14 @@ public class FilterFragment extends Fragment
 
         if (rbBookmarked.isChecked()) {
             selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
-        } else if (rbNotBookmarked.isChecked()) {
+        } else if (rbUnbookmarked.isChecked()) {
             selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NULL");
+        }
+
+        if (rbArchived.isChecked()) {
+            selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NOT NULL");
+        } else if (rbUnarchived.isChecked()) {
+            selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NULL");
         }
 
         if (values.containsKey(VAL_MIN_LAST_PLAYED)) {
@@ -382,20 +392,6 @@ public class FilterFragment extends Fragment
                     DbHelper.getMaxSelection(Song.LAST_PLAYED,
                             values.containsKey(VAL_MIN_LAST_PLAYED)));
             selectionArgs.add(Long.toString(values.getLong(VAL_MAX_LAST_PLAYED)));
-        }
-
-        String minTimesPlayed = etMinTimesPlayed.getString();
-        if (minTimesPlayed != null) {
-            selection = DbHelper.concatSelection(selection,
-                    DbHelper.getMinSelection(Song.TIMES_PLAYED));
-            selectionArgs.add(minTimesPlayed);
-        }
-
-        String maxTimesPlayed = etMaxTimesPlayed.getString();
-        if (maxTimesPlayed != null) {
-            selection = DbHelper.concatSelection(selection,
-                    DbHelper.getMaxSelection(Song.TIMES_PLAYED, minTimesPlayed != null));
-            selectionArgs.add(maxTimesPlayed);
         }
 
         ArrayList<String> tags = values.getStringArrayList(VAL_TAGS);
@@ -424,7 +420,7 @@ public class FilterFragment extends Fragment
     }
 
     public boolean hasBookmarkedSelection() {
-        return !rbAll.isChecked();
+        return !rbAllBookmarked.isChecked();
     }
 
     public boolean hasTagSelection() {

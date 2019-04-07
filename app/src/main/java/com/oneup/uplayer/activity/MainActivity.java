@@ -113,9 +113,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     if (items[position] == null) {
                         items[position] = SongsFragment.newInstance(
                                 Song.BOOKMARKED + " IS NOT NULL", null,
-                                settings.getInt(R.string.key_bookmarks_sort_column,
-                                        SongsFragment.SORT_COLUMN_BOOKMARKED),
-                                settings.getBoolean(R.string.key_bookmarks_sort_desc, true));
+                                settings.getInt(R.string.key_bookmarks_sort_column, 0),
+                                settings.getBoolean(R.string.key_bookmarks_sort_desc, false));
                     }
                     break;
                 case TAB_ARTISTS:

@@ -5,6 +5,9 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
 
+    <dimen name="filter_all_radio_button_width">56dp</dimen>
+    <dimen name="filter_radio_button_width">120dp</dimen>
+
     <dimen name="list_item_padding_start">12dp</dimen>
     <dimen name="list_item_padding_end">4dp</dimen>
     <dimen name="list_item_height">36dp</dimen>

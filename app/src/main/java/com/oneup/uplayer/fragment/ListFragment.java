@@ -36,6 +36,7 @@ public abstract class ListFragment<T>
 
     private String[] columns;
     private String[] sortColumns;
+    private String defaultOrderBy;
 
     private DbHelper dbHelper;
     private String selection;
@@ -48,7 +49,7 @@ public abstract class ListFragment<T>
 
     protected ListFragment(int listItemResource, int listItemContextMenuResource,
                            int listItemHeaderId, int listItemContentId,
-                           String[] columns, String[] sortColumns) {
+                           String[] columns, String[] sortColumns, String defaultOrderBy) {
         this.listItemResource = listItemResource;
         this.listItemContextMenuResource = listItemContextMenuResource;
         this.listItemHeaderId = listItemHeaderId;
@@ -56,6 +57,7 @@ public abstract class ListFragment<T>
 
         this.columns = columns;
         this.sortColumns = sortColumns;
+        this.defaultOrderBy = defaultOrderBy;
     }
 
     @Override
@@ -246,7 +248,11 @@ public abstract class ListFragment<T>
 
         StringBuilder orderBy = new StringBuilder();
         for (String sortColumn : sortColumns) {
-            if (sortColumn != null) {
+            if (sortColumn == null) {
+                if (defaultOrderBy != null) {
+                    orderBy.append(defaultOrderBy);
+                }
+            } else {
                 if (orderBy.length() > 0) {
                     orderBy.append(',');
                 }

@@ -29,9 +29,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     private static final int REQUEST_SELECT_PLAYLIST = 1;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
-                                String[] columns) {
+                                String[] columns, String defaultSortColumn) {
         super(listItemResource, R.menu.list_item_song, listItemHeaderId, listItemContentId,
-                columns, null);
+                columns, null, defaultSortColumn);
     }
 
     @Override
@@ -91,10 +91,16 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     protected void setListItemContent(View rootView, int position, Song song) {
         super.setListItemContent(rootView, position, song);
 
-        // Set title, marking unplayed songs.
+        // Set title, marking archived and unplayed songs.
         TextView tvTitle = rootView.findViewById(R.id.tvTitle);
         tvTitle.setText(song.getTitle());
-        tvTitle.setTextColor(song.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
+        if (song.getArchived() != 0) {
+            tvTitle.setTextColor(Color.GRAY);
+        } else if (song.getTimesPlayed() == 0) {
+            tvTitle.setTextColor(Color.BLUE);
+        } else {
+            tvTitle.setTextColor(Color.BLACK);
+        }
 
         // Set artist.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
@@ -115,13 +121,25 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 break;
             case R.id.bookmark:
                 try {
-                    getDbHelper().bookmarkSong(song);
+                    song.setBookmarked(getDbHelper().toggleSongTimestamp(song, Song.BOOKMARKED));
                     onSongUpdated(song);
                     Util.showToast(getActivity(), song.getBookmarked() == 0 ?
                             R.string.bookmark_cleared : R.string.bookmark_set);
                     reloadData();
                 } catch (Exception ex) {
                     Log.e(TAG, "Error bookmarking song", ex);
+                    Util.showErrorDialog(getActivity(), ex);
+                }
+                break;
+            case R.id.archive:
+                try {
+                    song.setArchived(getDbHelper().toggleSongTimestamp(song, Song.ARCHIVED));
+                    onSongUpdated(song);
+                    Util.showToast(getActivity(), song.getArchived() == 0 ?
+                            R.string.song_unarchived : R.string.song_archived);
+                    reloadData();
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error archiving song", ex);
                     Util.showErrorDialog(getActivity(), ex);
                 }
                 break;

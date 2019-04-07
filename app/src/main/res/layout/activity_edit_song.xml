@@ -108,11 +108,21 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:labelFor="@+id/etBookmarked"
         android:text="@string/edit_bookmarked" />
 
     <Button
         android:id="@+id/bBookmarked"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_columnWeight="1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_archived" />
+
+    <Button
+        android:id="@+id/bArchived"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_columnWeight="1" />

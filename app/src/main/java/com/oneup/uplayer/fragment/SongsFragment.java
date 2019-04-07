@@ -39,6 +39,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     private static final String ARG_ARTIST = "artist";
 
+    private static final String DEFAULT_SORT_COLUMN =
+            "(CASE WHEN " + Song.ARCHIVED + " IS NULL THEN 0 ELSE 1 END)";
+
     private static final int REQUEST_SELECT_FILTER = 100;
 
     private Artist artist;
@@ -63,8 +66,10 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                         Song.DURATION,
                         Song.YEAR,
                         Song.TAG,
-                        Song.BOOKMARKED
-                });
+                        Song.BOOKMARKED,
+                        Song.ARCHIVED
+                },
+                DEFAULT_SORT_COLUMN);
     }
 
     @Override

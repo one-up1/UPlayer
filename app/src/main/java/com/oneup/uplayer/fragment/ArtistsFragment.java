@@ -34,7 +34,8 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 new String[]{
                         null,
                         Artist.ARTIST
-                });
+                },
+                null);
     }
 
     @Override

@@ -30,7 +30,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private static final String TAG = "UPlayer";
 
     private static final int REQUEST_SELECT_BOOKMARKED = 1;
-    private static final int REQUEST_SELECT_PLAYLISTS = 2;
+    private static final int REQUEST_SELECT_ARCHIVED = 2;
+    private static final int REQUEST_SELECT_PLAYLISTS = 3;
 
     private DbHelper dbHelper;
     private Song song;
@@ -45,6 +46,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private EditText etTag;
     private Spinner sTag;
     private Button bBookmarked;
+    private Button bArchived;
     private Button bLastPlayed;
     private EditText etTimesPlayed;
 
@@ -101,6 +103,13 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         bBookmarked.setOnClickListener(this);
         bBookmarked.setOnLongClickListener(this);
 
+        bArchived = findViewById(R.id.bArchived);
+        if (song.getArchived() != 0) {
+            bArchived.setText(Util.formatDateTimeAgo(song.getArchived()));
+        }
+        bArchived.setOnClickListener(this);
+        bArchived.setOnLongClickListener(this);
+
         bLastPlayed = findViewById(R.id.bLastPlayed);
         if (song.getLastPlayed() != 0) {
             bLastPlayed.setText(Util.formatDateTimeAgo(song.getLastPlayed()));
@@ -155,6 +164,10 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 case REQUEST_SELECT_BOOKMARKED:
                     song.setBookmarked(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
                     bBookmarked.setText(Util.formatDateTimeAgo(song.getBookmarked()));
+                    break;
+                case REQUEST_SELECT_ARCHIVED:
+                    song.setArchived(data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0));
+                    bArchived.setText(Util.formatDateTimeAgo(song.getArchived()));
                     break;
                 case REQUEST_SELECT_PLAYLISTS:
                     try {
@@ -217,6 +230,13 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getBookmarked());
             }
             startActivityForResult(intent, REQUEST_SELECT_BOOKMARKED);
+        } else if (v == bArchived) {
+            Intent intent = new Intent(this, DateTimeActivity.class);
+            intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_archived);
+            if (song.getArchived() != 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, song.getArchived());
+            }
+            startActivityForResult(intent, REQUEST_SELECT_ARCHIVED);
         }
     }
 
@@ -225,6 +245,9 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         if (v == bBookmarked) {
             song.setBookmarked(0);
             bBookmarked.setText("");
+        } else if (v == bArchived) {
+            song.setArchived(0);
+            bArchived.setText("");
         }
         return true;
     }

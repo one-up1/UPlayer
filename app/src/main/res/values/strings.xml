@@ -17,15 +17,15 @@
     <string name="select_max_added">Max added&#8230;</string>
     <string name="all">All</string>
     <string name="bookmarked">Bookmarked</string>
-    <string name="not_bookmarked">Not bookmarked</string>
+    <string name="unbookmarked">Unbookmarked</string>
+    <string name="archived">Archived</string>
+    <string name="unarchived">Unarchived</string>
     <string name="select_tags">Tags&#8230;</string>
     <string name="selected_tags" tools:ignore="PluralsCandidate">%1$d tags</string>
     <string name="select_playlists">Playlists&#8230;</string>
     <string name="selected_playlists" tools:ignore="PluralsCandidate">%1$d playlists</string>
     <string name="select_min_last_played">Min last played&#8230;</string>
     <string name="select_max_last_played">Max last played&#8230;</string>
-    <string name="min_times_played">Min times played&#8230;</string>
-    <string name="max_times_played">Max times played&#8230;</string>
     <string name="desc">Desc</string>
     <string name="statistics">Statistics</string>
     <string name="not_selected">Not: %1$s</string>
@@ -77,9 +77,11 @@
     <string name="edit_added">Added:</string>
     <string name="edit_tag">Tag:</string>
     <string name="edit_bookmarked">Bookmarked:</string>
+    <string name="edit_archived">Archived:</string>
     <string name="edit_last_played">Last played:</string>
     <string name="edit_times_played">Times played:</string>
     <string name="select_bookmarked">Bookmarked&#8230;</string>
+    <string name="select_archived">Archived&#8230;</string>
     <string name="added_to_playlists">Added to %1$s</string>
     <string name="removed_from_playlists">Removed from %1$s</string>
     <string name="added_to_and_removed_from_playlists">Added to %1$s and removed from %2$s</string>
@@ -89,6 +91,10 @@
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_cleared">Bookmark cleared</string>
+
+    <string name="archive">Archive</string>
+    <string name="song_archived">Song archived</string>
+    <string name="song_unarchived">Song unarchived</string>
 
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
     <string name="pause_play">Pause / Play</string>
@@ -161,5 +167,6 @@
         <item>Year</item>
         <item>Tag</item>
         <item>Bookmarked</item>
+        <item>Archived</item>
     </string-array>
 </resources>

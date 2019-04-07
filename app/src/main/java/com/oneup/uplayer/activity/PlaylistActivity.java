@@ -67,7 +67,7 @@ public class PlaylistActivity extends AppCompatActivity {
         private int moveIndex;
 
         public PlaylistFragment() {
-            super(R.layout.list_item_playlist_song, 0, 0, null);
+            super(R.layout.list_item_playlist_song, 0, 0, null, null);
             moveIndex = -1;
         }
 

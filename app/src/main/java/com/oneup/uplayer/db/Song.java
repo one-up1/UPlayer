@@ -19,6 +19,7 @@ public class Song implements Parcelable,
     private long added;
     private String tag;
     private long bookmarked;
+    private long archived;
     private long lastPlayed;
     private int timesPlayed;
 
@@ -66,6 +67,7 @@ public class Song implements Parcelable,
         out.writeLong(added);
         out.writeString(tag);
         out.writeLong(bookmarked);
+        out.writeLong(archived);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
     }
@@ -142,6 +144,14 @@ public class Song implements Parcelable,
         this.bookmarked = bookmarked;
     }
 
+    public long getArchived() {
+        return archived;
+    }
+
+    public void setArchived(long archived) {
+        this.archived = archived;
+    }
+
     public long getLastPlayed() {
         return lastPlayed;
     }
@@ -184,6 +194,7 @@ public class Song implements Parcelable,
             song.added = in.readLong();
             song.tag = in.readString();
             song.bookmarked = in.readLong();
+            song.archived = in.readLong();
             song.lastPlayed = in.readLong();
             song.timesPlayed = in.readInt();
             return song;

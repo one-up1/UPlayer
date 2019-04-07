@@ -61,6 +61,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Song.ADDED + " INTEGER," +
                     Song.TAG + " TEXT," +
                     Song.BOOKMARKED + " INTEGER," +
+                    Song.ARCHIVED + " INTEGER," +
                     Song.LAST_PLAYED + " INTEGER," +
                     Song.TIMES_PLAYED + " INTEGER DEFAULT 0)";
 
@@ -163,8 +164,9 @@ public class DbHelper extends SQLiteOpenHelper {
                     song.setAdded(c.getLong(6));
                     song.setTag(c.getString(7));
                     song.setBookmarked(c.getLong(8));
-                    song.setLastPlayed(c.getLong(9));
-                    song.setTimesPlayed(c.getInt(10));
+                    song.setArchived(c.getLong(9));
+                    song.setLastPlayed(c.getLong(10));
+                    song.setTimesPlayed(c.getInt(11));
                     songs.add(song);
                 }
             }
@@ -182,6 +184,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.ADDED,
                             Song.TAG,
                             Song.BOOKMARKED,
+                            Song.ARCHIVED,
                             Song.LAST_PLAYED,
                             Song.TIMES_PLAYED
                     },
@@ -191,8 +194,9 @@ public class DbHelper extends SQLiteOpenHelper {
                 song.setAdded(c.getLong(1));
                 song.setTag(c.getString(2));
                 song.setBookmarked(c.getLong(3));
-                song.setLastPlayed(c.getLong(4));
-                song.setTimesPlayed(c.getInt(5));
+                song.setArchived(c.getLong(4));
+                song.setLastPlayed(c.getLong(5));
+                song.setTimesPlayed(c.getInt(6));
             }
         }
     }
@@ -221,6 +225,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 putValue(values, Song.YEAR, song.getYear());
                 values.put(Song.TAG, song.getTag());
                 putValue(values, Song.BOOKMARKED, song.getBookmarked());
+                putValue(values, Song.ARCHIVED, song.getArchived());
 
                 update(db, TABLE_SONGS, values, song.getId(), true);
                 updateArtistStats(db, song);
@@ -232,22 +237,21 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void bookmarkSong(Song song) {
-        Log.d(TAG, "DbHelper.bookmarkSong(" + song.getId() + ":" + song + ")");
+    public long toggleSongTimestamp(Song song, String column) {
+        Log.d(TAG, "DbHelper.toggleSongValue(" + song.getId() + ":" + song + "," + column + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
                 update(db, "UPDATE " + TABLE_SONGS + " SET " +
-                                Song.BOOKMARKED + "=CASE WHEN " +
-                                Song.BOOKMARKED + " IS NULL THEN ? ELSE NULL END",
+                                column + "=CASE WHEN " +
+                                column + " IS NULL THEN ? ELSE NULL END",
                         new Object[]{Calendar.currentTime(), song.getId()},
                         TABLE_SONGS, song.getId());
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
             }
-            song.setBookmarked(queryLong(db, TABLE_SONGS, Song.BOOKMARKED,
-                    SQL_ID_IS, getWhereArgs(song.getId())));
+            return queryLong(db, TABLE_SONGS, column, SQL_ID_IS, getWhereArgs(song.getId()));
         }
     }
 
@@ -586,6 +590,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.ADDED,
                             Song.TAG,
                             Song.BOOKMARKED,
+                            Song.ARCHIVED,
                             Song.LAST_PLAYED,
                             Song.TIMES_PLAYED
                     });
@@ -663,6 +668,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                     Song.ADDED,
                                     Song.TAG,
                                     Song.BOOKMARKED,
+                                    Song.ARCHIVED,
                                     Song.LAST_PLAYED,
                                     Song.TIMES_PLAYED
                             });
@@ -1062,6 +1068,7 @@ public class DbHelper extends SQLiteOpenHelper {
         String ADDED = "added";
         String TAG = "tag";
         String BOOKMARKED = "bookmarked";
+        String ARCHIVED = "archived";
     }
 
     interface PlayedColumns {

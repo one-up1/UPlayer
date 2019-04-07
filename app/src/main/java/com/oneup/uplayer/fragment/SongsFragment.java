@@ -34,6 +34,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public static final int SORT_COLUMN_YEAR = 5;
     public static final int SORT_COLUMN_TAG = 6;
     public static final int SORT_COLUMN_BOOKMARKED = 7;
+    public static final int SORT_COLUMN_ARCHIVED = 8;
 
     private static final String TAG = "UPlayer";
 
@@ -265,6 +266,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 return song.getTag();
             case SORT_COLUMN_BOOKMARKED:
                 return song.getBookmarked() == 0 ? null : Util.formatTimeAgo(song.getBookmarked());
+            case SORT_COLUMN_ARCHIVED:
+                return song.getArchived() == 0 ? null : Util.formatTimeAgo(song.getArchived());
             default:
                 return null;
         }

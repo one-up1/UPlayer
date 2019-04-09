@@ -465,11 +465,12 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Stats queryStats(boolean artist, boolean bookmarked, boolean tagged, boolean playlisted,
+    public Stats queryStats(boolean artist, boolean bookmarked, boolean archived,
+                            boolean tagged, boolean playlisted,
                             String baseSelection, String[] baseSelectionArgs,
                             String selection, String[] selectionArgs) {
         Log.d(TAG, "DbHelper.queryStats(" + artist + ", " +
-                bookmarked + ", " + tagged + ", " + playlisted + ", " +
+                bookmarked + ", " + archived + "," + tagged + ", " + playlisted + ", " +
                 baseSelection + ", " + Arrays.toString(baseSelectionArgs) + ", " +
                 selection + ", " + Arrays.toString(selectionArgs) + ")");
         Stats stats = new Stats();
@@ -489,6 +490,11 @@ public class DbHelper extends SQLiteOpenHelper {
             if (bookmarked) {
                 queryTotal(db, stats.getBookmarked(), artist,
                         concatSelection(selection, Song.BOOKMARKED + " IS NOT NULL"),
+                        selectionArgs);
+            }
+            if (archived) {
+                queryTotal(db, stats.getArchived(), artist,
+                        concatSelection(selection, Song.ARCHIVED + " IS NOT NULL"),
                         selectionArgs);
             }
             if (tagged) {

@@ -18,6 +18,8 @@ public class FilterActivity extends AppCompatActivity {
     public static final String EXTRA_SELECTION_ARGS = "com.oneup.extra.SELECTION_ARGS";
     public static final String EXTRA_HAS_BOOKMARKED_SELECTION =
             "com.oneup.extra.HAS_BOOKMARKED_SELECTION";
+    public static final String EXTRA_HAS_ARCHIVED_SELECTION =
+            "com.oneup.extra.HAS_ARCHIVED_SELECTION";
     public static final String EXTRA_HAS_TAG_SELECTION = "com.oneup.extra.HAS_TAG_SELECTION";
     public static final String EXTRA_HAS_PLAYLIST_SELECTION =
             "com.oneup.extra.HAS_PLAYLIST_SELECTION";
@@ -53,6 +55,8 @@ public class FilterActivity extends AppCompatActivity {
                         .putExtra(EXTRA_SELECTION_ARGS, filterFragment.getSelectionArgs())
                         .putExtra(EXTRA_HAS_BOOKMARKED_SELECTION,
                                 filterFragment.hasBookmarkedSelection())
+                        .putExtra(EXTRA_HAS_ARCHIVED_SELECTION,
+                                filterFragment.hasArchivedSelection())
                         .putExtra(EXTRA_HAS_TAG_SELECTION, filterFragment.hasTagSelection())
                         .putExtra(EXTRA_HAS_PLAYLIST_SELECTION,
                                 filterFragment.hasPlaylistSelection()));

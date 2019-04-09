@@ -93,6 +93,7 @@ public class QueryFragment extends Fragment implements View.OnClickListener {
             try {
                 dbHelper.queryStats(true,
                         !filterFragment.hasBookmarkedSelection(),
+                        !filterFragment.hasArchivedSelection(),
                         !filterFragment.hasTagSelection(),
                         !filterFragment.hasPlaylistSelection(),
                         null, null,

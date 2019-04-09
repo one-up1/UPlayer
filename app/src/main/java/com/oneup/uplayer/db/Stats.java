@@ -15,6 +15,7 @@ public class Stats {
     private Total total;
     private Total played;
     private Total bookmarked;
+    private Total archived;
     private Total tagged;
     private Total playlisted;
 
@@ -48,6 +49,13 @@ public class Stats {
             bookmarked = new Total();
         }
         return bookmarked;
+    }
+
+    Total getArchived() {
+        if (archived == null) {
+            archived = new Total();
+        }
+        return archived;
     }
 
     Total getTagged() {
@@ -97,6 +105,10 @@ public class Stats {
         if (bookmarked != null) {
             bookmarked.addRows(context, grid,
                     R.string.stats_bookmarked, R.string.stats_unbookmarked, total);
+        }
+        if (archived != null) {
+            archived.addRows(context, grid,
+                    R.string.stats_archived, R.string.stats_unarchived, total);
         }
         if (tagged != null) {
             tagged.addRows(context, grid,

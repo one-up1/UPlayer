@@ -51,6 +51,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     private String filterSelection;
     private String[] filterSelectionArgs;
     private boolean hasBookmarkedSelection;
+    private boolean hasArchivedSelection;
     private boolean hasTagSelection;
     private boolean hasPlaylistSelection;
 
@@ -135,6 +136,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 try {
                     getDbHelper().queryStats(false,
                             !hasBookmarkedSelection,
+                            !hasArchivedSelection,
                             !hasTagSelection,
                             !hasPlaylistSelection,
                             getSelection(), getSelectionArgs(),
@@ -156,6 +158,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 filterSelection = null;
                 filterSelectionArgs = null;
                 hasBookmarkedSelection = false;
+                hasArchivedSelection = false;
                 hasTagSelection = false;
                 hasPlaylistSelection = false;
                 reloadData();
@@ -183,6 +186,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                             FilterActivity.EXTRA_SELECTION_ARGS);
                     hasBookmarkedSelection = data.getBooleanExtra(
                             FilterActivity.EXTRA_HAS_BOOKMARKED_SELECTION, false);
+                    hasArchivedSelection = data.getBooleanExtra(
+                            FilterActivity.EXTRA_HAS_ARCHIVED_SELECTION, false);
                     hasTagSelection = data.getBooleanExtra(
                             FilterActivity.EXTRA_HAS_TAG_SELECTION, false);
                     hasPlaylistSelection = data.getBooleanExtra(

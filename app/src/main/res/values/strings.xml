@@ -107,6 +107,8 @@
     <string name="stats_unplayed">Unplayed:</string>
     <string name="stats_bookmarked">Bookmarked:</string>
     <string name="stats_unbookmarked">Unbookmarked:</string>
+    <string name="stats_archived">Archived:</string>
+    <string name="stats_unarchived">Unarchived:</string>
     <string name="stats_tagged">Tagged:</string>
     <string name="stats_untagged">Untagged:</string>
     <string name="stats_playlisted">Playlisted:</string>

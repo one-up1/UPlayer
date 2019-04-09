@@ -423,6 +423,10 @@ public class FilterFragment extends Fragment
         return !rbAllBookmarked.isChecked();
     }
 
+    public boolean hasArchivedSelection() {
+        return !rbAllArchived.isChecked();
+    }
+
     public boolean hasTagSelection() {
         return !values.getStringArrayList(VAL_TAGS).isEmpty();
     }

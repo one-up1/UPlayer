@@ -23,6 +23,9 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     private static final String TAG = "UPlayer";
 
+    private static final String DEFAULT_SORT_COLUMN =
+            "(CASE WHEN " + Song.ARCHIVED + " IS NULL THEN 0 ELSE 1 END)";
+
     public ArtistsFragment() {
         super(R.layout.list_item_artist, 0, 0, 0,
                 new String[]{
@@ -35,7 +38,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
                         null,
                         Artist.ARTIST
                 },
-                null);
+                DEFAULT_SORT_COLUMN);
     }
 
     @Override
@@ -53,10 +56,16 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected void setListItemContent(View rootView, int position, Artist artist) {
         super.setListItemContent(rootView, position, artist);
 
-        // Set artist name, marking unplayed artists.
+        // Set artist name, marking archived and unplayed artists.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
-        tvArtist.setTextColor(artist.getTimesPlayed() == 0 ? Color.BLUE : Color.BLACK);
         tvArtist.setText(artist.getArtist());
+        if (artist.getArchived() != 0) {
+            tvArtist.setTextColor(Color.GRAY);
+        } else if (artist.getTimesPlayed() == 0) {
+            tvArtist.setTextColor(Color.BLUE);
+        } else {
+            tvArtist.setTextColor(Color.BLACK);
+        }
     }
 
     @Override

@@ -47,6 +47,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Artist._ID + " INTEGER PRIMARY KEY," +
                     Artist.ARTIST + " TEXT," +
                     Artist.LAST_ADDED + " INTEGER," +
+                    Artist.ARCHIVED + " INTEGER," +
                     Artist.LAST_PLAYED + " INTEGER," +
                     Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)";
 
@@ -118,8 +119,9 @@ public class DbHelper extends SQLiteOpenHelper {
                     artist.setId(c.getLong(0));
                     artist.setArtist(c.getString(1));
                     artist.setLastAdded(c.getLong(2));
-                    artist.setLastPlayed(c.getLong(3));
-                    artist.setTimesPlayed(c.getInt(4));
+                    artist.setArchived(c.getLong(3));
+                    artist.setLastPlayed(c.getLong(4));
+                    artist.setTimesPlayed(c.getInt(5));
                     artists.add(artist);
                 }
             }
@@ -247,6 +249,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 column + " IS NULL THEN ? ELSE NULL END",
                         new Object[]{Calendar.currentTime(), song.getId()},
                         TABLE_SONGS, song.getId());
+                updateArtistStats(db, song);
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -991,6 +994,12 @@ public class DbHelper extends SQLiteOpenHelper {
                 "=(SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
 
+                Artist.ARCHIVED +
+                "=(SELECT MAX(" + Song.ARCHIVED + ") FROM " + TABLE_SONGS +
+                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID +
+                " AND " + Song.ARTIST_ID + " NOT IN (SELECT " + Song.ARTIST_ID +
+                " FROM " + TABLE_SONGS + " WHERE " + Song.ARCHIVED + " IS NULL))," +
+
                 Artist.LAST_PLAYED +
                 "=(SELECT MAX(" + Song.LAST_PLAYED + ") FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
@@ -1068,6 +1077,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     interface ArtistColumns extends MediaStore.Audio.ArtistColumns {
         String LAST_ADDED = "last_added";
+        String ARCHIVED = "archived";
     }
 
     interface SongColumns extends MediaStore.Audio.AudioColumns {

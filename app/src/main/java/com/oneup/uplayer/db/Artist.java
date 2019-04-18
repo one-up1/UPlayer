@@ -9,6 +9,7 @@ public class Artist implements Parcelable,
     private long id;
     private String artist;
     private long lastAdded;
+    private long archived;
     private long lastPlayed;
     private int timesPlayed;
 
@@ -50,6 +51,7 @@ public class Artist implements Parcelable,
         out.writeLong(id);
         out.writeString(artist);
         out.writeLong(lastAdded);
+        out.writeLong(archived);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
     }
@@ -78,6 +80,14 @@ public class Artist implements Parcelable,
         this.lastAdded = lastAdded;
     }
 
+    public long getArchived() {
+        return archived;
+    }
+
+    public void setArchived(long archived) {
+        this.archived = archived;
+    }
+
     public long getLastPlayed() {
         return lastPlayed;
     }
@@ -102,6 +112,7 @@ public class Artist implements Parcelable,
             artist.id = in.readLong();
             artist.artist = in.readString();
             artist.lastAdded = in.readLong();
+            artist.archived = in.readLong();
             artist.lastPlayed = in.readLong();
             artist.timesPlayed = in.readInt();
             return artist;

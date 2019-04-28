@@ -5,6 +5,9 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.text.SpannableString;
+
+import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
@@ -86,6 +89,10 @@ public class Song implements Parcelable,
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public SpannableString getStyledTitle() {
+        return Util.getStyledText(title, bookmarked, archived, timesPlayed);
     }
 
     public long getArtistId() {

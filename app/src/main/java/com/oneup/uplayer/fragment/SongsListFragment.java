@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -93,14 +92,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
         // Set title, marking archived and unplayed songs.
         TextView tvTitle = rootView.findViewById(R.id.tvTitle);
-        tvTitle.setText(song.getTitle());
-        if (song.getArchived() != 0) {
-            tvTitle.setTextColor(Color.GRAY);
-        } else if (song.getTimesPlayed() == 0) {
-            tvTitle.setTextColor(Color.BLUE);
-        } else {
-            tvTitle.setTextColor(Color.BLACK);
-        }
+        tvTitle.setText(song.getStyledTitle());
 
         // Set artist.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);

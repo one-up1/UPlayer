@@ -5,9 +5,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.text.SpannableString;
+import android.text.style.BulletSpan;
+import android.text.style.StrikethroughSpan;
+import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.view.View;
 import android.view.WindowManager;
@@ -166,6 +170,21 @@ public class Util {
             default:
                 return context.getString(otherId, list.size());
         }
+    }
+
+    public static SpannableString getStyledText(CharSequence text,
+                                                long bookmarked, long archived, long timesPlayed) {
+        SpannableString ss = new SpannableString(text);
+        if (bookmarked != 0) {
+            ss.setSpan(new BulletSpan(10), 0, 0, 0);
+        }
+        if (archived != 0) {
+            ss.setSpan(new StrikethroughSpan(), 0, text.length(), 0);
+        }
+        if (timesPlayed == 0) {
+            ss.setSpan(new StyleSpan(Typeface.BOLD), 0, text.length(), 0);
+        }
+        return ss;
     }
 
     public static SpannableString underline(CharSequence text) {

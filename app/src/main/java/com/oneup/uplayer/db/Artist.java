@@ -3,6 +3,9 @@ package com.oneup.uplayer.db;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.BaseColumns;
+import android.text.SpannableString;
+
+import com.oneup.uplayer.util.Util;
 
 public class Artist implements Parcelable,
         BaseColumns, DbHelper.ArtistColumns, DbHelper.PlayedColumns {
@@ -70,6 +73,10 @@ public class Artist implements Parcelable,
 
     public void setArtist(String artist) {
         this.artist = artist;
+    }
+
+    public SpannableString getStyledArtist() {
+        return Util.getStyledText(artist, 0, archived, timesPlayed);
     }
 
     public long getLastAdded() {

@@ -1,7 +1,6 @@
 package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -58,14 +57,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
         // Set artist name, marking archived and unplayed artists.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
-        tvArtist.setText(artist.getArtist());
-        if (artist.getArchived() != 0) {
-            tvArtist.setTextColor(Color.GRAY);
-        } else if (artist.getTimesPlayed() == 0) {
-            tvArtist.setTextColor(Color.BLUE);
-        } else {
-            tvArtist.setTextColor(Color.BLACK);
-        }
+        tvArtist.setText(artist.getStyledArtist());
     }
 
     @Override

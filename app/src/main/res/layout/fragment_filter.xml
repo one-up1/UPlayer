@@ -56,15 +56,14 @@
         app:layout_columnWeight="1" />
 
     <RadioGroup
+        android:id="@+id/rgBookmarked"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:checkedButton="@+id/rbAllBookmarked"
         app:layout_columnSpan="2"
         app:layout_columnWeight="1">
 
         <RadioButton
-            android:id="@+id/rbAllBookmarked"
             android:layout_width="@dimen/filter_all_radio_button_width"
             android:layout_height="wrap_content"
             android:text="@string/all" />
@@ -84,15 +83,14 @@
     </RadioGroup>
 
     <RadioGroup
+        android:id="@+id/rgArchived"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:checkedButton="@+id/rbUnarchived"
         app:layout_columnSpan="2"
         app:layout_columnWeight="1">
 
         <RadioButton
-            android:id="@+id/rbAllArchived"
             android:layout_width="@dimen/filter_all_radio_button_width"
             android:layout_height="wrap_content"
             android:text="@string/all" />

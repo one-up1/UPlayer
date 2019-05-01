@@ -248,7 +248,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void next(boolean markPlayed, boolean stop) {
-        Log.d(TAG, "MainService.next(" + markPlayed + "," + stop + ")");
+        Log.d(TAG, "MainService.next(" + markPlayed + ", " + stop + ")");
         Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
 
         if (markPlayed) {

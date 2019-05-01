@@ -87,10 +87,10 @@ public class TagsActivity extends AppCompatActivity {
             tvTag.setText(tag);
         }
 
-        public static Bundle getArguments(boolean not, ArrayList<String> checkedTags) {
+        public static Bundle getArguments(ArrayList<String> checkedTags, boolean not) {
             Bundle args = new Bundle();
-            args.putBoolean(ARG_NOT, not);
             args.putStringArrayList(ARG_CHECKED_TAGS, checkedTags);
+            args.putBoolean(ARG_NOT, not);
             return args;
         }
 

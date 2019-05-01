@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="key_selected_tab">selected_tab</string>
-    <string name="key_bookmarks_sort_column">bookmarks_sort_column</string>
-    <string name="key_bookmarks_sort_desc">bookmarks_sort_desc</string>
+
+    <string name="key_query_title">query_title</string>
+    <string name="key_query_artist">query_artist</string>
+    <string name="key_query_min_year">query_min_year</string>
+    <string name="key_query_max_year">query_max_year</string>
+    <string name="key_query_min_added">query_min_added</string>
+    <string name="key_query_max_added">query_max_added</string>
+    <string name="key_query_bookmarked">query_bookmarked</string>
+    <string name="key_query_archived">query_archived</string>
+    <string name="key_query_tags">query_tags</string>
+    <string name="key_query_tags_not">query_tags_not</string>
+    <string name="key_query_playlist_ids">query_playlist_ids</string>
+    <string name="key_query_playlist_name">query_playlist_name</string>
+    <string name="key_query_playlists_not">query_playlists_not</string>
+    <string name="key_query_min_last_played">query_min_last_played</string>
+    <string name="key_query_max_last_played">query_max_last_played</string>
+
     <string name="key_query_sort_column">query_sort_column</string>
     <string name="key_query_sort_desc">query_sort_desc</string>
+
+    <string name="key_bookmarks_sort_column">bookmarks_sort_column</string>
+    <string name="key_bookmarks_sort_desc">bookmarks_sort_desc</string>
 
     <string name="key_headset_state">headset_state</string>
     <string name="key_volume">volume</string>

@@ -44,8 +44,8 @@ public class PlaylistsActivity extends AppCompatActivity {
     }
 
     public static class PlaylistsFragment extends SelectListFragment<Playlist> {
-        private static final String ARG_SELECT_CONFIRM_ID = "select_confirm_id";
         private static final String ARG_CHECKED_PLAYLISTS = "checked_playlists";
+        private static final String ARG_SELECT_CONFIRM_ID = "select_confirm_id";
 
         private int selectConfirmId;
 
@@ -59,8 +59,8 @@ public class PlaylistsActivity extends AppCompatActivity {
 
             Bundle args = getArguments();
             if (args != null) {
-                selectConfirmId = args.getInt(ARG_SELECT_CONFIRM_ID);
                 setCheckedListItems(args.<Playlist>getParcelableArrayList(ARG_CHECKED_PLAYLISTS));
+                selectConfirmId = args.getInt(ARG_SELECT_CONFIRM_ID);
             }
         }
 
@@ -245,13 +245,13 @@ public class PlaylistsActivity extends AppCompatActivity {
                     }, R.string.delete_confirm, playlist);
         }
 
-        public static Bundle getArguments(Boolean not, ArrayList<Playlist> checkedPlaylists,
+        public static Bundle getArguments(ArrayList<Playlist> checkedPlaylists, Boolean not,
                                           int selectConfirmId) {
             Bundle args = new Bundle();
+            args.putParcelableArrayList(ARG_CHECKED_PLAYLISTS, checkedPlaylists);
             if (not != null) {
                 args.putBoolean(ARG_NOT, not);
             }
-            args.putParcelableArrayList(ARG_CHECKED_PLAYLISTS, checkedPlaylists);
             args.putInt(ARG_SELECT_CONFIRM_ID, selectConfirmId);
             return args;
         }

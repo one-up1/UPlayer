@@ -13,20 +13,14 @@ import com.oneup.uplayer.util.Util;
 public class Stats {
     private Total grandTotal;
     private Total total;
-    private Total played;
     private Total bookmarked;
     private Total archived;
-    private Total tagged;
-    private Total playlisted;
 
-    private long lastAdded;
-    private long lastPlayed;
     private int timesPlayed;
     private long playedDuration;
 
     Stats() {
         total = new Total();
-        played = new Total();
     }
 
     Total getGrandTotal() {
@@ -38,10 +32,6 @@ public class Stats {
 
     Total getTotal() {
         return total;
-    }
-
-    Total getPlayed() {
-        return played;
     }
 
     Total getBookmarked() {
@@ -56,28 +46,6 @@ public class Stats {
             archived = new Total();
         }
         return archived;
-    }
-
-    Total getTagged() {
-        if (tagged == null) {
-            tagged = new Total();
-        }
-        return tagged;
-    }
-
-    Total getPlaylisted() {
-        if (playlisted == null) {
-            playlisted = new Total();
-        }
-        return playlisted;
-    }
-
-    void setLastAdded(long lastAdded) {
-        this.lastAdded = lastAdded;
-    }
-
-    void setLastPlayed(long lastPlayed) {
-        this.lastPlayed = lastPlayed;
     }
 
     void setTimesPlayed(int timesPlayed) {
@@ -100,8 +68,6 @@ public class Stats {
         total.addRows(context, grid,
                 R.string.stats_total, R.string.stats_rest,
                 grandTotal == null ? total : grandTotal);
-        played.addRows(context, grid,
-                R.string.stats_played, R.string.stats_unplayed, total);
         if (bookmarked != null) {
             bookmarked.addRows(context, grid,
                     R.string.stats_bookmarked, R.string.stats_unbookmarked, total);
@@ -110,29 +76,17 @@ public class Stats {
             archived.addRows(context, grid,
                     R.string.stats_archived, R.string.stats_unarchived, total);
         }
-        if (tagged != null) {
-            tagged.addRows(context, grid,
-                    R.string.stats_tagged, R.string.stats_untagged, total);
-        }
-        if (playlisted != null) {
-            playlisted.addRows(context, grid,
-                    R.string.stats_playlisted, R.string.stats_unplaylisted, total);
-        }
-
-        addRow(context, grid, R.string.stats_last_added, lastAdded);
-        addRow(context, grid, R.string.stats_last_played, lastPlayed);
 
         if (timesPlayed > 0) {
             addRow(context, grid, R.string.stats_times_played,
-                    Integer.toString(timesPlayed) +
-                            " (" + Util.formatDuration(playedDuration) + ")", null);
+                    timesPlayed + " (" + Util.formatDuration(playedDuration) + ")", null);
         }
 
-        if (played.songCount > 1) {
+        if (total.songCount > 1) {
             addRow(context, grid, R.string.stats_avg_times_played,
-                    formatAvgTimesPlayed(timesPlayed, played.songCount),
-                    played.artistCount > 1 ?
-                            formatAvgTimesPlayed(timesPlayed, played.artistCount) : null);
+                    formatAvgTimesPlayed(timesPlayed, total.songCount),
+                    total.artistCount > 1 ?
+                            formatAvgTimesPlayed(timesPlayed, total.artistCount) : null);
         }
     }
 
@@ -147,12 +101,6 @@ public class Stats {
         addColumn(context, grid, songs, artists == null);
         if (artists != null) {
             addColumn(context, grid, artists, false);
-        }
-    }
-
-    private static void addRow(Context context, GridLayout grid, int labelId, long time) {
-        if (time != 0) {
-            addRow(context, grid, labelId, Util.formatDateTimeAgo(time), null);
         }
     }
 

@@ -240,7 +240,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public long toggleSongTimestamp(Song song, String column) {
-        Log.d(TAG, "DbHelper.toggleSongValue(" + song.getId() + ":" + song + "," + column + ")");
+        Log.d(TAG, "DbHelper.toggleSongValue(" + song.getId() + ":" + song + ", " + column + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
@@ -469,11 +469,9 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public Stats queryStats(boolean artist, boolean bookmarked, boolean archived,
-                            boolean tagged, boolean playlisted,
                             String baseSelection, String[] baseSelectionArgs,
                             String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryStats(" + artist + ", " +
-                bookmarked + ", " + archived + "," + tagged + ", " + playlisted + ", " +
+        Log.d(TAG, "DbHelper.queryStats(" + artist + ", " + bookmarked + ", " + archived + ", " +
                 baseSelection + ", " + Arrays.toString(baseSelectionArgs) + ", " +
                 selection + ", " + Arrays.toString(selectionArgs) + ")");
         Stats stats = new Stats();
@@ -487,9 +485,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 selectionArgs = concatWhereArgs(baseSelectionArgs, selectionArgs);
             }
             queryTotal(db, stats.getTotal(), artist, selection, selectionArgs);
-            queryTotal(db, stats.getPlayed(), artist,
-                    concatSelection(selection, Song.LAST_PLAYED + " IS NOT NULL"),
-                    selectionArgs);
             if (bookmarked) {
                 queryTotal(db, stats.getBookmarked(), artist,
                         concatSelection(selection, Song.BOOKMARKED + " IS NOT NULL"),
@@ -498,18 +493,6 @@ public class DbHelper extends SQLiteOpenHelper {
             if (archived) {
                 queryTotal(db, stats.getArchived(), artist,
                         concatSelection(selection, Song.ARCHIVED + " IS NOT NULL"),
-                        selectionArgs);
-            }
-            if (tagged) {
-                queryTotal(db, stats.getTagged(), artist,
-                        concatSelection(selection, Song.TAG + " IS NOT NULL"),
-                        selectionArgs);
-            }
-            if (playlisted) {
-                queryTotal(db, stats.getPlaylisted(), artist, concatSelection(selection,
-                        TABLE_SONGS + "." + Song._ID + " IN(SELECT " + Playlist.SONG_ID + " FROM " +
-                                TABLE_PLAYLIST_SONGS + " WHERE " + Playlist.PLAYLIST_ID + " != " +
-                                Playlist.DEFAULT_PLAYLIST_ID + ")"),
                         selectionArgs);
             }
 
@@ -522,8 +505,6 @@ public class DbHelper extends SQLiteOpenHelper {
                     },
                     selection, selectionArgs, null, null, null)) {
                 c.moveToFirst();
-                stats.setLastAdded(c.getLong(0));
-                stats.setLastPlayed(c.getLong(1));
                 stats.setTimesPlayed(c.getInt(2));
                 stats.setPlayedDuration(c.getLong(3));
             }

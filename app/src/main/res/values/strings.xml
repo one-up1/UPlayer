@@ -103,19 +103,11 @@
 
     <string name="stats_total">Total:</string>
     <string name="stats_rest">Rest:</string>
-    <string name="stats_played">Played:</string>
-    <string name="stats_unplayed">Unplayed:</string>
     <string name="stats_bookmarked">Bookmarked:</string>
     <string name="stats_unbookmarked">Unbookmarked:</string>
     <string name="stats_archived">Archived:</string>
     <string name="stats_unarchived">Unarchived:</string>
-    <string name="stats_tagged">Tagged:</string>
-    <string name="stats_untagged">Untagged:</string>
-    <string name="stats_playlisted">Playlisted:</string>
-    <string name="stats_unplaylisted">Unplaylisted:</string>
     <string name="stats_avg">avg %1$s</string>
-    <string name="stats_last_added">Last added:</string>
-    <string name="stats_last_played">Last played:</string>
     <string name="stats_times_played">Times played:</string>
     <string name="stats_avg_times_played">Avg times played:</string>
 

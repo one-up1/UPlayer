@@ -133,7 +133,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 playlists = dbHelper.queryPlaylists(song);
                 startActivityForResult(new Intent(this, PlaylistsActivity.class)
                         .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                null, playlists, -1)),
+                                playlists, null, -1)),
                         REQUEST_SELECT_PLAYLISTS);
                 return true;
             case R.id.ok:

@@ -3,7 +3,6 @@ package com.oneup.uplayer.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,8 +35,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     public static final int SORT_COLUMN_BOOKMARKED = 7;
     public static final int SORT_COLUMN_ARCHIVED = 8;
 
-    private static final String TAG = "UPlayer";
-
     private static final String ARG_ARTIST = "artist";
 
     private static final String DEFAULT_SORT_COLUMN =
@@ -47,13 +44,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     private Artist artist;
 
-    private Bundle filterValues;
+    private FilterFragment.Values filterValues;
     private String filterSelection;
     private String[] filterSelectionArgs;
-    private boolean hasBookmarkedSelection;
-    private boolean hasArchivedSelection;
-    private boolean hasTagSelection;
-    private boolean hasPlaylistSelection;
 
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
@@ -133,19 +126,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 Util.showToast(getActivity(), R.string.playing_all_last);
                 return true;
             case R.id.statistics:
-                try {
-                    getDbHelper().queryStats(false,
-                            !hasBookmarkedSelection,
-                            !hasArchivedSelection,
-                            !hasTagSelection,
-                            !hasPlaylistSelection,
-                            getSelection(), getSelectionArgs(),
-                            filterSelection, filterSelectionArgs)
-                            .showDialog(getActivity(), artist == null ? null : artist.getArtist());
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error querying artist stats", ex);
-                    Util.showErrorDialog(getActivity(), ex);
-                }
+                getDbHelper().queryStats(artist == null,
+                        filterValues == null || filterValues.getBookmarked() == 0,
+                        filterValues == null || filterValues.getArchived() == 0,
+                        getSelection(), getSelectionArgs(),
+                        filterSelection, filterSelectionArgs)
+                        .showDialog(getActivity(), artist == null ? null : artist.getArtist());
                 return true;
             case R.id.filter:
                 startActivityForResult(new Intent(getActivity(), FilterActivity.class)
@@ -157,10 +143,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 filterValues = null;
                 filterSelection = null;
                 filterSelectionArgs = null;
-                hasBookmarkedSelection = false;
-                hasArchivedSelection = false;
-                hasTagSelection = false;
-                hasPlaylistSelection = false;
                 reloadData();
             default:
                 return super.onOptionsItemSelected(item);
@@ -180,19 +162,10 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_SELECT_FILTER:
-                    filterValues = data.getBundleExtra(FilterActivity.EXTRA_VALUES);
+                    filterValues = data.getParcelableExtra(FilterActivity.EXTRA_VALUES);
                     filterSelection = data.getStringExtra(FilterActivity.EXTRA_SELECTION);
                     filterSelectionArgs = data.getStringArrayExtra(
                             FilterActivity.EXTRA_SELECTION_ARGS);
-                    hasBookmarkedSelection = data.getBooleanExtra(
-                            FilterActivity.EXTRA_HAS_BOOKMARKED_SELECTION, false);
-                    hasArchivedSelection = data.getBooleanExtra(
-                            FilterActivity.EXTRA_HAS_ARCHIVED_SELECTION, false);
-                    hasTagSelection = data.getBooleanExtra(
-                            FilterActivity.EXTRA_HAS_TAG_SELECTION, false);
-                    hasPlaylistSelection = data.getBooleanExtra(
-                            FilterActivity.EXTRA_HAS_PLAYLIST_SELECTION, false);
-                    //TODO: Don't use has... booleans but look in filterValues.
                     break;
             }
         }

@@ -2,6 +2,8 @@ package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -9,11 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.DateTimeActivity;
-import com.oneup.uplayer.activity.FilterActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.TagsActivity;
 import com.oneup.uplayer.db.DbHelper;
@@ -26,25 +28,6 @@ import java.util.ArrayList;
 
 public class FilterFragment extends Fragment
         implements View.OnClickListener, View.OnLongClickListener {
-    private static final String VAL_TITLE = "title";
-    private static final String VAL_ARTIST = "artist";
-    private static final String VAL_MIN_YEAR = "min_year";
-    private static final String VAL_MAX_YEAR = "max_year";
-    private static final String VAL_MIN_ADDED = "min_added";
-    private static final String VAL_MAX_ADDED = "max_added";
-    private static final String VAL_ALL_BOOKMARKED = "all_bookmarked";
-    private static final String VAL_BOOKMARKED = "bookmarked";
-    private static final String VAL_UNBOOKMARKED = "unbookmarked";
-    private static final String VAL_ALL_ARCHIVED = "all_archived";
-    private static final String VAL_ARCHIVED = "archived";
-    private static final String VAL_UNARCHIVED = "unarchived";
-    private static final String VAL_TAGS = "tags";
-    private static final String VAL_TAGS_NOT = "tags_not";
-    private static final String VAL_PLAYLISTS = "playlists";
-    private static final String VAL_PLAYLISTS_NOT = "playlists_not";
-    private static final String VAL_MIN_LAST_PLAYED = "min_last_played";
-    private static final String VAL_MAX_LAST_PLAYED = "max_last_played";
-
     private static final int REQUEST_SELECT_MIN_ADDED = 1;
     private static final int REQUEST_SELECT_MAX_ADDED = 2;
     private static final int REQUEST_SELECT_TAGS = 3;
@@ -58,20 +41,16 @@ public class FilterFragment extends Fragment
     private EditText etMaxYear;
     private Button bMinAdded;
     private Button bMaxAdded;
-    private RadioButton rbAllBookmarked;
-    private RadioButton rbBookmarked;
-    private RadioButton rbUnbookmarked;
-    private RadioButton rbAllArchived;
-    private RadioButton rbArchived;
-    private RadioButton rbUnarchived;
+    private RadioGroup rgBookmarked;
+    private RadioGroup rgArchived;
     private Button bTags;
     private Button bPlaylists;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
 
-    private int selectPlaylistConfirmId;
     private boolean showArtistFilter;
-    private Bundle values;
+    private int selectPlaylistConfirmId;
+    private Values values;
     private String selection;
     private ArrayList<String> selectionArgs;
 
@@ -79,10 +58,6 @@ public class FilterFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        showArtistFilter = getActivity().getIntent().getBooleanExtra(
-                FilterActivity.EXTRA_SHOW_ARTIST_FILTER, true);
-        values = getActivity().getIntent().getBundleExtra(FilterActivity.EXTRA_VALUES);
     }
 
     @Override
@@ -93,7 +68,6 @@ public class FilterFragment extends Fragment
         etTitle = rootView.findViewById(R.id.etTitle);
 
         etArtist = rootView.findViewById(R.id.etArtist);
-        etArtist.setVisibility(showArtistFilter ? View.VISIBLE : View.GONE);
 
         etMinYear = rootView.findViewById(R.id.etMinYear);
 
@@ -107,13 +81,9 @@ public class FilterFragment extends Fragment
         bMaxAdded.setOnClickListener(this);
         bMaxAdded.setOnLongClickListener(this);
 
-        rbAllBookmarked = rootView.findViewById(R.id.rbAllBookmarked);
-        rbBookmarked = rootView.findViewById(R.id.rbBookmarked);
-        rbUnbookmarked = rootView.findViewById(R.id.rbUnbookmarked);
+        rgBookmarked = rootView.findViewById(R.id.rgBookmarked);
 
-        rbAllArchived = rootView.findViewById(R.id.rbAllArchived);
-        rbArchived = rootView.findViewById(R.id.rbArchived);
-        rbUnarchived = rootView.findViewById(R.id.rbUnarchived);
+        rgArchived = rootView.findViewById(R.id.rgArchived);
 
         bTags = rootView.findViewById(R.id.bTags);
         bTags.setOnClickListener(this);
@@ -131,50 +101,6 @@ public class FilterFragment extends Fragment
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
 
-        if (values == null) {
-            values = new Bundle();
-            values.putStringArrayList(VAL_TAGS, new ArrayList<String>());
-            values.putParcelableArrayList(VAL_PLAYLISTS, new ArrayList<Playlist>());
-
-            bMinAdded.setText(R.string.select_min_added);
-            bMaxAdded.setText(R.string.select_max_added);
-            bTags.setText(R.string.select_tags);
-            bPlaylists.setText(R.string.select_playlists);
-            bMinLastPlayed.setText(R.string.select_min_last_played);
-            bMaxLastPlayed.setText(R.string.select_max_last_played);
-        } else {
-            etTitle.setString(values.getString(VAL_TITLE));
-            if (showArtistFilter) {
-                etArtist.setString(values.getString(VAL_ARTIST));
-            }
-            etMinYear.setString(values.getString(VAL_MIN_YEAR));
-            etMaxYear.setString(values.getString(VAL_MAX_YEAR));
-            bMinAdded.setText(values.containsKey(VAL_MIN_ADDED)
-                    ? Util.formatDateTime(values.getLong(VAL_MIN_ADDED))
-                    : getString(R.string.select_min_added));
-            bMaxAdded.setText(values.containsKey(VAL_MAX_ADDED)
-                    ? Util.formatDateTime(values.getLong(VAL_MAX_ADDED))
-                    : getString(R.string.select_max_added));
-            rbAllBookmarked.setChecked(values.getBoolean(VAL_ALL_BOOKMARKED, true));
-            rbBookmarked.setChecked(values.getBoolean(VAL_BOOKMARKED));
-            rbUnbookmarked.setChecked(values.getBoolean(VAL_UNBOOKMARKED));
-            rbAllArchived.setChecked(values.getBoolean(VAL_ALL_ARCHIVED));
-            rbArchived.setChecked(values.getBoolean(VAL_ARCHIVED));
-            rbUnarchived.setChecked(values.getBoolean(VAL_UNARCHIVED, true));
-            setListButton(bTags, values.getStringArrayList(VAL_TAGS),
-                    R.string.select_tags, R.string.selected_tags,
-                    values.getBoolean(VAL_TAGS_NOT));
-            setListButton(bPlaylists, values.getParcelableArrayList(VAL_PLAYLISTS),
-                    R.string.select_playlists, R.string.selected_playlists,
-                    values.getBoolean(VAL_PLAYLISTS_NOT));
-            bMinLastPlayed.setText(values.containsKey(VAL_MIN_LAST_PLAYED)
-                    ? Util.formatDateTime(values.getLong(VAL_MIN_LAST_PLAYED))
-                    : getString(R.string.select_min_last_played));
-            bMaxLastPlayed.setText(values.containsKey(VAL_MAX_LAST_PLAYED)
-                    ? Util.formatDateTime(values.getLong(VAL_MAX_LAST_PLAYED))
-                    : getString(R.string.select_max_last_played));
-        }
-
         return rootView;
     }
 
@@ -184,23 +110,18 @@ public class FilterFragment extends Fragment
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_SELECT_MIN_ADDED:
-                    long minAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMinAdded.setText(Util.formatDateTime(minAdded));
-                    values.putLong(VAL_MIN_ADDED, minAdded);
+                    values.minAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMinAdded.setText(Util.formatDateTime(values.minAdded));
                     break;
                 case REQUEST_SELECT_MAX_ADDED:
-                    long maxAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMaxAdded.setText(Util.formatDateTime(maxAdded));
-                    values.putLong(VAL_MAX_ADDED, maxAdded);
+                    values.maxAdded = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMaxAdded.setText(Util.formatDateTime(values.maxAdded));
                     break;
                 case REQUEST_SELECT_TAGS:
-                    ArrayList<String> tags = data.getStringArrayListExtra(TagsActivity.EXTRA_TAGS);
-                    boolean tagsNot = data.getBooleanExtra(
-                            TagsActivity.TagsFragment.ARG_NOT, false);
-                    setListButton(bTags, tags, R.string.select_tags,
-                            R.string.selected_tags, tagsNot);
-                    values.putStringArrayList(VAL_TAGS, tags);
-                    values.putBoolean(VAL_TAGS_NOT, tagsNot);
+                    values.tags = data.getStringArrayListExtra(TagsActivity.EXTRA_TAGS);
+                    values.tagsNot = data.getBooleanExtra(TagsActivity.TagsFragment.ARG_NOT, false);
+                    setListButton(bTags, values.tags, values.tagsNot,
+                            R.string.select_tags, R.string.selected_tags);
                 case REQUEST_SELECT_PLAYLISTS:
                     if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
                         getActivity().startService(new Intent(getActivity(), MainService.class)
@@ -209,25 +130,21 @@ public class FilterFragment extends Fragment
                                 .putExtra(MainService.EXTRA_PLAYLIST,
                                         data.getParcelableExtra(PlaylistsActivity.EXTRA_PLAYLIST)));
                     } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
-                        ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
+                        values.playlists = data.getParcelableArrayListExtra(
                                 PlaylistsActivity.EXTRA_PLAYLISTS);
-                        boolean playlistsNot = data.getBooleanExtra(
+                        values.playlistsNot = data.getBooleanExtra(
                                 TagsActivity.TagsFragment.ARG_NOT, false);
-                        setListButton(bPlaylists, playlists, R.string.select_playlists,
-                                R.string.selected_playlists, playlistsNot);
-                        values.putParcelableArrayList(VAL_PLAYLISTS, playlists);
-                        values.putBoolean(VAL_PLAYLISTS_NOT, playlistsNot);
+                        setListButton(bPlaylists, values.playlists, values.playlistsNot,
+                                R.string.select_playlists, R.string.selected_playlists);
                     }
                     break;
                 case REQUEST_SELECT_MIN_LAST_PLAYED:
-                    long minLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMinLastPlayed.setText(Util.formatDateTime(minLastPlayed));
-                    values.putLong(VAL_MIN_LAST_PLAYED, minLastPlayed);
+                    values.minLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMinLastPlayed.setText(Util.formatDateTime(values.minLastPlayed));
                     break;
                 case REQUEST_SELECT_MAX_LAST_PLAYED:
-                    long maxLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
-                    bMaxLastPlayed.setText(Util.formatDateTime(maxLastPlayed));
-                    values.putLong(VAL_MAX_LAST_PLAYED, maxLastPlayed);
+                    values.maxLastPlayed = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    bMaxLastPlayed.setText(Util.formatDateTime(values.maxLastPlayed));
                     break;
             }
         }
@@ -238,42 +155,40 @@ public class FilterFragment extends Fragment
         if (v == bMinAdded) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_min_added);
-            if (values.containsKey(VAL_MIN_ADDED)) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.getLong(VAL_MIN_ADDED));
+            if (values.minAdded != 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.minAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_ADDED);
         } else if (v == bMaxAdded) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_max_added);
-            if (values.containsKey(VAL_MAX_ADDED)) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.getLong(VAL_MAX_ADDED));
+            if (values.maxAdded != 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.maxAdded);
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_ADDED);
         } else if (v == bTags) {
             startActivityForResult(new Intent(getActivity(), TagsActivity.class)
                             .putExtras(TagsActivity.TagsFragment.getArguments(
-                                    values.getBoolean(VAL_TAGS_NOT),
-                                    values.getStringArrayList(VAL_TAGS))),
+                                    values.tags, values.tagsNot)),
                     REQUEST_SELECT_TAGS);
         } else if (v == bPlaylists) {
             startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
                             .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                    values.getBoolean(VAL_PLAYLISTS_NOT),
-                                    values.<Playlist>getParcelableArrayList(VAL_PLAYLISTS),
+                                    values.playlists, values.playlistsNot,
                                     selectPlaylistConfirmId)),
                     REQUEST_SELECT_PLAYLISTS);
         } else if (v == bMinLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_min_last_played);
-            if (values.containsKey(VAL_MIN_LAST_PLAYED)) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.getLong(VAL_MIN_LAST_PLAYED));
+            if (values.minLastPlayed != 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.minLastPlayed);
             }
             startActivityForResult(intent, REQUEST_SELECT_MIN_LAST_PLAYED);
         } else if (v == bMaxLastPlayed) {
             Intent intent = new Intent(getActivity(), DateTimeActivity.class);
             intent.putExtra(DateTimeActivity.EXTRA_TITLE_ID, R.string.select_max_last_played);
-            if (values.containsKey(VAL_MAX_LAST_PLAYED)) {
-                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.getLong(VAL_MAX_LAST_PLAYED));
+            if (values.maxLastPlayed != 0) {
+                intent.putExtra(DateTimeActivity.EXTRA_TIME, values.maxLastPlayed);
             }
             startActivityForResult(intent, REQUEST_SELECT_MAX_LAST_PLAYED);
         }
@@ -282,47 +197,71 @@ public class FilterFragment extends Fragment
     @Override
     public boolean onLongClick(View v) {
         if (v == bMinAdded) {
+            values.minAdded = 0;
             bMinAdded.setText(R.string.select_min_added);
-            values.remove(VAL_MIN_ADDED);
         } else if (v == bMaxAdded) {
+            values.maxAdded = 0;
             bMaxAdded.setText(R.string.select_max_added);
-            values.remove(VAL_MAX_ADDED);
         } else if (v == bTags) {
+            values.tags.clear();
+            values.tagsNot = false;
             bTags.setText(R.string.select_tags);
-            values.getStringArrayList(VAL_TAGS).clear();
-            values.remove(VAL_TAGS_NOT);
         } else if (v == bPlaylists) {
+            values.playlists.clear();
+            values.playlistsNot = false;
             bPlaylists.setText(R.string.select_playlists);
-            values.getParcelableArrayList(VAL_PLAYLISTS).clear();
-            values.remove(VAL_PLAYLISTS_NOT);
         } else if (v == bMinLastPlayed) {
+            values.minAdded = 0;
             bMinLastPlayed.setText(R.string.select_min_last_played);
-            values.remove(VAL_MIN_LAST_PLAYED);
         } else if (v == bMaxLastPlayed) {
+            values.maxAdded = 0;
             bMaxLastPlayed.setText(R.string.select_max_last_played);
-            values.remove(VAL_MAX_LAST_PLAYED);
         }
         return true;
+    }
+
+    public void setShowArtistFilter(boolean showArtistFilter) {
+        this.showArtistFilter = showArtistFilter;
+        etArtist.setVisibility(showArtistFilter ? View.VISIBLE : View.GONE);
     }
 
     public void setSelectPlaylistConfirmId(int selectPlaylistConfirmId) {
         this.selectPlaylistConfirmId = selectPlaylistConfirmId;
     }
 
-    public Bundle getValues() {
-        values.putString(VAL_TITLE, etTitle.getString());
+    public Values getValues() {
+        values.title = etTitle.getString();
         if (showArtistFilter) {
-            values.putString(VAL_ARTIST, etArtist.getString());
+            values.artist = etArtist.getString();
         }
-        values.putString(VAL_MIN_YEAR, etMinYear.getString());
-        values.putString(VAL_MAX_YEAR, etMaxYear.getString());
-        values.putBoolean(VAL_ALL_BOOKMARKED, rbAllBookmarked.isChecked());
-        values.putBoolean(VAL_BOOKMARKED, rbBookmarked.isChecked());
-        values.putBoolean(VAL_UNBOOKMARKED, rbUnbookmarked.isChecked());
-        values.putBoolean(VAL_ALL_ARCHIVED, rbAllArchived.isChecked());
-        values.putBoolean(VAL_ARCHIVED, rbArchived.isChecked());
-        values.putBoolean(VAL_UNARCHIVED, rbUnarchived.isChecked());
+        values.minYear = etMinYear.getString();
+        values.maxYear = etMaxYear.getString();
+        values.bookmarked = getCheckedRadioButtonIndex(rgBookmarked);
+        values.archived = getCheckedRadioButtonIndex(rgArchived);
         return values;
+    }
+
+    public void setValues(Values values) {
+        if (values == null) {
+            values = new Values();
+        }
+        etTitle.setString(values.title);
+        if (showArtistFilter) {
+            etArtist.setString(values.artist);
+        }
+        etMinYear.setString(values.minYear);
+        etMaxYear.setString(values.maxYear);
+        setDateButton(bMinAdded, values.minAdded, R.string.select_min_added);
+        setDateButton(bMaxAdded, values.maxAdded, R.string.select_max_added);
+        setCheckedRadioButtonIndex(rgBookmarked, values.bookmarked);
+        setCheckedRadioButtonIndex(rgArchived, values.archived);
+        setListButton(bTags, values.tags, values.tagsNot,
+                R.string.select_tags, R.string.selected_tags);
+        setListButton(bPlaylists, values.playlists, values.playlistsNot,
+                R.string.select_playlists, R.string.selected_playlists);
+        setDateButton(bMinLastPlayed, values.minLastPlayed, R.string.select_min_last_played);
+        setDateButton(bMaxLastPlayed, values.maxLastPlayed, R.string.select_max_last_played);
+        this.values = values;
     }
 
     public String getSelection() {
@@ -357,57 +296,60 @@ public class FilterFragment extends Fragment
             selectionArgs.add(maxYear);
         }
 
-        if (values.containsKey(VAL_MIN_ADDED)) {
+        if (values.minAdded != 0) {
             selection = DbHelper.concatSelection(selection,
                     DbHelper.getMinSelection(Song.ADDED));
-            selectionArgs.add(Long.toString(values.getLong(VAL_MIN_ADDED)));
+            selectionArgs.add(Long.toString(values.minAdded));
         }
 
-        if (values.containsKey(VAL_MAX_ADDED)) {
+        if (values.maxAdded != 0) {
             selection = DbHelper.concatSelection(selection,
-                    DbHelper.getMaxSelection(Song.ADDED, values.containsKey(VAL_MIN_ADDED)));
-            selectionArgs.add(Long.toString(values.getLong(VAL_MAX_ADDED)));
+                    DbHelper.getMaxSelection(Song.ADDED, values.minAdded != 0));
+            selectionArgs.add(Long.toString(values.maxAdded));
         }
 
-        if (rbBookmarked.isChecked()) {
-            selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
-        } else if (rbUnbookmarked.isChecked()) {
-            selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NULL");
+        switch (rgBookmarked.getCheckedRadioButtonId()) {
+            case R.id.rbBookmarked:
+                selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
+                break;
+            case R.id.rbUnbookmarked:
+                selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NULL");
+                break;
         }
 
-        if (rbArchived.isChecked()) {
-            selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NOT NULL");
-        } else if (rbUnarchived.isChecked()) {
-            selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NULL");
+        switch (rgArchived.getCheckedRadioButtonId()) {
+            case R.id.rbArchived:
+                selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NOT NULL");
+                break;
+            case R.id.rbUnarchived:
+                selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NULL");
+                break;
         }
 
-        if (values.containsKey(VAL_MIN_LAST_PLAYED)) {
+        if (values.minLastPlayed != 0) {
             selection = DbHelper.concatSelection(selection,
                     DbHelper.getMinSelection(Song.LAST_PLAYED));
-            selectionArgs.add(Long.toString(values.getLong(VAL_MIN_LAST_PLAYED)));
+            selectionArgs.add(Long.toString(values.minLastPlayed));
         }
 
-        if (values.containsKey(VAL_MAX_LAST_PLAYED)) {
+        if (values.maxLastPlayed != 0) {
             selection = DbHelper.concatSelection(selection,
-                    DbHelper.getMaxSelection(Song.LAST_PLAYED,
-                            values.containsKey(VAL_MIN_LAST_PLAYED)));
-            selectionArgs.add(Long.toString(values.getLong(VAL_MAX_LAST_PLAYED)));
+                    DbHelper.getMaxSelection(Song.LAST_PLAYED, values.minLastPlayed != 0));
+            selectionArgs.add(Long.toString(values.maxLastPlayed));
         }
 
-        ArrayList<String> tags = values.getStringArrayList(VAL_TAGS);
-        if (!tags.isEmpty()) {
-            String tagSelection = DbHelper.getInClause(tags.size());
-            selection = DbHelper.concatSelection(selection, values.getBoolean(VAL_TAGS_NOT)
+        if (!values.tags.isEmpty()) {
+            String tagSelection = DbHelper.getInClause(values.tags.size());
+            selection = DbHelper.concatSelection(selection, values.tagsNot
                     ? DbHelper.getNullOrSelection(Song.TAG, " NOT " + tagSelection)
                     : Song.TAG + " " + tagSelection);
-            selectionArgs.addAll(tags);
+            selectionArgs.addAll(values.tags);
         }
 
-        ArrayList<Playlist> playlists = values.getParcelableArrayList(VAL_PLAYLISTS);
-        if (!playlists.isEmpty()) {
+        if (!values.playlists.isEmpty()) {
             selection = DbHelper.concatSelection(selection, DbHelper.getPlaylistSongsInClause(
-                    playlists.size(), values.getBoolean(VAL_PLAYLISTS_NOT)));
-            for (Playlist playlist : playlists) {
+                    values.playlists.size(), values.playlistsNot));
+            for (Playlist playlist : values.playlists) {
                 selectionArgs.add(Long.toString(playlist.getId()));
             }
         }
@@ -419,28 +361,209 @@ public class FilterFragment extends Fragment
         return selectionArgs.isEmpty() ? null : selectionArgs.toArray(new String[0]);
     }
 
-    public boolean hasBookmarkedSelection() {
-        return !rbAllBookmarked.isChecked();
+    private void setDateButton(Button button, long value, int defaultId) {
+        button.setText(value == 0 ? getString(defaultId) : Util.formatDateTime(value));
     }
 
-    public boolean hasArchivedSelection() {
-        return !rbAllArchived.isChecked();
-    }
-
-    public boolean hasTagSelection() {
-        return !values.getStringArrayList(VAL_TAGS).isEmpty();
-    }
-
-    public boolean hasPlaylistSelection() {
-        return !values.getParcelableArrayList(VAL_PLAYLISTS).isEmpty();
-    }
-
-    private void setListButton(Button b, ArrayList<?> list, int defaultId, int otherId,
-                               boolean not) {
-        String s = Util.getCountString(getActivity(), list, false, defaultId, otherId);
+    private void setListButton(Button button, ArrayList<?> values, boolean not,
+                               int defaultId, int otherId) {
+        String s = Util.getCountString(getActivity(), values, false, defaultId, otherId);
         if (not) {
             s = getString(R.string.not_selected, s);
         }
-        b.setText(s);
+        button.setText(s);
+    }
+
+    private static int getCheckedRadioButtonIndex(RadioGroup radioGroup) {
+        return radioGroup.indexOfChild(radioGroup.findViewById(
+                radioGroup.getCheckedRadioButtonId()));
+    }
+
+    private static void setCheckedRadioButtonIndex(RadioGroup radioGroup, int index) {
+        ((RadioButton) radioGroup.getChildAt(index)).setChecked(true);
+    }
+
+    public static class Values implements Parcelable {
+        private String title;
+        private String artist;
+
+        private String minYear;
+        private String maxYear;
+
+        private long minAdded;
+        private long maxAdded;
+
+        private int bookmarked;
+        private int archived;
+
+        private ArrayList<String> tags;
+        private boolean tagsNot;
+
+        private ArrayList<Playlist> playlists;
+        private boolean playlistsNot;
+
+        private long minLastPlayed;
+        private long maxLastPlayed;
+
+        public Values() {
+            tags = new ArrayList<>();
+            playlists = new ArrayList<>();
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            out.writeString(title);
+            out.writeString(artist);
+            out.writeString(minYear);
+            out.writeString(maxYear);
+            out.writeLong(minAdded);
+            out.writeLong(maxAdded);
+            out.writeInt(bookmarked);
+            out.writeInt(archived);
+            out.writeStringList(tags);
+            out.writeInt(tagsNot ? 1 : 0);
+            out.writeTypedList(playlists);
+            out.writeInt(playlistsNot ? 1 : 0);
+            out.writeLong(minLastPlayed);
+            out.writeLong(maxLastPlayed);
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getArtist() {
+            return artist;
+        }
+
+        public void setArtist(String artist) {
+            this.artist = artist;
+        }
+
+        public String getMinYear() {
+            return minYear;
+        }
+
+        public void setMinYear(String minYear) {
+            this.minYear = minYear;
+        }
+
+        public String getMaxYear() {
+            return maxYear;
+        }
+
+        public void setMaxYear(String maxYear) {
+            this.maxYear = maxYear;
+        }
+
+        public long getMinAdded() {
+            return minAdded;
+        }
+
+        public void setMinAdded(long minAdded) {
+            this.minAdded = minAdded;
+        }
+
+        public long getMaxAdded() {
+            return maxAdded;
+        }
+
+        public void setMaxAdded(long maxAdded) {
+            this.maxAdded = maxAdded;
+        }
+
+        public int getBookmarked() {
+            return bookmarked;
+        }
+
+        public void setBookmarked(int bookmarked) {
+            this.bookmarked = bookmarked;
+        }
+
+        public int getArchived() {
+            return archived;
+        }
+
+        public void setArchived(int archived) {
+            this.archived = archived;
+        }
+
+        public ArrayList<String> getTags() {
+            return tags;
+        }
+
+        public boolean isTagsNot() {
+            return tagsNot;
+        }
+
+        public void setTagsNot(boolean tagsNot) {
+            this.tagsNot = tagsNot;
+        }
+
+        public ArrayList<Playlist> getPlaylists() {
+            return playlists;
+        }
+
+        public boolean isPlaylistsNot() {
+            return playlistsNot;
+        }
+
+        public void setPlaylistsNot(boolean playlistsNot) {
+            this.playlistsNot = playlistsNot;
+        }
+
+        public long getMinLastPlayed() {
+            return minLastPlayed;
+        }
+
+        public void setMinLastPlayed(long minLastPlayed) {
+            this.minLastPlayed = minLastPlayed;
+        }
+
+        public long getMaxLastPlayed() {
+            return maxLastPlayed;
+        }
+
+        public void setMaxLastPlayed(long maxLastPlayed) {
+            this.maxLastPlayed = maxLastPlayed;
+        }
+
+        public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+
+            @Override
+            public Object createFromParcel(Parcel in) {
+                Values values = new Values();
+                values.title = in.readString();
+                values.artist = in.readString();
+                values.minYear = in.readString();
+                values.maxYear = in.readString();
+                values.minAdded = in.readLong();
+                values.maxAdded = in.readLong();
+                values.bookmarked = in.readInt();
+                values.archived = in.readInt();
+                in.readStringList(values.tags);
+                values.tagsNot = in.readInt() == 1;
+                //noinspection unchecked
+                in.readTypedList(values.playlists, Playlist.CREATOR);
+                values.playlistsNot = in.readInt() == 1;
+                values.minLastPlayed = in.readLong();
+                values.maxLastPlayed = in.readLong();
+                return values;
+            }
+
+            @Override
+            public Object[] newArray(int size) {
+                return new Values[size];
+            }
+        };
     }
 }

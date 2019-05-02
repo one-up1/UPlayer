@@ -22,10 +22,10 @@ import com.oneup.uplayer.util.Settings;
 import java.util.HashSet;
 import java.util.Set;
 
-public class QueryFragment extends Fragment implements View.OnClickListener {
+public class QueryFragment extends Fragment
+        implements View.OnClickListener, View.OnLongClickListener {
     private Settings settings;
     private DbHelper dbHelper;
-    private boolean viewCreated;
 
     private FilterFragment filterFragment;
 
@@ -53,37 +53,37 @@ public class QueryFragment extends Fragment implements View.OnClickListener {
         filterFragment = (FilterFragment) fragmentManager.findFragmentById(R.id.filterFragment);
         filterFragment.setShowArtistFilter(true);
         filterFragment.setSelectPlaylistConfirmId(-1);
-        if (!viewCreated) {
-            filterFragment.setValues(getFilterValues());
-        }
+        filterFragment.setValues(getFilterValues());
         fragmentTransaction.commit();
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
-        if (!viewCreated) {
-            sSortColumn.setSelection(settings.getInt(R.string.key_query_sort_column, 0));
-        }
+        sSortColumn.setSelection(settings.getInt(R.string.key_query_sort_column, 0));
 
         cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
-        if (!viewCreated) {
-            cbSortDesc.setChecked(settings.getBoolean(R.string.key_query_sort_desc, false));
-        }
+        cbSortDesc.setChecked(settings.getBoolean(R.string.key_query_sort_desc, false));
 
         bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
+        bQuery.setOnLongClickListener(this);
 
         bStatistics = rootView.findViewById(R.id.bStatistics);
         bStatistics.setOnClickListener(this);
+        bStatistics.setOnLongClickListener(this);
 
         bSettings = rootView.findViewById(R.id.bSettings);
         bSettings.setOnClickListener(this);
 
-        viewCreated = true;
         return rootView;
     }
 
     @Override
+    public void onDestroyView() {
+        saveQueryValues();
+        super.onDestroyView();
+    }
+
+    @Override
     public void onDestroy() {
-        putFilterValues();
         if (dbHelper != null) {
             dbHelper.close();
         }
@@ -108,6 +108,14 @@ public class QueryFragment extends Fragment implements View.OnClickListener {
         } else if (v == bSettings) {
             startActivity(new Intent(getActivity(), SettingsActivity.class));
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        if (v == bQuery || v == bStatistics) {
+            filterFragment.setValues(new FilterFragment.Values());
+        }
+        return true;
     }
 
     private FilterFragment.Values getFilterValues() {
@@ -148,7 +156,7 @@ public class QueryFragment extends Fragment implements View.OnClickListener {
         return values;
     }
 
-    private void putFilterValues() {
+    private void saveQueryValues() {
         FilterFragment.Values values = filterFragment.getValues();
 
         Set<String> playlistIds;

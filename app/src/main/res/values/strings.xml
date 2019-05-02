@@ -108,6 +108,8 @@
     <string name="stats_archived">Archived:</string>
     <string name="stats_unarchived">Unarchived:</string>
     <string name="stats_avg">avg %1$s</string>
+    <string name="stats_last_added">Last added:</string>
+    <string name="stats_last_played">Last played:</string>
     <string name="stats_times_played">Times played:</string>
     <string name="stats_avg_times_played">Avg times played:</string>
 

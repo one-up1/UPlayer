@@ -211,10 +211,10 @@ public class FilterFragment extends Fragment
             values.playlistsNot = false;
             bPlaylists.setText(R.string.select_playlists);
         } else if (v == bMinLastPlayed) {
-            values.minAdded = 0;
+            values.minLastPlayed = 0;
             bMinLastPlayed.setText(R.string.select_min_last_played);
         } else if (v == bMaxLastPlayed) {
-            values.maxAdded = 0;
+            values.maxLastPlayed = 0;
             bMaxLastPlayed.setText(R.string.select_max_last_played);
         }
         return true;

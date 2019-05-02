@@ -505,6 +505,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     },
                     selection, selectionArgs, null, null, null)) {
                 c.moveToFirst();
+                stats.setLastAdded(c.getLong(0));
+                stats.setLastPlayed(c.getLong(1));
                 stats.setTimesPlayed(c.getInt(2));
                 stats.setPlayedDuration(c.getLong(3));
             }

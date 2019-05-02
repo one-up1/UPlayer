@@ -16,6 +16,8 @@ public class Stats {
     private Total bookmarked;
     private Total archived;
 
+    private long lastAdded;
+    private long lastPlayed;
     private int timesPlayed;
     private long playedDuration;
 
@@ -48,6 +50,14 @@ public class Stats {
         return archived;
     }
 
+    void setLastAdded(long lastAdded) {
+        this.lastAdded = lastAdded;
+    }
+
+    void setLastPlayed(long lastPlayed) {
+        this.lastPlayed = lastPlayed;
+    }
+
     void setTimesPlayed(int timesPlayed) {
         this.timesPlayed = timesPlayed;
     }
@@ -77,6 +87,9 @@ public class Stats {
                     R.string.stats_archived, R.string.stats_unarchived, total);
         }
 
+        addRow(context, grid, R.string.stats_last_added, lastAdded);
+        addRow(context, grid, R.string.stats_last_played, lastPlayed);
+
         if (timesPlayed > 0) {
             addRow(context, grid, R.string.stats_times_played,
                     timesPlayed + " (" + Util.formatDuration(playedDuration) + ")", null);
@@ -101,6 +114,12 @@ public class Stats {
         addColumn(context, grid, songs, artists == null);
         if (artists != null) {
             addColumn(context, grid, artists, false);
+        }
+    }
+
+    private static void addRow(Context context, GridLayout grid, int labelId, long time) {
+        if (time != 0) {
+            addRow(context, grid, labelId, Util.formatDateTimeAgo(time), null);
         }
     }
 

@@ -26,7 +26,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
             "(CASE WHEN " + Song.ARCHIVED + " IS NULL THEN 0 ELSE 1 END)";
 
     public ArtistsFragment() {
-        super(R.layout.list_item_artist, 0, 0, 0,
+        super(R.layout.list_item_artist, 0, 0, 0, R.id.tvInfo,
                 new String[]{
                         null,
                         Artist.LAST_ADDED,
@@ -61,8 +61,8 @@ public class ArtistsFragment extends ListFragment<Artist> {
     }
 
     @Override
-    protected String getSortColumnValue(int sortColumn, Artist artist) {
-        switch (sortColumn) {
+    protected String getListItemInfo(Artist artist) {
+        switch (getSortColumn()) {
             case SORT_COLUMN_LAST_ADDED:
                 return artist.getLastAdded() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastAdded());
@@ -73,7 +73,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 return artist.getTimesPlayed() == 0 ? null
                         : Integer.toString(artist.getTimesPlayed());
             default:
-                return null;
+                return Integer.toString(artist.getSongCount());
         }
     }
 

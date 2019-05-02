@@ -11,6 +11,7 @@ public class Artist implements Parcelable,
         BaseColumns, DbHelper.ArtistColumns, DbHelper.PlayedColumns {
     private long id;
     private String artist;
+    private int songCount;
     private long lastAdded;
     private long archived;
     private long lastPlayed;
@@ -53,6 +54,7 @@ public class Artist implements Parcelable,
     public void writeToParcel(Parcel out, int flags) {
         out.writeLong(id);
         out.writeString(artist);
+        out.writeInt(songCount);
         out.writeLong(lastAdded);
         out.writeLong(archived);
         out.writeLong(lastPlayed);
@@ -77,6 +79,14 @@ public class Artist implements Parcelable,
 
     public SpannableString getStyledArtist() {
         return Util.getStyledText(artist, 0, archived, timesPlayed);
+    }
+
+    public int getSongCount() {
+        return songCount;
+    }
+
+    public void setSongCount(int songCount) {
+        this.songCount = songCount;
     }
 
     public long getLastAdded() {
@@ -118,6 +128,7 @@ public class Artist implements Parcelable,
             Artist artist = new Artist();
             artist.id = in.readLong();
             artist.artist = in.readString();
+            artist.songCount = in.readInt();
             artist.lastAdded = in.readLong();
             artist.archived = in.readLong();
             artist.lastPlayed = in.readLong();

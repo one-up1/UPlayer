@@ -29,7 +29,7 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
 
     protected SelectListFragment(int listItemResource, int listItemContextMenuResource,
                                  int listItemCheckBoxId) {
-        super(listItemResource, listItemContextMenuResource, 0, 0, null, null, null);
+        super(listItemResource, listItemContextMenuResource, 0, 0, 0, null, null, null);
         this.listItemCheckBoxId = listItemCheckBoxId;
     }
 

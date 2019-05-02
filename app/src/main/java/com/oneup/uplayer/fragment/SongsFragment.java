@@ -52,7 +52,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     private CheckBox cbSortDesc;
 
     public SongsFragment() {
-        super(R.layout.list_item_song, R.id.llSorting, R.id.llSong,
+        super(R.layout.list_item_song, R.id.llSorting, R.id.llSong, R.id.tvInfo,
                 new String[]{
                         null,
                         Song.ADDED,
@@ -225,8 +225,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     }
 
     @Override
-    protected String getSortColumnValue(int sortColumn, Song song) {
-        switch (sortColumn) {
+    protected String getListItemInfo(Song song) {
+        switch (getSortColumn()) {
             case SORT_COLUMN_ADDED:
                 return song.getAdded() == 0 ? null
                         : Util.formatTimeAgo(song.getAdded());

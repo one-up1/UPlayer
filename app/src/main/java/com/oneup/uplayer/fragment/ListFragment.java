@@ -33,6 +33,7 @@ public abstract class ListFragment<T>
     private int listItemContextMenuResource;
     private int listItemHeaderId;
     private int listItemContentId;
+    private int listItemInfoId;
 
     private String[] columns;
     private String[] sortColumns;
@@ -48,12 +49,13 @@ public abstract class ListFragment<T>
     private ArrayList<T> data;
 
     protected ListFragment(int listItemResource, int listItemContextMenuResource,
-                           int listItemHeaderId, int listItemContentId,
+                           int listItemHeaderId, int listItemContentId, int listItemInfoId,
                            String[] columns, String[] sortColumns, String defaultOrderBy) {
         this.listItemResource = listItemResource;
         this.listItemContextMenuResource = listItemContextMenuResource;
         this.listItemHeaderId = listItemHeaderId;
         this.listItemContentId = listItemContentId;
+        this.listItemInfoId = listItemInfoId;
 
         this.columns = columns;
         this.sortColumns = sortColumns;
@@ -169,20 +171,20 @@ public abstract class ListFragment<T>
     }
 
     protected void setListItemContent(View rootView, int position, T item) {
-        // Set (or hide) sort column value if sort columns are specified.
-        if (columns != null && sortColumns != null) {
-            TextView tvSortColumnValue = rootView.findViewById(R.id.tvSortColumnValue);
-            String sortColumnValue = getSortColumnValue(sortColumn, item);
-            if (sortColumnValue == null) {
-                tvSortColumnValue.setVisibility(View.GONE);
+        // Set (or hide) info when specified.
+        if (listItemInfoId != 0) {
+            TextView tvInfo = rootView.findViewById(R.id.tvInfo);
+            String info = getListItemInfo(item);
+            if (info == null) {
+                tvInfo.setVisibility(View.GONE);
             } else {
-                tvSortColumnValue.setText(sortColumnValue);
-                tvSortColumnValue.setVisibility(View.VISIBLE);
+                tvInfo.setText(info);
+                tvInfo.setVisibility(View.VISIBLE);
             }
         }
     }
 
-    protected String getSortColumnValue(int sortColumn, T item) {
+    protected String getListItemInfo(T item) {
         return null;
     }
 

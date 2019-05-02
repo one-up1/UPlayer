@@ -28,9 +28,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     private static final int REQUEST_SELECT_PLAYLIST = 1;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
-                                String[] columns, String defaultSortColumn) {
+                                int listItemInfoId, String[] columns, String defaultSortColumn) {
         super(listItemResource, R.menu.list_item_song, listItemHeaderId, listItemContentId,
-                columns, null, defaultSortColumn);
+                listItemInfoId, columns, null, defaultSortColumn);
     }
 
     @Override

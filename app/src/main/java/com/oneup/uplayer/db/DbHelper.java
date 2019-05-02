@@ -46,6 +46,7 @@ public class DbHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_ARTISTS + "(" +
                     Artist._ID + " INTEGER PRIMARY KEY," +
                     Artist.ARTIST + " TEXT," +
+                    Artist.SONG_COUNT + " INTEGER," +
                     Artist.LAST_ADDED + " INTEGER," +
                     Artist.ARCHIVED + " INTEGER," +
                     Artist.LAST_PLAYED + " INTEGER," +
@@ -118,10 +119,11 @@ public class DbHelper extends SQLiteOpenHelper {
                     Artist artist = new Artist();
                     artist.setId(c.getLong(0));
                     artist.setArtist(c.getString(1));
-                    artist.setLastAdded(c.getLong(2));
-                    artist.setArchived(c.getLong(3));
-                    artist.setLastPlayed(c.getLong(4));
-                    artist.setTimesPlayed(c.getInt(5));
+                    artist.setSongCount(c.getInt(2));
+                    artist.setLastAdded(c.getLong(3));
+                    artist.setArchived(c.getLong(4));
+                    artist.setLastPlayed(c.getLong(5));
+                    artist.setTimesPlayed(c.getInt(6));
                     artists.add(artist);
                 }
             }
@@ -140,9 +142,11 @@ public class DbHelper extends SQLiteOpenHelper {
                 Artist artist = new Artist();
                 artist.setId(c.getLong(0));
                 artist.setArtist(c.getString(1));
-                artist.setLastAdded(c.getLong(2));
-                artist.setLastPlayed(c.getLong(3));
-                artist.setTimesPlayed(c.getInt(4));
+                artist.setSongCount(c.getInt(2));
+                artist.setLastAdded(c.getLong(3));
+                artist.setArchived(c.getLong(4));
+                artist.setLastPlayed(c.getLong(5));
+                artist.setTimesPlayed(c.getInt(6));
                 return artist;
             }
         }
@@ -973,6 +977,10 @@ public class DbHelper extends SQLiteOpenHelper {
                 (song == null ? "null" : song.getId() + ":" + song) + ")");
 
         String sql = "UPDATE " + TABLE_ARTISTS + " SET " +
+                Artist.SONG_COUNT +
+                "=(SELECT COUNT(*) FROM " + TABLE_SONGS +
+                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
+
                 Artist.LAST_ADDED +
                 "=(SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
@@ -1059,6 +1067,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     interface ArtistColumns extends MediaStore.Audio.ArtistColumns {
+        String SONG_COUNT = "song_count";
         String LAST_ADDED = "last_added";
         String ARCHIVED = "archived";
     }

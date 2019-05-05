@@ -12,7 +12,7 @@ import com.oneup.uplayer.util.Util;
 import java.util.ArrayList;
 
 public class Song implements Parcelable,
-        DbHelper.SongColumns, DbHelper.PlayedColumns {
+        DbHelper.SongColumns, DbHelper.StatColumns {
     private long id;
     private String title;
     private long artistId;

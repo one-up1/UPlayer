@@ -77,14 +77,16 @@ public class Stats {
 
         total.addRows(context, grid,
                 R.string.stats_total, R.string.stats_rest,
-                grandTotal == null ? total : grandTotal);
+                grandTotal == null ? total : grandTotal, true, true);
         if (bookmarked != null) {
             bookmarked.addRows(context, grid,
-                    R.string.stats_bookmarked, R.string.stats_unbookmarked, total);
+                    R.string.stats_bookmarked, R.string.stats_unbookmarked,
+                    total, true, true);
         }
         if (archived != null) {
             archived.addRows(context, grid,
-                    R.string.stats_archived, R.string.stats_unarchived, total);
+                    R.string.stats_archived, R.string.stats_unarchived,
+                    total, false, true);
         }
 
         addRow(context, grid, R.string.stats_last_added, lastAdded);
@@ -179,18 +181,19 @@ public class Stats {
 
         private void addRows(Context context, GridLayout grid,
                              int labelId, int remainderLabelId,
-                             Total grandTotal) {
-            addRow(context, grid, labelId, grandTotal);
+                             Total grandTotal, boolean avg, boolean remainderAvg) {
+            addRow(context, grid, labelId, grandTotal, avg);
             if (this != grandTotal) {
                 Total remainder = new Total();
                 remainder.songCount = grandTotal.songCount - songCount;
                 remainder.songsDuration = grandTotal.songsDuration - songsDuration;
                 remainder.artistCount = grandTotal.artistCount - artistCount;
-                remainder.addRow(context, grid, remainderLabelId, grandTotal);
+                remainder.addRow(context, grid, remainderLabelId, grandTotal, remainderAvg);
             }
         }
 
-        private void addRow(Context context, GridLayout grid, int labelId, Total grandTotal) {
+        private void addRow(Context context, GridLayout grid, int labelId,
+                            Total grandTotal, boolean avg) {
             String songs = formatCount(songCount, grandTotal.songCount);
             if (songsDuration > 0) {
                 songs += "\n" + Util.formatDuration(songsDuration);
@@ -199,7 +202,7 @@ public class Stats {
             String artists;
             if (grandTotal.artistCount > 1) {
                 artists = formatCount(artistCount, grandTotal.artistCount);
-                if (artistCount > 1) {
+                if (avg && artistCount > 1) {
                     artists += "\n" + context.getString(R.string.stats_avg,
                             Util.formatFraction(songCount, artistCount));
                 }

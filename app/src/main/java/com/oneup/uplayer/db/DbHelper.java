@@ -48,6 +48,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Artist.ARTIST + " TEXT," +
                     Artist.SONG_COUNT + " INTEGER," +
                     Artist.LAST_ADDED + " INTEGER," +
+                    Artist.BOOKMARKED + " INTEGER," +
                     Artist.ARCHIVED + " INTEGER," +
                     Artist.LAST_PLAYED + " INTEGER," +
                     Artist.TIMES_PLAYED + " INTEGER DEFAULT 0)";
@@ -121,9 +122,10 @@ public class DbHelper extends SQLiteOpenHelper {
                     artist.setArtist(c.getString(1));
                     artist.setSongCount(c.getInt(2));
                     artist.setLastAdded(c.getLong(3));
-                    artist.setArchived(c.getLong(4));
-                    artist.setLastPlayed(c.getLong(5));
-                    artist.setTimesPlayed(c.getInt(6));
+                    artist.setBookmarked(c.getLong(4));
+                    artist.setArchived(c.getLong(5));
+                    artist.setLastPlayed(c.getLong(6));
+                    artist.setTimesPlayed(c.getInt(7));
                     artists.add(artist);
                 }
             }
@@ -144,9 +146,10 @@ public class DbHelper extends SQLiteOpenHelper {
                 artist.setArtist(c.getString(1));
                 artist.setSongCount(c.getInt(2));
                 artist.setLastAdded(c.getLong(3));
-                artist.setArchived(c.getLong(4));
-                artist.setLastPlayed(c.getLong(5));
-                artist.setTimesPlayed(c.getInt(6));
+                artist.setBookmarked(c.getLong(4));
+                artist.setArchived(c.getLong(5));
+                artist.setLastPlayed(c.getLong(6));
+                artist.setTimesPlayed(c.getInt(7));
                 return artist;
             }
         }
@@ -495,9 +498,17 @@ public class DbHelper extends SQLiteOpenHelper {
                         selectionArgs);
             }
             if (archived) {
-                queryTotal(db, stats.getArchived(), artist,
+                queryTotal(db, stats.getArchived(), false,
                         concatSelection(selection, Song.ARCHIVED + " IS NOT NULL"),
                         selectionArgs);
+                if (artist) {
+                    stats.getArchived().setArtistCount(queryInt(db, TABLE_SONGS,
+                            "COUNT(DISTINCT " + Song.ARTIST_ID + ")",
+                            concatSelection(selection, Song.ARTIST_ID + " NOT IN (SELECT " +
+                                    Song.ARTIST_ID + " FROM " + TABLE_SONGS +
+                                    " WHERE " + Song.ARCHIVED + " IS NULL)"),
+                            selectionArgs));
+                }
             }
 
             try (Cursor c = db.query(TABLE_SONGS,
@@ -759,8 +770,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static void updatePlayed(SQLiteDatabase db, String table, long time, long id) {
         update(db, "UPDATE " + table + " SET " +
-                        PlayedColumns.LAST_PLAYED + "=?," +
-                        PlayedColumns.TIMES_PLAYED + "=" + PlayedColumns.TIMES_PLAYED + "+1",
+                        StatColumns.LAST_PLAYED + "=?," +
+                        StatColumns.TIMES_PLAYED + "=" + StatColumns.TIMES_PLAYED + "+1",
                 new Object[]{time, id}, table, id);
     }
 
@@ -979,10 +990,15 @@ public class DbHelper extends SQLiteOpenHelper {
         String sql = "UPDATE " + TABLE_ARTISTS + " SET " +
                 Artist.SONG_COUNT +
                 "=(SELECT COUNT(*) FROM " + TABLE_SONGS +
-                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
+                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID +
+                " AND " + Song.ARCHIVED + " IS NULL)," +
 
                 Artist.LAST_ADDED +
                 "=(SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS +
+                " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
+
+                Artist.BOOKMARKED +
+                "=(SELECT MIN(" + Song.BOOKMARKED + ") FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
 
                 Artist.ARCHIVED +
@@ -1069,17 +1085,16 @@ public class DbHelper extends SQLiteOpenHelper {
     interface ArtistColumns extends MediaStore.Audio.ArtistColumns {
         String SONG_COUNT = "song_count";
         String LAST_ADDED = "last_added";
-        String ARCHIVED = "archived";
     }
 
     interface SongColumns extends MediaStore.Audio.AudioColumns {
         String ADDED = "added";
         String TAG = "tag";
-        String BOOKMARKED = "bookmarked";
-        String ARCHIVED = "archived";
     }
 
-    interface PlayedColumns {
+    interface StatColumns {
+        String BOOKMARKED = "bookmarked";
+        String ARCHIVED = "archived";
         String LAST_PLAYED = "last_played";
         String TIMES_PLAYED = "times_played";
     }

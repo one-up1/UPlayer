@@ -73,7 +73,8 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 return artist.getTimesPlayed() == 0 ? null
                         : Integer.toString(artist.getTimesPlayed());
             default:
-                return Integer.toString(artist.getSongCount());
+                return artist.getSongCount() == 0 ? null
+                        : Integer.toString(artist.getSongCount());
         }
     }
 

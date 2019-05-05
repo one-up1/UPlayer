@@ -8,11 +8,12 @@ import android.text.SpannableString;
 import com.oneup.uplayer.util.Util;
 
 public class Artist implements Parcelable,
-        BaseColumns, DbHelper.ArtistColumns, DbHelper.PlayedColumns {
+        BaseColumns, DbHelper.ArtistColumns, DbHelper.StatColumns {
     private long id;
     private String artist;
     private int songCount;
     private long lastAdded;
+    private long bookmarked;
     private long archived;
     private long lastPlayed;
     private int timesPlayed;
@@ -56,6 +57,7 @@ public class Artist implements Parcelable,
         out.writeString(artist);
         out.writeInt(songCount);
         out.writeLong(lastAdded);
+        out.writeLong(bookmarked);
         out.writeLong(archived);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
@@ -78,7 +80,7 @@ public class Artist implements Parcelable,
     }
 
     public SpannableString getStyledArtist() {
-        return Util.getStyledText(artist, 0, archived, timesPlayed);
+        return Util.getStyledText(artist, bookmarked, archived, timesPlayed);
     }
 
     public int getSongCount() {
@@ -95,6 +97,14 @@ public class Artist implements Parcelable,
 
     public void setLastAdded(long lastAdded) {
         this.lastAdded = lastAdded;
+    }
+
+    public long getBookmarked() {
+        return bookmarked;
+    }
+
+    public void setBookmarked(long bookmarked) {
+        this.bookmarked = bookmarked;
     }
 
     public long getArchived() {
@@ -130,6 +140,7 @@ public class Artist implements Parcelable,
             artist.artist = in.readString();
             artist.songCount = in.readInt();
             artist.lastAdded = in.readLong();
+            artist.bookmarked = in.readLong();
             artist.archived = in.readLong();
             artist.lastPlayed = in.readLong();
             artist.timesPlayed = in.readInt();

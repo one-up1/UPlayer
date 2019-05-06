@@ -74,9 +74,9 @@ public class Util {
     }
 
     public static void showSnackbar(Activity context, int resId, Object... formatArgs) {
-        Snackbar.make(context.findViewById(R.id.view),
+        Snackbar.make(context.findViewById(android.R.id.content),
                 context.getString(resId, formatArgs),
-                Snackbar.LENGTH_INDEFINITE).show();
+                Snackbar.LENGTH_SHORT).show();
     }
 
     public static void showConfirmDialog(Context context, DialogInterface.OnClickListener listener,

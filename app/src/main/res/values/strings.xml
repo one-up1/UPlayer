@@ -89,10 +89,12 @@
     <string name="song_updated">Song updated</string>
 
     <string name="bookmark">Bookmark</string>
+    <string name="clear_bookmark">Clear bookmark</string>
     <string name="bookmark_set">Bookmark set</string>
     <string name="bookmark_cleared">Bookmark cleared</string>
 
     <string name="archive">Archive</string>
+    <string name="unarchive">Unarchive</string>
     <string name="song_archived">Song archived</string>
     <string name="song_unarchived">Song unarchived</string>
 

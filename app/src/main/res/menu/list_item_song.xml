@@ -9,13 +9,9 @@
         android:id="@+id/edit"
         android:title="@string/edit" />
 
-    <item
-        android:id="@+id/bookmark"
-        android:title="@string/bookmark" />
+    <item android:id="@+id/toggle_bookmark" />
 
-    <item
-        android:id="@+id/archive"
-        android:title="@string/archive" />
+    <item android:id="@+id/toggle_archive"/>
 
     <item
         android:id="@+id/delete"

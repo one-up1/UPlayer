@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -57,6 +58,18 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        Song song = getListItem(getListItemPosition(menuInfo));
+        menu.findItem(R.id.toggle_bookmark).setTitle(song.getBookmarked() == 0 ?
+                R.string.bookmark : R.string.clear_bookmark);
+        menu.findItem(R.id.toggle_archive).setTitle(song.getArchived() == 0 ?
+                R.string.archive : R.string.unarchive);
     }
 
     @Override
@@ -111,7 +124,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 startActivity(new Intent(getActivity(), EditSongActivity.class)
                         .putExtra(EditSongActivity.EXTRA_SONG, song));
                 break;
-            case R.id.bookmark:
+            case R.id.toggle_bookmark:
                 try {
                     song.setBookmarked(getDbHelper().toggleSongTimestamp(song, Song.BOOKMARKED));
                     onSongUpdated(song);
@@ -123,7 +136,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     Util.showErrorDialog(getActivity(), ex);
                 }
                 break;
-            case R.id.archive:
+            case R.id.toggle_archive:
                 try {
                     song.setArchived(getDbHelper().toggleSongTimestamp(song, Song.ARCHIVED));
                     onSongUpdated(song);

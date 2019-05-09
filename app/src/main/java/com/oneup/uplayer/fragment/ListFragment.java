@@ -99,8 +99,7 @@ public abstract class ListFragment<T>
         // getUserVisibleHint() or the wrong fragment may receive the onContextItemSelected() call,
         // because there are multiple fragments with the same context menu item ID's.
         if (getUserVisibleHint()) {
-            int position = getListItemPosition(
-                    ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position);
+            int position = getListItemPosition(item.getMenuInfo());
             onContextItemSelected(item.getItemId(), position, data.get(position));
             return true;
         } else {
@@ -291,6 +290,10 @@ public abstract class ListFragment<T>
 
     protected int getListItemPosition(View v) {
         return getListItemPosition(getListView().getPositionForView((View) v.getParent()));
+    }
+
+    protected int getListItemPosition(ContextMenu.ContextMenuInfo menuInfo) {
+        return getListItemPosition(((AdapterView.AdapterContextMenuInfo) menuInfo).position);
     }
 
     private void setActivityTitle() {

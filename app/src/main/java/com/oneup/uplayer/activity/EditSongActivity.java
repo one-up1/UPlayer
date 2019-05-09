@@ -6,14 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.oneup.uplayer.MainService;
@@ -41,7 +38,6 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private ArrayList<String> tags;
     private ArrayList<Playlist> playlists;
 
-    private ScrollView scrollView;
     private EditText etTitle;
     private EditText etArtist;
     private EditText etDuration;
@@ -70,20 +66,6 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
         tags = dbHelper.querySongTags();
         tags.add(0, "");
-
-        // To prevent ScrollView from focusing EditText.
-        scrollView = findViewById(R.id.scrollView);
-        scrollView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-        scrollView.setFocusable(true);
-        scrollView.setFocusableInTouchMode(true);
-        scrollView.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                v.requestFocusFromTouch();
-                return false;
-            }
-        });
 
         etTitle = findViewById(R.id.etTitle);
         etTitle.setString(song.getTitle());

@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="@string/database">
 
         <Preference
             android:key="@string/key_sync_database"
-            android:title="@string/sync_database"
-            app:iconSpaceReserved="false" />
+            android:title="@string/sync_database" />
 
         <Preference
             android:key="@string/key_backup"
-            android:title="@string/backup"
-            app:iconSpaceReserved="false" />
+            android:title="@string/backup" />
 
         <Preference
             android:key="@string/key_restore_backup"
-            android:title="@string/restore_backup"
-            app:iconSpaceReserved="false" />
+            android:title="@string/restore_backup" />
 
     </PreferenceCategory>
 
@@ -29,7 +25,7 @@
             android:dialogTitle="@string/resume_offset_song"
             android:dialogMessage="@string/in_seconds"
             android:inputType="number"
-            app:iconSpaceReserved="false" />
+            android:selectAllOnFocus="true" />
 
         <EditTextPreference
             android:key="@string/key_resume_offset_playlist"
@@ -37,7 +33,7 @@
             android:dialogTitle="@string/resume_offset_playlist"
             android:dialogMessage="@string/in_seconds"
             android:inputType="number"
-            app:iconSpaceReserved="false" />
+            android:selectAllOnFocus="true" />
 
     </PreferenceCategory>
 

@@ -20,7 +20,11 @@ public class EditText extends AppCompatEditText implements View.OnLongClickListe
 
     public EditText(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setSelectAllOnFocus(true);
+        if (isEnabled()) {
+            // Only set selectAllOnFocus when enabled,
+            // or a disabled EditText may select all text when it is focused on activity startup.
+            setSelectAllOnFocus(true);
+        }
         setOnLongClickListener(this);
 
         numberFormat = NumberFormat.getInstance();
@@ -44,6 +48,12 @@ public class EditText extends AppCompatEditText implements View.OnLongClickListe
             }
         };
         addTextChangedListener(textWatcher);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        setSelectAllOnFocus(enabled);
     }
 
     @Override

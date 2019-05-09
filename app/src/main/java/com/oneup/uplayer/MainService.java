@@ -189,7 +189,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void onPrepared(MediaPlayer player) {
         Log.d(TAG, "MainService.onPrepared()");
 
-        seekTo(playlist.getSongPosition(), R.string.key_resume_offset_playlist);
+        seekTo(playlist.getSongPosition(), R.string.key_resume_offset_playlist, true);
         playlist.setSongPosition(0);
 
         setVolume();
@@ -451,7 +451,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else {
             if (prepared) {
                 Log.d(TAG, "Resuming");
-                seekTo(player.getCurrentPosition(), R.string.key_resume_offset_song);
+                seekTo(player.getCurrentPosition(), R.string.key_resume_offset_song, false);
                 player.start();
                 update();
             } else {
@@ -501,11 +501,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void seekTo(int position, int offsetKeyId) {
-        Log.d(TAG, "seekTo(" + position + ")");
+    private void seekTo(int position, int offsetKeyId, boolean always) {
+        Log.d(TAG, "seekTo(" + position + ", " + always + ")");
         if (position > 0) {
             int offset = settings.getXmlInt(offsetKeyId, 0) * 1000;
-            if (offset > 0) {
+            if (offset > 0 || always) {
                 position -= offset;
                 if (position < offset) {
                     position = 0;

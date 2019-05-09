@@ -3,15 +3,16 @@ package com.oneup.uplayer.activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceFragmentCompat;
 import android.util.Log;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.util.Util;
 
+@SuppressWarnings("deprecation")
 public class SettingsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
@@ -19,13 +20,14 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSupportFragmentManager()
+        getFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, new SettingsFragment())
                 .commit();
     }
 
-    public static class SettingsFragment extends PreferenceFragmentCompat
+    // Use deprecated PreferenceFragment because PreferenceFragmentCompat has issues with EditTextPreference inputType.
+    public static class SettingsFragment extends PreferenceFragment
             implements Preference.OnPreferenceClickListener  {
         private DbHelper dbHelper;
 
@@ -34,7 +36,8 @@ public class SettingsActivity extends AppCompatActivity {
         private Preference pRestoreBackup;
 
         @Override
-        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
 
             dbHelper = new DbHelper(getActivity());

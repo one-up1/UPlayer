@@ -986,10 +986,13 @@ public class DbHelper extends SQLiteOpenHelper {
                 (song == null ? "null" : song.getId() + ":" + song) + ")");
 
         String sql = "UPDATE " + TABLE_ARTISTS + " SET " +
+                // Song count excludes archived songs, but only when the artist itself is not archived.
                 Artist.SONG_COUNT +
                 "=(SELECT COUNT(*) FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID +
-                " AND " + Song.ARCHIVED + " IS NULL)," +
+                " AND (" + Song.ARCHIVED + " IS NULL" +
+                " OR " + Song.ARTIST_ID + " NOT IN (SELECT " + Song.ARTIST_ID +
+                " FROM " + TABLE_SONGS + " WHERE " + Song.ARCHIVED + " IS NULL))), " +
 
                 Artist.LAST_ADDED +
                 "=(SELECT MAX(" + Song.ADDED + ") FROM " + TABLE_SONGS +

@@ -448,15 +448,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             Log.d(TAG, "Pausing");
             player.pause();
             update();
+        } else if (prepared) {
+            Log.d(TAG, "Resuming");
+            seekTo(player.getCurrentPosition(), R.string.key_resume_offset_song, false);
+            player.start();
+            update();
         } else {
-            if (prepared) {
-                Log.d(TAG, "Resuming");
-                seekTo(player.getCurrentPosition(), R.string.key_resume_offset_song, false);
-                player.start();
-                update();
-            } else {
-                prepare();
-            }
+            prepare();
         }
     }
 
@@ -505,7 +503,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "seekTo(" + position + ", " + always + ")");
         if (position > 0) {
             int offset = settings.getXmlInt(offsetKeyId, 0) * 1000;
-            if (offset > 0 || always) {
+            if (offset != 0 || always) {
                 position -= offset;
                 if (position < offset) {
                     position = 0;

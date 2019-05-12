@@ -129,8 +129,11 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
     protected ArrayList<T> getCheckedListItems() {
         ArrayList<T> checkedListItems = new ArrayList<>();
         for (T item : this.checkedListItems) {
-            if (getData().contains(item)) {
-                checkedListItems.add(item);
+            // Get the object from the data queried from the database,
+            // as the objects in the checkedListItems ArrayList may not have all fields set.
+            int index = getData().indexOf(item);
+            if (index != -1) {
+                checkedListItems.add(getData().get(index));
             }
         }
         return checkedListItems;

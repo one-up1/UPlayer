@@ -329,14 +329,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
         ArrayList<Playlist> playlists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_PLAYLISTS,
-                    new String[]{
-                            Playlist._ID,
-                            Playlist.NAME,
-                            Playlist.SONG_INDEX,
-                            Playlist.SONG_POSITION
-                    },
-                    selection, selectionArgs, null, null, Playlist.NAME)) {
+            try (Cursor c = db.query(TABLE_PLAYLISTS, null, selection, selectionArgs,
+                    null, null, Playlist.NAME)) {
                 while (c.moveToNext()) {
                     Playlist playlist = new Playlist();
                     playlist.setId(c.getLong(0));
@@ -421,6 +415,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.ARTIST_ID,
                             Song.ARTIST,
                             Song.DURATION,
+                            Song.BOOKMARKED,
+                            Song.ARCHIVED,
                             Song.TIMES_PLAYED
                     },
                     Playlist.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID +
@@ -434,7 +430,9 @@ public class DbHelper extends SQLiteOpenHelper {
                     song.setArtistId(c.getLong(2));
                     song.setArtist(c.getString(3));
                     song.setDuration(c.getLong(4));
-                    song.setTimesPlayed(c.getInt(5));
+                    song.setBookmarked(c.getLong(5));
+                    song.setArchived(c.getLong(6));
+                    song.setTimesPlayed(c.getInt(7));
                     songs.add(song);
                 }
             }

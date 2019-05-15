@@ -25,9 +25,6 @@ import java.util.ArrayList;
 public class PlaylistsActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";
 
-    public static final String EXTRA_PLAYLIST = "com.oneup.extra.PLAYLIST";
-    public static final String EXTRA_PLAYLISTS = "com.oneup.extra.PLAYLISTS";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +84,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                     if (isNotVisible()) {
                         data.putExtra(ARG_NOT, isNotChecked());
                     }
-                    data.putExtra(EXTRA_PLAYLISTS, getCheckedListItems());
+                    data.putExtra(Playlist.EXTRA_PLAYLISTS, getCheckedListItems());
                     getActivity().setResult(AppCompatActivity.RESULT_OK, data);
                     getActivity().finish();
                     return true;
@@ -172,7 +169,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         private void select(Playlist playlist) {
             getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
-                    .putExtra(EXTRA_PLAYLIST, playlist));
+                    .putExtra(Playlist.EXTRA_PLAYLIST, playlist));
             getActivity().finish();
         }
 

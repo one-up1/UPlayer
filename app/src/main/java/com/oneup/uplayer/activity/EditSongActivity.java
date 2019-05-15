@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
         View.OnLongClickListener, AdapterView.OnItemSelectedListener {
-    public static final String EXTRA_SONG = "com.oneup.uplayer.extra.SONG";
+    public static final String EXTRA_UPDATE_SERVICE = "com.oneup.extra.UPDATE_SERVICE";
 
     private static final String TAG = "UPlayer";
 
@@ -61,7 +61,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
         dbHelper = new DbHelper(this);
 
-        song = getIntent().getParcelableExtra(EXTRA_SONG);
+        song = getIntent().getParcelableExtra(Song.EXTRA_SONG);
         dbHelper.querySong(song);
 
         tags = dbHelper.querySongTags();
@@ -132,23 +132,22 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             case R.id.playlists:
                 playlists = dbHelper.queryPlaylists(song);
                 startActivityForResult(new Intent(this, PlaylistsActivity.class)
-                        .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                playlists, null, -1)),
+                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                        playlists, null, -1)),
                         REQUEST_SELECT_PLAYLISTS);
                 return true;
             case R.id.ok:
-                song.setYear(etYear.getInt());
                 song.setTag(etTag.getString());
                 dbHelper.updateSong(song);
-
                 Util.showToast(this, R.string.song_updated);
-                if (MainService.isRunning()) {
-                    startService(new Intent(this, MainService.class)
-                            .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE));
+
+                if (getIntent().getBooleanExtra(EXTRA_UPDATE_SERVICE, false)) {
+                    MainService.update(this, song);
+                } else {
+                    setResult(RESULT_OK, new Intent()
+                            .putExtra(Song.EXTRA_SONG, song));
                 }
 
-                setResult(RESULT_OK, new Intent()
-                        .putExtra(EXTRA_SONG, song));
                 finish();
                 return true;
             default:
@@ -172,7 +171,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 case REQUEST_SELECT_PLAYLISTS:
                     try {
                         ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
-                                PlaylistsActivity.EXTRA_PLAYLISTS);
+                                Playlist.EXTRA_PLAYLISTS);
 
                         ArrayList<Playlist> inserted = new ArrayList<>();
                         for (Playlist playlist : playlists) {
@@ -204,6 +203,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                             Util.showSnackbar(this, R.string.added_to_and_removed_from_playlists,
                                     added, removed);
                         }
+
+                        MainService.update(this, song);
                     } catch (Exception ex) {
                         Log.e(TAG, "Error modifying playlist songs", ex);
                         Util.showErrorDialog(this, ex);

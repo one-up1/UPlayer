@@ -27,6 +27,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
 
     private static final int REQUEST_SELECT_PLAYLIST = 1;
+    private static final int REQUEST_EDIT_SONG = 2;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
                                 int listItemInfoId, String[] columns, String defaultSortColumn) {
@@ -79,8 +80,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             switch (requestCode) {
                 case REQUEST_SELECT_PLAYLIST:
                     try {
-                        Playlist playlist = data.getParcelableExtra(
-                                PlaylistsActivity.EXTRA_PLAYLIST);
+                        Playlist playlist = data.getParcelableExtra(Playlist.EXTRA_PLAYLIST);
                         playlist.setSongIndex(0);
                         playlist.setSongPosition(0);
                         getDbHelper().insertOrUpdatePlaylist(playlist, getData());
@@ -89,6 +89,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                     } catch (Exception ex) {
                         Log.e(TAG, "Error saving playlist", ex);
                     }
+                    break;
+                case REQUEST_EDIT_SONG:
+                    onSongUpdated((Song) data.getParcelableExtra(Song.EXTRA_SONG), true);
                     break;
             }
         }
@@ -121,16 +124,16 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                 getSortColumn(), isSortDesc())));
                 break;
             case R.id.edit:
-                startActivity(new Intent(getActivity(), EditSongActivity.class)
-                        .putExtra(EditSongActivity.EXTRA_SONG, song));
+                startActivityForResult(new Intent(getActivity(), EditSongActivity.class)
+                                .putExtra(Song.EXTRA_SONG, song),
+                        REQUEST_EDIT_SONG);
                 break;
             case R.id.toggle_bookmark:
                 try {
                     song.setBookmarked(getDbHelper().toggleSongTimestamp(song, Song.BOOKMARKED));
-                    onSongUpdated(song);
                     Util.showToast(getActivity(), song.getBookmarked() == 0 ?
                             R.string.bookmark_cleared : R.string.bookmark_set);
-                    reloadData();
+                    onSongUpdated(song, false);
                 } catch (Exception ex) {
                     Log.e(TAG, "Error bookmarking song", ex);
                     Util.showErrorDialog(getActivity(), ex);
@@ -139,10 +142,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.toggle_archive:
                 try {
                     song.setArchived(getDbHelper().toggleSongTimestamp(song, Song.ARCHIVED));
-                    onSongUpdated(song);
                     Util.showToast(getActivity(), song.getArchived() == 0 ?
                             R.string.song_unarchived : R.string.song_archived);
-                    reloadData();
+                    onSongUpdated(song, false);
                 } catch (Exception ex) {
                     Log.e(TAG, "Error archiving song", ex);
                     Util.showErrorDialog(getActivity(), ex);
@@ -160,7 +162,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     protected void onPlaylistSelected(Playlist playlist) {
     }
 
-    protected void onSongUpdated(Song song) {
+    protected void onSongUpdated(Song song, boolean edit) {
     }
 
     private void deleteSong(final int position, final Song song) {

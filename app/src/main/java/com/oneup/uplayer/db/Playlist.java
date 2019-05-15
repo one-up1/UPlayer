@@ -5,12 +5,15 @@ import android.os.Parcelable;
 import android.provider.BaseColumns;
 
 public class Playlist implements Parcelable, BaseColumns {
-    public static final String NAME = "name";
-    public static final String SONG_INDEX = "song_index";
-    public static final String SONG_POSITION = "song_position";
+    public static final String EXTRA_PLAYLIST = "com.oneup.extra.PLAYLIST";
+    public static final String EXTRA_PLAYLISTS = "com.oneup.extra.PLAYLISTS";
 
-    public static final String PLAYLIST_ID = "playlist_id";
-    public static final String SONG_ID = "song_id";
+    static final String NAME = "name";
+    static final String SONG_INDEX = "song_index";
+    static final String SONG_POSITION = "song_position";
+
+    static final String PLAYLIST_ID = "playlist_id";
+    static final String SONG_ID = "song_id";
 
     static final int DEFAULT_PLAYLIST_ID = 1;
 

@@ -257,8 +257,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         playlist.setSongIndex(position);
         getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
-                .putExtra(MainService.EXTRA_SONGS, getData())
-                .putExtra(MainService.EXTRA_PLAYLIST, playlist));
+                .putExtra(Song.EXTRA_SONGS, getData())
+                .putExtra(Playlist.EXTRA_PLAYLIST, playlist));
     }
 
     @Override
@@ -275,10 +275,20 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         }
     }
 
+    @Override
+    protected void onSongUpdated(Song song, boolean edit) {
+        MainService.update(getActivity(), song);
+        if (!edit) {
+            // Only reload data when the song was not edited manually,
+            // as this also happens in onResume(), which is called after onActivityResult().
+            reloadData();
+        }
+    }
+
     private void add(ArrayList<Song> songs, boolean next) {
         getActivity().startService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_ADD)
-                .putExtra(MainService.EXTRA_SONGS, songs)
+                .putExtra(Song.EXTRA_SONGS, songs)
                 .putExtra(MainService.EXTRA_NEXT, next));
     }
 

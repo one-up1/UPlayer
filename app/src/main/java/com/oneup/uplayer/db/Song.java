@@ -13,6 +13,9 @@ import java.util.ArrayList;
 
 public class Song implements Parcelable,
         DbHelper.SongColumns, DbHelper.StatColumns {
+    public static final String EXTRA_SONG = "com.oneup.uplayer.extra.SONG";
+    public static final String EXTRA_SONGS = "com.oneup.extra.SONGS";
+
     private long id;
     private String title;
     private long artistId;

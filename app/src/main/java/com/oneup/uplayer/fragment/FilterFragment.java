@@ -123,15 +123,15 @@ public class FilterFragment extends Fragment
                     setListButton(bTags, values.tags, values.tagsNot,
                             R.string.select_tags, R.string.selected_tags);
                 case REQUEST_SELECT_PLAYLISTS:
-                    if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
+                    if (data.hasExtra(Playlist.EXTRA_PLAYLIST)) {
                         getActivity().startService(new Intent(getActivity(), MainService.class)
                                 .putExtra(MainService.EXTRA_ACTION,
                                         MainService.ACTION_PLAY)
-                                .putExtra(MainService.EXTRA_PLAYLIST,
-                                        data.getParcelableExtra(PlaylistsActivity.EXTRA_PLAYLIST)));
-                    } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
+                                .putExtra(Playlist.EXTRA_PLAYLIST,
+                                        data.getParcelableExtra(Playlist.EXTRA_PLAYLIST)));
+                    } else if (data.hasExtra(Playlist.EXTRA_PLAYLISTS)) {
                         values.playlists = data.getParcelableArrayListExtra(
-                                PlaylistsActivity.EXTRA_PLAYLISTS);
+                                Playlist.EXTRA_PLAYLISTS);
                         values.playlistsNot = data.getBooleanExtra(
                                 TagsActivity.TagsFragment.ARG_NOT, false);
                         setListButton(bPlaylists, values.playlists, values.playlistsNot,

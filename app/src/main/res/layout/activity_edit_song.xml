@@ -64,7 +64,7 @@
             android:id="@+id/etYear"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="number"
+            android:enabled="false"
             app:layout_columnWeight="1" />
 
         <TextView

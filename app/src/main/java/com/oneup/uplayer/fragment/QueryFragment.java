@@ -98,12 +98,12 @@ public class QueryFragment extends Fragment
                             filterFragment.getSelection(), filterFragment.getSelectionArgs(),
                             sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
         } else if (v == bStatistics) {
-            FilterFragment.Values filterValues = filterFragment.getValues();
-            dbHelper.queryStats(true,
-                    filterValues.getBookmarked() == 0,
+            //FilterFragment.Values filterValues = filterFragment.getValues();
+            dbHelper.queryStats(true, true, true, null, null, null, null)
+                    /*filterValues.getBookmarked() == 0,
                     filterValues.getArchived() == 0,
                     null, null,
-                    filterFragment.getSelection(), filterFragment.getSelectionArgs())
+                    filterFragment.getSelection(), filterFragment.getSelectionArgs())*/
                     .showDialog(getActivity(), null);
         } else if (v == bSettings) {
             startActivity(new Intent(getActivity(), SettingsActivity.class));

@@ -39,10 +39,7 @@ public class MainReceiver extends BroadcastReceiver {
 
     private void screenOn() {
         Log.d(TAG, "MainReceiver.screenOn()");
-
-        // Update notification when the screen is turned on.
-        context.startService(new Intent(context, MainService.class)
-                .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE));
+        MainService.update(context, null);
     }
 
     private void headsetPlug(int state) {

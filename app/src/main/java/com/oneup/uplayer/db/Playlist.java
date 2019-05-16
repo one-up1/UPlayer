@@ -5,9 +5,6 @@ import android.os.Parcelable;
 import android.provider.BaseColumns;
 
 public class Playlist implements Parcelable, BaseColumns {
-    public static final String EXTRA_PLAYLIST = "com.oneup.extra.PLAYLIST";
-    public static final String EXTRA_PLAYLISTS = "com.oneup.extra.PLAYLISTS";
-
     static final String NAME = "name";
     static final String SONG_INDEX = "song_index";
     static final String SONG_POSITION = "song_position";

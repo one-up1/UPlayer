@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 public class EditSongActivity extends AppCompatActivity implements View.OnClickListener,
         View.OnLongClickListener, AdapterView.OnItemSelectedListener {
-    public static final String EXTRA_UPDATE_SERVICE = "com.oneup.extra.UPDATE_SERVICE";
+    public static final String EXTRA_SONG = "com.oneup.uplayer.extra.SONG";
 
     private static final String TAG = "UPlayer";
 
@@ -61,7 +61,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
         dbHelper = new DbHelper(this);
 
-        song = getIntent().getParcelableExtra(Song.EXTRA_SONG);
+        song = getIntent().getParcelableExtra(EXTRA_SONG);
         dbHelper.querySong(song);
 
         tags = dbHelper.querySongTags();
@@ -139,14 +139,9 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             case R.id.ok:
                 song.setTag(etTag.getString());
                 dbHelper.updateSong(song);
-                Util.showToast(this, R.string.song_updated);
 
-                if (getIntent().getBooleanExtra(EXTRA_UPDATE_SERVICE, false)) {
-                    MainService.update(this, song);
-                } else {
-                    setResult(RESULT_OK, new Intent()
-                            .putExtra(Song.EXTRA_SONG, song));
-                }
+                Util.showToast(this, R.string.song_updated);
+                MainService.update(this, song);
 
                 finish();
                 return true;
@@ -171,7 +166,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 case REQUEST_SELECT_PLAYLISTS:
                     try {
                         ArrayList<Playlist> playlists = data.getParcelableArrayListExtra(
-                                Playlist.EXTRA_PLAYLISTS);
+                                PlaylistsActivity.EXTRA_PLAYLISTS);
 
                         ArrayList<Playlist> inserted = new ArrayList<>();
                         for (Playlist playlist : playlists) {

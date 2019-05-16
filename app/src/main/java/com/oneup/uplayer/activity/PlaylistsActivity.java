@@ -23,6 +23,9 @@ import com.oneup.uplayer.widget.EditText;
 import java.util.ArrayList;
 
 public class PlaylistsActivity extends AppCompatActivity {
+    public static final String EXTRA_PLAYLIST = "com.oneup.extra.PLAYLIST";
+    public static final String EXTRA_PLAYLISTS = "com.oneup.extra.PLAYLISTS";
+
     private static final String TAG = "UPlayer";
 
     @Override
@@ -84,7 +87,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                     if (isNotVisible()) {
                         data.putExtra(ARG_NOT, isNotChecked());
                     }
-                    data.putExtra(Playlist.EXTRA_PLAYLISTS, getCheckedListItems());
+                    data.putExtra(EXTRA_PLAYLISTS, getCheckedListItems());
                     getActivity().setResult(AppCompatActivity.RESULT_OK, data);
                     getActivity().finish();
                     return true;
@@ -169,7 +172,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         private void select(Playlist playlist) {
             getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
-                    .putExtra(Playlist.EXTRA_PLAYLIST, playlist));
+                    .putExtra(EXTRA_PLAYLIST, playlist));
             getActivity().finish();
         }
 
@@ -231,7 +234,6 @@ public class PlaylistsActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 getDbHelper().deletePlaylist(playlist);
-
                                 Util.showToast(getActivity(), R.string.deleted, playlist);
                                 removeListItem(position);
                             } catch (Exception ex) {

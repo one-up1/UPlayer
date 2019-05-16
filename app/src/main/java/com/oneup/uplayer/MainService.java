@@ -30,6 +30,8 @@ import java.util.ArrayList;
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
     public static final String EXTRA_ACTION = "com.oneup.extra.ACTION";
+    public static final String EXTRA_SONGS = "com.oneup.extra.SONGS";
+    public static final String EXTRA_PLAYLIST = "com.oneup.extra.PLAYLIST";
     public static final String EXTRA_NEXT = "com.oneup.extra.NEXT";
 
     public static final int ACTION_PLAY = 1;
@@ -45,6 +47,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private static final String TAG = "UPlayer";
     private static final int MAX_VOLUME = 100;
+    private static final String EXTRA_EDITED_SONG = "com.oneup.extra.EDITED_SONG";
 
     private static boolean running;
 
@@ -124,15 +127,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         int action = intent.getIntExtra(EXTRA_ACTION, 0);
         switch (action) {
             case ACTION_PLAY:
-                play(intent.<Song>getParcelableArrayListExtra(Song.EXTRA_SONGS),
-                        (Playlist) intent.getParcelableExtra(Playlist.EXTRA_PLAYLIST));
+                play(intent.<Song>getParcelableArrayListExtra(EXTRA_SONGS),
+                        (Playlist) intent.getParcelableExtra(EXTRA_PLAYLIST));
                 break;
             case ACTION_ADD:
-                add(intent.<Song>getParcelableArrayListExtra(Song.EXTRA_SONGS),
+                add(intent.<Song>getParcelableArrayListExtra(EXTRA_SONGS),
                         intent.getBooleanExtra(EXTRA_NEXT, false));
                 break;
             case ACTION_UPDATE:
-                update((Song) intent.getParcelableExtra(Song.EXTRA_SONG));
+                update((Song) intent.getParcelableExtra(EXTRA_EDITED_SONG));
                 break;
             case ACTION_EDIT_SONG:
                 editSong();
@@ -195,7 +198,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.start();
 
         prepared = true;
-        update(null);
+        update();
     }
 
     @Override
@@ -203,7 +206,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.onError(" + what + ", " + extra + ")");
         player.reset();
         prepared = false;
-        update(null);
+        update();
         return true;
     }
 
@@ -217,7 +220,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             next(true, false);
         } else {
             Log.e(TAG, "Current position is " + player.getCurrentPosition());
-            update(null);
+            update();
         }
     }
 
@@ -237,7 +240,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.setPlaylist(" + playlist.getId() + ":" + playlist + ")");
         playlist.setSongIndex(this.playlist.getSongIndex());
         this.playlist = playlist;
-        update(null);
+        update();
     }
 
     public void play(int songIndex) {
@@ -260,7 +263,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else if (stop) {
             stop();
         } else {
-            update(null);
+            update();
         }
     }
 
@@ -279,7 +282,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             // A song below the current song is moved to or above the current song.
             playlist.incrementSongIndex();
         }
-        update(null);
+        update();
     }
 
     public void removeSong(int index) {
@@ -290,7 +293,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (index < playlist.getSongIndex()) {
             // A song above the current song is removed.
             playlist.decrementSongIndex();
-            update(null);
+            update();
         } else if (index == playlist.getSongIndex()) {
             // The current song is removed.
             if (index < songs.size()) {
@@ -299,7 +302,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 if (player.isPlaying()) {
                     prepare();
                 } else {
-                    update(null);
+                    update();
                 }
             } else {
                 // Stop playback when the current and last song is removed.
@@ -309,72 +312,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             }
         } else {
             // A song below the current song is removed.
-            update(null);
+            update();
         }
     }
 
-    public void update(Song song) {
-        Log.d(TAG, "MainService.update(" + song + ")");
-        Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
-
-        // Replace any modified song in the playlist and get the current song.
-        if (song != null) {
-            int songIndex = songs.indexOf(song);
-            if (songIndex != -1) {
-                Log.d(TAG, "Replacing song: " + song + " (index=" + songIndex + ")");
-                songs.set(songIndex, song);
-            }
-        }
-        song = getSong();
-
-        // Set song title and artist, marking bookmarked songs.
-        notificationViews.setTextViewText(R.id.tvSongTitle, song.getStyledTitle());
-        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
-
-        // Set playlist position with song index, song count, songs left and time left.
-        String left = Util.formatDuration(
-                Song.getDuration(songs, playlist.getSongIndex()) - player.getCurrentPosition());
-        if (hasSongsLeft()) {
-            left = (songs.size() - playlist.getSongIndex() - 1) + " / " + left;
-        }
-        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
-                R.string.playlist_position, playlist.getSongIndex() + 1, songs.size(), left));
-
-        // Set song year and tag.
-        setOptionalValue(R.id.tvSongYear, song.getYear() == 0 ? null
-                : Integer.toString(song.getYear()));
-        setOptionalValue(R.id.tvSongTag, song.getTag());
-
-        // Set the names of the playlists the song is on, marking the current playlist.
-        SpannableStringBuilder playlistNames = new SpannableStringBuilder();
-        for (Playlist playlist : dbHelper.queryPlaylists(song)) {
-            if (!playlist.isDefault()) {
-                if (playlist.equals(this.playlist)) {
-                    if (playlistNames.length() > 0) {
-                        playlistNames.insert(0, ", ");
-                    }
-                    playlistNames.insert(0, Util.underline(playlist.getName()));
-                } else {
-                    if (playlistNames.length() > 0) {
-                        playlistNames.append(", ");
-                    }
-                    playlistNames.append(playlist.getName());
-                }
-            }
-        }
-        setOptionalValue(R.id.tvSongPlaylistNames,
-                playlistNames.length() == 0 ? null : playlistNames);
-
-        // Set play/pause image and volume.
-        notificationViews.setImageViewResource(R.id.ibPausePlay, prepared && player.isPlaying() ?
-                        R.drawable.ic_notification_pause : R.drawable.ic_notification_play);
-        notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(volume));
-
-        // Update notification and PlaylistActivity.
-        startForeground(1, notification);
-        if (onUpdateListener != null) {
-            onUpdateListener.onUpdate();
-        }
+    public void update() {
+        update(null);
     }
 
     public void stop() {
@@ -430,7 +373,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         // This will start playback of the added song, if it is the first song
         // or is being added to a playlist of which the last song has completed.
         if (prepared) {
-            update(null);
+            update();
         } else {
             playlist.setSongIndex(this.songs.size() - songs.size());
             prepare();
@@ -440,8 +383,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void editSong() {
         Log.d(TAG, "MainService.editSong()");
         startActivity(new Intent(this, EditSongActivity.class)
-                .putExtra(Song.EXTRA_SONG, getSong())
-                .putExtra(EditSongActivity.EXTRA_UPDATE_SERVICE, true)
+                .putExtra(EditSongActivity.EXTRA_SONG, getSong())
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 
         // Close the status bar.
@@ -453,12 +395,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (player.isPlaying()) {
             Log.d(TAG, "Pausing");
             player.pause();
-            update(null);
+            update();
         } else if (prepared) {
             Log.d(TAG, "Resuming");
             seekTo(player.getCurrentPosition(), R.string.key_resume_offset_song, false);
             player.start();
-            update(null);
+            update();
         } else {
             prepare();
         }
@@ -533,8 +475,72 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (prepared) {
             setVolume();
         }
-        update(null);
+        update();
         settings.edit().putInt(R.string.key_volume, volume).apply();
+    }
+
+    private void update(Song editedSong) {
+        Log.d(TAG, "MainService.update(" + editedSong + ")");
+        Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
+
+        // Replace any edited song in the playlist and get the current song.
+        if (editedSong != null) {
+            int songIndex = songs.indexOf(editedSong);
+            if (songIndex != -1) {
+                Log.d(TAG, "Replacing song: " + editedSong + " (index=" + songIndex + ")");
+                songs.set(songIndex, editedSong);
+            }
+        }
+        Song song = getSong();
+
+        // Set song title and artist, marking bookmarked songs.
+        notificationViews.setTextViewText(R.id.tvSongTitle, song.getStyledTitle());
+        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+
+        // Set playlist position with song index, song count, songs left and time left.
+        String left = Util.formatDuration(
+                Song.getDuration(songs, playlist.getSongIndex()) - player.getCurrentPosition());
+        if (hasSongsLeft()) {
+            left = (songs.size() - playlist.getSongIndex() - 1) + " / " + left;
+        }
+        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+                R.string.playlist_position, playlist.getSongIndex() + 1, songs.size(), left));
+
+        // Set song year and tag.
+        setOptionalValue(R.id.tvSongYear, song.getYear() == 0 ? null
+                : Integer.toString(song.getYear()));
+        setOptionalValue(R.id.tvSongTag, song.getTag());
+
+        // Set the names of the playlists the song is on, marking the current playlist.
+        SpannableStringBuilder playlistNames = new SpannableStringBuilder();
+        for (Playlist playlist : dbHelper.queryPlaylists(song)) {
+            if (!playlist.isDefault()) {
+                if (playlist.equals(this.playlist)) {
+                    if (playlistNames.length() > 0) {
+                        playlistNames.insert(0, ", ");
+                    }
+                    playlistNames.insert(0, Util.underline(playlist.getName()));
+                } else {
+                    if (playlistNames.length() > 0) {
+                        playlistNames.append(", ");
+                    }
+                    playlistNames.append(playlist.getName());
+                }
+            }
+        }
+        setOptionalValue(R.id.tvSongPlaylistNames,
+                playlistNames.length() == 0 ? null : playlistNames);
+
+        // Set play/pause image and volume.
+        notificationViews.setImageViewResource(R.id.ibPausePlay, prepared && player.isPlaying() ?
+                R.drawable.ic_notification_pause : R.drawable.ic_notification_play);
+        notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(volume));
+
+        // Update notification and PlaylistActivity.
+        startForeground(1, notification);
+        if (onUpdateListener != null) {
+            onUpdateListener.onServiceUpdated();
+        }
     }
 
     private boolean hasSongsLeft() {
@@ -557,12 +563,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public static void update(Context context, Song song) {
+    public static void update(Context context, Song editedSong) {
         if (running) {
             Intent intent = new Intent(context, MainService.class)
                     .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE);
-            if (song != null) {
-                intent.putExtra(Song.EXTRA_SONG, song);
+            if (editedSong != null) {
+                intent.putExtra(EXTRA_EDITED_SONG, editedSong);
             }
             context.startService(intent);
         }
@@ -575,6 +581,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public interface OnUpdateListener {
-        void onUpdate();
+        void onServiceUpdated();
     }
 }

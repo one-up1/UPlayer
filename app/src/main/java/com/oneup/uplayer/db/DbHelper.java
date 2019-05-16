@@ -243,7 +243,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public long toggleSongTimestamp(Song song, String column) {
-        Log.d(TAG, "DbHelper.toggleSongValue(" + song.getId() + ":" + song + ", " + column + ")");
+        Log.d(TAG, "DbHelper.toggleSongTimestamp(" + song.getId() + ":" + song +
+                ", " + column + ")");
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {

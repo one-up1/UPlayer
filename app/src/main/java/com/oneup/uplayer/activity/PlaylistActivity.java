@@ -106,6 +106,11 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onServiceUpdated() {
+            notifyDataSetChanged();
+        }
+
+        @Override
         protected ArrayList<Song> loadData() {
             Log.d(TAG, "PlaylistFragment.loadData()");
             return service.getSongs();
@@ -227,15 +232,8 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onSongUpdated(Song song, boolean edit) {
-            // Only replace the song in the service ArrayList when it was edited manually,
-            // as toggling bookmarked/archived values are updated by object reference.
-            service.update(edit ? song : null);
-        }
-
-        @Override
-        public void onUpdate() {
-            notifyDataSetChanged();
+        protected void onSongUpdated(Song song) {
+            service.update();
         }
 
         private static PlaylistFragment newInstance() {
@@ -254,7 +252,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                 MainService.MainBinder mainBinder = (MainService.MainBinder) serviceBinder;
                 service = mainBinder.getService();
-                service.update(null);
+                service.update();
                 service.setOnUpdateListener(PlaylistFragment.this);
 
                 reloadData();

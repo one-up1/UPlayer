@@ -137,6 +137,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                         REQUEST_SELECT_PLAYLISTS);
                 return true;
             case R.id.ok:
+                song.setYear(etYear.getInt());
                 song.setTag(etTag.getString());
                 dbHelper.updateSong(song);
 

@@ -190,6 +190,7 @@ public class DbHelper extends SQLiteOpenHelper {
             try (Cursor c = db.query(TABLE_SONGS,
                     // Only query fields that may have changed.
                     new String[]{
+                            Song.YEAR,
                             Song.TAG,
                             Song.BOOKMARKED,
                             Song.ARCHIVED,
@@ -198,11 +199,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     },
                     SQL_ID_IS, getWhereArgs(song.getId()), null, null, null)) {
                 c.moveToFirst();
-                song.setTag(c.getString(0));
-                song.setBookmarked(c.getLong(1));
-                song.setArchived(c.getLong(2));
-                song.setLastPlayed(c.getLong(3));
-                song.setTimesPlayed(c.getInt(4));
+                song.setYear(c.getInt(0));
+                song.setTag(c.getString(1));
+                song.setBookmarked(c.getLong(2));
+                song.setArchived(c.getLong(3));
+                song.setLastPlayed(c.getLong(4));
+                song.setTimesPlayed(c.getInt(5));
             }
         }
     }
@@ -228,6 +230,7 @@ public class DbHelper extends SQLiteOpenHelper {
             db.beginTransaction();
             try {
                 ContentValues values = new ContentValues();
+                putValue(values, Song.YEAR, song.getYear());
                 values.put(Song.TAG, song.getTag());
                 putValue(values, Song.BOOKMARKED, song.getBookmarked());
                 putValue(values, Song.ARCHIVED, song.getArchived());
@@ -545,7 +548,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Artist._ID,
                                 Artist.ARTIST
                         },
-                        null, null, 0);
+                        new int[]{1}, null, null, null, 0);
 
                 results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         db, TABLE_SONGS,
@@ -557,6 +560,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Song.DURATION,
                                 Song.YEAR
                         },
+                        new int[]{1, 2, 3, 4}, new int[]{5},
                         Song.IS_MUSIC + "=1", Song.ADDED, time);
 
                 // Update artists when songs have been inserted or deleted.
@@ -592,6 +596,7 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song._ID,
                             Song.TITLE,
                             Song.ARTIST,
+                            Song.YEAR,
                             Song.ADDED,
                             Song.TAG,
                             Song.BOOKMARKED,
@@ -669,6 +674,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     // Get ContentValues from JSONObject and update row.
                     ContentValues values = getValues(song,
                             new String[]{
+                                    Song.YEAR,
                                     Song.ADDED,
                                     Song.TAG,
                                     Song.BOOKMARKED,
@@ -821,10 +827,11 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    private static SyncResult syncTable(Context context, Uri uri, SQLiteDatabase db,
-                                        String table, String[] columns, String selection,
-                                        String timeColumn, long time) {
+    private static SyncResult syncTable(Context context, Uri uri, SQLiteDatabase db, String table,
+                                        String[] columns, int[] updateColumns, int[] insertColumns,
+                                        String selection, String timeColumn, long time) {
         Log.d(TAG, "DbHelper.syncTable(" + uri + ", " + table + ", " + Arrays.toString(columns) +
+                ", " + Arrays.toString(updateColumns) + ", " + Arrays.toString(insertColumns) +
                 ", " + selection + ", " + timeColumn + ", " + time + ")");
         SyncResult result = new SyncResult();
         ArrayList<Long> ids = new ArrayList<>();
@@ -838,28 +845,18 @@ public class DbHelper extends SQLiteOpenHelper {
             while (c.moveToNext()) {
                 long id = c.getLong(0);
 
-                // Put column values from the Cursor, ignoring the ID.
+                // Put update column values.
                 ContentValues values = new ContentValues();
-                for (int i = 1; i < columns.length; i++) {
-                    switch (c.getType(i)) {
-                        case Cursor.FIELD_TYPE_NULL:
-                            values.putNull(columns[i]);
-                            break;
-                        case Cursor.FIELD_TYPE_INTEGER:
-                            values.put(columns[i], c.getLong(i));
-                            break;
-                        case Cursor.FIELD_TYPE_STRING:
-                            values.put(columns[i], c.getString(i));
-                            break;
-                        default:
-                            throw new SQLiteException("Invalid type");
-                    }
-                }
+                putValues(values, c, columns, updateColumns);
 
                 // Update or insert row if it doesn't exist.
                 if (update(db, table, values, id, false) == 0) {
-                    // Put ID and time value, if specified.
                     values.put(BaseColumns._ID, id);
+
+                    if (insertColumns != null) {
+                        putValues(values, c, columns, insertColumns);
+                    }
+
                     if (timeColumn != null) {
                         values.put(timeColumn, time);
                     }
@@ -893,6 +890,25 @@ public class DbHelper extends SQLiteOpenHelper {
                 result.rowsInserted + " inserted, " + result.rowsUpdated + " updated, " +
                 result.rowsDeleted + " deleted");
         return result;
+    }
+
+    private static void putValues(ContentValues values, Cursor c,
+                                  String[] columns, int[] columnIndices) {
+        for (int columnIndex : columnIndices) {
+            switch (c.getType(columnIndex)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    values.putNull(columns[columnIndex]);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    values.put(columns[columnIndex], c.getLong(columnIndex));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    values.put(columns[columnIndex], c.getString(columnIndex));
+                    break;
+                default:
+                    throw new SQLiteException("Invalid type");
+            }
+        }
     }
 
     private static void backupTable(JSONObject obj, SQLiteDatabase db,
@@ -978,7 +994,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 (song == null ? "null" : song.getId() + ":" + song) + ")");
 
         String sql = "UPDATE " + TABLE_ARTISTS + " SET " +
-                // Song count excludes archived songs, but only when the artist itself is not archived.
+                // Song count excludes archived songs, unless all songs of the artist are archived.
                 Artist.SONG_COUNT +
                 "=(SELECT COUNT(*) FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID +
@@ -994,6 +1010,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 "=(SELECT MIN(" + Song.BOOKMARKED + ") FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID + ")," +
 
+                // Artist is archived when all songs of the artist are archived.
                 Artist.ARCHIVED +
                 "=(SELECT MAX(" + Song.ARCHIVED + ") FROM " + TABLE_SONGS +
                 " WHERE " + Song.ARTIST_ID + "=" + TABLE_ARTISTS + "." + Artist._ID +

@@ -483,15 +483,19 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.update(" + editedSong + ")");
         Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
 
-        // Replace any edited song in the playlist and get the current song.
+        // Replace any edited song in the playlist if it is not the current song.
         if (editedSong != null) {
             int songIndex = songs.indexOf(editedSong);
-            if (songIndex != -1) {
+            if (songIndex != -1 && songIndex != playlist.getSongIndex()) {
                 Log.d(TAG, "Replacing song: " + editedSong + " (index=" + songIndex + ")");
+                dbHelper.querySong(editedSong);
                 songs.set(songIndex, editedSong);
             }
         }
+
+        // Get current song from playlist.
         Song song = getSong();
+        dbHelper.querySong(song);
 
         // Set song title and artist, marking bookmarked songs.
         notificationViews.setTextViewText(R.id.tvSongTitle, song.getStyledTitle());

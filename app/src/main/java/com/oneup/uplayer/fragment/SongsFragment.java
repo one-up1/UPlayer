@@ -255,7 +255,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     protected void onListItemClick(int position, Song song) {
         Playlist playlist = Playlist.getDefault();
         playlist.setSongIndex(position);
-        getActivity().startService(new Intent(getActivity(), MainService.class)
+        getActivity().startForegroundService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
                 .putExtra(MainService.EXTRA_SONGS, getData())
                 .putExtra(MainService.EXTRA_PLAYLIST, playlist));
@@ -282,7 +282,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     }
 
     private void add(ArrayList<Song> songs, boolean next) {
-        getActivity().startService(new Intent(getActivity(), MainService.class)
+        getActivity().startForegroundService(new Intent(getActivity(), MainService.class)
                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_ADD)
                 .putExtra(MainService.EXTRA_SONGS, songs)
                 .putExtra(MainService.EXTRA_NEXT, next));

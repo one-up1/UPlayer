@@ -15,7 +15,6 @@
 
         <activity
             android:name=".activity.MainActivity"
-            android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan">
 
@@ -37,11 +36,13 @@
 
         <activity
             android:name=".activity.EditSongActivity"
+            android:label="@string/edit_song"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
 
         <activity
             android:name=".activity.FilterActivity"
+            android:label="@string/filter"
             android:screenOrientation="portrait" />
 
         <activity

@@ -22,6 +22,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#000000"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -29,13 +30,15 @@
                 android:id="@+id/tvSongArtist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="#000000"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
             <TextView
                 android:id="@+id/tvPlaylistPosition"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="#000000" />
 
         </LinearLayout>
 
@@ -50,17 +53,20 @@
             <TextView
                 android:id="@+id/tvSongYear"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="#000000" />
 
             <TextView
                 android:id="@+id/tvSongTag"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="#000000" />
 
             <TextView
                 android:id="@+id/tvSongPlaylistNames"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="#000000" />
 
         </LinearLayout>
 
@@ -77,6 +83,7 @@
             android:id="@+id/ibEditSong"
             android:layout_width="@dimen/notification_button_width"
             android:layout_height="@dimen/notification_button_height"
+            android:layout_marginEnd="@dimen/notification_button_horizontal_margin"
             android:src="@drawable/ic_notification_edit_song"
             android:contentDescription="@string/edit_song" />
 
@@ -84,12 +91,16 @@
             android:id="@+id/ibPausePlay"
             android:layout_width="@dimen/notification_button_width"
             android:layout_height="@dimen/notification_button_height"
+            android:layout_marginStart="@dimen/notification_button_horizontal_margin"
+            android:layout_marginEnd="@dimen/notification_button_horizontal_margin"
             android:contentDescription="@string/pause_play" />
 
         <ImageButton
             android:id="@+id/ibNext"
             android:layout_width="@dimen/notification_button_width"
             android:layout_height="@dimen/notification_button_height"
+            android:layout_marginStart="@dimen/notification_button_horizontal_margin"
+            android:layout_marginEnd="@dimen/notification_button_horizontal_margin"
             android:src="@drawable/ic_notification_next"
             android:contentDescription="@string/next" />
 
@@ -97,6 +108,8 @@
             android:id="@+id/ibStop"
             android:layout_width="@dimen/notification_button_width"
             android:layout_height="@dimen/notification_button_height"
+            android:layout_marginStart="@dimen/notification_button_horizontal_margin"
+            android:layout_marginEnd="@dimen/notification_button_horizontal_margin"
             android:src="@drawable/ic_notification_stop"
             android:contentDescription="@string/stop" />
 
@@ -106,12 +119,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="end"
-            android:padding="@dimen/notification_padding" />
+            android:padding="@dimen/notification_padding"
+            android:textColor="#000000" />
 
         <ImageButton
             android:id="@+id/ibVolumeDown"
             android:layout_width="@dimen/notification_button_width"
             android:layout_height="@dimen/notification_button_height"
+            android:layout_marginEnd="@dimen/notification_button_horizontal_margin"
             android:src="@drawable/ic_notification_volume_down"
             android:contentDescription="@string/stop" />
 
@@ -119,6 +134,7 @@
             android:id="@+id/ibVolumeUp"
             android:layout_width="@dimen/notification_button_width"
             android:layout_height="@dimen/notification_button_height"
+            android:layout_marginStart="@dimen/notification_button_horizontal_margin"
             android:src="@drawable/ic_notification_volume_up"
             android:contentDescription="@string/stop" />
 

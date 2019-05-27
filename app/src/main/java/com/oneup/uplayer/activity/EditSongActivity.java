@@ -53,11 +53,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //FIXME: Use setShowWhenLocked() and KeyguardManager.requestDismissKeyguard().
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         setContentView(R.layout.activity_edit_song);
-        setTitle(R.string.edit_song);
 
         dbHelper = new DbHelper(this);
 

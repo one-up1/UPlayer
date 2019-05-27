@@ -1,12 +1,14 @@
 package com.oneup.uplayer;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioManager;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
@@ -79,7 +81,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        player.setAudioAttributes(new AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build());
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
@@ -95,10 +100,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(R.id.ibVolumeDown, ACTION_VOLUME_DOWN);
         setOnClickPendingIntent(R.id.ibVolumeUp, ACTION_VOLUME_UP);
 
-        //FIXME: Notification icon is always ic_launcher and channel ID must be set.
-        // Use NotificationManager to update instead of startForeground()?
-        // Start service using startForegroundService()?
-        notification = new NotificationCompat.Builder(this)
+        NotificationChannel notificationChannel = new NotificationChannel(
+                TAG, TAG, NotificationManager.IMPORTANCE_LOW);
+        notificationChannel.enableVibration(false);
+        notificationChannel.enableLights(false);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
+                .createNotificationChannel(notificationChannel);
+
+        notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setCustomContentView(notificationViews)
                 .setCustomBigContentView(notificationViews)
@@ -106,6 +115,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 .setContentIntent(PendingIntent.getActivity(this, 0,
                         new Intent(this, PlaylistActivity.class),
                         PendingIntent.FLAG_UPDATE_CURRENT))
+                .setChannelId(TAG)
                 .build();
 
         mainReceiver = new MainReceiver();
@@ -574,7 +584,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             if (editedSong != null) {
                 intent.putExtra(EXTRA_EDITED_SONG, editedSong);
             }
-            context.startService(intent);
+            context.startForegroundService(intent);
         }
     }
 

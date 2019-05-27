@@ -124,7 +124,8 @@ public class FilterFragment extends Fragment
                             R.string.select_tags, R.string.selected_tags);
                 case REQUEST_SELECT_PLAYLISTS:
                     if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLIST)) {
-                        getActivity().startService(new Intent(getActivity(), MainService.class)
+                        getActivity().startForegroundService(new Intent(
+                                getActivity(), MainService.class)
                                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
                                 .putExtra(MainService.EXTRA_PLAYLIST, data.getParcelableExtra(
                                         PlaylistsActivity.EXTRA_PLAYLIST)));

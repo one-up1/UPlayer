@@ -62,7 +62,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private boolean prepared, completed;
     private int volume;
 
-    private RemoteViews notificationViews;
+    private RemoteViews notificationLayout;
+    private RemoteViews notificationLayoutExpanded;
     private Notification notification;
 
     private MainReceiver mainReceiver;
@@ -91,8 +92,18 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         volume = settings.getInt(R.string.key_volume, MAX_VOLUME);
 
-        notificationViews = new RemoteViews(getApplicationContext().getPackageName(),
-                R.layout.notification);
+        NotificationChannel notificationChannel = new NotificationChannel(
+                TAG, TAG, NotificationManager.IMPORTANCE_LOW);
+        notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+        notificationChannel.enableVibration(false);
+        notificationChannel.enableLights(false);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
+                .createNotificationChannel(notificationChannel);
+
+        notificationLayout = new RemoteViews(getApplicationContext().getPackageName(),
+                R.layout.notification_small);
+        notificationLayoutExpanded = new RemoteViews(getApplicationContext().getPackageName(),
+                R.layout.notification_large);
         setOnClickPendingIntent(R.id.ibEditSong, ACTION_EDIT_SONG);
         setOnClickPendingIntent(R.id.ibPausePlay, ACTION_PAUSE_PLAY);
         setOnClickPendingIntent(R.id.ibNext, ACTION_NEXT);
@@ -100,22 +111,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         setOnClickPendingIntent(R.id.ibVolumeDown, ACTION_VOLUME_DOWN);
         setOnClickPendingIntent(R.id.ibVolumeUp, ACTION_VOLUME_UP);
 
-        NotificationChannel notificationChannel = new NotificationChannel(
-                TAG, TAG, NotificationManager.IMPORTANCE_LOW);
-        notificationChannel.enableVibration(false);
-        notificationChannel.enableLights(false);
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
-                .createNotificationChannel(notificationChannel);
-
         notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setCustomContentView(notificationViews)
-                .setCustomBigContentView(notificationViews)
+                .setCustomContentView(notificationLayout)
+                .setCustomBigContentView(notificationLayoutExpanded)
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setOngoing(true)
                 .setContentIntent(PendingIntent.getActivity(this, 0,
                         new Intent(this, PlaylistActivity.class),
                         PendingIntent.FLAG_UPDATE_CURRENT))
-                .setChannelId(TAG)
                 .build();
 
         mainReceiver = new MainReceiver();
@@ -507,9 +511,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Song song = getSong();
         dbHelper.querySong(song);
 
-        // Set song title and artist, marking bookmarked songs.
-        notificationViews.setTextViewText(R.id.tvSongTitle, song.getStyledTitle());
-        notificationViews.setTextViewText(R.id.tvSongArtist, song.getArtist());
+        // Update notification views with the information that is displayed in both layouts.
+        updateNotification(notificationLayout, song);
+        updateNotification(notificationLayoutExpanded, song);
 
         // Set playlist position with song index, song count, songs left and time left.
         String left = Util.formatDuration(
@@ -517,13 +521,32 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         if (hasSongsLeft()) {
             left = (songs.size() - playlist.getSongIndex() - 1) + " / " + left;
         }
-        notificationViews.setTextViewText(R.id.tvPlaylistPosition, getString(
+        notificationLayoutExpanded.setTextViewText(R.id.tvPlaylistPosition, getString(
                 R.string.playlist_position, playlist.getSongIndex() + 1, songs.size(), left));
 
-        // Set song year and tag.
-        setOptionalValue(R.id.tvSongYear, song.getYear() == 0 ? null
-                : Integer.toString(song.getYear()));
-        setOptionalValue(R.id.tvSongTag, song.getTag());
+        // Set song year.
+        setOptionalValue(notificationLayoutExpanded, R.id.tvSongYear,
+                song.getYear() == 0 ? null : Integer.toString(song.getYear()));
+
+        // Set play/pause image and volume.
+        notificationLayoutExpanded.setImageViewResource(R.id.ibPausePlay,
+                prepared && player.isPlaying()
+                        ? R.drawable.ic_notification_pause
+                        : R.drawable.ic_notification_play);
+        notificationLayoutExpanded.setTextViewText(R.id.tvVolume, Integer.toString(volume));
+
+        // Update notification and PlaylistActivity.
+        startForeground(1, notification);
+        if (onUpdateListener != null) {
+            onUpdateListener.onServiceUpdated();
+        }
+    }
+
+    private void updateNotification(RemoteViews view, Song song) {
+        // Set song title, artist and tag.
+        view.setTextViewText(R.id.tvSongTitle, song.getStyledTitle());
+        view.setTextViewText(R.id.tvSongArtist, song.getArtist());
+        setOptionalValue(view, R.id.tvSongTag, song.getTag());
 
         // Set the names of the playlists the song is on, marking the current playlist.
         SpannableStringBuilder playlistNames = new SpannableStringBuilder();
@@ -542,19 +565,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 }
             }
         }
-        setOptionalValue(R.id.tvSongPlaylistNames,
+        setOptionalValue(view, R.id.tvSongPlaylistNames,
                 playlistNames.length() == 0 ? null : playlistNames);
-
-        // Set play/pause image and volume.
-        notificationViews.setImageViewResource(R.id.ibPausePlay, prepared && player.isPlaying() ?
-                R.drawable.ic_notification_pause : R.drawable.ic_notification_play);
-        notificationViews.setTextViewText(R.id.tvVolume, Integer.toString(volume));
-
-        // Update notification and PlaylistActivity.
-        startForeground(1, notification);
-        if (onUpdateListener != null) {
-            onUpdateListener.onServiceUpdated();
-        }
     }
 
     private boolean hasSongsLeft() {
@@ -562,18 +574,19 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void setOnClickPendingIntent(int viewId, int action) {
-        notificationViews.setOnClickPendingIntent(viewId, PendingIntent.getService(this, action,
-                new Intent(this, MainService.class)
-                        .putExtra(EXTRA_ACTION, action),
-                PendingIntent.FLAG_UPDATE_CURRENT));
+        notificationLayoutExpanded.setOnClickPendingIntent(viewId,
+                PendingIntent.getService(this, action,
+                        new Intent(this, MainService.class)
+                                .putExtra(EXTRA_ACTION, action),
+                        PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
-    private void setOptionalValue(int viewId, CharSequence text) {
+    private static void setOptionalValue(RemoteViews view, int viewId, CharSequence text) {
         if (text == null) {
-            notificationViews.setViewVisibility(viewId, View.GONE);
+            view.setViewVisibility(viewId, View.GONE);
         } else {
-            notificationViews.setTextViewText(viewId, text);
-            notificationViews.setViewVisibility(viewId, View.VISIBLE);
+            view.setTextViewText(viewId, text);
+            view.setViewVisibility(viewId, View.VISIBLE);
         }
     }
 

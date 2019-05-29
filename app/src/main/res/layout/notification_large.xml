@@ -7,11 +7,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:weightSum="10"
+        android:baselineAligned="false">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="7"
             android:orientation="vertical">
 
             <TextView
@@ -34,13 +37,16 @@
                 android:id="@+id/tvPlaylistPosition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
                 style="@style/TextAppearance.Compat.Notification.Info" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="3"
             android:orientation="vertical"
             android:gravity="end|bottom">
 
@@ -48,18 +54,24 @@
                 android:id="@+id/tvSongYear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
                 style="@style/TextAppearance.Compat.Notification.Info" />
 
             <TextView
                 android:id="@+id/tvSongTag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
                 style="@style/TextAppearance.Compat.Notification.Info" />
 
             <TextView
                 android:id="@+id/tvSongPlaylistNames"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
                 style="@style/TextAppearance.Compat.Notification.Info" />
 
         </LinearLayout>
@@ -98,34 +110,27 @@
             android:src="@drawable/ic_notification_stop"
             android:contentDescription="@string/stop" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvVolume"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="end|center_vertical"
+            style="@style/TextAppearance.Compat.Notification" />
+
+        <ImageButton
+            android:id="@+id/ibVolumeDown"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:src="@drawable/ic_notification_volume_down"
+            android:contentDescription="@string/stop" />
 
-            <TextView
-                android:id="@+id/tvVolume"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                style="@style/TextAppearance.Compat.Notification" />
-
-            <ImageButton
-                android:id="@+id/ibVolumeDown"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_notification_volume_down"
-                android:contentDescription="@string/stop" />
-
-            <ImageButton
-                android:id="@+id/ibVolumeUp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_notification_volume_up"
-                android:contentDescription="@string/stop" />
-
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/ibVolumeUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_notification_volume_up"
+            android:contentDescription="@string/stop" />
 
     </LinearLayout>
 

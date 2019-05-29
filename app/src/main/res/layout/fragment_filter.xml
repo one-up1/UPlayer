@@ -1,67 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:descendantFocusability="beforeDescendants"
     android:focusableInTouchMode="true"
-    app:columnCount="2"
     tools:context=".fragment.FilterFragment">
 
     <com.oneup.uplayer.widget.EditText
         android:id="@+id/etTitle"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textCapWords"
-        android:hint="@string/title"
-        app:layout_columnSpan="2"
-        app:layout_columnWeight="1" />
+        android:hint="@string/title" />
 
     <com.oneup.uplayer.widget.EditText
         android:id="@+id/etArtist"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textCapWords"
-        android:hint="@string/artist"
-        app:layout_columnSpan="2"
-        app:layout_columnWeight="1" />
+        android:hint="@string/artist" />
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etMinYear"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="number"
-        android:hint="@string/min_year"
-        app:layout_columnWeight="1" />
+        android:orientation="horizontal">
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etMaxYear"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:hint="@string/max_year"
-        app:layout_columnWeight="1" />
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etMinYear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:hint="@string/min_year"  />
 
-    <Button
-        android:id="@+id/bMinAdded"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_columnWeight="1" />
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etMaxYear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:hint="@string/max_year" />
 
-    <Button
-        android:id="@+id/bMaxAdded"
-        android:layout_width="0dp"
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_columnWeight="1" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/bMinAdded"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/bMaxAdded"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 
     <RadioGroup
         android:id="@+id/rgBookmarked"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_columnSpan="2"
-        app:layout_columnWeight="1">
+        android:orientation="horizontal">
 
         <RadioButton
             android:layout_width="@dimen/filter_all_radio_button_width"
@@ -84,11 +91,9 @@
 
     <RadioGroup
         android:id="@+id/rgArchived"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_columnSpan="2"
-        app:layout_columnWeight="1">
+        android:orientation="horizontal">
 
         <RadioButton
             android:layout_width="@dimen/filter_all_radio_button_width"
@@ -109,32 +114,69 @@
 
     </RadioGroup>
 
-    <Button
-        android:id="@+id/bTags"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:ellipsize="end"
-        app:layout_columnWeight="1" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/bPlaylists"
-        android:layout_width="0dp"
+        <Button
+            android:id="@+id/bTags"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <Button
+            android:id="@+id/bPlaylists"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:ellipsize="end"
-        app:layout_columnWeight="1" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/bMinLastPlayed"
-        android:layout_width="0dp"
+        <Button
+            android:id="@+id/bMinLastPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/bMaxLastPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"  />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_columnWeight="1" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/bMaxLastPlayed"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_columnWeight="1" />
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etMinTimesPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:hint="@string/min_times_played" />
 
-</android.support.v7.widget.GridLayout>
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etMaxTimesPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:hint="@string/max_times_played" />
+
+    </LinearLayout>
+
+</LinearLayout>

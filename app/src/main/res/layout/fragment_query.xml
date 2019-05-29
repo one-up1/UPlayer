@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,50 +18,46 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <android.support.v7.widget.GridLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:descendantFocusability="beforeDescendants"
-        android:focusableInTouchMode="true"
-        app:columnCount="2">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <Spinner
             android:id="@+id/sSortColumn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:entries="@array/song_sort_columns"
-            app:layout_columnWeight="1" />
+            android:layout_weight="1"
+            android:entries="@array/song_sort_columns" />
 
         <CheckBox
             android:id="@+id/cbSortDesc"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/desc"
-            app:layout_columnWeight="1" />
+            android:layout_weight="1"
+            android:text="@string/desc" />
 
-        <Button
-            android:id="@+id/bQuery"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/query"
-            app:layout_columnWeight="1" />
+    </LinearLayout>
 
-        <Button
-            android:id="@+id/bStatistics"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/statistics"
-            app:layout_columnWeight="1" />
+    <Button
+        android:id="@+id/bQuery"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="@string/query" />
 
-        <Button
-            android:id="@+id/bSettings"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/settings"
-            app:layout_columnSpan="2"
-            app:layout_columnWeight="1"
-            app:layout_gravity="bottom" />
+    <Button
+        android:id="@+id/bStatistics"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="@string/statistics" />
 
-    </android.support.v7.widget.GridLayout>
+    <Button
+        android:id="@+id/bSettings"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="@string/settings" />
 
 </LinearLayout>

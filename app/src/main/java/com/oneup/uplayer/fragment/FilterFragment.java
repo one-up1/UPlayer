@@ -47,6 +47,8 @@ public class FilterFragment extends Fragment
     private Button bPlaylists;
     private Button bMinLastPlayed;
     private Button bMaxLastPlayed;
+    private EditText etMinTimesPlayed;
+    private EditText etMaxTimesPlayed;
 
     private boolean showArtistFilter;
     private int selectPlaylistConfirmId;
@@ -100,6 +102,10 @@ public class FilterFragment extends Fragment
         bMaxLastPlayed = rootView.findViewById(R.id.bMaxLastPlayed);
         bMaxLastPlayed.setOnClickListener(this);
         bMaxLastPlayed.setOnLongClickListener(this);
+
+        etMinTimesPlayed = rootView.findViewById(R.id.etMinTimesPlayed);
+
+        etMaxTimesPlayed = rootView.findViewById(R.id.etMaxTimesPlayed);
 
         return rootView;
     }
@@ -238,6 +244,8 @@ public class FilterFragment extends Fragment
         values.maxYear = etMaxYear.getString();
         values.bookmarked = getCheckedRadioButtonIndex(rgBookmarked);
         values.archived = getCheckedRadioButtonIndex(rgArchived);
+        values.minTimesPlayed = etMinTimesPlayed.getString();
+        values.maxTimesPlayed = etMaxTimesPlayed.getString();
         return values;
     }
 
@@ -261,6 +269,8 @@ public class FilterFragment extends Fragment
                 R.string.select_playlists, R.string.selected_playlists);
         setDateButton(bMinLastPlayed, values.minLastPlayed, R.string.select_min_last_played);
         setDateButton(bMaxLastPlayed, values.maxLastPlayed, R.string.select_max_last_played);
+        etMinTimesPlayed.setString(values.minTimesPlayed);
+        etMaxTimesPlayed.setString(values.maxTimesPlayed);
         this.values = values;
     }
 
@@ -338,6 +348,20 @@ public class FilterFragment extends Fragment
             selectionArgs.add(Long.toString(values.maxLastPlayed));
         }
 
+        String minTimesPlayed = etMinTimesPlayed.getString();
+        if (minTimesPlayed != null) {
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMinSelection(Song.TIMES_PLAYED));
+            selectionArgs.add(minTimesPlayed);
+        }
+
+        String maxTimesPlayed = etMaxTimesPlayed.getString();
+        if (maxTimesPlayed != null) {
+            selection = DbHelper.concatSelection(selection,
+                    DbHelper.getMaxSelection(Song.TIMES_PLAYED, minTimesPlayed != null));
+            selectionArgs.add(maxTimesPlayed);
+        }
+
         if (!values.tags.isEmpty()) {
             String tagSelection = DbHelper.getInClause(values.tags.size());
             selection = DbHelper.concatSelection(selection, values.tagsNot
@@ -405,6 +429,9 @@ public class FilterFragment extends Fragment
         private long minLastPlayed;
         private long maxLastPlayed;
 
+        private String minTimesPlayed;
+        private String maxTimesPlayed;
+
         public Values() {
             tags = new ArrayList<>();
             playlists = new ArrayList<>();
@@ -431,6 +458,8 @@ public class FilterFragment extends Fragment
             out.writeInt(playlistsNot ? 1 : 0);
             out.writeLong(minLastPlayed);
             out.writeLong(maxLastPlayed);
+            out.writeString(minTimesPlayed);
+            out.writeString(maxTimesPlayed);
         }
 
         public String getTitle() {
@@ -537,6 +566,22 @@ public class FilterFragment extends Fragment
             this.maxLastPlayed = maxLastPlayed;
         }
 
+        public String getMinTimesPlayed() {
+            return minTimesPlayed;
+        }
+
+        public void setMinTimesPlayed(String minTimesPlayed) {
+            this.minTimesPlayed = minTimesPlayed;
+        }
+
+        public String getMaxTimesPlayed() {
+            return maxTimesPlayed;
+        }
+
+        public void setMaxTimesPlayed(String maxTimesPlayed) {
+            this.maxTimesPlayed = maxTimesPlayed;
+        }
+
         public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
 
             @Override
@@ -557,6 +602,8 @@ public class FilterFragment extends Fragment
                 values.playlistsNot = in.readInt() == 1;
                 values.minLastPlayed = in.readLong();
                 values.maxLastPlayed = in.readLong();
+                values.minTimesPlayed = in.readString();
+                values.maxTimesPlayed = in.readString();
                 return values;
             }
 

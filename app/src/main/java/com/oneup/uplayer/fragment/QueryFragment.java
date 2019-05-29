@@ -152,6 +152,8 @@ public class QueryFragment extends Fragment
 
         values.setMinLastPlayed(settings.getLong(R.string.key_query_min_last_played, 0));
         values.setMaxLastPlayed(settings.getLong(R.string.key_query_max_last_played, 0));
+        values.setMinTimesPlayed(settings.getString(R.string.key_query_min_times_played, null));
+        values.setMaxTimesPlayed(settings.getString(R.string.key_query_max_times_played, null));
 
         return values;
     }
@@ -187,6 +189,8 @@ public class QueryFragment extends Fragment
                 .putBoolean(R.string.key_query_playlists_not, values.isPlaylistsNot())
                 .putLong(R.string.key_query_min_last_played, values.getMinLastPlayed())
                 .putLong(R.string.key_query_max_last_played, values.getMaxLastPlayed())
+                .putString(R.string.key_query_min_times_played, values.getMinTimesPlayed())
+                .putString(R.string.key_query_max_times_played, values.getMaxTimesPlayed())
                 .putInt(R.string.key_query_sort_column, sSortColumn.getSelectedItemPosition())
                 .putBoolean(R.string.key_query_sort_desc, cbSortDesc.isChecked())
                 .apply();

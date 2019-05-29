@@ -17,6 +17,8 @@
     <string name="key_query_playlists_not">query_playlists_not</string>
     <string name="key_query_min_last_played">query_min_last_played</string>
     <string name="key_query_max_last_played">query_max_last_played</string>
+    <string name="key_query_min_times_played">query_min_times_played</string>
+    <string name="key_query_max_times_played">query_max_times_played</string>
 
     <string name="key_query_sort_column">query_sort_column</string>
     <string name="key_query_sort_desc">query_sort_desc</string>

@@ -26,6 +26,8 @@
     <string name="selected_playlists" tools:ignore="PluralsCandidate">%1$d playlists</string>
     <string name="select_min_last_played">Min last played&#8230;</string>
     <string name="select_max_last_played">Max last played&#8230;</string>
+    <string name="min_times_played">Min times played&#8230;</string>
+    <string name="max_times_played">Max times played&#8230;</string>
     <string name="desc">Desc</string>
     <string name="statistics">Statistics</string>
     <string name="not_selected">Not: %1$s</string>

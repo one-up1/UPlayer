@@ -116,6 +116,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="end|center_vertical"
+            android:padding="2dp"
             style="@style/TextAppearance.Compat.Notification" />
 
         <ImageButton

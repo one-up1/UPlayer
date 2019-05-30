@@ -67,7 +67,6 @@ public class QueryFragment extends Fragment
         bQuery.setOnLongClickListener(this);
 
         bStatistics = rootView.findViewById(R.id.bStatistics);
-        bStatistics.setOnClickListener(this);
         bStatistics.setOnLongClickListener(this);
 
         bSettings = rootView.findViewById(R.id.bSettings);
@@ -112,7 +111,7 @@ public class QueryFragment extends Fragment
 
     @Override
     public boolean onLongClick(View v) {
-        if (v == bQuery || v == bStatistics) {
+        if (v == bQuery) {
             filterFragment.setValues(new FilterFragment.Values());
         }
         return true;

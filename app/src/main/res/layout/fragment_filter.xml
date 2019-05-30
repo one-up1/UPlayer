@@ -68,23 +68,27 @@
         android:id="@+id/rgBookmarked"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingEnd="12dp">
 
         <RadioButton
-            android:layout_width="@dimen/filter_all_radio_button_width"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/all" />
 
         <RadioButton
             android:id="@+id/rbBookmarked"
-            android:layout_width="@dimen/filter_radio_button_width"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="2"
             android:text="@string/bookmarked" />
 
         <RadioButton
             android:id="@+id/rbUnbookmarked"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="2"
             android:text="@string/unbookmarked" />
 
     </RadioGroup>
@@ -93,23 +97,27 @@
         android:id="@+id/rgArchived"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingEnd="12dp">
 
         <RadioButton
-            android:layout_width="@dimen/filter_all_radio_button_width"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/all" />
 
         <RadioButton
             android:id="@+id/rbArchived"
-            android:layout_width="@dimen/filter_radio_button_width"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="2"
             android:text="@string/archived" />
 
         <RadioButton
             android:id="@+id/rbUnarchived"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="2"
             android:text="@string/unarchived" />
 
     </RadioGroup>

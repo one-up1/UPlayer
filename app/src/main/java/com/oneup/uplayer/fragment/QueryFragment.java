@@ -67,7 +67,7 @@ public class QueryFragment extends Fragment
         bQuery.setOnLongClickListener(this);
 
         bStatistics = rootView.findViewById(R.id.bStatistics);
-        bStatistics.setOnLongClickListener(this);
+        bStatistics.setOnClickListener(this);
 
         bSettings = rootView.findViewById(R.id.bSettings);
         bSettings.setOnClickListener(this);

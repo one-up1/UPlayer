@@ -92,6 +92,13 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                         });
             }
         }
+
+        if (savedInstanceState != null) {
+            filterValues = savedInstanceState.getParcelable(FilterActivity.EXTRA_VALUES);
+            filterSelection = savedInstanceState.getString(FilterActivity.EXTRA_SELECTION);
+            filterSelectionArgs = savedInstanceState.getStringArray(
+                    FilterActivity.EXTRA_SELECTION_ARGS);
+        }
     }
 
     @Override
@@ -169,6 +176,13 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                     break;
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(FilterActivity.EXTRA_VALUES, filterValues);
+        outState.putString(FilterActivity.EXTRA_SELECTION, filterSelection);
+        outState.putStringArray(FilterActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
     }
 
     @Override

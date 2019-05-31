@@ -45,11 +45,8 @@
     <string name="restore_backup_confirm">Restore backup?</string>
     <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
-    <string name="resume_offset">Seek back when resuming</string>
-    <string name="songs">Songs</string>
-    <string name="resume_offset_song">Resume offset for songs</string>
-    <string name="playlists">Playlists</string>
-    <string name="resume_offset_playlist">Resume offset for playlists</string>
+    <string name="resume_offset_category">Seek back when resuming</string>
+    <string name="resume_offset">Resume offset</string>
     <string name="in_seconds">In seconds</string>
 
     <string name="play_next">Play next</string>
@@ -121,6 +118,7 @@
     <string name="mark_played_confirm">Mark \'%1$s\' played?</string>
     <string name="times_played">Times played: %1$d</string>
 
+    <string name="restore_previous">Restore previous</string>
     <string name="shuffle">Shuffle</string>
 
     <string name="save_playlist">Save playlist</string>

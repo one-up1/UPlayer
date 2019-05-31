@@ -88,6 +88,13 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onPrepareOptionsMenu(Menu menu) {
+            super.onPrepareOptionsMenu(menu);
+            menu.findItem(R.id.restore_previous).setVisible(
+                    service != null && service.hasPrevious());
+        }
+
+        @Override
         public void onDestroy() {
             Log.d(TAG, "PlaylistActivity.onDestroy()");
             if (service != null) {
@@ -107,6 +114,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         public void onServiceUpdated() {
+            getActivity().invalidateOptionsMenu();
             notifyDataSetChanged();
         }
 
@@ -179,9 +187,11 @@ public class PlaylistActivity extends AppCompatActivity {
                         }
                     }, R.string.mark_played_confirm, song);
                     return true;
+                case R.id.restore_previous:
+                    service.restorePrevious();
+                    return true;
                 case R.id.shuffle:
-                    Collections.shuffle(getData());
-                    service.play(0);
+                    service.shuffle();
                     return true;
                 default:
                     return super.onOptionsItemSelected(item);

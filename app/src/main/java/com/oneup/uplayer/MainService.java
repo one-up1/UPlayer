@@ -28,6 +28,7 @@ import com.oneup.uplayer.util.Settings;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
@@ -71,6 +72,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private ArrayList<Song> songs;
     private Playlist playlist;
+
+    // Used for the "restore previous" option.
+    private int songIndex;
+    private int songPosition;
 
     @Override
     public void onCreate() {
@@ -206,7 +211,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     public void onPrepared(MediaPlayer player) {
         Log.d(TAG, "MainService.onPrepared()");
 
-        seekTo(playlist.getSongPosition(), R.string.key_resume_offset_playlist, true);
+        seekTo(playlist.getSongPosition(), true);
         playlist.setSongPosition(0);
 
         setVolume();
@@ -260,6 +265,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     public void play(int songIndex) {
         Log.d(TAG, "MainService.play(" + songIndex + ")");
+        setPrevious();
         playlist.setSongIndex(songIndex);
         prepare();
     }
@@ -270,6 +276,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         if (markPlayed) {
             dbHelper.updateSongPlayed(getSong());
+            songIndex = -1;
+        } else {
+            setPrevious();
         }
 
         if (hasSongsLeft()) {
@@ -331,6 +340,29 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
+    public boolean hasPrevious() {
+        return songIndex != -1;
+    }
+
+    public void restorePrevious() {
+        Log.d(TAG, "MainService.restorePrevious()");
+        Log.d(TAG, "songIndex=" + songIndex + ", songPosition=" + songPosition);
+
+        playlist.setSongIndex(songIndex);
+        playlist.setSongPosition(songPosition);
+        songIndex = -1;
+        prepare();
+    }
+
+    public void shuffle() {
+        Log.d(TAG, "MainService.shuffle()");
+        Collections.shuffle(songs);
+
+        playlist.setSongIndex(0);
+        songIndex = -1;
+        prepare();
+    }
+
     public void update() {
         update(null);
     }
@@ -370,6 +402,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         savePlaylist();
         this.songs = songs;
         this.playlist = playlist;
+        this.songIndex = -1;
         prepare();
     }
 
@@ -413,7 +446,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             update();
         } else if (prepared) {
             Log.d(TAG, "Resuming");
-            seekTo(player.getCurrentPosition(), R.string.key_resume_offset_song, false);
+            seekTo(player.getCurrentPosition(), false);
             player.start();
             update();
         } else {
@@ -450,6 +483,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         dbHelper.insertOrUpdatePlaylist(playlist, songs);
     }
 
+    private void setPrevious() {
+        Log.d(TAG, "MainService.setPrevious()");
+        songIndex = playlist.getSongIndex();
+        songPosition = player.getCurrentPosition();
+        Log.d(TAG, "songIndex=" + songIndex + ", songPosition=" + songPosition);
+    }
+
     private void prepare() {
         Log.d(TAG, "MainService.prepare()");
         prepared = completed = false;
@@ -462,10 +502,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    private void seekTo(int position, int offsetKeyId, boolean always) {
+    private void seekTo(int position, boolean always) {
         Log.d(TAG, "seekTo(" + position + ", " + always + ")");
         if (position > 0) {
-            int offset = settings.getXmlInt(offsetKeyId, 0) * 1000;
+            int offset = settings.getXmlInt(R.string.key_resume_offset, 0) * 1000;
             if (offset != 0 || always) {
                 position -= offset;
                 if (position < offset) {

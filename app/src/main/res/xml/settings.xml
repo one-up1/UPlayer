@@ -17,20 +17,12 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/resume_offset">
+    <PreferenceCategory android:title="@string/resume_offset_category">
 
         <EditTextPreference
-            android:key="@string/key_resume_offset_song"
-            android:title="@string/songs"
-            android:dialogTitle="@string/resume_offset_song"
-            android:dialogMessage="@string/in_seconds"
-            android:inputType="number"
-            android:selectAllOnFocus="true" />
-
-        <EditTextPreference
-            android:key="@string/key_resume_offset_playlist"
-            android:title="@string/playlists"
-            android:dialogTitle="@string/resume_offset_playlist"
+            android:key="@string/key_resume_offset"
+            android:title="@string/resume_offset"
+            android:dialogTitle="@string/resume_offset"
             android:dialogMessage="@string/in_seconds"
             android:inputType="number"
             android:selectAllOnFocus="true" />

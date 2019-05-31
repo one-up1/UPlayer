@@ -9,4 +9,8 @@
         android:id="@+id/shuffle"
         android:title="@string/shuffle" />
 
+    <item
+        android:id="@+id/restore_previous"
+        android:title="@string/restore_previous" />
+
 </menu>

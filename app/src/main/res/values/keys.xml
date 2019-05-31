@@ -33,6 +33,5 @@
     <string name="key_backup">backup</string>
     <string name="key_restore_backup">restore_backup</string>
 
-    <string name="key_resume_offset_song">resume_offset_song</string>
-    <string name="key_resume_offset_playlist">resume_offset_playlist</string>
+    <string name="key_resume_offset">resume_offset</string>
 </resources>

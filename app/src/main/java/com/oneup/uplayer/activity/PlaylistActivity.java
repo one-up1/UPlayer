@@ -25,7 +25,6 @@ import com.oneup.uplayer.fragment.SongsListFragment;
 import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class PlaylistActivity extends AppCompatActivity {
     private static final String TAG = "UPlayer";

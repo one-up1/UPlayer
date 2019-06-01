@@ -56,10 +56,13 @@ public class SettingsActivity extends AppCompatActivity {
         public boolean onPreferenceClick(Preference preference) {
             if (preference == pSyncDatabase) {
                 syncDatabase();
+                return true;
             } else if (preference == pBackup) {
                 backup();
+                return true;
             } else if (preference == pRestoreBackup) {
                 restoreBackup();
+                return true;
             }
             return false;
         }

@@ -306,6 +306,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             // A song below the current song is moved to or above the current song.
             playlist.incrementSongIndex();
         }
+        songIndex = -1;
         update();
     }
 
@@ -313,6 +314,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.removeSong(" + index + ")");
         Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
         songs.remove(index);
+        songIndex = -1;
 
         if (index < playlist.getSongIndex()) {
             // A song above the current song is removed.
@@ -416,6 +418,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         } else {
             this.songs.addAll(songs);
         }
+        songIndex = -1;
 
         // Update when playing or paused (prepared), or play the first added song.
         // This will start playback of the added song, if it is the first song
@@ -450,6 +453,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             player.start();
             update();
         } else {
+            songIndex = -1;
             prepare();
         }
     }

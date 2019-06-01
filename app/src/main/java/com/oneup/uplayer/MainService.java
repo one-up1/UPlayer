@@ -436,9 +436,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         startActivity(new Intent(this, EditSongActivity.class)
                 .putExtra(EditSongActivity.EXTRA_SONG, getSong())
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-
-        // Close the status bar.
-        sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
     private void pausePlay() {

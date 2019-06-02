@@ -43,7 +43,6 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.fragment_songs_list, menu);
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

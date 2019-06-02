@@ -65,7 +65,6 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.fragment_select_list, menu);
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

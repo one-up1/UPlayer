@@ -10,7 +10,6 @@ import android.widget.CalendarView;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
-import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditTime;
 
 import java.util.concurrent.TimeUnit;
@@ -59,7 +58,6 @@ public class DateTimeActivity extends AppCompatActivity
                 setResult(RESULT_OK, new Intent()
                         .putExtra(EXTRA_TIME, calendar.getTime()));
                 finish();
-                Util.hideSoftInput(this, etTime);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

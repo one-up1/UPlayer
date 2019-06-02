@@ -180,6 +180,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
         outState.putParcelable(FilterActivity.EXTRA_VALUES, filterValues);
         outState.putString(FilterActivity.EXTRA_SELECTION, filterSelection);
         outState.putStringArray(FilterActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,146 +9,152 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:focusableInTouchMode="true"
-    tools:context=".activity.EditSongActivity"
-    app:columnCount="2">
+    tools:context=".activity.EditSongActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.GridLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:labelFor="@+id/etTitle"
-        android:text="@string/edit_title" />
+        app:columnCount="2">
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        app:layout_columnWeight="1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:labelFor="@+id/etArtist"
-        android:text="@string/edit_artist" />
-
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etArtist"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        app:layout_columnWeight="1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:labelFor="@+id/etDuration"
-        android:text="@string/edit_duration" />
-
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etDuration"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        app:layout_columnWeight="1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:labelFor="@+id/etYear"
-        android:text="@string/edit_year" />
-
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etYear"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        app:layout_columnWeight="1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/edit_added" />
-
-    <Button
-        android:id="@+id/bAdded"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        app:layout_columnWeight="1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:labelFor="@+id/etTag"
-        android:text="@string/edit_tag"
-        app:layout_gravity="center_vertical" />
-
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_columnWeight="1">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/etTitle"
+            android:text="@string/edit_title" />
 
         <com.oneup.uplayer.widget.EditText
-            android:id="@+id/etTag"
+            android:id="@+id/etTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:inputType="text" />
+            android:enabled="false"
+            app:layout_columnWeight="1" />
 
-        <Spinner
-            android:id="@+id/sTag"
-            android:layout_width="96dp"
-            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/etArtist"
+            android:text="@string/edit_artist" />
 
-    </LinearLayout>
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etArtist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:layout_columnWeight="1" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/edit_bookmarked" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/etDuration"
+            android:text="@string/edit_duration" />
 
-    <Button
-        android:id="@+id/bBookmarked"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_columnWeight="1" />
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etDuration"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:layout_columnWeight="1" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/edit_archived" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/etYear"
+            android:text="@string/edit_year" />
 
-    <Button
-        android:id="@+id/bArchived"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_columnWeight="1" />
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etYear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            app:layout_columnWeight="1" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:labelFor="@+id/etLastPlayed"
-        android:text="@string/edit_last_played" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_added" />
 
-    <Button
-        android:id="@+id/bLastPlayed"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        app:layout_columnWeight="1" />
+        <Button
+            android:id="@+id/bAdded"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:layout_columnWeight="1" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:labelFor="@+id/etTimesPlayed"
-        android:text="@string/edit_times_played" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/etTag"
+            android:text="@string/edit_tag"
+            app:layout_gravity="center_vertical" />
 
-    <com.oneup.uplayer.widget.EditText
-        android:id="@+id/etTimesPlayed"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        app:layout_columnWeight="1" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_columnWeight="1">
 
-</android.support.v7.widget.GridLayout>
+            <com.oneup.uplayer.widget.EditText
+                android:id="@+id/etTag"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="text" />
+
+            <Spinner
+                android:id="@+id/sTag"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_bookmarked" />
+
+        <Button
+            android:id="@+id/bBookmarked"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_archived" />
+
+        <Button
+            android:id="@+id/bArchived"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/etLastPlayed"
+            android:text="@string/edit_last_played" />
+
+        <Button
+            android:id="@+id/bLastPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/etTimesPlayed"
+            android:text="@string/edit_times_played" />
+
+        <com.oneup.uplayer.widget.EditText
+            android:id="@+id/etTimesPlayed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:layout_columnWeight="1" />
+
+    </android.support.v7.widget.GridLayout>
+
+</ScrollView>

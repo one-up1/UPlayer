@@ -74,7 +74,6 @@ public class PlaylistActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             Log.d(TAG, "PlaylistFragment.onCreate()");
             super.onCreate(savedInstanceState);
-            setHasOptionsMenu(true);
 
             getActivity().bindService(new Intent(getActivity(), MainService.class),
                     serviceConnection, BIND_AUTO_CREATE);

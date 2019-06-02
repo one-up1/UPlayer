@@ -70,7 +70,6 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
 
         Bundle args = getArguments();
         if (args != null) {
@@ -151,6 +150,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 filterSelection = null;
                 filterSelectionArgs = null;
                 reloadData();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -27,9 +27,9 @@ public class DateTimeActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         setContentView(R.layout.activity_date_time);
         setTitle(getIntent().getIntExtra(EXTRA_TITLE_ID, 0));
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
         calendar = new Calendar();
         if (getIntent().hasExtra(EXTRA_TIME)) {

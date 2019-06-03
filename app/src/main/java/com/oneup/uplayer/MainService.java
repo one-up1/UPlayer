@@ -118,14 +118,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.drawable.ic_notification)
+                .setShowWhen(true)
                 .setCustomContentView(notificationLayout)
                 .setCustomBigContentView(notificationLayoutExpanded)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                .setOngoing(true)
-                .setShowWhen(true)
                 .setContentIntent(PendingIntent.getActivity(this, 0,
                         new Intent(this, PlaylistActivity.class),
                         PendingIntent.FLAG_UPDATE_CURRENT))
+                .setOngoing(true)
                 .build();
 
         mainReceiver = new MainReceiver();

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="song_sort_columns">
+        <item />
+        <item>Added</item>
+        <item>Last played</item>
+        <item>Times played</item>
+        <item>Duration</item>
+        <item>Year</item>
+        <item>Tag</item>
+        <item>Bookmarked</item>
+        <item>Archived</item>
+    </string-array>
+</resources>

@@ -155,16 +155,4 @@
         <item quantity="one">%1$d playlist</item>
         <item quantity="other">%1$d playlists</item>
     </plurals>
-
-    <string-array name="song_sort_columns">
-        <item />
-        <item>Added</item>
-        <item>Last played</item>
-        <item>Times played</item>
-        <item>Duration</item>
-        <item>Year</item>
-        <item>Tag</item>
-        <item>Bookmarked</item>
-        <item>Archived</item>
-    </string-array>
 </resources>

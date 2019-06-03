@@ -28,9 +28,13 @@
 
         <activity android:name=".activity.SongsActivity" />
 
-        <activity android:name=".activity.TagsActivity" />
+        <activity
+            android:name=".activity.TagsActivity"
+            android:screenOrientation="portrait" />
 
-        <activity android:name=".activity.PlaylistsActivity" />
+        <activity
+            android:name=".activity.PlaylistsActivity"
+            android:screenOrientation="portrait" />
 
         <activity android:name=".activity.PlaylistActivity" />
         <!-- android:launchMode="singleInstance" -->
@@ -49,7 +53,9 @@
             android:name=".activity.DateTimeActivity"
             android:screenOrientation="portrait" />
 
-        <activity android:name=".activity.SettingsActivity" />
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".MainService"

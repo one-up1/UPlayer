@@ -22,7 +22,6 @@
         <EditTextPreference
             android:key="@string/key_resume_offset"
             android:title="@string/resume_offset"
-            android:dialogTitle="@string/resume_offset"
             android:dialogMessage="@string/in_seconds"
             android:inputType="number"
             android:selectAllOnFocus="true" />

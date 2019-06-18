@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -139,8 +138,7 @@ public class PlaylistActivity extends AppCompatActivity {
             }
 
             // Mark the song that is being moved.
-            rootView.setBackground(position == moveIndex ?
-                    ContextCompat.getDrawable(getActivity(), R.drawable.border) : null);
+            rootView.setBackgroundResource(position == moveIndex ? R.drawable.border : 0);
 
             // Set move up/down and remove buttons.
             setListItemViewOnClickListener(rootView, R.id.ibMoveUp);

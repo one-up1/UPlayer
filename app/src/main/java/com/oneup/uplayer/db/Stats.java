@@ -141,7 +141,7 @@ public class Stats {
                 R.dimen.stats_text_padding_vertical);
         view.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
 
-        view.setBackground(ContextCompat.getDrawable(context, R.drawable.border));
+        view.setBackgroundResource(R.drawable.border);
 
         view.setText(text);
         view.setTextColor(ContextCompat.getColor(context, R.color.stats_text));

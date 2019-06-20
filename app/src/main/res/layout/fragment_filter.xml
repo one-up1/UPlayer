@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true"
     tools:context=".fragment.FilterFragment">
 
     <com.oneup.uplayer.widget.EditText
@@ -54,13 +53,15 @@
             android:id="@+id/bMinAdded"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:ignore="ButtonStyle" />
 
         <Button
             android:id="@+id/bMaxAdded"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:ignore="ButtonStyle" />
 
     </LinearLayout>
 
@@ -135,7 +136,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:maxLines="1"
-            android:ellipsize="end" />
+            android:ellipsize="end"
+            tools:ignore="ButtonStyle" />
 
         <Button
             android:id="@+id/bPlaylists"
@@ -143,7 +145,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:maxLines="1"
-            android:ellipsize="end" />
+            android:ellipsize="end"
+            tools:ignore="ButtonStyle" />
 
     </LinearLayout>
 
@@ -156,13 +159,15 @@
             android:id="@+id/bMinLastPlayed"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:ignore="ButtonStyle" />
 
         <Button
             android:id="@+id/bMaxLastPlayed"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"  />
+            android:layout_weight="1"
+            tools:ignore="ButtonStyle" />
 
     </LinearLayout>
 

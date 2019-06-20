@@ -34,7 +34,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/opt/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/image/ic_filter_none_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/usr/local/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/content/ic_select_all_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -55,8 +55,8 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="ic_clear_filter" />
-                                      <entry key="theme" value="CUSTOM" />
+                                      <entry key="outputName" value="ic_menu_select_all" />
+                                      <entry key="theme" value="HOLO_DARK" />
                                       <entry key="themeColor" value="ffffff" />
                                     </map>
                                   </option>
@@ -74,11 +74,19 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
+                                                <entry key="scalingPercent" value="89" />
+                                                <entry key="trimmed" value="true" />
                                               </map>
                                             </option>
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                    </map>
+                                  </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="backgroundAssetType" value="COLOR" />
+                                      <entry key="foregroundImage" value="$USER_HOME$/Pictures/Icons/UPlayer.png" />
                                     </map>
                                   </option>
                                 </PersistentState>

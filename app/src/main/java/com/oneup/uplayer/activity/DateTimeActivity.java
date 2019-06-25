@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CalendarView;
 
 import com.oneup.uplayer.R;
@@ -14,7 +16,7 @@ import com.oneup.uplayer.widget.EditTime;
 import java.util.concurrent.TimeUnit;
 
 public class DateTimeActivity extends AppCompatActivity
-        implements CalendarView.OnDateChangeListener {
+        implements CalendarView.OnDateChangeListener, View.OnClickListener {
     public static final String EXTRA_TITLE_ID = "com.oneup.extra.TITLE_ID";
     public static final String EXTRA_TIME = "com.oneup.extra.TIME";
 
@@ -22,6 +24,7 @@ public class DateTimeActivity extends AppCompatActivity
 
     private CalendarView cvDate;
     private EditTime etTime;
+    private Button bOk;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,9 @@ public class DateTimeActivity extends AppCompatActivity
 
         etTime = findViewById(R.id.etTime);
         etTime.setTime(calendar.getTimeOfDay());
+
+        bOk = findViewById(R.id.bOk);
+        bOk.setOnClickListener(this);
     }
 
     @Override
@@ -67,5 +73,19 @@ public class DateTimeActivity extends AppCompatActivity
         if (view == cvDate) {
             calendar.setDate(year, month, dayOfMonth);
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == bOk) {
+            ok();
+        }
+    }
+
+    private void ok() {
+        calendar.setTimeOfDay(etTime.getTime());
+        setResult(RESULT_OK, new Intent()
+                .putExtra(EXTRA_TIME, calendar.getTime()));
+        finish();
     }
 }

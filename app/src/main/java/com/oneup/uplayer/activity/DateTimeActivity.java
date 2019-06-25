@@ -58,10 +58,7 @@ public class DateTimeActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.ok:
-                calendar.setTimeOfDay(etTime.getTime());
-                setResult(RESULT_OK, new Intent()
-                        .putExtra(EXTRA_TIME, calendar.getTime()));
-                finish();
+                ok();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

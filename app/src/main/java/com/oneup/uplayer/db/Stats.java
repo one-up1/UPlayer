@@ -144,7 +144,6 @@ public class Stats {
         view.setBackgroundResource(R.drawable.border);
 
         view.setText(text);
-        view.setTextColor(ContextCompat.getColor(context, R.color.stats_text));
         view.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 context.getResources().getDimensionPixelSize(R.dimen.stats_text_size));
 

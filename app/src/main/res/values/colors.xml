@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="list_item_text">@android:color/black</color>
-    <color name="stats_text">@android:color/black</color>
-</resources>

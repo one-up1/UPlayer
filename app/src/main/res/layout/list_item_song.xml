@@ -53,7 +53,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/list_item_text_large"
-                android:textColor="@color/list_item_text"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -67,7 +66,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/list_item_text_small"
-                    android:textColor="@color/list_item_text"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -77,8 +75,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="end"
                     android:paddingStart="@dimen/list_item_info_padding_start"
-                    android:textSize="@dimen/list_item_text_small"
-                    android:textColor="@color/list_item_text" />
+                    android:textSize="@dimen/list_item_text_small" />
 
             </LinearLayout>
 

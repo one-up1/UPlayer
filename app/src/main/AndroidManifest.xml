@@ -42,6 +42,10 @@
         <!-- android:launchMode="singleInstance" -->
 
         <activity
+            android:name=".activity.StatisticsActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activity.EditSongActivity"
             android:label="@string/edit_song"
             android:screenOrientation="portrait"

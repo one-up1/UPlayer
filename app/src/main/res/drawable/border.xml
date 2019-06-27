@@ -5,7 +5,7 @@
     <solid android:color="@android:color/transparent" />
 
     <stroke
-        android:width="@dimen/stats_border_width"
+        android:width="1dp"
         android:color="@android:color/black" />
 
 </shape>

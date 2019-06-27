@@ -16,6 +16,7 @@ import android.widget.Spinner;
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.FilterActivity;
+import com.oneup.uplayer.activity.StatisticsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -132,12 +133,20 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 Util.showToast(getActivity(), R.string.playing_all_last);
                 return true;
             case R.id.statistics:
-                getDbHelper().queryStats(artist == null,
-                        filterValues == null || filterValues.getBookmarked() == 0,
-                        filterValues == null || filterValues.getArchived() == 0,
-                        getSelection(), getSelectionArgs(),
-                        filterSelection, filterSelectionArgs)
-                        .showDialog(getActivity(), artist == null ? null : artist.getArtist());
+                Intent intent = new Intent(getActivity(), StatisticsActivity.class);
+                if (artist != null) {
+                    intent.putExtra(StatisticsActivity.EXTRA_TITLE, artist.getArtist());
+                    intent.putExtra(StatisticsActivity.EXTRA_QUERY_ARTIST, false);
+                }
+                intent.putExtra(StatisticsActivity.EXTRA_QUERY_BOOKMARKED,
+                        filterValues == null || filterValues.getBookmarked() == 0);
+                intent.putExtra(StatisticsActivity.EXTRA_QUERY_ARCHIVED,
+                        filterValues == null || filterValues.getArchived() == 0);
+                intent.putExtra(StatisticsActivity.EXTRA_BASE_SELECTION, getSelection());
+                intent.putExtra(StatisticsActivity.EXTRA_BASE_SELECTION_ARGS, getSelectionArgs());
+                intent.putExtra(StatisticsActivity.EXTRA_SELECTION, filterSelection);
+                intent.putExtra(StatisticsActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
+                startActivity(intent);
                 return true;
             case R.id.filter:
                 startActivityForResult(new Intent(getActivity(), FilterActivity.class)

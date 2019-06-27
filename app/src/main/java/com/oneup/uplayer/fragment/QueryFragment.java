@@ -15,6 +15,7 @@ import android.widget.Spinner;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SettingsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
+import com.oneup.uplayer.activity.StatisticsActivity;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.util.Settings;
@@ -97,13 +98,7 @@ public class QueryFragment extends Fragment
                             filterFragment.getSelection(), filterFragment.getSelectionArgs(),
                             sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
         } else if (v == bStatistics) {
-            //FilterFragment.Values filterValues = filterFragment.getValues();
-            dbHelper.queryStats(true, true, true, null, null, null, null)
-                    /*filterValues.getBookmarked() == 0,
-                    filterValues.getArchived() == 0,
-                    null, null,
-                    filterFragment.getSelection(), filterFragment.getSelectionArgs())*/
-                    .showDialog(getActivity(), null);
+            startActivity(new Intent(getActivity(), StatisticsActivity.class));
         } else if (v == bSettings) {
             startActivity(new Intent(getActivity(), SettingsActivity.class));
         }

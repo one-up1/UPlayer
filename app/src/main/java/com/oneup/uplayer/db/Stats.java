@@ -1,10 +1,9 @@
 package com.oneup.uplayer.db;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayout;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
@@ -25,108 +24,96 @@ public class Stats {
         total = new Total();
     }
 
-    Total getGrandTotal() {
+    public boolean hasGrandTotal() {
+        return grandTotal != null;
+    }
+
+    public Total getGrandTotal() {
         if (grandTotal == null) {
             grandTotal = new Total();
         }
         return grandTotal;
     }
 
-    Total getTotal() {
+    public Total getTotal() {
         return total;
     }
 
-    Total getBookmarked() {
+    public boolean hasBookmarked() {
+        return bookmarked != null;
+    }
+
+    public Total getBookmarked() {
         if (bookmarked == null) {
             bookmarked = new Total();
         }
         return bookmarked;
     }
 
-    Total getArchived() {
+    public boolean hasArchived() {
+        return archived != null;
+    }
+
+    public Total getArchived() {
         if (archived == null) {
             archived = new Total();
         }
         return archived;
     }
 
+    public long getLastAdded() {
+        return lastAdded;
+    }
+
     void setLastAdded(long lastAdded) {
         this.lastAdded = lastAdded;
+    }
+
+    public long getLastPlayed() {
+        return lastPlayed;
     }
 
     void setLastPlayed(long lastPlayed) {
         this.lastPlayed = lastPlayed;
     }
 
+    public boolean hasTimesPlayed() {
+        return timesPlayed != 0;
+    }
+
+    public int getTimesPlayed() {
+        return timesPlayed;
+    }
+
     void setTimesPlayed(int timesPlayed) {
         this.timesPlayed = timesPlayed;
+    }
+
+    public long getPlayedDuration() {
+        return playedDuration;
     }
 
     void setPlayedDuration(long playedDuration) {
         this.playedDuration = playedDuration;
     }
 
-    public void showDialog(Context context, String title) {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
-                .setView(R.layout.dialog_stats);
-        if (title != null) {
-            dialogBuilder.setTitle(title);
-        }
-        AlertDialog dialog = dialogBuilder.show();
-        GridLayout grid = dialog.findViewById(R.id.grid);
-
-        total.addRows(context, grid,
-                R.string.stats_total, R.string.stats_rest,
-                grandTotal == null ? total : grandTotal, true, true);
-        if (bookmarked != null) {
-            bookmarked.addRows(context, grid,
-                    R.string.stats_bookmarked, R.string.stats_unbookmarked,
-                    total, true, true);
-        }
-        if (archived != null) {
-            archived.addRows(context, grid,
-                    R.string.stats_archived, R.string.stats_unarchived,
-                    total, false, true);
-        }
-
-        addRow(context, grid, R.string.stats_last_added, lastAdded);
-        addRow(context, grid, R.string.stats_last_played, lastPlayed);
-
-        if (timesPlayed > 0) {
-            addRow(context, grid, R.string.stats_times_played,
-                    timesPlayed + " (" + Util.formatDuration(playedDuration) + ")", null);
-        }
-
-        if (total.songCount > 1) {
-            addRow(context, grid, R.string.stats_avg_times_played,
-                    formatAvgTimesPlayed(timesPlayed, total.songCount),
-                    total.artistCount > 1 ?
-                            formatAvgTimesPlayed(timesPlayed, total.artistCount) : null);
-        }
-    }
-
-    private String formatAvgTimesPlayed(int timesPlayed, int total) {
-        return Util.formatFraction(timesPlayed, total) +
-                "\n" + Util.formatDuration(playedDuration / total);
-    }
-
-    private static void addRow(Context context, GridLayout grid, int labelId,
+    public static void addRow(Context context, GridLayout grid, int labelId,
                                String songs, String artists) {
-        addColumn(context, grid, context.getString(labelId), false);
-        addColumn(context, grid, songs, artists == null);
+        addColumn(context, grid, context.getString(labelId), false, true);
+        addColumn(context, grid, songs, artists == null, false);
         if (artists != null) {
-            addColumn(context, grid, artists, false);
+            addColumn(context, grid, artists, false, false);
         }
     }
 
-    private static void addRow(Context context, GridLayout grid, int labelId, long time) {
+    public static void addRow(Context context, GridLayout grid, int labelId, long time) {
         if (time != 0) {
             addRow(context, grid, labelId, Util.formatDateTimeAgo(time), null);
         }
     }
 
     private static void addColumn(Context context, GridLayout grid,
-                                  String text, boolean span) {
+                                  String text, boolean span, boolean label) {
         TextView view = new TextView(context);
 
         GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
@@ -141,11 +128,12 @@ public class Stats {
                 R.dimen.stats_text_padding_vertical);
         view.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
 
-        view.setBackgroundResource(R.drawable.border);
-
+        if (label) {
+            view.setTextAppearance(android.R.style.TextAppearance_Medium);
+        } else {
+            view.setGravity(Gravity.CENTER_VERTICAL);
+        }
         view.setText(text);
-        view.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                context.getResources().getDimensionPixelSize(R.dimen.stats_text_size));
 
         grid.addView(view);
     }
@@ -158,12 +146,16 @@ public class Stats {
         return s;
     }
 
-    class Total {
+    public class Total {
         private int songCount;
         private long songsDuration;
         private int artistCount;
 
         private Total() {
+        }
+
+        public int getSongCount() {
+            return songCount;
         }
 
         void setSongCount(int songCount) {
@@ -174,11 +166,15 @@ public class Stats {
             this.songsDuration = songsDuration;
         }
 
+        public int getArtistCount() {
+            return artistCount;
+        }
+
         void setArtistCount(int artistCount) {
             this.artistCount = artistCount;
         }
 
-        private void addRows(Context context, GridLayout grid,
+        public void addRows(Context context, GridLayout grid,
                              int labelId, int remainderLabelId,
                              Total grandTotal, boolean avg, boolean remainderAvg) {
             addRow(context, grid, labelId, grandTotal, avg);

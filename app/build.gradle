@@ -7,8 +7,8 @@ android {
         minSdkVersion 28
         //noinspection OldTargetApi
         targetSdkVersion 28
-        versionCode 424
-        versionName "9.4.424"
+        versionCode 425
+        versionName "9.4.425"
     }
     buildTypes {
         release {

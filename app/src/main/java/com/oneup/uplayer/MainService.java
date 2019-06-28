@@ -90,7 +90,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setAudioAttributes(new AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .setUsage(AudioAttributes.USAGE_MEDIA)
-                .build());
+                .build()
+        );
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);

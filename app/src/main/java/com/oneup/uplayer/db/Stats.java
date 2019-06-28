@@ -2,7 +2,6 @@ package com.oneup.uplayer.db;
 
 import android.content.Context;
 import android.support.v7.widget.GridLayout;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.TextView;
 

@@ -603,7 +603,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.ARCHIVED,
                             Song.LAST_PLAYED,
                             Song.TIMES_PLAYED
-                    });
+                    }
+            );
 
             backupTable(backup, db, TABLE_PLAYLISTS,
                     new String[]{
@@ -611,14 +612,16 @@ public class DbHelper extends SQLiteOpenHelper {
                             Playlist.NAME,
                             Playlist.SONG_INDEX,
                             Playlist.SONG_POSITION
-                    });
+                    }
+            );
 
             backupTable(backup, db, TABLE_PLAYLIST_SONGS,
                     new String[]{
                             Playlist._ID,
                             Playlist.PLAYLIST_ID,
                             Playlist.SONG_ID
-                    });
+                    }
+            );
         }
 
         // Write JSONObject to file.

@@ -38,8 +38,10 @@
             android:screenOrientation="portrait"
             android:showWhenLocked="true" />
 
-        <activity android:name=".activity.PlaylistActivity" />
-        <!-- android:launchMode="singleInstance" -->
+        <activity
+            android:name=".activity.PlaylistActivity"
+            android:showWhenLocked="true" />
+            <!-- android:launchMode="singleInstance" -->
 
         <activity
             android:name=".activity.StatisticsActivity"

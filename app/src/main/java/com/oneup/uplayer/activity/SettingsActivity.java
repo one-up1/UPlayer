@@ -7,6 +7,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
@@ -68,20 +69,25 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void syncDatabase() {
-            Util.showConfirmDialog(getActivity(),
-                    new DialogInterface.OnClickListener() {
+            Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                            getString(R.string.synchronizing_database), null, true, false);
+                    new Thread(new Runnable() {
 
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                                    getString(R.string.synchronizing_database), null, true, false);
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        DbHelper.SyncResult[] results =
-                                                dbHelper.syncWithMediaStore(getActivity());
-                                        Util.showInfoDialog(getActivity(), R.string.sync_completed,
+                        public void run() {
+                            try {
+                                final DbHelper.SyncResult[] results =
+                                        dbHelper.syncWithMediaStore(getActivity());
+                                getActivity().runOnUiThread(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        Util.showInfoDialog(getActivity(),
+                                                R.string.sync_completed,
                                                 R.string.sync_completed_message,
                                                 results[0].getRowCount(),
                                                 results[0].getRowsInserted(),
@@ -91,16 +97,24 @@ public class SettingsActivity extends AppCompatActivity {
                                                 results[1].getRowsInserted(),
                                                 results[1].getRowsUpdated(),
                                                 results[1].getRowsDeleted());
-                                    } catch (Exception ex) {
-                                        Log.e(TAG, "Error synchronizing database", ex);
-                                        Util.showErrorDialog(getActivity(), ex);
-                                    } finally {
-                                        progressDialog.dismiss();
                                     }
-                                }
-                            }).start();
+                                });
+                            } catch (final Exception ex) {
+                                Log.e(TAG, "Error synchronizing database", ex);
+                                getActivity().runOnUiThread(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        Util.showErrorDialog(getActivity(), ex);
+                                    }
+                                });
+                            } finally {
+                                progressDialog.dismiss();
+                            }
                         }
-                    }, R.string.sync_database_confirm);
+                    }).start();
+                }
+            }, R.string.sync_database_confirm);
         }
 
         private void backup() {
@@ -110,40 +124,67 @@ public class SettingsActivity extends AppCompatActivity {
                 public void run() {
                     try {
                         dbHelper.backup();
-                        Util.showToast(getActivity(), R.string.backup_completed);
-                    } catch (Exception ex) {
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(),
+                                        R.string.backup_completed,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch (final Exception ex) {
                         Log.e(TAG, "Error running backup", ex);
-                        Util.showErrorDialog(getActivity(), ex);
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Util.showErrorDialog(getActivity(), ex);
+                            }
+                        });
                     }
                 }
             }).start();
         }
 
         private void restoreBackup() {
-            Util.showConfirmDialog(getActivity(),
-                    new DialogInterface.OnClickListener() {
+            Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
+                            getString(R.string.restoring_backup), null, true, false);
+                    new Thread(new Runnable() {
 
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(),
-                                    getString(R.string.restoring_backup), null, true, false);
-                            new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                dbHelper.restoreBackup();
+                                getActivity().runOnUiThread(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    try {
-                                        dbHelper.restoreBackup();
-                                        Util.showToast(getActivity(), R.string.backup_restored);
-                                    } catch (Exception ex) {
-                                        Log.e(TAG, "Error restoring backup", ex);
-                                        Util.showErrorDialog(getActivity(), ex);
-                                    } finally {
-                                        progressDialog.dismiss();
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getActivity(),
+                                                R.string.backup_restored,
+                                                Toast.LENGTH_SHORT).show();
                                     }
-                                }
-                            }).start();
+                                });
+                            } catch (final Exception ex) {
+                                Log.e(TAG, "Error restoring backup", ex);
+                                getActivity().runOnUiThread(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        Util.showErrorDialog(getActivity(), ex);
+                                    }
+                                });
+                            } finally {
+                                progressDialog.dismiss();
+                            }
                         }
-                    }, R.string.restore_backup_confirm);
+                    }).start();
+                }
+            }, R.string.restore_backup_confirm);
         }
     }
 }

@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
@@ -223,7 +224,8 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         private void delete(final int position, final Playlist playlist) {
             if (playlist.isDefault()) {
-                Util.showToast(getActivity(), R.string.cannot_delete_default_playlist);
+                Toast.makeText(getActivity(), R.string.cannot_delete_default_playlist,
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -234,7 +236,8 @@ public class PlaylistsActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 getDbHelper().deletePlaylist(playlist);
-                                Util.showToast(getActivity(), R.string.deleted, playlist);
+                                Toast.makeText(getActivity(), getString(R.string.deleted, playlist),
+                                        Toast.LENGTH_SHORT).show();
                                 removeListItem(position);
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error deleting playlist", ex);

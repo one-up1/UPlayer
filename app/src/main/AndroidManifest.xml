@@ -35,12 +35,10 @@
 
         <activity
             android:name=".activity.PlaylistsActivity"
-            android:screenOrientation="portrait"
-            android:showWhenLocked="true" />
+            android:screenOrientation="portrait" />
 
         <activity
-            android:name=".activity.PlaylistActivity"
-            android:showWhenLocked="true" />
+            android:name=".activity.PlaylistActivity" />
             <!-- android:launchMode="singleInstance" -->
 
         <activity
@@ -50,8 +48,7 @@
         <activity
             android:name=".activity.EditSongActivity"
             android:label="@string/edit_song"
-            android:screenOrientation="portrait"
-            android:showWhenLocked="true" />
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".activity.FilterActivity"
@@ -60,8 +57,7 @@
 
         <activity
             android:name=".activity.DateTimeActivity"
-            android:screenOrientation="portrait"
-            android:showWhenLocked="true" />
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".activity.SettingsActivity"

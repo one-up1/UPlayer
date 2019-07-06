@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -126,11 +127,11 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         switch (item.getItemId()) {
             case R.id.play_next:
                 add(getData(), true);
-                Util.showToast(getActivity(), R.string.playing_all_next);
+                Toast.makeText(getActivity(), R.string.playing_all_next, Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.play_last:
                 add(getData(), false);
-                Util.showToast(getActivity(), R.string.playing_all_last);
+                Toast.makeText(getActivity(), R.string.playing_all_last, Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.statistics:
                 Intent intent = new Intent(getActivity(), StatisticsActivity.class);
@@ -293,11 +294,13 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         switch (viewId) {
             case R.id.ibPlayNext:
                 add(song, true);
-                Util.showToast(getActivity(), R.string.playing_song_next, song);
+                Toast.makeText(getActivity(), getString(R.string.playing_song_next, song),
+                        Toast.LENGTH_SHORT).show();
                 break;
             case R.id.ibPlayLast:
                 add(song, false);
-                Util.showToast(getActivity(), R.string.playing_song_last, song);
+                Toast.makeText(getActivity(), getString(R.string.playing_song_last, song),
+                        Toast.LENGTH_SHORT).show();
                 break;
         }
     }

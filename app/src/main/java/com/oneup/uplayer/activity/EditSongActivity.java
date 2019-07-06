@@ -2,6 +2,7 @@ package com.oneup.uplayer.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -48,6 +50,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private Button bArchived;
     private Button bLastPlayed;
     private EditText etTimesPlayed;
+
+    private Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +140,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 song.setTag(etTag.getString());
                 dbHelper.updateSong(song);
 
-                Util.showToast(this, R.string.song_updated);
+                Toast.makeText(this, R.string.song_updated, Toast.LENGTH_SHORT).show();
                 MainService.update(this, song);
 
                 finish();
@@ -186,13 +190,20 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                         String removed = Util.getCountString(this, deleted,
                                 true, 0, R.string.playlist_count);
 
+                        String snackbarText = null;
                         if (added != null && removed == null) {
-                            Util.showSnackbar(this, R.string.added_to_playlists, added);
+                            snackbarText = getString(R.string.added_to_playlists, added);
                         } else if (added == null && removed != null) {
-                            Util.showSnackbar(this, R.string.removed_from_playlists, removed);
+                            snackbarText = getString(R.string.removed_from_playlists, removed);
                         } else if (added != null) {
-                            Util.showSnackbar(this, R.string.added_to_and_removed_from_playlists,
+                            snackbarText = getString(R.string.added_to_and_removed_from_playlists,
                                     added, removed);
+                        }
+
+                        if (snackbarText != null) {
+                            snackbar = Snackbar.make(findViewById(android.R.id.content),
+                                    snackbarText, Snackbar.LENGTH_INDEFINITE);
+                            snackbar.show();
                         }
 
                         MainService.update(this, song);
@@ -202,6 +213,16 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                     }
                     break;
             }
+        }
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+
+        if (snackbar != null) {
+            snackbar.dismiss();
+            snackbar = null;
         }
     }
 

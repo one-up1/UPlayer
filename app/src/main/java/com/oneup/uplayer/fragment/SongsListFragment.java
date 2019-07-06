@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
@@ -84,7 +85,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                         playlist.setSongPosition(0);
                         getDbHelper().insertOrUpdatePlaylist(playlist, getData());
 
-                        Util.showToast(getActivity(), R.string.playlist_saved);
+                        Toast.makeText(getActivity(), R.string.playlist_saved,
+                                Toast.LENGTH_SHORT).show();
                         onPlaylistSelected(playlist);
                     } catch (Exception ex) {
                         Log.e(TAG, "Error saving playlist", ex);
@@ -127,8 +129,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.toggle_bookmark:
                 try {
                     song.setBookmarked(getDbHelper().toggleSongTimestamp(song, Song.BOOKMARKED));
-                    Util.showToast(getActivity(), song.getBookmarked() == 0 ?
-                            R.string.bookmark_cleared : R.string.bookmark_set);
+                    Toast.makeText(getActivity(), song.getBookmarked() == 0 ?
+                            R.string.bookmark_cleared : R.string.bookmark_set,
+                            Toast.LENGTH_SHORT).show();
                     onSongUpdated(song);
                 } catch (Exception ex) {
                     Log.e(TAG, "Error bookmarking song", ex);
@@ -138,8 +141,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.toggle_archive:
                 try {
                     song.setArchived(getDbHelper().toggleSongTimestamp(song, Song.ARCHIVED));
-                    Util.showToast(getActivity(), song.getArchived() == 0 ?
-                            R.string.song_unarchived : R.string.song_archived);
+                    Toast.makeText(getActivity(), song.getArchived() == 0 ?
+                            R.string.song_unarchived : R.string.song_archived,
+                            Toast.LENGTH_SHORT).show();
                     onSongUpdated(song);
                 } catch (Exception ex) {
                     Log.e(TAG, "Error archiving song", ex);
@@ -190,7 +194,8 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                             }
                             getDbHelper().deleteSong(song);
 
-                            Util.showToast(getActivity(), R.string.deleted, song);
+                            Toast.makeText(getActivity(), getString(R.string.deleted, song),
+                                    Toast.LENGTH_SHORT).show();
                             removeListItem(position);
                         } catch (Exception ex) {
                             Log.e(TAG, "Error deleting song", ex);

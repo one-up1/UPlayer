@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Environment;
-import android.support.design.widget.Snackbar;
 import android.text.SpannableString;
 import android.text.style.BulletSpan;
 import android.text.style.StrikethroughSpan;
@@ -16,7 +15,6 @@ import android.text.style.UnderlineSpan;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.widget.EditText;
@@ -37,8 +35,6 @@ public class Util {
     private static final NumberFormat FRACTION_FORMAT = NumberFormat.getInstance();
     private static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
 
-    private static Toast toast;
-
     static {
         TIME_NUMBER_FORMAT.setMinimumIntegerDigits(2);
         FRACTION_FORMAT.setMaximumFractionDigits(1);
@@ -51,32 +47,6 @@ public class Util {
     public static File getMusicFile(String name) {
         return new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC), name);
-    }
-
-    public static void showToast(final Activity context, final int resId,
-                                 final Object... formatArgs) {
-        context.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                // Cancel any previous toast. This will prevent many toasts from displaying for a
-                // long time when repeatingly pressing buttons that show toasts like play next/last.
-                if (toast != null) {
-                    toast.cancel();
-                }
-
-                toast = Toast.makeText(context,
-                        context.getString(resId, formatArgs),
-                        Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
-    }
-
-    public static void showSnackbar(Activity context, int resId, Object... formatArgs) {
-        Snackbar.make(context.findViewById(android.R.id.content),
-                context.getString(resId, formatArgs),
-                Snackbar.LENGTH_SHORT).show();
     }
 
     public static void showConfirmDialog(Context context, DialogInterface.OnClickListener listener,
@@ -152,8 +122,8 @@ public class Util {
         return formatFraction(value, total, PERCENT_FORMAT);
     }
 
-    public static String getCountString(Context context, int id, int quantity) {
-        return context.getResources().getQuantityString(id, quantity, quantity);
+    public static String getCountString(Context context, int id, int count) {
+        return context.getResources().getQuantityString(id, count, count);
     }
 
     public static String getCountString(Context context, ArrayList<?> list,
@@ -203,18 +173,12 @@ public class Util {
 
     private static void showDialog(final Activity context, final int iconId,
                                    final String title, final String message) {
-        context.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                new AlertDialog.Builder(context)
-                        .setIcon(iconId)
-                        .setTitle(title)
-                        .setMessage(message)
-                        .setPositiveButton(R.string.ok, null)
-                        .show();
-            }
-        });
+        new AlertDialog.Builder(context)
+                .setIcon(iconId)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(R.string.ok, null)
+                .show();
     }
 
     private static String formatDateTime(long seconds, DateFormat format) {

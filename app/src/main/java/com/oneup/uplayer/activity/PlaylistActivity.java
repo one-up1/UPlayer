@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -184,8 +185,8 @@ public class PlaylistActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 service.next(true, true);
-                                Util.showToast(getActivity(), R.string.times_played,
-                                        song.getTimesPlayed());
+                                Toast.makeText(getActivity(), getString(R.string.times_played,
+                                        song.getTimesPlayed()), Toast.LENGTH_SHORT).show();
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error marking song played", ex);
                                 Util.showErrorDialog(getActivity(), ex);

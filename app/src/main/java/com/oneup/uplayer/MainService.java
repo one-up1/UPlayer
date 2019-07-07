@@ -98,9 +98,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         volume = settings.getInt(R.string.key_volume, MAX_VOLUME);
 
-        NotificationChannel notificationChannel = new NotificationChannel(
-                TAG, TAG, NotificationManager.IMPORTANCE_LOW);
-        notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+        NotificationChannel notificationChannel = new NotificationChannel(TAG,
+                getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW);
+        notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         notificationChannel.enableVibration(false);
         notificationChannel.enableLights(false);
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))

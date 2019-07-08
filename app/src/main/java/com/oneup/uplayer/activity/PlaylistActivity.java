@@ -80,16 +80,6 @@ public class PlaylistActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onResume() {
-            Log.d(TAG, "PlaylistFragment.onResume()");
-            super.onResume();
-
-            if (service != null) {
-                setSelection();
-            }
-        }
-
-        @Override
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             inflater.inflate(R.menu.fragment_playlist, menu);
             super.onCreateOptionsMenu(menu, inflater);
@@ -253,10 +243,6 @@ public class PlaylistActivity extends AppCompatActivity {
             service.update();
         }
 
-        private void setSelection() {
-            setSelection(service.getPlaylist().getSongIndex());
-        }
-
         private static PlaylistFragment newInstance() {
             return new PlaylistFragment();
         }
@@ -277,7 +263,7 @@ public class PlaylistActivity extends AppCompatActivity {
                 service.setOnUpdateListener(PlaylistFragment.this);
 
                 reloadData();
-                setSelection();
+                setSelection(service.getPlaylist().getSongIndex());
             }
 
             @Override

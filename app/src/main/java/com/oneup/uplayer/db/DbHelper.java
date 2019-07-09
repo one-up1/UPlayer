@@ -14,20 +14,13 @@ import android.util.LongSparseArray;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
-import com.oneup.uplayer.util.Util;
+import com.oneup.util.DbUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -83,7 +76,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
-    private static final File BACKUP_FILE = Util.getMusicFile("UPlayer.json");
+    private static final String BACKUP_FILENAME = "UPlayer.json";
 
     private Context context;
 
@@ -588,10 +581,10 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public void backup() throws JSONException, IOException {
         Log.d(TAG, "DbHelper.backup()");
-        JSONObject backup = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
 
         try (SQLiteDatabase db = getReadableDatabase()) {
-            backupTable(backup, db, TABLE_SONGS,
+            DbUtils.backupTable(jsonObject, db, TABLE_SONGS,
                     new String[]{
                             Song._ID,
                             Song.TITLE,
@@ -606,7 +599,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     }
             );
 
-            backupTable(backup, db, TABLE_PLAYLISTS,
+            DbUtils.backupTable(jsonObject, db, TABLE_PLAYLISTS,
                     new String[]{
                             Playlist._ID,
                             Playlist.NAME,
@@ -615,7 +608,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     }
             );
 
-            backupTable(backup, db, TABLE_PLAYLIST_SONGS,
+            DbUtils.backupTable(jsonObject, db, TABLE_PLAYLIST_SONGS,
                     new String[]{
                             Playlist._ID,
                             Playlist.PLAYLIST_ID,
@@ -624,28 +617,18 @@ public class DbHelper extends SQLiteOpenHelper {
             );
         }
 
-        // Write JSONObject to file.
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(BACKUP_FILE, false)))) {
-            writer.write(backup.toString());
-        }
+        DbUtils.writeBackupFile(jsonObject, BACKUP_FILENAME);
     }
 
     public void restoreBackup() throws IOException, JSONException {
         Log.d(TAG, "DbHelper.restoreBackup()");
-
-        // Read JSONObject from file.
-        JSONObject backup;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new FileInputStream(BACKUP_FILE)))) {
-            backup = new JSONObject(reader.readLine());
-        }
+        JSONObject jsonObject = DbUtils.readBackupFile(BACKUP_FILENAME);
 
         try (SQLiteDatabase db = getWritableDatabase()) {
             db.beginTransaction();
             try {
                 // Restore songs table.
-                JSONArray songs = backup.getJSONArray(TABLE_SONGS);
+                JSONArray songs = jsonObject.getJSONArray(TABLE_SONGS);
                 LongSparseArray<Long> songIds = new LongSparseArray<>();
                 for (int i = 0; i < songs.length(); i++) {
                     JSONObject song = songs.getJSONObject(i);
@@ -675,7 +658,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     songIds.put(song.getLong(Song._ID), id);
 
                     // Get ContentValues from JSONObject and update row.
-                    ContentValues values = getValues(song,
+                    ContentValues values = DbUtils.getValues(song,
                             new String[]{
                                     Song.YEAR,
                                     Song.ADDED,
@@ -690,7 +673,8 @@ public class DbHelper extends SQLiteOpenHelper {
                 Log.d(TAG, songs.length() + " songs restored");
                 updateArtistStats(db, null);
 
-                restoreTable(backup, db, TABLE_PLAYLISTS, SQL_CREATE_PLAYLISTS,
+                DbUtils.restoreTable(jsonObject, db,
+                        TABLE_PLAYLISTS, SQL_CREATE_PLAYLISTS,
                         new String[]{
                                 Playlist._ID,
                                 Playlist.NAME,
@@ -699,7 +683,8 @@ public class DbHelper extends SQLiteOpenHelper {
                         },
                         null, null);
 
-                restoreTable(backup, db, TABLE_PLAYLIST_SONGS, SQL_CREATE_PLAYLIST_SONGS,
+                DbUtils.restoreTable(jsonObject, db,
+                        TABLE_PLAYLIST_SONGS, SQL_CREATE_PLAYLIST_SONGS,
                         new String[]{
                                 Playlist._ID,
                                 Playlist.PLAYLIST_ID
@@ -912,84 +897,6 @@ public class DbHelper extends SQLiteOpenHelper {
                     throw new SQLiteException("Invalid type");
             }
         }
-    }
-
-    private static void backupTable(JSONObject obj, SQLiteDatabase db,
-                                    String table, String[] columns) throws JSONException {
-        Log.d(TAG, "DbHelper.backupTable(" + table + ", " + Arrays.toString(columns) + ")");
-        JSONArray rows = new JSONArray();
-        try (Cursor c = db.query(table, columns, null, null, null, null, null)) {
-            while (c.moveToNext()) {
-                JSONObject row = new JSONObject();
-                for (int i = 0; i < columns.length; i++) {
-                    switch (c.getType(i)) {
-                        case Cursor.FIELD_TYPE_NULL:
-                            break;
-                        case Cursor.FIELD_TYPE_INTEGER:
-                            row.put(columns[i], c.getLong(i));
-                            break;
-                        case Cursor.FIELD_TYPE_STRING:
-                            row.put(columns[i], c.getString(i));
-                            break;
-                        default:
-                            throw new SQLiteException("Invalid type");
-                    }
-                }
-                rows.put(row);
-            }
-        }
-        obj.put(table, rows);
-        Log.d(TAG, rows.length() + " " + table + " rows backed up");
-    }
-
-    private static void restoreTable(JSONObject obj, SQLiteDatabase db,
-                                     String table, String sqlCreate, String[] columns,
-                                     String refIdColumn, LongSparseArray<Long> refIds)
-            throws JSONException {
-        Log.d(TAG, "DbHelper.restoreTable(" + table + ", " +
-                Arrays.toString(columns) + ", " + refIdColumn + ")");
-
-        // Recreate the table.
-        db.execSQL("DROP TABLE " + table);
-        db.execSQL(sqlCreate);
-
-        // Insert rows from JSONArray.
-        JSONArray rows = obj.getJSONArray(table);
-        for (int i = 0; i < rows.length(); i++) {
-            JSONObject row = rows.getJSONObject(i);
-            ContentValues values = getValues(row, columns);
-            if (refIdColumn != null) {
-                long rowRefId = row.getLong(refIdColumn);
-                Long refId = refIds.get(rowRefId);
-                if (refId == null) {
-                    throw new JSONException(table + "." + refIdColumn + " not found: " + rowRefId);
-                }
-                values.put(refIdColumn, refId);
-            }
-            db.insert(table, null, values);
-        }
-        Log.d(TAG, rows.length() + " " + table + " rows restored");
-    }
-
-    private static ContentValues getValues(JSONObject obj, String[] keys) throws JSONException {
-        ContentValues values = new ContentValues();
-        for (String key : keys) {
-            if (obj.has(key)) {
-                Object value = obj.get(key);
-                if (value instanceof Integer) {
-                    values.put(key, (Integer) value);
-                } else if (value instanceof Long) {
-                    values.put(key, (Long) value);
-                } else if (value instanceof String) {
-                    values.put(key, (String) value);
-                } else {
-                    throw new SQLiteException("Invalid type");
-                }
-            } else {
-                values.putNull(key);
-            }
-        }
-        return values;
     }
 
     private static void updateArtistStats(SQLiteDatabase db, Song song) {

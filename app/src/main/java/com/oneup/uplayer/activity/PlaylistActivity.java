@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -23,6 +22,7 @@ import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsListFragment;
 import com.oneup.uplayer.util.Util;
+import com.oneup.util.Utils;
 
 import java.util.ArrayList;
 
@@ -169,20 +169,20 @@ public class PlaylistActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.mark_played:
                     final Song song = service.getSong();
-                    Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+                    Utils.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 service.next(true, true);
-                                Toast.makeText(getActivity(), getString(R.string.times_played,
-                                        song.getTimesPlayed()), Toast.LENGTH_SHORT).show();
+                                Utils.showToast(getActivity(), R.string.times_played,
+                                        song.getTimesPlayed());
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error marking song played", ex);
-                                Util.showErrorDialog(getActivity(), ex);
+                                Utils.showErrorDialog(getActivity(), ex);
                             }
                         }
-                    }, R.string.mark_played_confirm, song);
+                    }, R.string.app_name, R.string.mark_played_confirm, song);
                     return true;
                 case R.id.restore_previous:
                     service.restorePrevious();

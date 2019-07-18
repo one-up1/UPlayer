@@ -13,13 +13,13 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.fragment.SelectListFragment;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
+import com.oneup.util.Utils;
 
 import java.util.ArrayList;
 
@@ -135,14 +135,14 @@ public class PlaylistsActivity extends AppCompatActivity {
                     super.onListItemClick(position, playlist);
                     break;
                 default:
-                    Util.showConfirmDialog(getActivity(),
+                    Utils.showConfirmDialog(getActivity(),
                             new DialogInterface.OnClickListener() {
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     select(playlist);
                                 }
-                            }, selectConfirmId, playlist);
+                            }, R.string.app_name, selectConfirmId, playlist);
                     break;
             }
         }
@@ -193,7 +193,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                                     reloadData();
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error adding playlist", ex);
-                                    Util.showErrorDialog(getActivity(), ex);
+                                    Utils.showErrorDialog(getActivity(), ex);
                                 }
                             }
                         }
@@ -215,7 +215,7 @@ public class PlaylistsActivity extends AppCompatActivity {
                                     reloadData();
                                 } catch (Exception ex) {
                                     Log.e(TAG, "Error renaming playlist", ex);
-                                    Util.showErrorDialog(getActivity(), ex);
+                                    Utils.showErrorDialog(getActivity(), ex);
                                 }
                             }
                         }
@@ -224,27 +224,25 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         private void delete(final int position, final Playlist playlist) {
             if (playlist.isDefault()) {
-                Toast.makeText(getActivity(), R.string.cannot_delete_default_playlist,
-                        Toast.LENGTH_SHORT).show();
+                Utils.showToast(getActivity(), R.string.cannot_delete_default_playlist);
                 return;
             }
 
-            Util.showConfirmDialog(getActivity(),
+            Utils.showConfirmDialog(getActivity(),
                     new DialogInterface.OnClickListener() {
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 getDbHelper().deletePlaylist(playlist);
-                                Toast.makeText(getActivity(), getString(R.string.deleted, playlist),
-                                        Toast.LENGTH_SHORT).show();
+                                Utils.showToast(getActivity(), R.string.deleted, playlist);
                                 removeListItem(position);
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error deleting playlist", ex);
-                                Util.showErrorDialog(getActivity(), ex);
+                                Utils.showErrorDialog(getActivity(), ex);
                             }
                         }
-                    }, R.string.delete_confirm, playlist);
+                    }, R.string.app_name, R.string.delete_confirm, playlist);
         }
 
         public static Bundle getArguments(ArrayList<Playlist> checkedPlaylists, Boolean not,

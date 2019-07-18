@@ -13,6 +13,7 @@ import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
+import com.oneup.util.Utils;
 
 import java.util.ArrayList;
 
@@ -96,7 +97,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
                             DbHelper.getWhereArgs(artist.getId())));
         } catch (Exception ex) {
             Log.e(TAG, "Error querying artist stats", ex);
-            Util.showErrorDialog(getActivity(), ex);
+            Utils.showErrorDialog(getActivity(), ex);
         }
         return true;
     }

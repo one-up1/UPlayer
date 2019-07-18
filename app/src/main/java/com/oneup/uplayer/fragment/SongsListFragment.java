@@ -14,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
@@ -23,6 +22,7 @@ import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
+import com.oneup.util.Utils;
 
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
@@ -85,8 +85,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                         playlist.setSongPosition(0);
                         getDbHelper().insertOrUpdatePlaylist(playlist, getData());
 
-                        Toast.makeText(getActivity(), R.string.playlist_saved,
-                                Toast.LENGTH_SHORT).show();
+                        Utils.showToast(getActivity(), R.string.playlist_saved);
                         onPlaylistSelected(playlist);
                     } catch (Exception ex) {
                         Log.e(TAG, "Error saving playlist", ex);
@@ -129,25 +128,23 @@ public abstract class SongsListFragment extends ListFragment<Song> {
             case R.id.toggle_bookmark:
                 try {
                     song.setBookmarked(getDbHelper().toggleSongTimestamp(song, Song.BOOKMARKED));
-                    Toast.makeText(getActivity(), song.getBookmarked() == 0 ?
-                            R.string.bookmark_cleared : R.string.bookmark_set,
-                            Toast.LENGTH_SHORT).show();
+                    Utils.showToast(getActivity(), song.getBookmarked() == 0 ?
+                            R.string.bookmark_cleared : R.string.bookmark_set);
                     onSongUpdated(song);
                 } catch (Exception ex) {
                     Log.e(TAG, "Error bookmarking song", ex);
-                    Util.showErrorDialog(getActivity(), ex);
+                    Utils.showErrorDialog(getActivity(), ex);
                 }
                 break;
             case R.id.toggle_archive:
                 try {
                     song.setArchived(getDbHelper().toggleSongTimestamp(song, Song.ARCHIVED));
-                    Toast.makeText(getActivity(), song.getArchived() == 0 ?
-                            R.string.song_unarchived : R.string.song_archived,
-                            Toast.LENGTH_SHORT).show();
+                    Utils.showToast(getActivity(), song.getArchived() == 0 ?
+                            R.string.song_unarchived : R.string.song_archived);
                     onSongUpdated(song);
                 } catch (Exception ex) {
                     Log.e(TAG, "Error archiving song", ex);
-                    Util.showErrorDialog(getActivity(), ex);
+                    Utils.showErrorDialog(getActivity(), ex);
                 }
                 break;
             case R.id.delete:
@@ -166,7 +163,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     }
 
     private void deleteSong(final int position, final Song song) {
-        Util.showConfirmDialog(getActivity(),
+        Utils.showConfirmDialog(getActivity(),
                 new DialogInterface.OnClickListener() {
 
                     @Override
@@ -194,14 +191,13 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                             }
                             getDbHelper().deleteSong(song);
 
-                            Toast.makeText(getActivity(), getString(R.string.deleted, song),
-                                    Toast.LENGTH_SHORT).show();
+                            Utils.showToast(getActivity(), R.string.deleted, song);
                             removeListItem(position);
                         } catch (Exception ex) {
                             Log.e(TAG, "Error deleting song", ex);
-                            Util.showErrorDialog(getActivity(), ex);
+                            Utils.showErrorDialog(getActivity(), ex);
                         }
                     }
-                }, R.string.delete_confirm, song);
+                }, R.string.app_name, R.string.delete_confirm, song);
     }
 }

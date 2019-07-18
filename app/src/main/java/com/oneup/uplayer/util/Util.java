@@ -1,12 +1,10 @@
 package com.oneup.uplayer.util;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
-import android.os.Environment;
 import android.text.SpannableString;
 import android.text.style.BulletSpan;
 import android.text.style.StrikethroughSpan;
@@ -19,7 +17,6 @@ import android.view.inputmethod.InputMethodManager;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.widget.EditText;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -42,35 +39,6 @@ public class Util {
     }
 
     private Util() {
-    }
-
-    public static File getMusicFile(String name) {
-        return new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC), name);
-    }
-
-    public static void showConfirmDialog(Context context, DialogInterface.OnClickListener listener,
-                                         int messageId, Object... formatArgs) {
-        new AlertDialog.Builder(context)
-                .setIcon(R.drawable.ic_dialog_warning)
-                .setTitle(R.string.app_name)
-                .setMessage(context.getString(messageId, formatArgs))
-                .setPositiveButton(R.string.yes, listener)
-                .setNegativeButton(R.string.no, null)
-                .show();
-    }
-
-    public static void showInfoDialog(Activity context, int titleId,
-                                  int messageId, Object... formatArgs) {
-        showDialog(context, R.drawable.ic_dialog_info,
-                context.getString(titleId),
-                context.getString(messageId, formatArgs));
-    }
-
-    public static void showErrorDialog(Activity context, Exception ex) {
-        showDialog(context, R.drawable.ic_dialog_error,
-                ex.getClass().getSimpleName(),
-                ex.getMessage());
     }
 
     public static void showInputDialog(Context context, int titleId, int inputType, int hintId,
@@ -169,16 +137,6 @@ public class Util {
         if (inputMethodManager != null) {
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-    }
-
-    private static void showDialog(final Activity context, final int iconId,
-                                   final String title, final String message) {
-        new AlertDialog.Builder(context)
-                .setIcon(iconId)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(R.string.ok, null)
-                .show();
     }
 
     private static String formatDateTime(long seconds, DateFormat format) {

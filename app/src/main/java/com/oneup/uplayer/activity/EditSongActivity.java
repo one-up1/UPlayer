@@ -12,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -21,6 +20,7 @@ import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.uplayer.widget.EditText;
+import com.oneup.util.Utils;
 
 import java.util.ArrayList;
 
@@ -140,7 +140,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 song.setTag(etTag.getString());
                 dbHelper.updateSong(song);
 
-                Toast.makeText(this, R.string.song_updated, Toast.LENGTH_SHORT).show();
+                Utils.showToast(this, R.string.song_updated);
                 MainService.update(this, song);
 
                 finish();
@@ -209,7 +209,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                         MainService.update(this, song);
                     } catch (Exception ex) {
                         Log.e(TAG, "Error modifying playlist songs", ex);
-                        Util.showErrorDialog(this, ex);
+                        Utils.showErrorDialog(this, ex);
                     }
                     break;
             }

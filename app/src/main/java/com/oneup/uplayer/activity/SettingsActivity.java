@@ -7,11 +7,10 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
-import com.oneup.uplayer.util.Util;
+import com.oneup.util.Utils;
 
 @SuppressWarnings("deprecation")
 public class SettingsActivity extends AppCompatActivity {
@@ -69,7 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void syncDatabase() {
-            Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+            Utils.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -86,7 +85,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                                     @Override
                                     public void run() {
-                                        Util.showInfoDialog(getActivity(),
+                                        Utils.showInfoDialog(getActivity(),
                                                 R.string.sync_completed,
                                                 R.string.sync_completed_message,
                                                 results[0].getRowCount(),
@@ -105,7 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                                     @Override
                                     public void run() {
-                                        Util.showErrorDialog(getActivity(), ex);
+                                        Utils.showErrorDialog(getActivity(), ex);
                                     }
                                 });
                             } finally {
@@ -114,7 +113,7 @@ public class SettingsActivity extends AppCompatActivity {
                         }
                     }).start();
                 }
-            }, R.string.sync_database_confirm);
+            }, R.string.app_name, R.string.sync_database_confirm);
         }
 
         private void backup() {
@@ -128,9 +127,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                             @Override
                             public void run() {
-                                Toast.makeText(getActivity(),
-                                        R.string.backup_completed,
-                                        Toast.LENGTH_SHORT).show();
+                                Utils.showToast(getActivity(), R.string.backup_completed);
                             }
                         });
                     } catch (final Exception ex) {
@@ -139,7 +136,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                             @Override
                             public void run() {
-                                Util.showErrorDialog(getActivity(), ex);
+                                Utils.showErrorDialog(getActivity(), ex);
                             }
                         });
                     }
@@ -148,7 +145,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void restoreBackup() {
-            Util.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+            Utils.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -164,9 +161,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                                     @Override
                                     public void run() {
-                                        Toast.makeText(getActivity(),
-                                                R.string.backup_restored,
-                                                Toast.LENGTH_SHORT).show();
+                                        Utils.showToast(getActivity(), R.string.backup_restored);
                                     }
                                 });
                             } catch (final Exception ex) {
@@ -175,7 +170,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                                     @Override
                                     public void run() {
-                                        Util.showErrorDialog(getActivity(), ex);
+                                        Utils.showErrorDialog(getActivity(), ex);
                                     }
                                 });
                             } finally {
@@ -184,7 +179,7 @@ public class SettingsActivity extends AppCompatActivity {
                         }
                     }).start();
                 }
-            }, R.string.restore_backup_confirm);
+            }, R.string.app_name, R.string.restore_backup_confirm);
         }
     }
 }

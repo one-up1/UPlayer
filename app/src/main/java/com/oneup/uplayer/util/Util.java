@@ -63,6 +63,7 @@ public class Util {
                 .create();
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         dialog.show();
+        view.requestFocus();
     }
 
     public static String formatDateTime(long seconds) {

@@ -79,6 +79,7 @@
     <string name="edit_archived">Archived:</string>
     <string name="edit_last_played">Last played:</string>
     <string name="edit_times_played">Times played:</string>
+    <string name="edit_comments">Comments:</string>
     <string name="select_bookmarked">Bookmarked&#8230;</string>
     <string name="select_archived">Archived&#8230;</string>
     <string name="added_to_playlists">Added to %1$s</string>

@@ -25,6 +25,7 @@ public class Song implements Parcelable,
     private long archived;
     private long lastPlayed;
     private int timesPlayed;
+    private String comments;
 
     @Override
     public int hashCode() {
@@ -73,6 +74,7 @@ public class Song implements Parcelable,
         out.writeLong(archived);
         out.writeLong(lastPlayed);
         out.writeInt(timesPlayed);
+        out.writeString(comments);
     }
 
     public long getId() {
@@ -175,6 +177,14 @@ public class Song implements Parcelable,
         this.timesPlayed = timesPlayed;
     }
 
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
     public Uri getContentUri() {
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
     }
@@ -204,6 +214,7 @@ public class Song implements Parcelable,
             song.archived = in.readLong();
             song.lastPlayed = in.readLong();
             song.timesPlayed = in.readInt();
+            song.comments = in.readString();
             return song;
         }
 

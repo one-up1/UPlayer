@@ -59,7 +59,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     Song.BOOKMARKED + " INTEGER," +
                     Song.ARCHIVED + " INTEGER," +
                     Song.LAST_PLAYED + " INTEGER," +
-                    Song.TIMES_PLAYED + " INTEGER DEFAULT 0)";
+                    Song.TIMES_PLAYED + " INTEGER DEFAULT 0," +
+                    Song.COMMENTS + " TEXT)";
 
     private static final String SQL_CREATE_PLAYLISTS =
             "CREATE TABLE " + TABLE_PLAYLISTS + "(" +
@@ -169,6 +170,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     song.setArchived(c.getLong(9));
                     song.setLastPlayed(c.getLong(10));
                     song.setTimesPlayed(c.getInt(11));
+                    song.setComments(c.getString(12));
                     songs.add(song);
                 }
             }
@@ -188,7 +190,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.BOOKMARKED,
                             Song.ARCHIVED,
                             Song.LAST_PLAYED,
-                            Song.TIMES_PLAYED
+                            Song.TIMES_PLAYED,
+                            Song.COMMENTS
                     },
                     SQL_ID_IS, getWhereArgs(song.getId()), null, null, null)) {
                 c.moveToFirst();
@@ -198,6 +201,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 song.setArchived(c.getLong(3));
                 song.setLastPlayed(c.getLong(4));
                 song.setTimesPlayed(c.getInt(5));
+                song.setComments(c.getString(6));
             }
         }
     }
@@ -227,6 +231,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 values.put(Song.TAG, song.getTag());
                 putValue(values, Song.BOOKMARKED, song.getBookmarked());
                 putValue(values, Song.ARCHIVED, song.getArchived());
+                values.put(Song.COMMENTS, song.getComments());
 
                 update(db, TABLE_SONGS, values, song.getId(), true);
                 updateArtistStats(db, song);
@@ -595,7 +600,8 @@ public class DbHelper extends SQLiteOpenHelper {
                             Song.BOOKMARKED,
                             Song.ARCHIVED,
                             Song.LAST_PLAYED,
-                            Song.TIMES_PLAYED
+                            Song.TIMES_PLAYED,
+                            Song.COMMENTS
                     }
             );
 
@@ -666,7 +672,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                     Song.BOOKMARKED,
                                     Song.ARCHIVED,
                                     Song.LAST_PLAYED,
-                                    Song.TIMES_PLAYED
+                                    Song.TIMES_PLAYED,
+                                    Song.COMMENTS
                             });
                     update(db, TABLE_SONGS, values, id, false);
                 }
@@ -1010,6 +1017,7 @@ public class DbHelper extends SQLiteOpenHelper {
     interface SongColumns extends MediaStore.Audio.AudioColumns {
         String ADDED = "added";
         String TAG = "tag";
+        String COMMENTS = "comments";
     }
 
     interface StatColumns {

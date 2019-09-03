@@ -50,6 +50,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     private Button bArchived;
     private Button bLastPlayed;
     private EditText etTimesPlayed;
+    private EditText etComments;
 
     private Snackbar snackbar;
 
@@ -117,6 +118,11 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
         etTimesPlayed = findViewById(R.id.etTimesPlayed);
         etTimesPlayed.setString(song.getTimesPlayed() +
                 " (" + Util.formatDuration(song.getTimesPlayed() * song.getDuration()) + ")");
+
+        etComments = findViewById(R.id.etComments);
+        if (song.getComments() != null) {
+            etComments.setString(song.getComments());
+        }
     }
 
     @Override
@@ -138,6 +144,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             case R.id.ok:
                 song.setYear(etYear.getInt());
                 song.setTag(etTag.getString());
+                song.setComments(etComments.getString());
                 dbHelper.updateSong(song);
 
                 Utils.showToast(this, R.string.song_updated);

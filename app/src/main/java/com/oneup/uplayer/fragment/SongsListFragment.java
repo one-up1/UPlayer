@@ -111,6 +111,16 @@ public abstract class SongsListFragment extends ListFragment<Song> {
         // Set artist.
         TextView tvArtist = rootView.findViewById(R.id.tvArtist);
         tvArtist.setText(song.getArtist());
+
+        // Set comments.
+        TextView tvComments = rootView.findViewById(R.id.tvComments);
+        String comments = song.getComments();
+        if (comments == null) {
+            tvComments.setVisibility(View.GONE);
+        } else {
+            tvComments.setText(comments);
+            tvComments.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

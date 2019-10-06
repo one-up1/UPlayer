@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.SettingsActivity;
@@ -77,12 +78,6 @@ public class QueryFragment extends Fragment
     }
 
     @Override
-    public void onDestroyView() {
-        saveQueryValues();
-        super.onDestroyView();
-    }
-
-    @Override
     public void onDestroy() {
         if (dbHelper != null) {
             dbHelper.close();
@@ -107,7 +102,7 @@ public class QueryFragment extends Fragment
     @Override
     public boolean onLongClick(View v) {
         if (v == bQuery) {
-            filterFragment.setValues(new FilterFragment.Values());
+            saveQueryValues();
         }
         return true;
     }
@@ -188,6 +183,8 @@ public class QueryFragment extends Fragment
                 .putInt(R.string.key_query_sort_column, sSortColumn.getSelectedItemPosition())
                 .putBoolean(R.string.key_query_sort_desc, cbSortDesc.isChecked())
                 .apply();
+
+        Toast.makeText(getActivity(), R.string.query_values_saved, Toast.LENGTH_SHORT).show();
     }
 
     public static QueryFragment newInstance() {

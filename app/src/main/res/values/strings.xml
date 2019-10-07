@@ -29,9 +29,12 @@
     <string name="min_times_played">Min times played&#8230;</string>
     <string name="max_times_played">Max times played&#8230;</string>
     <string name="desc">Desc</string>
+    <string name="load_query_values">Load values</string>
+    <string name="save_query_values">Save values</string>
+    <string name="query_values_saved">Query values saved</string>
+    <string name="clear_query_values">Clear values</string>
     <string name="statistics">Statistics</string>
     <string name="not_selected">Not: %1$s</string>
-    <string name="query_values_saved">Query values saved</string>
 
     <string name="settings">Settings</string>
     <string name="database">Database</string>

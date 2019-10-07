@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/load_query_values"
+        android:title="@string/load_query_values" />
+
+    <item
+        android:id="@+id/save_query_values"
+        android:title="@string/save_query_values" />
+
+    <item
+        android:id="@+id/clear_query_values"
+        android:title="@string/clear_query_values" />
+
+</menu>

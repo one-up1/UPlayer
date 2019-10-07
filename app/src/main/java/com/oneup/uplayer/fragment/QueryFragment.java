@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.PopupMenu;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -55,14 +58,10 @@ public class QueryFragment extends Fragment
         filterFragment = (FilterFragment) fragmentManager.findFragmentById(R.id.filterFragment);
         filterFragment.setShowArtistFilter(true);
         filterFragment.setSelectPlaylistConfirmId(-1);
-        filterFragment.setValues(getFilterValues());
         fragmentTransaction.commit();
 
         sSortColumn = rootView.findViewById(R.id.sSortColumn);
-        sSortColumn.setSelection(settings.getInt(R.string.key_query_sort_column, 0));
-
         cbSortDesc = rootView.findViewById(R.id.cbSortDesc);
-        cbSortDesc.setChecked(settings.getBoolean(R.string.key_query_sort_desc, false));
 
         bQuery = rootView.findViewById(R.id.bQuery);
         bQuery.setOnClickListener(this);
@@ -75,6 +74,12 @@ public class QueryFragment extends Fragment
         bSettings.setOnClickListener(this);
 
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        loadQueryValues();
     }
 
     @Override
@@ -102,88 +107,110 @@ public class QueryFragment extends Fragment
     @Override
     public boolean onLongClick(View v) {
         if (v == bQuery) {
-            saveQueryValues();
+            PopupMenu pm = new PopupMenu(getActivity(), bQuery, Gravity.END);
+            pm.getMenuInflater().inflate(R.menu.pm_query, pm.getMenu());
+            pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch (item.getItemId()) {
+                        case R.id.load_query_values:
+                            loadQueryValues();
+                            return true;
+                        case R.id.save_query_values:
+                            saveQueryValues();
+                            return true;
+                        case R.id.clear_query_values:
+                            filterFragment.setValues(new FilterFragment.Values());
+                            return true;
+                        default:
+                            return false;
+                    }
+                }
+            });
+            pm.show();
         }
         return true;
     }
 
-    private FilterFragment.Values getFilterValues() {
-        FilterFragment.Values values = new FilterFragment.Values();
+    private void loadQueryValues() {
+        FilterFragment.Values filterValues = new FilterFragment.Values();
 
-        values.setTitle(settings.getString(R.string.key_query_title, null));
-        values.setArtist(settings.getString(R.string.key_query_artist, null));
-        values.setMinYear(settings.getString(R.string.key_query_min_year, null));
-        values.setMaxYear(settings.getString(R.string.key_query_max_year, null));
-        values.setMinAdded(settings.getLong(R.string.key_query_min_added, 0));
-        values.setMaxAdded(settings.getLong(R.string.key_query_max_added, 0));
-        values.setBookmarked(settings.getInt(R.string.key_query_bookmarked, 0));
-        values.setArchived(settings.getInt(R.string.key_query_archived, 0));
+        filterValues.setTitle(settings.getString(R.string.key_query_title, null));
+        filterValues.setArtist(settings.getString(R.string.key_query_artist, null));
+        filterValues.setMinYear(settings.getString(R.string.key_query_min_year, null));
+        filterValues.setMaxYear(settings.getString(R.string.key_query_max_year, null));
+        filterValues.setMinAdded(settings.getLong(R.string.key_query_min_added, 0));
+        filterValues.setMaxAdded(settings.getLong(R.string.key_query_max_added, 0));
+        filterValues.setBookmarked(settings.getInt(R.string.key_query_bookmarked, 0));
+        filterValues.setArchived(settings.getInt(R.string.key_query_archived, 0));
 
         Set<String> tags = settings.getStringSet(R.string.key_query_tags, null);
         if (tags != null) {
-            values.getTags().addAll(tags);
+            filterValues.getTags().addAll(tags);
         }
-        values.setTagsNot(settings.getBoolean(R.string.key_query_tags_not, false));
+        filterValues.setTagsNot(settings.getBoolean(R.string.key_query_tags_not, false));
 
         Set<String> playlistIds = settings.getStringSet(R.string.key_query_playlist_ids, null);
         if (playlistIds != null) {
             for (String playlistId : playlistIds) {
                 Playlist playlist = new Playlist();
                 playlist.setId(Long.parseLong(playlistId));
-                values.getPlaylists().add(playlist);
+                filterValues.getPlaylists().add(playlist);
             }
-            if (values.getPlaylists().size() == 1) {
-                values.getPlaylists().get(0).setName(settings.getString(
+            if (filterValues.getPlaylists().size() == 1) {
+                filterValues.getPlaylists().get(0).setName(settings.getString(
                         R.string.key_query_playlist_name, null));
             }
         }
-        values.setPlaylistsNot(settings.getBoolean(R.string.key_query_playlists_not, false));
+        filterValues.setPlaylistsNot(settings.getBoolean(R.string.key_query_playlists_not, false));
 
-        values.setMinLastPlayed(settings.getLong(R.string.key_query_min_last_played, 0));
-        values.setMaxLastPlayed(settings.getLong(R.string.key_query_max_last_played, 0));
-        values.setMinTimesPlayed(settings.getString(R.string.key_query_min_times_played, null));
-        values.setMaxTimesPlayed(settings.getString(R.string.key_query_max_times_played, null));
+        filterValues.setMinLastPlayed(settings.getLong(R.string.key_query_min_last_played, 0));
+        filterValues.setMaxLastPlayed(settings.getLong(R.string.key_query_max_last_played, 0));
+        filterValues.setMinTimesPlayed(settings.getString(R.string.key_query_min_times_played, null));
+        filterValues.setMaxTimesPlayed(settings.getString(R.string.key_query_max_times_played, null));
 
-        return values;
+        filterFragment.setValues(filterValues);
+        sSortColumn.setSelection(settings.getInt(R.string.key_query_sort_column, 0));
+        cbSortDesc.setChecked(settings.getBoolean(R.string.key_query_sort_desc, false));
     }
 
     private void saveQueryValues() {
-        FilterFragment.Values values = filterFragment.getValues();
+        FilterFragment.Values filterValues = filterFragment.getValues();
 
         Set<String> playlistIds;
-        if (values.getPlaylists().isEmpty()) {
+        if (filterValues.getPlaylists().isEmpty()) {
             playlistIds = null;
         } else {
-            playlistIds = new HashSet<>(values.getPlaylists().size());
-            for (Playlist playlist : values.getPlaylists()) {
+            playlistIds = new HashSet<>(filterValues.getPlaylists().size());
+            for (Playlist playlist : filterValues.getPlaylists()) {
                 playlistIds.add(Long.toString(playlist.getId()));
             }
         }
 
         settings.edit()
-                .putString(R.string.key_query_title, values.getTitle())
-                .putString(R.string.key_query_artist, values.getArtist())
-                .putString(R.string.key_query_min_year, values.getMinYear())
-                .putString(R.string.key_query_max_year, values.getMaxYear())
-                .putLong(R.string.key_query_min_added, values.getMinAdded())
-                .putLong(R.string.key_query_max_added, values.getMaxAdded())
-                .putInt(R.string.key_query_bookmarked, values.getBookmarked())
-                .putInt(R.string.key_query_archived, values.getArchived())
-                .putStringSet(R.string.key_query_tags, values.getTags().isEmpty() ? null :
-                        new HashSet<>(values.getTags()))
-                .putBoolean(R.string.key_query_tags_not, values.isTagsNot())
+                .putString(R.string.key_query_title, filterValues.getTitle())
+                .putString(R.string.key_query_artist, filterValues.getArtist())
+                .putString(R.string.key_query_min_year, filterValues.getMinYear())
+                .putString(R.string.key_query_max_year, filterValues.getMaxYear())
+                .putLong(R.string.key_query_min_added, filterValues.getMinAdded())
+                .putLong(R.string.key_query_max_added, filterValues.getMaxAdded())
+                .putInt(R.string.key_query_bookmarked, filterValues.getBookmarked())
+                .putInt(R.string.key_query_archived, filterValues.getArchived())
+                .putStringSet(R.string.key_query_tags, filterValues.getTags().isEmpty() ? null :
+                        new HashSet<>(filterValues.getTags()))
+                .putBoolean(R.string.key_query_tags_not, filterValues.isTagsNot())
                 .putStringSet(R.string.key_query_playlist_ids, playlistIds)
-                .putString(R.string.key_query_playlist_name, values.getPlaylists().size() == 1 ?
-                        values.getPlaylists().get(0).getName() : null)
-                .putBoolean(R.string.key_query_playlists_not, values.isPlaylistsNot())
-                .putLong(R.string.key_query_min_last_played, values.getMinLastPlayed())
-                .putLong(R.string.key_query_max_last_played, values.getMaxLastPlayed())
-                .putString(R.string.key_query_min_times_played, values.getMinTimesPlayed())
-                .putString(R.string.key_query_max_times_played, values.getMaxTimesPlayed())
+                .putString(R.string.key_query_playlist_name, filterValues.getPlaylists().size() == 1 ?
+                        filterValues.getPlaylists().get(0).getName() : null)
+                .putBoolean(R.string.key_query_playlists_not, filterValues.isPlaylistsNot())
+                .putLong(R.string.key_query_min_last_played, filterValues.getMinLastPlayed())
+                .putLong(R.string.key_query_max_last_played, filterValues.getMaxLastPlayed())
+                .putString(R.string.key_query_min_times_played, filterValues.getMinTimesPlayed())
+                .putString(R.string.key_query_max_times_played, filterValues.getMaxTimesPlayed())
                 .putInt(R.string.key_query_sort_column, sSortColumn.getSelectedItemPosition())
                 .putBoolean(R.string.key_query_sort_desc, cbSortDesc.isChecked())
                 .apply();
-
         Toast.makeText(getActivity(), R.string.query_values_saved, Toast.LENGTH_SHORT).show();
     }
 

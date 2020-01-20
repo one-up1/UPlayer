@@ -525,7 +525,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void setVolume() {
         float volume = (float)
-                (1 - (Math.log(MAX_VOLUME + 1 - this.volume) / Math.log(MAX_VOLUME)));
+                (1 - (Math.log(MAX_VOLUME + 1 - (this.volume / 10f + 90)) / Math.log(MAX_VOLUME)));
         Log.d(TAG, "volume=" + this.volume + ":" + volume);
         player.setVolume(volume, volume);
     }

@@ -50,6 +50,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private static final String TAG = "UPlayer";
     private static final int MAX_VOLUME = 100;
+    private static final float VOLUME_BASE = 80;
     private static final String EXTRA_EDITED_SONG = "com.oneup.extra.EDITED_SONG";
 
     private static boolean running;
@@ -524,8 +525,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void setVolume() {
-        float volume = (float)
-                (1 - (Math.log(MAX_VOLUME + 1 - (this.volume / 10f + 90)) / Math.log(MAX_VOLUME)));
+        float volume = (float) (1 - (Math.log(MAX_VOLUME + 1 -
+                (this.volume / (MAX_VOLUME - VOLUME_BASE) + VOLUME_BASE)) / Math.log(MAX_VOLUME)));
         Log.d(TAG, "volume=" + this.volume + ":" + volume);
         player.setVolume(volume, volume);
     }

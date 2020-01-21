@@ -17,6 +17,18 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/volume">
+
+        <EditTextPreference
+            android:key="@string/key_volume_base"
+            android:title="@string/base_volume"
+            android:dialogMessage="@string/volume_min_max"
+            android:inputType="number"
+            android:defaultValue="0"
+            android:selectAllOnFocus="true" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/resume_offset_category">
 
         <EditTextPreference

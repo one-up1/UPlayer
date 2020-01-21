@@ -49,8 +49,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final int ACTION_VOLUME_UP = 9;
 
     private static final String TAG = "UPlayer";
-    private static final int MAX_VOLUME = 100;
-    private static final float VOLUME_BASE = 80;
     private static final String EXTRA_EDITED_SONG = "com.oneup.extra.EDITED_SONG";
 
     private static boolean running;
@@ -62,7 +60,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private MediaPlayer player;
     private boolean prepared, completed;
-    private int volume;
+    private int volumeBase, volume;
 
     private RemoteViews notificationLayout;
     private RemoteViews notificationLayoutExpanded;
@@ -97,7 +95,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
 
-        volume = settings.getInt(R.string.key_volume, MAX_VOLUME);
+        volumeBase = settings.getXmlInt(R.string.key_volume_base, 0);
+        if (volumeBase > 100) {
+            volumeBase = 100;
+        }
+        volume = settings.getInt(R.string.key_volume, 100);
 
         NotificationChannel notificationChannel = new NotificationChannel(TAG,
                 getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW);
@@ -469,7 +471,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void volumeUp() {
         Log.d(TAG, "MainService.volumeUp()");
-        if (volume < MAX_VOLUME) {
+        if (volume < 100) {
             setVolume(volume + 1);
         }
     }
@@ -525,9 +527,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void setVolume() {
-        float volume = (float) (1 - (Math.log(MAX_VOLUME + 1 -
-                (this.volume / (MAX_VOLUME - VOLUME_BASE) + VOLUME_BASE)) / Math.log(MAX_VOLUME)));
+        float volume = this.volume / 100f * (100 - volumeBase) + volumeBase;
         Log.d(TAG, "volume=" + this.volume + ":" + volume);
+        volume = (float) (1 - Math.log(100 + 1 - volume) / Math.log(100));
+        Log.d(TAG, "volume=" + volume);
         player.setVolume(volume, volume);
     }
 

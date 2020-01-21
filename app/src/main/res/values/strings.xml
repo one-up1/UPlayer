@@ -49,6 +49,9 @@
     <string name="restore_backup_confirm">Restore backup?</string>
     <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
+    <string name="volume">Volume</string>
+    <string name="base_volume">Base volume</string>
+    <string name="volume_min_max">0 – 100</string>
     <string name="resume_offset_category">Seek back when resuming</string>
     <string name="resume_offset">Resume offset</string>
     <string name="in_seconds">In seconds</string>

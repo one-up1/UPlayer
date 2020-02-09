@@ -244,16 +244,17 @@ public abstract class ListFragment<T>
     }
 
     protected String getOrderBy() {
+        Log.d(TAG, "sortColumn=" + sortColumn + ": " + columns[sortColumn]);
         sortColumns[0] = columns[sortColumn];
         boolean sortDesc = this.sortDesc;
 
         StringBuilder orderBy = new StringBuilder();
+        if (defaultOrderBy != null) {
+            orderBy.append(defaultOrderBy);
+        }
+
         for (String sortColumn : sortColumns) {
-            if (sortColumn == null) {
-                if (defaultOrderBy != null) {
-                    orderBy.append(defaultOrderBy);
-                }
-            } else {
+            if (sortColumn != null) {
                 if (orderBy.length() > 0) {
                     orderBy.append(',');
                 }

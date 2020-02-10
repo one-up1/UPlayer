@@ -35,9 +35,8 @@ public abstract class ListFragment<T>
     private int listItemContentId;
     private int listItemInfoId;
 
-    private String[] columns;
+    private String[] sortColumnValues;
     private String[] sortColumns;
-    private String defaultOrderBy;
 
     private DbHelper dbHelper;
     private String selection;
@@ -50,16 +49,15 @@ public abstract class ListFragment<T>
 
     protected ListFragment(int listItemResource, int listItemContextMenuResource,
                            int listItemHeaderId, int listItemContentId, int listItemInfoId,
-                           String[] columns, String[] sortColumns, String defaultOrderBy) {
+                           String[] sortColumnValues, String[] sortColumns) {
         this.listItemResource = listItemResource;
         this.listItemContextMenuResource = listItemContextMenuResource;
         this.listItemHeaderId = listItemHeaderId;
         this.listItemContentId = listItemContentId;
         this.listItemInfoId = listItemInfoId;
 
-        this.columns = columns;
+        this.sortColumnValues = sortColumnValues;
         this.sortColumns = sortColumns;
-        this.defaultOrderBy = defaultOrderBy;
     }
 
     @Override
@@ -244,21 +242,17 @@ public abstract class ListFragment<T>
     }
 
     protected String getOrderBy() {
-        Log.d(TAG, "sortColumn=" + sortColumn + ": " + columns[sortColumn]);
-        sortColumns[0] = columns[sortColumn];
+        sortColumns[0] = sortColumnValues[sortColumn];
         boolean sortDesc = this.sortDesc;
 
         StringBuilder orderBy = new StringBuilder();
-        if (defaultOrderBy != null) {
-            orderBy.append(defaultOrderBy);
-        }
-
         for (String sortColumn : sortColumns) {
             if (sortColumn != null) {
                 if (orderBy.length() > 0) {
                     orderBy.append(',');
                 }
                 orderBy.append(sortColumn);
+
                 if (sortDesc) {
                     orderBy.append(" DESC");
                     sortDesc = false;

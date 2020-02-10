@@ -77,6 +77,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
+    private static final String ORDER_BY_ARCHIVED =
+            "(CASE WHEN " + StatColumns.ARCHIVED + " IS NULL THEN 0 ELSE 1 END)";
+
     private static final String BACKUP_FILENAME = "UPlayer.json";
 
     private Context context;
@@ -109,7 +112,8 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.queryArtists(" + orderBy + ")");
         ArrayList<Artist> artists = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_ARTISTS, null, null, null, null, null, orderBy)) {
+            try (Cursor c = db.query(TABLE_ARTISTS, null, null, null, null, null,
+                    getArchivedOrderBy(orderBy))) {
                 while (c.moveToNext()) {
                     Artist artist = new Artist();
                     artist.setId(c.getLong(0));
@@ -149,13 +153,23 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    private static String getArchivedOrderBy(String orderBy) {
+        String ret = ORDER_BY_ARCHIVED;
+        if (orderBy != null) {
+            ret += "," + orderBy;
+        }
+
+        Log.d(TAG, "orderBy=" + ret);
+        return ret;
+    }
+
     public ArrayList<Song> querySongs(String selection, String[] selectionArgs, String orderBy) {
         Log.d(TAG, "DbHelper.querySongs(" + selection + ", " + Arrays.toString(selectionArgs) +
                 ", " + orderBy + ")");
         ArrayList<Song> songs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            try (Cursor c = db.query(TABLE_SONGS, null, selection, selectionArgs,
-                    null, null, orderBy)) {
+            try (Cursor c = db.query(TABLE_SONGS, null, selection, selectionArgs, null, null,
+                    getArchivedOrderBy(orderBy))) {
                 while (c.moveToNext()) {
                     Song song = new Song();
                     song.setId(c.getLong(0));

@@ -24,9 +24,6 @@ public class ArtistsFragment extends ListFragment<Artist> {
 
     private static final String TAG = "UPlayer";
 
-    private static final String DEFAULT_SORT_COLUMN =
-            "(CASE WHEN " + Artist.ARCHIVED + " IS NULL THEN 0 ELSE 1 END)";
-
     public ArtistsFragment() {
         super(R.layout.list_item_artist, 0, 0, 0, R.id.tvInfo,
                 new String[]{
@@ -38,8 +35,7 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 new String[]{
                         null,
                         Artist.ARTIST
-                },
-                DEFAULT_SORT_COLUMN);
+                });
     }
 
     @Override

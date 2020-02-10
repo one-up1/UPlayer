@@ -30,9 +30,9 @@ public abstract class SongsListFragment extends ListFragment<Song> {
     private static final int REQUEST_SELECT_PLAYLIST = 1;
 
     protected SongsListFragment(int listItemResource, int listItemHeaderId, int listItemContentId,
-                                int listItemInfoId, String[] columns, String defaultOrderBy) {
+                                int listItemInfoId, String[] sortColumnValues) {
         super(listItemResource, R.menu.list_item_song, listItemHeaderId, listItemContentId,
-                listItemInfoId, columns, null, defaultOrderBy);
+                listItemInfoId, sortColumnValues, null);
     }
 
     @Override

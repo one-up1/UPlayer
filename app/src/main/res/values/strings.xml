@@ -50,11 +50,11 @@
     <string name="restoring_backup">Restoring backup&#8230;</string>
     <string name="backup_restored">Backup restored</string>
     <string name="volume">Volume</string>
-    <string name="base_volume">Base volume</string>
-    <string name="volume_min_max">0 – 100</string>
+    <string name="max_volume">Maximum volume</string>
+    <string name="max_volume_dialog_message">A higher value will make volume control more sensitive</string>
     <string name="resume_offset_category">Seek back when resuming</string>
     <string name="resume_offset">Resume offset</string>
-    <string name="in_seconds">In seconds</string>
+    <string name="resume_offset_dialog_message">In seconds</string>
 
     <string name="play_next">Play next</string>
     <string name="play_last">Play last</string>

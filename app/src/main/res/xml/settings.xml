@@ -20,11 +20,11 @@
     <PreferenceCategory android:title="@string/volume">
 
         <EditTextPreference
-            android:key="@string/key_volume_base"
-            android:title="@string/base_volume"
-            android:dialogMessage="@string/volume_min_max"
+            android:key="@string/key_max_volume"
+            android:title="@string/max_volume"
+            android:dialogMessage="@string/max_volume_dialog_message"
             android:inputType="number"
-            android:defaultValue="0"
+            android:defaultValue="100"
             android:selectAllOnFocus="true" />
 
     </PreferenceCategory>
@@ -34,7 +34,7 @@
         <EditTextPreference
             android:key="@string/key_resume_offset"
             android:title="@string/resume_offset"
-            android:dialogMessage="@string/in_seconds"
+            android:dialogMessage="@string/resume_offset_dialog_message"
             android:inputType="number"
             android:selectAllOnFocus="true" />
 

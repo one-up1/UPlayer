@@ -33,7 +33,7 @@
     <string name="key_backup">backup</string>
     <string name="key_restore_backup">restore_backup</string>
 
-    <string name="key_volume_base">Base volume</string>
+    <string name="key_max_volume">max_volume</string>
 
     <string name="key_resume_offset">resume_offset</string>
 </resources>

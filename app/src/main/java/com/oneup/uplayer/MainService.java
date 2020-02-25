@@ -60,7 +60,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private MediaPlayer player;
     private boolean prepared, completed;
-    private int volumeBase, volume;
+    private int maxVolume, volume;
 
     private RemoteViews notificationLayout;
     private RemoteViews notificationLayoutExpanded;
@@ -95,11 +95,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
 
-        volumeBase = settings.getXmlInt(R.string.key_volume_base, 0);
-        if (volumeBase > 100) {
-            volumeBase = 100;
-        }
+        maxVolume = settings.getXmlInt(R.string.key_max_volume, 100);
         volume = settings.getInt(R.string.key_volume, 100);
+        if (volume > maxVolume) {
+            Log.d(TAG, "Volume (" + volume + ") exceeds max (" + maxVolume + ")");
+            volume = maxVolume;
+        }
 
         NotificationChannel notificationChannel = new NotificationChannel(TAG,
                 getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW);
@@ -471,7 +472,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void volumeUp() {
         Log.d(TAG, "MainService.volumeUp()");
-        if (volume < 100) {
+        if (volume < maxVolume) {
             setVolume(volume + 1);
         }
     }
@@ -527,10 +528,9 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     private void setVolume() {
-        float volume = this.volume / 100f * (100 - volumeBase) + volumeBase;
-        Log.d(TAG, "volume=" + this.volume + ":" + volume);
-        volume = (float) (1 - Math.log(100 + 1 - volume) / Math.log(100));
-        Log.d(TAG, "volume=" + volume);
+        float volume = (float)
+                (1 - (Math.log(maxVolume + 1 - this.volume) / Math.log(maxVolume)));
+        Log.d(TAG, "volume=" + this.volume + ":" + volume + " (max=" + maxVolume + ")");
         player.setVolume(volume, volume);
     }
 

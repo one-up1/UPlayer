@@ -301,7 +301,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected void onSongUpdated(Song song) {
-        MainService.update(getActivity(), song);
+        MainService.update(getActivity(), false, song);
         reloadData();
     }
 

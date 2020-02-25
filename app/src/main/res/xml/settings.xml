@@ -24,7 +24,7 @@
             android:title="@string/max_volume"
             android:dialogMessage="@string/max_volume_dialog_message"
             android:inputType="number"
-            android:defaultValue="100"
+            android:defaultValue="25"
             android:selectAllOnFocus="true" />
 
     </PreferenceCategory>

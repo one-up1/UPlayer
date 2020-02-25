@@ -9,6 +9,7 @@ import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.util.Settings;
@@ -31,22 +32,24 @@ public class SettingsActivity extends AppCompatActivity {
     // Use deprecated PreferenceFragment because PreferenceFragmentCompat has issues with EditTextPreference inputType.
     public static class SettingsFragment extends PreferenceFragment
             implements Preference.OnPreferenceClickListener  {
-        private DbHelper dbHelper;
         private Settings settings;
+        private int maxVolume;
+
+        private DbHelper dbHelper;
 
         private Preference pSyncDatabase;
         private Preference pBackup;
         private Preference pRestoreBackup;
-
-        private int maxVolume;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
 
-            dbHelper = new DbHelper(getActivity());
             settings = Settings.get(getActivity());
+            maxVolume = settings.getXmlInt(R.string.key_max_volume, Settings.DEFAULT_VOLUME);
+
+            dbHelper = new DbHelper(getActivity());
 
             pSyncDatabase = findPreference(getString(R.string.key_sync_database));
             pSyncDatabase.setOnPreferenceClickListener(this);
@@ -56,17 +59,16 @@ public class SettingsActivity extends AppCompatActivity {
 
             pRestoreBackup = findPreference(getString(R.string.key_restore_backup));
             pRestoreBackup.setOnPreferenceClickListener(this);
-
-            maxVolume = settings.getXmlInt(R.string.key_max_volume, 100);
         }
 
         @Override
         public void onDestroy() {
-            // Scale previous volume based on new and previous maxVolume if changed.
-            int maxVolume = Integer.parseInt(((EditTextPreference)
-                    findPreference(getString(R.string.key_max_volume))).getText());
+            // Update saved volume scaled to new maxVolume if changed.
+            String sMaxVolume = ((EditTextPreference)
+                    findPreference(getString(R.string.key_max_volume))).getText();
+            int maxVolume = sMaxVolume.isEmpty() ? 0 : Integer.parseInt(sMaxVolume);
             if (maxVolume != this.maxVolume) {
-                int volume = settings.getInt(R.string.key_volume, 100);
+                int volume = settings.getInt(R.string.key_volume, Settings.DEFAULT_VOLUME);
                 Log.d(TAG, "maxVolume updated from " + this.maxVolume + " to " + maxVolume +
                         ", volume=" + volume);
 
@@ -76,6 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
                 settings.edit().putInt(R.string.key_volume, volume).apply();
             }
 
+            MainService.update(getActivity(), true, null);
             super.onDestroy();
         }
 

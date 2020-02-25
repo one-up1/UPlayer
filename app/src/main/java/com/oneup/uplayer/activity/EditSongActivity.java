@@ -148,7 +148,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                 dbHelper.updateSong(song);
 
                 Utils.showToast(this, R.string.song_updated);
-                MainService.update(this, song);
+                MainService.update(this, false, song);
 
                 finish();
                 return true;
@@ -213,7 +213,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
                             snackbar.show();
                         }
 
-                        MainService.update(this, song);
+                        MainService.update(this, false, song);
                     } catch (Exception ex) {
                         Log.e(TAG, "Error modifying playlist songs", ex);
                         Utils.showErrorDialog(this, ex);

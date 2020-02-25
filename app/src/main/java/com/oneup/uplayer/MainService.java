@@ -49,6 +49,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final int ACTION_VOLUME_UP = 9;
 
     private static final String TAG = "UPlayer";
+    private static final String EXTRA_LOAD_SETTINGS = "com.oneup.extra.LOAD_SETTINGS";
     private static final String EXTRA_EDITED_SONG = "com.oneup.extra.EDITED_SONG";
 
     private static boolean running;
@@ -56,11 +57,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private final IBinder mainBinder = new MainBinder();
 
     private Settings settings;
+    private int volume;
+    private int maxVolume;
+    private int resumeOffset;
+
     private DbHelper dbHelper;
 
     private MediaPlayer player;
-    private boolean prepared, completed;
-    private int maxVolume, volume;
+    private boolean prepared;
+    private boolean completed;
 
     private RemoteViews notificationLayout;
     private RemoteViews notificationLayoutExpanded;
@@ -82,6 +87,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         super.onCreate();
 
         settings = Settings.get(this);
+        loadSettings();
+
         dbHelper = new DbHelper(this);
 
         player = new MediaPlayer();
@@ -94,13 +101,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
-
-        maxVolume = settings.getXmlInt(R.string.key_max_volume, 100);
-        volume = settings.getInt(R.string.key_volume, 100);
-        if (volume > maxVolume) {
-            Log.d(TAG, "Volume (" + volume + ") exceeds max (" + maxVolume + ")");
-            volume = maxVolume;
-        }
 
         NotificationChannel notificationChannel = new NotificationChannel(TAG,
                 getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW);
@@ -160,7 +160,8 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                         intent.getBooleanExtra(EXTRA_NEXT, false));
                 break;
             case ACTION_UPDATE:
-                update((Song) intent.getParcelableExtra(EXTRA_EDITED_SONG));
+                update(intent.getBooleanExtra(EXTRA_LOAD_SETTINGS, false),
+                        (Song) intent.getParcelableExtra(EXTRA_EDITED_SONG));
                 break;
             case ACTION_EDIT_SONG:
                 editSong();
@@ -371,7 +372,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     }
 
     public void update() {
-        update(null);
+        update(false, null);
     }
 
     public void stop() {
@@ -382,6 +383,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     public void setOnUpdateListener(OnUpdateListener onUpdateListener) {
         this.onUpdateListener = onUpdateListener;
+    }
+
+    private void loadSettings() {
+        volume = settings.getInt(R.string.key_volume, Settings.DEFAULT_VOLUME);
+        maxVolume = settings.getXmlInt(R.string.key_max_volume, Settings.DEFAULT_VOLUME);
+        resumeOffset = settings.getXmlInt(R.string.key_resume_offset, 0) * 1000;
+
+        Log.d(TAG, "volume=" + volume +
+                ", maxVolume=" + maxVolume +
+                ", resumeOffset=" + resumeOffset);
     }
 
     private void play(ArrayList<Song> songs, Playlist playlist) {
@@ -514,14 +525,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void seekTo(int position, boolean always) {
         Log.d(TAG, "seekTo(" + position + ", " + always + ")");
         if (position > 0) {
-            int offset = settings.getXmlInt(R.string.key_resume_offset, 0) * 1000;
-            if (offset != 0 || always) {
-                position -= offset;
-                if (position < offset) {
+            if (resumeOffset != 0 || always) {
+                position -= resumeOffset;
+                if (position < resumeOffset) {
                     position = 0;
                 }
 
-                Log.d(TAG, "Seeking to position: " + position + " (offset=" + offset + ")");
+                Log.d(TAG, "Seeking to position: " + position +
+                        " (resumeOffset=" + resumeOffset + ")");
                 player.seekTo(position);
             }
         }
@@ -530,7 +541,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private void setVolume() {
         float volume = (float)
                 (1 - (Math.log(maxVolume + 1 - this.volume) / Math.log(maxVolume)));
-        Log.d(TAG, "volume=" + this.volume + ":" + volume + " (max=" + maxVolume + ")");
+        Log.d(TAG, "volume=" + volume);
         player.setVolume(volume, volume);
     }
 
@@ -543,9 +554,15 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         settings.edit().putInt(R.string.key_volume, volume).apply();
     }
 
-    private void update(Song editedSong) {
-        Log.d(TAG, "MainService.update(" + editedSong + ")");
+    private void update(boolean loadSettings, Song editedSong) {
+        Log.d(TAG, "MainService.update(" + loadSettings + ", " + editedSong + ")");
         Log.d(TAG, songs.size() + " songs, songIndex=" + playlist.getSongIndex());
+
+        // Reload settings when changed.
+        if (loadSettings) {
+            loadSettings();
+            setVolume();
+        }
 
         // Replace any edited song in the playlist if it is not the current song.
         if (editedSong != null) {
@@ -640,14 +657,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         }
     }
 
-    public static void update(Context context, Song editedSong) {
+    public static void update(Context context, boolean loadSettings, Song editedSong) {
         if (running) {
-            Intent intent = new Intent(context, MainService.class)
-                    .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_UPDATE);
-            if (editedSong != null) {
-                intent.putExtra(EXTRA_EDITED_SONG, editedSong);
-            }
-            context.startForegroundService(intent);
+            context.startForegroundService(new Intent(context, MainService.class)
+                    .putExtra(EXTRA_ACTION, ACTION_UPDATE)
+                    .putExtra(EXTRA_LOAD_SETTINGS, loadSettings)
+                    .putExtra(EXTRA_EDITED_SONG, editedSong));
         }
     }
 

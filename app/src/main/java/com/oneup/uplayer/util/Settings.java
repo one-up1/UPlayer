@@ -8,6 +8,8 @@ import android.text.TextUtils;
 import java.util.Set;
 
 public class Settings {
+    public static final int DEFAULT_VOLUME = 25; // Also set in settings.xml.
+
     private Context context;
     private SharedPreferences settings;
 

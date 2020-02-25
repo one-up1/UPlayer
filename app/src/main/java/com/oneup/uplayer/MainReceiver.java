@@ -8,7 +8,6 @@ import android.util.Log;
 import com.oneup.uplayer.activity.PlaylistActivity;
 import com.oneup.uplayer.util.Settings;
 
-//FIXME: Service is sometimes killed immediately after start.
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
     private static final String STATE = "state";
@@ -39,7 +38,7 @@ public class MainReceiver extends BroadcastReceiver {
 
     private void screenOn() {
         Log.d(TAG, "MainReceiver.screenOn()");
-        MainService.update(context, null);
+        MainService.update(context, false, null);
     }
 
     private void headsetPlug(int state) {

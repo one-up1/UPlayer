@@ -387,7 +387,13 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
     private void loadSettings() {
         volume = settings.getInt(R.string.key_volume, Settings.DEFAULT_VOLUME);
+        if (volume < 1) {
+            volume = 1;
+        }
         maxVolume = settings.getXmlInt(R.string.key_max_volume, Settings.DEFAULT_VOLUME);
+        if (maxVolume < 3) {
+            maxVolume = 3;
+        }
         resumeOffset = settings.getXmlInt(R.string.key_resume_offset, 0) * 1000;
 
         Log.d(TAG, "volume=" + volume +

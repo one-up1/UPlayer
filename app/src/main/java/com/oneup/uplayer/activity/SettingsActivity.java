@@ -3,6 +3,7 @@ package com.oneup.uplayer.activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.util.Log;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.util.Settings;
 import com.oneup.util.Utils;
 
 @SuppressWarnings("deprecation")
@@ -30,10 +32,13 @@ public class SettingsActivity extends AppCompatActivity {
     public static class SettingsFragment extends PreferenceFragment
             implements Preference.OnPreferenceClickListener  {
         private DbHelper dbHelper;
+        private Settings settings;
 
         private Preference pSyncDatabase;
         private Preference pBackup;
         private Preference pRestoreBackup;
+
+        private int maxVolume;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,7 @@ public class SettingsActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.settings);
 
             dbHelper = new DbHelper(getActivity());
+            settings = Settings.get(getActivity());
 
             pSyncDatabase = findPreference(getString(R.string.key_sync_database));
             pSyncDatabase.setOnPreferenceClickListener(this);
@@ -50,6 +56,27 @@ public class SettingsActivity extends AppCompatActivity {
 
             pRestoreBackup = findPreference(getString(R.string.key_restore_backup));
             pRestoreBackup.setOnPreferenceClickListener(this);
+
+            maxVolume = settings.getXmlInt(R.string.key_max_volume, 100);
+        }
+
+        @Override
+        public void onDestroy() {
+            // Scale previous volume based on new and previous maxVolume if changed.
+            int maxVolume = Integer.parseInt(((EditTextPreference)
+                    findPreference(getString(R.string.key_max_volume))).getText());
+            if (maxVolume != this.maxVolume) {
+                int volume = settings.getInt(R.string.key_volume, 100);
+                Log.d(TAG, "maxVolume updated from " + this.maxVolume + " to " + maxVolume +
+                        ", volume=" + volume);
+
+                volume = (int) (((double) volume / this.maxVolume) * maxVolume);
+                Log.d(TAG, "volume=" + volume);
+
+                settings.edit().putInt(R.string.key_volume, volume).apply();
+            }
+
+            super.onDestroy();
         }
 
         @Override

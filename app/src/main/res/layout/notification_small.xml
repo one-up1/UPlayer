@@ -2,13 +2,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:weightSum="10"
     android:baselineAligned="false">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="7"
         android:orientation="vertical">
 
         <TextView
@@ -29,29 +27,27 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvVolume"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="3"
-        android:orientation="vertical"
-        android:gravity="end|bottom">
+        android:layout_weight="1"
+        android:gravity="end|center_vertical"
+        android:padding="2dp"
+        style="@style/TextAppearance.Compat.Notification" />
 
-        <TextView
-            android:id="@+id/tvSongTag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="end"
-            style="@style/TextAppearance.Compat.Notification.Info" />
+    <ImageButton
+        android:id="@+id/ibVolumeDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_notification_volume_down"
+        android:contentDescription="@string/volume_down" />
 
-        <TextView
-            android:id="@+id/tvSongPlaylistNames"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="end"
-            style="@style/TextAppearance.Compat.Notification.Info" />
-
-    </LinearLayout>
+    <ImageButton
+        android:id="@+id/ibVolumeUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_notification_volume_up"
+        android:contentDescription="@string/volume_up" />
 
 </LinearLayout>

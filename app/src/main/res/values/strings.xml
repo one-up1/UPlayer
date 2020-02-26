@@ -107,6 +107,8 @@
 
     <string name="playlist_position">%1$d of %2$d (%3$s left)</string>
     <string name="pause_play">Pause / Play</string>
+    <string name="volume_down">Volume down</string>
+    <string name="volume_up">Volume up</string>
     <string name="next">Next</string>
     <string name="stop">Stop</string>
 

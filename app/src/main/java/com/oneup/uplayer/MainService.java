@@ -114,12 +114,12 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 R.layout.notification_small);
         notificationLayoutExpanded = new RemoteViews(getApplicationContext().getPackageName(),
                 R.layout.notification_large);
-        setOnClickPendingIntent(R.id.ibEditSong, ACTION_EDIT_SONG);
-        setOnClickPendingIntent(R.id.ibPausePlay, ACTION_PAUSE_PLAY);
-        setOnClickPendingIntent(R.id.ibNext, ACTION_NEXT);
-        setOnClickPendingIntent(R.id.ibStop, ACTION_STOP);
-        setOnClickPendingIntent(R.id.ibVolumeDown, ACTION_VOLUME_DOWN);
-        setOnClickPendingIntent(R.id.ibVolumeUp, ACTION_VOLUME_UP);
+        setOnClickPendingIntent(false, R.id.ibEditSong, ACTION_EDIT_SONG);
+        setOnClickPendingIntent(false, R.id.ibPausePlay, ACTION_PAUSE_PLAY);
+        setOnClickPendingIntent(false, R.id.ibNext, ACTION_NEXT);
+        setOnClickPendingIntent(false, R.id.ibStop, ACTION_STOP);
+        setOnClickPendingIntent(true, R.id.ibVolumeDown, ACTION_VOLUME_DOWN);
+        setOnClickPendingIntent(true, R.id.ibVolumeUp, ACTION_VOLUME_UP);
 
         notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -578,42 +578,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Song song = getSong();
         dbHelper.querySong(song);
 
-        // Update notification views with the information that is displayed in both layouts.
-        updateNotification(notificationLayout, song);
-        updateNotification(notificationLayoutExpanded, song);
-
-        // Set playlist position with song index, song count, songs left and time left.
-        String left = Util.formatDuration(
-                Song.getDuration(songs, playlist.getSongIndex()) - player.getCurrentPosition());
-        if (hasSongsLeft()) {
-            left = (songs.size() - playlist.getSongIndex() - 1) + " / " + left;
-        }
-        notificationLayoutExpanded.setTextViewText(R.id.tvPlaylistPosition, getString(
-                R.string.playlist_position, playlist.getSongIndex() + 1, songs.size(), left));
-
-        // Set song year.
-        setOptionalValue(notificationLayoutExpanded, R.id.tvSongYear,
-                song.getYear() == 0 ? null : Integer.toString(song.getYear()));
-
-        // Set play/pause image and volume.
-        notificationLayoutExpanded.setImageViewResource(R.id.ibPausePlay,
-                prepared && player.isPlaying()
-                        ? R.drawable.ic_notification_pause
-                        : R.drawable.ic_notification_play);
-        notificationLayoutExpanded.setTextViewText(R.id.tvVolume, Integer.toString(volume));
-
-        // Update notification and PlaylistActivity.
-        startForeground(1, notification);
-        if (onUpdateListener != null) {
-            onUpdateListener.onServiceUpdated();
-        }
-    }
-
-    private void updateNotification(RemoteViews view, Song song) {
         // Set song title, artist and tag.
-        view.setTextViewText(R.id.tvSongTitle, song.getStyledTitle());
-        view.setTextViewText(R.id.tvSongArtist, song.getArtist());
-        setOptionalValue(view, R.id.tvSongTag, song.getTag());
+        setTextViewText(true, R.id.tvSongTitle, song.getStyledTitle());
+        setTextViewText(true, R.id.tvSongArtist, song.getArtist());
+        setTextViewText(false, R.id.tvSongTag, song.getTag());
 
         // Set the names of the playlists the song is on, marking the current playlist.
         SpannableStringBuilder playlistNames = new SpannableStringBuilder();
@@ -632,23 +600,59 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 }
             }
         }
-        setOptionalValue(view, R.id.tvSongPlaylistNames,
+        setTextViewText(false, R.id.tvSongPlaylistNames,
                 playlistNames.length() == 0 ? null : playlistNames);
+
+        // Set playlist position with song index, song count, songs left and time left.
+        String left = Util.formatDuration(
+                Song.getDuration(songs, playlist.getSongIndex()) - player.getCurrentPosition());
+        if (hasSongsLeft()) {
+            left = (songs.size() - playlist.getSongIndex() - 1) + " / " + left;
+        }
+        setTextViewText(false, R.id.tvPlaylistPosition, getString(
+                R.string.playlist_position, playlist.getSongIndex() + 1, songs.size(), left));
+
+        // Set song year.
+        setTextViewText(false, R.id.tvSongYear,
+                song.getYear() == 0 ? null : Integer.toString(song.getYear()));
+
+        // Set play/pause image and volume.
+        notificationLayoutExpanded.setImageViewResource(R.id.ibPausePlay,
+                prepared && player.isPlaying()
+                        ? R.drawable.ic_notification_pause
+                        : R.drawable.ic_notification_play);
+        setTextViewText(true, R.id.tvVolume, Integer.toString(volume));
+
+        // Update notification and PlaylistActivity.
+        startForeground(1, notification);
+        if (onUpdateListener != null) {
+            onUpdateListener.onServiceUpdated();
+        }
     }
 
     private boolean hasSongsLeft() {
         return playlist.getSongIndex() < songs.size() - 1;
     }
 
-    private void setOnClickPendingIntent(int viewId, int action) {
-        notificationLayoutExpanded.setOnClickPendingIntent(viewId,
-                PendingIntent.getService(this, action,
-                        new Intent(this, MainService.class)
-                                .putExtra(EXTRA_ACTION, action),
-                        PendingIntent.FLAG_UPDATE_CURRENT));
+    private void setOnClickPendingIntent(boolean unexpanded, int viewId, int action) {
+        PendingIntent pendingIntent = PendingIntent.getService(this, action,
+                new Intent(this, MainService.class)
+                        .putExtra(EXTRA_ACTION, action),
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        if (unexpanded) {
+            notificationLayout.setOnClickPendingIntent(viewId, pendingIntent);
+        }
+        notificationLayoutExpanded.setOnClickPendingIntent(viewId, pendingIntent);
     }
 
-    private static void setOptionalValue(RemoteViews view, int viewId, CharSequence text) {
+    private void setTextViewText(boolean unexpanded, int viewId, CharSequence text) {
+        if (unexpanded) {
+            setTextViewText(notificationLayout, viewId, text);
+        }
+        setTextViewText(notificationLayoutExpanded, viewId, text);
+    }
+
+    private static void setTextViewText(RemoteViews view, int viewId, CharSequence text) {
         if (text == null) {
             view.setViewVisibility(viewId, View.GONE);
         } else {

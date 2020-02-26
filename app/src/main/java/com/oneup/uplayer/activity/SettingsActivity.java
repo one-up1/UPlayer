@@ -15,7 +15,7 @@ import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.util.Settings;
 import com.oneup.util.Utils;
 
-//TODO: Validation for maxVolume, should not be < 3.
+//TODO: Validation for maxVolume, MainService.setVolume() has issues with values < 3.
 
 @SuppressWarnings("deprecation")
 public class SettingsActivity extends AppCompatActivity {

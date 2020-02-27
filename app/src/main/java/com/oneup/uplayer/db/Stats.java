@@ -145,7 +145,7 @@ public class Stats {
         return s;
     }
 
-    public class Total {
+    public static class Total {
         private int songCount;
         private long songsDuration;
         private int artistCount;

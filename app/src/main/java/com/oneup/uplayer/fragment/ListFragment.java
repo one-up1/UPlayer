@@ -20,7 +20,7 @@ import com.oneup.uplayer.db.DbHelper;
 import java.util.ArrayList;
 
 public abstract class ListFragment<T>
-        extends android.support.v4.app.ListFragment
+        extends androidx.fragment.app.ListFragment
         implements ListView.OnItemLongClickListener, View.OnClickListener {
     protected static final String ARG_SELECTION = "selection";
     protected static final String ARG_SELECTION_ARGS = "selection_args";

@@ -3,6 +3,7 @@ package com.oneup.uplayer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.oneup.uplayer.activity.PlaylistActivity;
@@ -10,6 +11,8 @@ import com.oneup.uplayer.util.Settings;
 
 public class MainReceiver extends BroadcastReceiver {
     private static final String TAG = "UPlayer";
+
+    private static final String ACTION_PHONE_STATE = "android.intent.action.PHONE_STATE";
     private static final String STATE = "state";
 
     private Context context;
@@ -33,6 +36,9 @@ public class MainReceiver extends BroadcastReceiver {
             case Intent.ACTION_HEADSET_PLUG:
                 headsetPlug(intent.getIntExtra(STATE, -1));
                 break;
+            case ACTION_PHONE_STATE:
+                phoneState(intent.getStringExtra(STATE));
+                break;
         }
     }
 
@@ -54,5 +60,12 @@ public class MainReceiver extends BroadcastReceiver {
         }
 
         settings.edit().putInt(R.string.key_headset_state, state).apply();
+    }
+
+    private void phoneState(String state) {
+        Log.d(TAG, "MainReceiver.phoneState(" + state + ")");
+        if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
+            MainService.pause(context);
+        }
     }
 }

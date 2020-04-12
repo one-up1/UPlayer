@@ -52,10 +52,15 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.addOnTabSelectedListener(this);
 
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-                PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Requesting WRITE_EXTERNAL_STORAGE permission");
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+        if (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) &&
+                hasPermission(Manifest.permission.READ_PHONE_STATE)) {
+            Log.d(TAG, "Permissions granted");
+        } else {
+            Log.d(TAG, "Requesting permissions");
+            requestPermissions(new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_PHONE_STATE
+            }, 0);
         }
     }
 
@@ -91,6 +96,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         if (fragment instanceof ListFragment) {
             ((ListFragment) fragment).reverseSortOrder();
         }
+    }
+
+    private boolean hasPermission(String permission) {
+        return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {

@@ -49,8 +49,10 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     private static final int ACTION_VOLUME_UP = 9;
 
     private static final String TAG = "UPlayer";
+
     private static final String EXTRA_LOAD_SETTINGS = "com.oneup.extra.LOAD_SETTINGS";
     private static final String EXTRA_EDITED_SONG = "com.oneup.extra.EDITED_SONG";
+    private static final String EXTRA_PLAY = "com.oneup.extra.PLAY";
 
     private static boolean running;
 
@@ -167,7 +169,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 editSong();
                 break;
             case ACTION_PAUSE_PLAY:
-                pausePlay();
+                pausePlay(intent.getBooleanExtra(EXTRA_PLAY, true));
                 break;
             case ACTION_NEXT:
                 next(false, false);
@@ -457,20 +459,22 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
-    private void pausePlay() {
-        Log.d(TAG, "MainService.pausePlay()");
+    private void pausePlay(boolean play) {
+        Log.d(TAG, "MainService.pausePlay(" + play + ")");
         if (player.isPlaying()) {
             Log.d(TAG, "Pausing");
             player.pause();
             update();
-        } else if (prepared) {
-            Log.d(TAG, "Resuming");
-            seekTo(player.getCurrentPosition(), false);
-            player.start();
-            update();
-        } else {
-            songIndex = -1;
-            prepare();
+        } else if (play) {
+            if (prepared) {
+                Log.d(TAG, "Resuming");
+                seekTo(player.getCurrentPosition(), false);
+                player.start();
+                update();
+            } else {
+                songIndex = -1;
+                prepare();
+            }
         }
     }
 
@@ -667,6 +671,14 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                     .putExtra(EXTRA_ACTION, ACTION_UPDATE)
                     .putExtra(EXTRA_LOAD_SETTINGS, loadSettings)
                     .putExtra(EXTRA_EDITED_SONG, editedSong));
+        }
+    }
+
+    public static void pause(Context context) {
+        if (running) {
+            context.startForegroundService(new Intent(context, MainService.class)
+                    .putExtra(EXTRA_ACTION, ACTION_PAUSE_PLAY)
+                    .putExtra(EXTRA_PLAY, false));
         }
     }
 

@@ -459,6 +459,11 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
+    /**
+     * @param play Used for pausing playback when an incoming call is detected. It is true by
+     *             default for the pause/play button and MainReceiver specifies false so playback is
+     *             not resumed when an incoming call occurs while paused.
+     */
     private void pausePlay(boolean play) {
         Log.d(TAG, "MainService.pausePlay(" + play + ")");
         if (player.isPlaying()) {
@@ -469,6 +474,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
             if (prepared) {
                 Log.d(TAG, "Resuming");
                 seekTo(player.getCurrentPosition(), false);
+                setVolume(); // Volume is sometimes incorrect after playback paused.
                 player.start();
                 update();
             } else {

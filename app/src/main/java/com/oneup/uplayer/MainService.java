@@ -125,7 +125,7 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
 
         notification = new NotificationCompat.Builder(this, TAG)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setShowWhen(true)
+                .setShowWhen(false)
                 .setCustomContentView(notificationLayout)
                 .setCustomBigContentView(notificationLayoutExpanded)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())

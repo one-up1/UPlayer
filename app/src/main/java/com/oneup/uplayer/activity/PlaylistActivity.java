@@ -211,6 +211,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemViewClick(int viewId, int position, Song song) {
+            moveIndex = -1;
             switch (viewId) {
                 case R.id.ibMoveUp:
                     if (position > 0) {
@@ -230,6 +231,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         protected void removeListItem(int index) {
+            moveIndex = -1;
             service.removeSong(index);
         }
 

@@ -7,8 +7,8 @@ android {
         minSdkVersion 28
         //noinspection OldTargetApi
         targetSdkVersion 28
-        versionCode 462
-        versionName "10.2.462"
+        versionCode 463
+        versionName "10.3.463"
     }
     buildTypes {
         release {
@@ -21,7 +21,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar'])
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.2.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
 }

@@ -19,36 +19,19 @@
 
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="@dimen/list_item_text_large"
             android:maxLines="1"
             android:ellipsize="end" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvArtist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvArtist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/list_item_text_small"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/tvComments"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:paddingStart="@dimen/list_item_info_padding_start"
-                android:textSize="@dimen/list_item_text_small"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-        </LinearLayout>
+            android:textSize="@dimen/list_item_text_small"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
     </LinearLayout>
 

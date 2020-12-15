@@ -65,11 +65,12 @@ public class ArtistsFragment extends ListFragment<Artist> {
                 return artist.getLastAdded() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastAdded());
             case SORT_COLUMN_LAST_PLAYED:
+            case SORT_COLUMN_TIMES_PLAYED:
                 return artist.getLastPlayed() == 0 ? null
                         : Util.formatTimeAgo(artist.getLastPlayed());
-            case SORT_COLUMN_TIMES_PLAYED:
+            /*case SORT_COLUMN_TIMES_PLAYED:
                 return artist.getTimesPlayed() == 0 ? null
-                        : Integer.toString(artist.getTimesPlayed());
+                        : Integer.toString(artist.getTimesPlayed());*/
             default:
                 return artist.getSongCount() == 0 ? null
                         : Integer.toString(artist.getSongCount());

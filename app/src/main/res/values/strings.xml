@@ -143,8 +143,6 @@
     <string name="cannot_delete_default_playlist">Cannot delete the default playlist</string>
 
     <string name="ok">OK</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
     <string name="delete">Delete</string>
     <string name="delete_confirm">Delete \'%1$s\'?</string>
     <string name="deleted">\'%1$s\' deleted</string>

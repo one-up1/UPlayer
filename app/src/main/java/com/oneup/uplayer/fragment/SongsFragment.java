@@ -255,11 +255,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 return song.getAdded() == 0 ? null
                         : Util.formatTimeAgo(song.getAdded());
             case SORT_COLUMN_LAST_PLAYED:
+            case SORT_COLUMN_TIMES_PLAYED:
                 return song.getLastPlayed() == 0 ? null
                         : Util.formatTimeAgo(song.getLastPlayed());
-            case SORT_COLUMN_TIMES_PLAYED:
+            /*case SORT_COLUMN_TIMES_PLAYED:
                 return song.getTimesPlayed() == 0 ? null
-                        : Integer.toString(song.getTimesPlayed());
+                        : Integer.toString(song.getTimesPlayed());*/
             case SORT_COLUMN_DURATION:
                 return Util.formatDuration(song.getDuration());
             case SORT_COLUMN_YEAR:

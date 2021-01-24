@@ -1,12 +1,10 @@
 package com.oneup.uplayer.activity;
 
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -15,6 +13,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
@@ -169,18 +169,14 @@ public class PlaylistActivity extends AppCompatActivity {
             int id = item.getItemId();
             if (id == R.id.mark_played) {
                 final Song song = service.getSong();
-                Utils.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            service.next(true, true);
-                            Utils.showToast(getActivity(), R.string.times_played,
-                                    song.getTimesPlayed());
-                        } catch (Exception ex) {
-                            Log.e(TAG, "Error marking song played", ex);
-                            Utils.showErrorDialog(getActivity(), ex);
-                        }
+                Utils.showConfirmDialog(getActivity(), (dialog, which) -> {
+                    try {
+                        service.next(true, true);
+                        Utils.showToast(getActivity(), R.string.times_played,
+                                song.getTimesPlayed());
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error marking song played", ex);
+                        Utils.showErrorDialog(getActivity(), ex);
                     }
                 }, R.string.app_name, R.string.mark_played_confirm, song);
             } else if (id == R.id.restore_previous) {

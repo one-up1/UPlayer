@@ -1,9 +1,7 @@
 package com.oneup.uplayer.activity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
@@ -14,11 +12,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.fragment.SelectListFragment;
 import com.oneup.uplayer.util.Util;
-import com.oneup.uplayer.widget.EditText;
 import com.oneup.util.Utils;
 
 import java.util.ArrayList;
@@ -134,14 +133,8 @@ public class PlaylistsActivity extends AppCompatActivity {
                     super.onListItemClick(position, playlist);
                     break;
                 default:
-                    Utils.showConfirmDialog(getActivity(),
-                            new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    select(playlist);
-                                }
-                            }, R.string.app_name, selectConfirmId, playlist);
+                    Utils.showConfirmDialog(getActivity(), (dialog, which) -> select(playlist),
+                            R.string.app_name, selectConfirmId, playlist);
                     break;
             }
         }
@@ -173,21 +166,17 @@ public class PlaylistsActivity extends AppCompatActivity {
         private void add() {
             Util.showInputDialog(getActivity(), R.string.add_playlist,
                     InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
-                    R.string.name, null, new Util.InputDialogListener() {
-
-                        @Override
-                        public void onOk(EditText view) {
-                            String name = view.getString();
-                            if (name != null) {
-                                try {
-                                    Playlist playlist = new Playlist();
-                                    playlist.setName(name);
-                                    getDbHelper().insertOrUpdatePlaylist(playlist, null);
-                                    reloadData();
-                                } catch (Exception ex) {
-                                    Log.e(TAG, "Error adding playlist", ex);
-                                    Utils.showErrorDialog(getActivity(), ex);
-                                }
+                    R.string.name, null, view -> {
+                        String name = view.getString();
+                        if (name != null) {
+                            try {
+                                Playlist playlist = new Playlist();
+                                playlist.setName(name);
+                                getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                                reloadData();
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Error adding playlist", ex);
+                                Utils.showErrorDialog(getActivity(), ex);
                             }
                         }
                     });
@@ -196,20 +185,16 @@ public class PlaylistsActivity extends AppCompatActivity {
         private void rename(final Playlist playlist) {
             Util.showInputDialog(getActivity(), R.string.rename_playlist,
                     InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
-                    R.string.name, playlist.getName(), new Util.InputDialogListener() {
-
-                        @Override
-                        public void onOk(EditText view) {
-                            String name = view.getString();
-                            if (name != null) {
-                                try {
-                                    playlist.setName(view.getString());
-                                    getDbHelper().insertOrUpdatePlaylist(playlist, null);
-                                    reloadData();
-                                } catch (Exception ex) {
-                                    Log.e(TAG, "Error renaming playlist", ex);
-                                    Utils.showErrorDialog(getActivity(), ex);
-                                }
+                    R.string.name, playlist.getName(), view -> {
+                        String name = view.getString();
+                        if (name != null) {
+                            try {
+                                playlist.setName(view.getString());
+                                getDbHelper().insertOrUpdatePlaylist(playlist, null);
+                                reloadData();
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Error renaming playlist", ex);
+                                Utils.showErrorDialog(getActivity(), ex);
                             }
                         }
                     });
@@ -222,18 +207,14 @@ public class PlaylistsActivity extends AppCompatActivity {
             }
 
             Utils.showConfirmDialog(getActivity(),
-                    new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            try {
-                                getDbHelper().deletePlaylist(playlist);
-                                Utils.showToast(getActivity(), R.string.deleted, playlist);
-                                removeListItem(position);
-                            } catch (Exception ex) {
-                                Log.e(TAG, "Error deleting playlist", ex);
-                                Utils.showErrorDialog(getActivity(), ex);
-                            }
+                    (dialog, which) -> {
+                        try {
+                            getDbHelper().deletePlaylist(playlist);
+                            Utils.showToast(getActivity(), R.string.deleted, playlist);
+                            removeListItem(position);
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error deleting playlist", ex);
+                            Utils.showErrorDialog(getActivity(), ex);
                         }
                     }, R.string.app_name, R.string.delete_confirm, playlist);
         }

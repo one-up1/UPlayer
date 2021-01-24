@@ -3,7 +3,6 @@ package com.oneup.uplayer.util;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.text.SpannableString;
 import android.text.style.BulletSpan;
@@ -53,13 +52,7 @@ public class Util {
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setTitle(titleId)
                 .setView(view)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        listener.onOk(view);
-                    }
-                })
+                .setPositiveButton(R.string.ok, (dialog1, which) -> listener.onOk(view))
                 .create();
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         dialog.show();

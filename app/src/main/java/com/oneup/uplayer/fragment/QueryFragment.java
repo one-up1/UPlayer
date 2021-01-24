@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -39,7 +38,7 @@ public class QueryFragment extends Fragment
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
     private Button bQuery;
-    private Button bStatistics;
+    private Button bLog;
     private Button bSettings;
 
     @Override
@@ -69,9 +68,9 @@ public class QueryFragment extends Fragment
         bQuery.setOnClickListener(this);
         bQuery.setOnLongClickListener(this);
 
-        bStatistics = rootView.findViewById(R.id.bStatistics);
-        bStatistics.setOnClickListener(this);
-        bStatistics.setOnLongClickListener(this);
+        bLog = rootView.findViewById(R.id.bLog);
+        bLog.setOnClickListener(this);
+        bLog.setOnLongClickListener(this);
 
         bSettings = rootView.findViewById(R.id.bSettings);
         bSettings.setOnClickListener(this);
@@ -100,7 +99,7 @@ public class QueryFragment extends Fragment
                     .putExtras(SongsFragment.getArguments(
                             filterFragment.getSelection(), filterFragment.getSelectionArgs(),
                             sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
-        } else if (v == bStatistics) {
+        } else if (v == bLog) {
             startActivity(new Intent(getActivity(), LogActivity.class));
         } else if (v == bSettings) {
             startActivity(new Intent(getActivity(), SettingsActivity.class));
@@ -112,25 +111,21 @@ public class QueryFragment extends Fragment
         if (v == bQuery) {
             PopupMenu pm = new PopupMenu(getActivity(), bQuery, Gravity.END);
             pm.getMenuInflater().inflate(R.menu.pm_query, pm.getMenu());
-            pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    int id = item.getItemId();
-                    if (id == R.id.load_query_values) {
-                        loadQueryValues();
-                    } else if (id == R.id.save_query_values) {
-                        saveQueryValues();
-                    } else if (id == R.id.clear_query_values) {
-                        filterFragment.setValues(new FilterFragment.Values());
-                    } else {
-                        return false;
-                    }
-                    return true;
+            pm.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.load_query_values) {
+                    loadQueryValues();
+                } else if (id == R.id.save_query_values) {
+                    saveQueryValues();
+                } else if (id == R.id.clear_query_values) {
+                    filterFragment.setValues(new FilterFragment.Values());
+                } else {
+                    return false;
                 }
+                return true;
             });
             pm.show();
-        } else if (v == bStatistics) {
+        } else if (v == bLog) {
             startActivity(new Intent(getActivity(), StatisticsActivity.class));
             //dbHelper.t();
         }

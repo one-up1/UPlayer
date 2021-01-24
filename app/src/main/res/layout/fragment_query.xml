@@ -46,11 +46,11 @@
         android:text="@string/query" />
 
     <Button
-        android:id="@+id/bStatistics"
+        android:id="@+id/bLog"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="@string/statistics" />
+        android:text="@string/log" />
 
     <Button
         android:id="@+id/bSettings"

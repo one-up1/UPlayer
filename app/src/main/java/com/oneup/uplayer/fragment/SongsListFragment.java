@@ -2,11 +2,9 @@ package com.oneup.uplayer.fragment;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -14,6 +12,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
@@ -167,39 +167,35 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     private void deleteSong(final int position, final Song song) {
         Utils.showConfirmDialog(getActivity(),
-                new DialogInterface.OnClickListener() {
+                (dialog, which) -> {
+                    Log.d(TAG, "Deleting song " + song.getId() + ":" + song);
+                    try {
+                        ContentResolver resolver = getActivity().getContentResolver();
+                        Uri uri = song.getContentUri();
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.d(TAG, "Deleting song " + song.getId() + ":" + song);
-                        try {
-                            ContentResolver resolver = getActivity().getContentResolver();
-                            Uri uri = song.getContentUri();
+                        // Change type to image, otherwise nothing will be deleted.
+                        ContentValues values = new ContentValues();
+                        values.put("media_type", 1);
+                        resolver.update(uri, values, null, null);
 
-                            // Change type to image, otherwise nothing will be deleted.
-                            ContentValues values = new ContentValues();
-                            values.put("media_type", 1);
-                            resolver.update(uri, values, null, null);
-
-                            // Delete song from MediaStore and database.
-                            int rowsAffected = resolver.delete(uri, null, null);
-                            switch (rowsAffected) {
-                                case 0:
-                                    throw new RuntimeException("Song not found");
-                                case 1:
-                                    Log.d(TAG, "Song deleted from MediaStore");
-                                    break;
-                                default:
-                                    throw new RuntimeException("Duplicate song");
-                            }
-                            getDbHelper().deleteSong(song);
-
-                            Utils.showToast(getActivity(), R.string.deleted, song);
-                            removeListItem(position);
-                        } catch (Exception ex) {
-                            Log.e(TAG, "Error deleting song", ex);
-                            Utils.showErrorDialog(getActivity(), ex);
+                        // Delete song from MediaStore and database.
+                        int rowsAffected = resolver.delete(uri, null, null);
+                        switch (rowsAffected) {
+                            case 0:
+                                throw new RuntimeException("Song not found");
+                            case 1:
+                                Log.d(TAG, "Song deleted from MediaStore");
+                                break;
+                            default:
+                                throw new RuntimeException("Duplicate song");
                         }
+                        getDbHelper().deleteSong(song);
+
+                        Utils.showToast(getActivity(), R.string.deleted, song);
+                        removeListItem(position);
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error deleting song", ex);
+                        Utils.showErrorDialog(getActivity(), ex);
                     }
                 }, R.string.app_name, R.string.delete_confirm, song);
     }

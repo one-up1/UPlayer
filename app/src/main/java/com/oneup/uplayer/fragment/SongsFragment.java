@@ -121,46 +121,42 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.play_next:
-                add(getData(), true);
-                Utils.showToast(getActivity(), R.string.playing_all_next);
-                return true;
-            case R.id.play_last:
-                add(getData(), false);
-                Utils.showToast(getActivity(), R.string.playing_all_last);
-                return true;
-            case R.id.statistics:
-                Intent intent = new Intent(getActivity(), LogActivity.class);
-                if (artist != null) {
-                    intent.putExtra(LogActivity.EXTRA_TITLE, artist.getArtist());
-                    intent.putExtra(LogActivity.EXTRA_QUERY_ARTIST, false);
-                }
-                intent.putExtra(LogActivity.EXTRA_QUERY_BOOKMARKED,
-                        filterValues == null || filterValues.getBookmarked() == 0);
-                intent.putExtra(LogActivity.EXTRA_QUERY_ARCHIVED,
-                        filterValues == null || filterValues.getArchived() == 0);
-                intent.putExtra(LogActivity.EXTRA_BASE_SELECTION, getSelection());
-                intent.putExtra(LogActivity.EXTRA_BASE_SELECTION_ARGS, getSelectionArgs());
-                intent.putExtra(LogActivity.EXTRA_SELECTION, filterSelection);
-                intent.putExtra(LogActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
-                startActivity(intent);
-                return true;
-            case R.id.filter:
-                startActivityForResult(new Intent(getActivity(), FilterActivity.class)
-                                .putExtra(FilterActivity.EXTRA_SHOW_ARTIST_FILTER, artist == null)
-                                .putExtra(FilterActivity.EXTRA_VALUES, filterValues),
-                        REQUEST_SELECT_FILTER);
-                return true;
-            case R.id.clear_filter:
-                filterValues = null;
-                filterSelection = null;
-                filterSelectionArgs = null;
-                reloadData();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.play_next) {
+            add(getData(), true);
+            Utils.showToast(getActivity(), R.string.playing_all_next);
+        } else if (id == R.id.play_last) {
+            add(getData(), false);
+            Utils.showToast(getActivity(), R.string.playing_all_last);
+        } else if (id == R.id.statistics) {
+            Intent intent = new Intent(getActivity(), LogActivity.class);
+            if (artist != null) {
+                intent.putExtra(LogActivity.EXTRA_TITLE, artist.getArtist());
+                intent.putExtra(LogActivity.EXTRA_QUERY_ARTIST, false);
+            }
+            intent.putExtra(LogActivity.EXTRA_QUERY_BOOKMARKED,
+                    filterValues == null || filterValues.getBookmarked() == 0);
+            intent.putExtra(LogActivity.EXTRA_QUERY_ARCHIVED,
+                    filterValues == null || filterValues.getArchived() == 0);
+            intent.putExtra(LogActivity.EXTRA_BASE_SELECTION, getSelection());
+            intent.putExtra(LogActivity.EXTRA_BASE_SELECTION_ARGS, getSelectionArgs());
+            intent.putExtra(LogActivity.EXTRA_SELECTION, filterSelection);
+            intent.putExtra(LogActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
+            startActivity(intent);
+        } else if (id == R.id.filter) {
+            startActivityForResult(new Intent(getActivity(), FilterActivity.class)
+                            .putExtra(FilterActivity.EXTRA_SHOW_ARTIST_FILTER, artist == null)
+                            .putExtra(FilterActivity.EXTRA_VALUES, filterValues),
+                    REQUEST_SELECT_FILTER);
+        } else if (id == R.id.clear_filter) {
+            filterValues = null;
+            filterSelection = null;
+            filterSelectionArgs = null;
+            reloadData();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override
@@ -289,15 +285,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected void onListItemViewClick(int viewId, int position, Song song) {
-        switch (viewId) {
-            case R.id.ibPlayNext:
-                add(song, true);
-                Utils.showToast(getActivity(), R.string.playing_song_next, song);
-                break;
-            case R.id.ibPlayLast:
-                add(song, false);
-                Utils.showToast(getActivity(), R.string.playing_song_last, song);
-                break;
+        if (viewId == R.id.ibPlayNext) {
+            add(song, true);
+            Utils.showToast(getActivity(), R.string.playing_song_next, song);
+        } else if (viewId == R.id.ibPlayLast) {
+            add(song, false);
+            Utils.showToast(getActivity(), R.string.playing_song_last, song);
         }
     }
 

@@ -116,19 +116,17 @@ public class QueryFragment extends Fragment
 
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    switch (item.getItemId()) {
-                        case R.id.load_query_values:
-                            loadQueryValues();
-                            return true;
-                        case R.id.save_query_values:
-                            saveQueryValues();
-                            return true;
-                        case R.id.clear_query_values:
-                            filterFragment.setValues(new FilterFragment.Values());
-                            return true;
-                        default:
-                            return false;
+                    int id = item.getItemId();
+                    if (id == R.id.load_query_values) {
+                        loadQueryValues();
+                    } else if (id == R.id.save_query_values) {
+                        saveQueryValues();
+                    } else if (id == R.id.clear_query_values) {
+                        filterFragment.setValues(new FilterFragment.Values());
+                    } else {
+                        return false;
                     }
+                    return true;
                 }
             });
             pm.show();

@@ -57,16 +57,16 @@ public class TagsActivity extends AppCompatActivity {
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.ok:
-                    getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
-                            .putExtra(ARG_NOT, isNotChecked())
-                            .putStringArrayListExtra(EXTRA_TAGS, getCheckedListItems()));
-                    getActivity().finish();
-                    return true;
-                default:
-                    return super.onOptionsItemSelected(item);
+            int id = item.getItemId();
+            if (id == R.id.ok) {
+                getActivity().setResult(AppCompatActivity.RESULT_OK, new Intent()
+                        .putExtra(ARG_NOT, isNotChecked())
+                        .putStringArrayListExtra(EXTRA_TAGS, getCheckedListItems()));
+                getActivity().finish();
+            } else {
+                return super.onOptionsItemSelected(item);
             }
+            return true;
         }
 
         @Override

@@ -131,10 +131,10 @@ public class Artist implements Parcelable,
         this.timesPlayed = timesPlayed;
     }
 
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+    public static final Parcelable.Creator<?> CREATOR = new Parcelable.Creator<Artist>() {
 
         @Override
-        public Object createFromParcel(Parcel in) {
+        public Artist createFromParcel(Parcel in) {
             Artist artist = new Artist();
             artist.id = in.readLong();
             artist.artist = in.readString();
@@ -148,7 +148,7 @@ public class Artist implements Parcelable,
         }
 
         @Override
-        public Object[] newArray(int size) {
+        public Artist[] newArray(int size) {
             return new Artist[size];
         }
     };

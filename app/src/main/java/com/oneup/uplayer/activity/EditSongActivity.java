@@ -133,28 +133,27 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.playlists:
-                playlists = dbHelper.queryPlaylists(song);
-                startActivityForResult(new Intent(this, PlaylistsActivity.class)
-                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                        playlists, null, -1)),
-                        REQUEST_SELECT_PLAYLISTS);
-                return true;
-            case R.id.ok:
-                song.setYear(etYear.getInt());
-                song.setTag(etTag.getString());
-                song.setComments(etComments.getString());
-                dbHelper.updateSong(song);
+        int id = item.getItemId();
+        if (id == R.id.playlists) {
+            playlists = dbHelper.queryPlaylists(song);
+            startActivityForResult(new Intent(this, PlaylistsActivity.class)
+                            .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                    playlists, null, -1)),
+                    REQUEST_SELECT_PLAYLISTS);
+        } else if (id == R.id.ok) {
+            song.setYear(etYear.getInt());
+            song.setTag(etTag.getString());
+            song.setComments(etComments.getString());
+            dbHelper.updateSong(song);
 
-                Utils.showToast(this, R.string.song_updated);
-                MainService.update(this, false, song);
+            Utils.showToast(this, R.string.song_updated);
+            MainService.update(this, false, song);
 
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            finish();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override

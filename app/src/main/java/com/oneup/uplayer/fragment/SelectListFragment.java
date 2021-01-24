@@ -76,18 +76,18 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.select_all:
-                if (checkedListItems.size() < getCount()) {
-                    checkedListItems = new ArrayList<>(getData());
-                } else {
-                    checkedListItems = new ArrayList<>();
-                }
-                notifyDataSetChanged();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.select_all) {
+            if (checkedListItems.size() < getCount()) {
+                checkedListItems = new ArrayList<>(getData());
+            } else {
+                checkedListItems = new ArrayList<>();
+            }
+            notifyDataSetChanged();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override

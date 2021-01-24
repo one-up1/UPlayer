@@ -592,9 +592,10 @@ public class DbHelper extends SQLiteOpenHelper {
         LogData log = new LogData();
         try (SQLiteDatabase db = getReadableDatabase()) {
             String sql = "SELECT " +
-                    LogData.SONG_ID + "," +
-                    Song.ARTIST_ID + "," +
-                    Song.DURATION + " " +
+                    "COUNT(*)," +
+                    "COUNT(DISTINCT song_id)," +
+                    "COUNT(DISTINCT artist_id)," +
+                    "SUM(DURATION) " +
                     "FROM " + TABLE_LOG + " JOIN " + TABLE_SONGS + " ON " +
                     LogData.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID;
 
@@ -627,9 +628,11 @@ public class DbHelper extends SQLiteOpenHelper {
             }
 
             try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-                while (c.moveToNext()) {
-                    log.add(c);
-                }
+                c.moveToFirst();
+                log.setCount(c.getInt(0));
+                log.setSongCount(c.getInt(1));
+                log.setArtistCount(c.getInt(2));
+                log.setDuration(c.getLong(3));
             }
         }
         return log;

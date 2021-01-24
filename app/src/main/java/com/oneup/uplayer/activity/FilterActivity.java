@@ -43,16 +43,16 @@ public class FilterActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.ok:
-                setResult(RESULT_OK, new Intent()
-                        .putExtra(EXTRA_VALUES, filterFragment.getValues())
-                        .putExtra(EXTRA_SELECTION, filterFragment.getSelection())
-                        .putExtra(EXTRA_SELECTION_ARGS, filterFragment.getSelectionArgs()));
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.ok) {
+            setResult(RESULT_OK, new Intent()
+                    .putExtra(EXTRA_VALUES, filterFragment.getValues())
+                    .putExtra(EXTRA_SELECTION, filterFragment.getSelection())
+                    .putExtra(EXTRA_SELECTION_ARGS, filterFragment.getSelectionArgs()));
+            finish();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 }

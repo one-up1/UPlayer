@@ -79,22 +79,21 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.add:
-                    add();
-                    return true;
-                case R.id.ok:
-                    Intent data = new Intent();
-                    if (isNotVisible()) {
-                        data.putExtra(ARG_NOT, isNotChecked());
-                    }
-                    data.putExtra(EXTRA_PLAYLISTS, getCheckedListItems());
-                    getActivity().setResult(AppCompatActivity.RESULT_OK, data);
-                    getActivity().finish();
-                    return true;
-                default:
-                    return super.onOptionsItemSelected(item);
+            int id = item.getItemId();
+            if (id == R.id.add) {
+                add();
+            } else if (id == R.id.ok) {
+                Intent data = new Intent();
+                if (isNotVisible()) {
+                    data.putExtra(ARG_NOT, isNotChecked());
+                }
+                data.putExtra(EXTRA_PLAYLISTS, getCheckedListItems());
+                getActivity().setResult(AppCompatActivity.RESULT_OK, data);
+                getActivity().finish();
+            } else {
+                return super.onOptionsItemSelected(item);
             }
+            return true;
         }
 
         @Override
@@ -149,25 +148,19 @@ public class PlaylistsActivity extends AppCompatActivity {
 
         @Override
         protected void onListItemViewClick(int viewId, int position, Playlist playlist) {
-            switch (viewId) {
-                case R.id.ibPlay:
-                    select(playlist);
-                    break;
+            if (viewId == R.id.ibPlay) {
+                select(playlist);
             }
         }
 
         @Override
         protected void onContextItemSelected(int itemId, int position, Playlist playlist) {
-            switch (itemId) {
-                case R.id.rename:
-                    rename(playlist);
-                    break;
-                case R.id.delete:
-                    delete(position, playlist);
-                    break;
-                default:
-                    super.onContextItemSelected(itemId, position, playlist);
-                    break;
+            if (itemId == R.id.rename) {
+                rename(playlist);
+            } else if (itemId == R.id.delete) {
+                delete(position, playlist);
+            } else {
+                super.onContextItemSelected(itemId, position, playlist);
             }
         }
 

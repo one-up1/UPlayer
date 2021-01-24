@@ -166,66 +166,57 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.mark_played:
-                    final Song song = service.getSong();
-                    Utils.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
+            int id = item.getItemId();
+            if (id == R.id.mark_played) {
+                final Song song = service.getSong();
+                Utils.showConfirmDialog(getActivity(), new DialogInterface.OnClickListener() {
 
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            try {
-                                service.next(true, true);
-                                Utils.showToast(getActivity(), R.string.times_played,
-                                        song.getTimesPlayed());
-                            } catch (Exception ex) {
-                                Log.e(TAG, "Error marking song played", ex);
-                                Utils.showErrorDialog(getActivity(), ex);
-                            }
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            service.next(true, true);
+                            Utils.showToast(getActivity(), R.string.times_played,
+                                    song.getTimesPlayed());
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error marking song played", ex);
+                            Utils.showErrorDialog(getActivity(), ex);
                         }
-                    }, R.string.app_name, R.string.mark_played_confirm, song);
-                    return true;
-                case R.id.restore_previous:
-                    service.restorePrevious();
-                    return true;
-                case R.id.shuffle:
-                    service.shuffle();
-                    return true;
-                default:
-                    return super.onOptionsItemSelected(item);
+                    }
+                }, R.string.app_name, R.string.mark_played_confirm, song);
+            } else if (id == R.id.restore_previous) {
+                service.restorePrevious();
+            } else if (id == R.id.shuffle) {
+                service.shuffle();
+            } else {
+                return super.onOptionsItemSelected(item);
             }
+            return true;
         }
 
         @Override
         protected void onContextItemSelected(int itemId, int position, Song song) {
-            switch (itemId) {
-                case R.id.move:
-                    Log.d(TAG, "Moving " + position + " (" + song + ")");
-                    moveIndex = position;
-                    notifyDataSetChanged();
-                    break;
-                default:
-                    super.onContextItemSelected(itemId, position, song);
-                    break;
+            if (itemId == R.id.move) {
+                Log.d(TAG, "Moving " + position + " (" + song + ")");
+                moveIndex = position;
+                notifyDataSetChanged();
+            } else {
+                super.onContextItemSelected(itemId, position, song);
             }
         }
 
         @Override
         protected void onListItemViewClick(int viewId, int position, Song song) {
             moveIndex = -1;
-            switch (viewId) {
-                case R.id.ibMoveUp:
-                    if (position > 0) {
-                        service.moveSong(position, position - 1);
-                    }
-                    break;
-                case R.id.ibMoveDown:
-                    if (position < getCount() - 1) {
-                        service.moveSong(position, position + 1);
-                    }
-                    break;
-                case R.id.ibRemove:
-                    removeListItem(position);
-                    break;
+            if (viewId == R.id.ibMoveUp) {
+                if (position > 0) {
+                    service.moveSong(position, position - 1);
+                }
+            } else if (viewId == R.id.ibMoveDown) {
+                if (position < getCount() - 1) {
+                    service.moveSong(position, position + 1);
+                }
+            } else if (viewId == R.id.ibRemove) {
+                removeListItem(position);
             }
         }
 

@@ -48,16 +48,16 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.savePlaylist:
-                startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
-                                .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
-                                        null, null, R.string.save_playlist_confirm)),
-                        REQUEST_SELECT_PLAYLIST);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.savePlaylist) {
+            startActivityForResult(new Intent(getActivity(), PlaylistsActivity.class)
+                            .putExtras(PlaylistsActivity.PlaylistsFragment.getArguments(
+                                    null, null, R.string.save_playlist_confirm)),
+                    REQUEST_SELECT_PLAYLIST);
+        } else {
+            return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override
@@ -125,44 +125,37 @@ public abstract class SongsListFragment extends ListFragment<Song> {
 
     @Override
     protected void onContextItemSelected(int itemId, int position, final Song song) {
-        switch (itemId) {
-            case R.id.view_artist:
-                startActivity(new Intent(getActivity(), SongsActivity.class)
-                        .putExtras(SongsFragment.getArguments(getDbHelper().queryArtist(song),
-                                getSortColumn(), isSortDesc())));
-                break;
-            case R.id.edit:
-                startActivity(new Intent(getActivity(), EditSongActivity.class)
-                        .putExtra(EditSongActivity.EXTRA_SONG, song));
-                break;
-            case R.id.toggle_bookmark:
-                try {
-                    song.setBookmarked(getDbHelper().toggleSongTimestamp(song, Song.BOOKMARKED));
-                    Utils.showToast(getActivity(), song.getBookmarked() == 0 ?
-                            R.string.bookmark_cleared : R.string.bookmark_set);
-                    onSongUpdated(song);
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error bookmarking song", ex);
-                    Utils.showErrorDialog(getActivity(), ex);
-                }
-                break;
-            case R.id.toggle_archive:
-                try {
-                    song.setArchived(getDbHelper().toggleSongTimestamp(song, Song.ARCHIVED));
-                    Utils.showToast(getActivity(), song.getArchived() == 0 ?
-                            R.string.song_unarchived : R.string.song_archived);
-                    onSongUpdated(song);
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error archiving song", ex);
-                    Utils.showErrorDialog(getActivity(), ex);
-                }
-                break;
-            case R.id.delete:
-                deleteSong(position, song);
-                break;
-            default:
-                super.onContextItemSelected(itemId, position, song);
-                break;
+        if (itemId == R.id.view_artist) {
+            startActivity(new Intent(getActivity(), SongsActivity.class)
+                    .putExtras(SongsFragment.getArguments(getDbHelper().queryArtist(song),
+                            getSortColumn(), isSortDesc())));
+        } else if (itemId == R.id.edit) {
+            startActivity(new Intent(getActivity(), EditSongActivity.class)
+                    .putExtra(EditSongActivity.EXTRA_SONG, song));
+        } else if (itemId == R.id.toggle_bookmark) {
+            try {
+                song.setBookmarked(getDbHelper().toggleSongTimestamp(song, Song.BOOKMARKED));
+                Utils.showToast(getActivity(), song.getBookmarked() == 0 ?
+                        R.string.bookmark_cleared : R.string.bookmark_set);
+                onSongUpdated(song);
+            } catch (Exception ex) {
+                Log.e(TAG, "Error bookmarking song", ex);
+                Utils.showErrorDialog(getActivity(), ex);
+            }
+        } else if (itemId == R.id.toggle_archive) {
+            try {
+                song.setArchived(getDbHelper().toggleSongTimestamp(song, Song.ARCHIVED));
+                Utils.showToast(getActivity(), song.getArchived() == 0 ?
+                        R.string.song_unarchived : R.string.song_archived);
+                onSongUpdated(song);
+            } catch (Exception ex) {
+                Log.e(TAG, "Error archiving song", ex);
+                Utils.showErrorDialog(getActivity(), ex);
+            }
+        } else if (itemId == R.id.delete) {
+            deleteSong(position, song);
+        } else {
+            super.onContextItemSelected(itemId, position, song);
         }
     }
 

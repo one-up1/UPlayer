@@ -312,22 +312,18 @@ public class FilterFragment extends Fragment
             selectionArgs.add(Long.toString(values.maxAdded));
         }
 
-        switch (rgBookmarked.getCheckedRadioButtonId()) {
-            case R.id.rbBookmarked:
-                selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
-                break;
-            case R.id.rbUnbookmarked:
-                selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NULL");
-                break;
+        int bookmarkedId = rgBookmarked.getCheckedRadioButtonId();
+        if (bookmarkedId == R.id.rbBookmarked) {
+            selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NOT NULL");
+        } else if (bookmarkedId == R.id.rbUnbookmarked) {
+            selection = DbHelper.concatSelection(selection, Song.BOOKMARKED + " IS NULL");
         }
 
-        switch (rgArchived.getCheckedRadioButtonId()) {
-            case R.id.rbArchived:
-                selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NOT NULL");
-                break;
-            case R.id.rbUnarchived:
-                selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NULL");
-                break;
+        int archivedId = rgArchived.getCheckedRadioButtonId();
+        if (archivedId == R.id.rbArchived) {
+            selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NOT NULL");
+        } else if (archivedId == R.id.rbUnarchived) {
+            selection = DbHelper.concatSelection(selection, Song.ARCHIVED + " IS NULL");
         }
 
         if (values.minLastPlayed != 0) {
@@ -448,7 +444,7 @@ public class FilterFragment extends Fragment
             out.writeInt(archived);
             out.writeStringList(tags);
             out.writeInt(tagsNot ? 1 : 0);
-            out.writeTypedList(playlists);
+            out.writeList(playlists);
             out.writeInt(playlistsNot ? 1 : 0);
             out.writeLong(minLastPlayed);
             out.writeLong(maxLastPlayed);
@@ -576,10 +572,10 @@ public class FilterFragment extends Fragment
             this.maxTimesPlayed = maxTimesPlayed;
         }
 
-        public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public static final Parcelable.Creator<?> CREATOR = new Parcelable.Creator<Values>() {
 
             @Override
-            public Object createFromParcel(Parcel in) {
+            public Values createFromParcel(Parcel in) {
                 Values values = new Values();
                 values.title = in.readString();
                 values.artist = in.readString();
@@ -591,8 +587,7 @@ public class FilterFragment extends Fragment
                 values.archived = in.readInt();
                 in.readStringList(values.tags);
                 values.tagsNot = in.readInt() == 1;
-                //noinspection unchecked
-                in.readTypedList(values.playlists, Playlist.CREATOR);
+                in.readList(values.playlists, Playlist.class.getClassLoader());
                 values.playlistsNot = in.readInt() == 1;
                 values.minLastPlayed = in.readLong();
                 values.maxLastPlayed = in.readLong();
@@ -602,7 +597,7 @@ public class FilterFragment extends Fragment
             }
 
             @Override
-            public Object[] newArray(int size) {
+            public Values[] newArray(int size) {
                 return new Values[size];
             }
         };

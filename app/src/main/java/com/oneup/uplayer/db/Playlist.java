@@ -110,10 +110,10 @@ public class Playlist implements Parcelable, BaseColumns {
         return playlist;
     }
 
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+    public static final Parcelable.Creator<?> CREATOR = new Parcelable.Creator<Playlist>() {
 
         @Override
-        public Object createFromParcel(Parcel in) {
+        public Playlist createFromParcel(Parcel in) {
             Playlist playlist = new Playlist();
             playlist.id = in.readLong();
             playlist.name = in.readString();
@@ -123,7 +123,7 @@ public class Playlist implements Parcelable, BaseColumns {
         }
 
         @Override
-        public Object[] newArray(int size) {
+        public Playlist[] newArray(int size) {
             return new Playlist[size];
         }
     };

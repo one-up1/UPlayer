@@ -1,46 +1,74 @@
 package com.oneup.uplayer.db;
 
-import android.database.Cursor;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import java.util.ArrayList;
-
-public class LogData implements DbHelper.LogColumns {
+public class LogData implements Parcelable, DbHelper.LogColumns {
     private int count;
-    private ArrayList<Long> songIds;
-    private ArrayList<Long> artistIds;
+    private int songCount;
+    private int artistCount;
     private long duration;
 
-    LogData() {
-        songIds = new ArrayList<>();
-        artistIds = new ArrayList<>();
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeInt(count);
+        out.writeInt(songCount);
+        out.writeInt(artistCount);
+        out.writeLong(duration);
     }
 
     public int getCount() {
         return count;
     }
 
+    public void setCount(int count) {
+        this.count = count;
+    }
+
     public int getSongCount() {
-        return songIds.size();
+        return songCount;
+    }
+
+    public void setSongCount(int songCount) {
+        this.songCount = songCount;
     }
 
     public int getArtistCount() {
-        return artistIds.size();
+        return artistCount;
+    }
+
+    public void setArtistCount(int artistCount) {
+        this.artistCount = artistCount;
     }
 
     public long getDuration() {
         return duration;
     }
 
-    void add(Cursor c) {
-        count++;
-        addId(songIds, c.getLong(0));
-        addId(artistIds, c.getLong(1));
-        duration += c.getLong(2);
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 
-    private void addId(ArrayList<Long> ids, long id) {
-        if (!ids.contains(id)) {
-            ids.add(id);
+    public static final Parcelable.Creator<?> CREATOR = new Parcelable.Creator<LogData>() {
+
+        @Override
+        public LogData createFromParcel(Parcel in) {
+            LogData log = new LogData();
+            log.count = in.readInt();
+            log.songCount = in.readInt();
+            log.artistCount = in.readInt();
+            log.duration = in.readLong();
+            return log;
         }
-    }
+
+        @Override
+        public LogData[] newArray(int size) {
+            return new LogData[size];
+        }
+    };
 }

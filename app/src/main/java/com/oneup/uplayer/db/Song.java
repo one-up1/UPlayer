@@ -197,10 +197,10 @@ public class Song implements Parcelable,
         return duration;
     }
 
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+    public static final Parcelable.Creator<?> CREATOR = new Parcelable.Creator<Song>() {
 
         @Override
-        public Object createFromParcel(Parcel in) {
+        public Song createFromParcel(Parcel in) {
             Song song = new Song();
             song.id = in.readLong();
             song.title = in.readString();
@@ -219,7 +219,7 @@ public class Song implements Parcelable,
         }
 
         @Override
-        public Object[] newArray(int size) {
+        public Song[] newArray(int size) {
             return new Song[size];
         }
     };

@@ -56,13 +56,13 @@ public class DateTimeActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.ok:
-                ok();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.ok) {
+            ok();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override

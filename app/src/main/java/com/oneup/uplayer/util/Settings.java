@@ -30,7 +30,7 @@ public class Settings {
         return settings.getInt(getKey(keyId), defValue);
     }
 
-    public long getLong(int keyId, int defValue) {
+    public long getLong(int keyId, long defValue) {
         return settings.getLong(getKey(keyId), defValue);
     }
 

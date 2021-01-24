@@ -127,8 +127,8 @@ public class FilterFragment extends Fragment
                         getActivity().startForegroundService(new Intent(
                                 getActivity(), MainService.class)
                                 .putExtra(MainService.EXTRA_ACTION, MainService.ACTION_PLAY)
-                                .putExtra(MainService.EXTRA_PLAYLIST, data.getParcelableExtra(
-                                        PlaylistsActivity.EXTRA_PLAYLIST)));
+                                .putExtra(MainService.EXTRA_PLAYLIST, (Playlist)
+                                        data.getParcelableExtra(PlaylistsActivity.EXTRA_PLAYLIST)));
                     } else if (data.hasExtra(PlaylistsActivity.EXTRA_PLAYLISTS)) {
                         values.playlists = data.getParcelableArrayListExtra(
                                 PlaylistsActivity.EXTRA_PLAYLISTS);

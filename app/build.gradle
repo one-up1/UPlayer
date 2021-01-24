@@ -5,10 +5,10 @@ android {
     defaultConfig {
         applicationId "com.oneup.uplayer"
         minSdkVersion 28
-        //noinspection OldTargetApi
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 28
-        versionCode 464
-        versionName "10.4.464"
+        versionCode 465
+        versionName "10.5.465"
     }
     buildTypes {
         release {

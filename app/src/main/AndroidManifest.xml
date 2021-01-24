@@ -48,6 +48,11 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".activity.LogActivity"
+            android:label="@string/log"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activity.EditSongActivity"
             android:label="@string/edit_song"
             android:screenOrientation="portrait" />

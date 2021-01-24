@@ -34,6 +34,7 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String TABLE_SONGS = "songs";
     private static final String TABLE_PLAYLISTS = "playlists";
     private static final String TABLE_PLAYLIST_SONGS = "playlist_songs";
+    private static final String TABLE_LOG = "log";
 
     private static final String SQL_CREATE_ARTISTS =
             "CREATE TABLE " + TABLE_ARTISTS + "(" +
@@ -75,6 +76,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     Playlist.PLAYLIST_ID + " INTEGER," +
                     Playlist.SONG_ID + " INTEGER)";
 
+    private static final String SQL_CREATE_LOG =
+            "CREATE TABLE " + TABLE_LOG + "(" +
+                    LogData._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    LogData.TIMESTAMP + " INTEGER," +
+                    LogData.SONG_ID + " INTEGER)";
+
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
     private static final String ORDER_BY_ARCHIVED =
@@ -96,6 +103,7 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_SONGS);
         db.execSQL(SQL_CREATE_PLAYLISTS);
         db.execSQL(SQL_CREATE_PLAYLIST_SONGS);
+        db.execSQL(SQL_CREATE_LOG);
 
         // Insert the default playlist.
         ContentValues values = new ContentValues();
@@ -107,6 +115,28 @@ public class DbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
+
+    /*public void t() {
+        Log.d(TAG, "DbHelper.t()");
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            Log.d(TAG, db.delete(TABLE_LOG, null, null) + " log records deleted");
+            try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.LAST_PLAYED},
+                    Song.LAST_PLAYED + " IS NOT NULL", null, null, null, Song.LAST_PLAYED)) {
+                ContentValues values;
+                int inserted = 0;
+                long start = System.currentTimeMillis();
+                while (c.moveToNext()) {
+                    values = new ContentValues();
+                    values.put(Log.TIMESTAMP, c.getLong(1));
+                    values.put(Log.SONG_ID, c.getLong(0));
+                    db.insert(TABLE_LOG, null, values);
+                    inserted++;
+                }
+                Log.d(TAG, inserted + " log columns inserted in " +
+                        (System.currentTimeMillis() - start) + "ms");
+            }
+        }
+    }*/
 
     public ArrayList<Artist> queryArtists(String orderBy) {
         Log.d(TAG, "DbHelper.queryArtists(" + orderBy + ")");
@@ -286,6 +316,13 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 updatePlayed(db, TABLE_SONGS, time, song.getId());
                 updatePlayed(db, TABLE_ARTISTS, time, song.getArtistId());
+
+                ContentValues values = new ContentValues();
+                values.put(LogData.TIMESTAMP, time);
+                values.put(LogData.SONG_ID, song.getId());
+                db.insert(TABLE_LOG, null, values);
+                Log.d(TAG, "Log record inserted");
+
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -544,6 +581,60 @@ public class DbHelper extends SQLiteOpenHelper {
         return stats;
     }
 
+    public LogData queryLog(boolean artist, boolean bookmarked, boolean archived,
+                           String baseSelection, String[] baseSelectionArgs,
+                           String selection, String[] selectionArgs,
+                           long minTime, long maxTime) {
+        Log.d(TAG, "DbHelper.queryLog(" + artist + ", " + bookmarked + ", " + archived + ", " +
+                baseSelection + ", " + Arrays.toString(baseSelectionArgs) + ", " +
+                selection + ", " + Arrays.toString(selectionArgs) +
+                ", " + minTime + ", " + maxTime + ")");
+        LogData log = new LogData();
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            String sql = "SELECT " +
+                    LogData.SONG_ID + "," +
+                    Song.ARTIST_ID + "," +
+                    Song.DURATION + " " +
+                    "FROM " + TABLE_LOG + " JOIN " + TABLE_SONGS + " ON " +
+                    LogData.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID;
+
+            if (selection == null) {
+                selection = baseSelection;
+                selectionArgs = baseSelectionArgs;
+            } else {
+                selection = concatSelection(baseSelection, selection);
+                selectionArgs = concatWhereArgs(baseSelectionArgs, selectionArgs);
+            }
+
+            ArrayList<String> logSelectionArgs = new ArrayList<>();
+            if (minTime != 0) {
+                selection = concatSelection(selection, LogData.TIMESTAMP + ">=?");
+                logSelectionArgs.add(Long.toString(minTime));
+            }
+            if (maxTime != 0) {
+                selection = concatSelection(selection, LogData.TIMESTAMP + "<=?");
+                logSelectionArgs.add(Long.toString(maxTime));
+            }
+            if (!logSelectionArgs.isEmpty()) {
+                selectionArgs = concatWhereArgs(selectionArgs,
+                        logSelectionArgs.toArray(new String[0]));
+            }
+
+            Log.d(TAG, "selection=" + selection +
+                    ", selectionArgs=" + Arrays.toString(selectionArgs));
+            if (selection != null) {
+                sql += " WHERE " + selection;
+            }
+
+            try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+                while (c.moveToNext()) {
+                    log.add(c);
+                }
+            }
+        }
+        return log;
+    }
+
     public SyncResult[] syncWithMediaStore(Context context) {
         Log.d(TAG, "DbHelper.syncWithMediaStore()");
 
@@ -635,6 +726,14 @@ public class DbHelper extends SQLiteOpenHelper {
                             Playlist.SONG_ID
                     }
             );
+
+            DbUtils.backupTable(jsonObject, db, TABLE_LOG,
+                    new String[]{
+                            LogData._ID,
+                            LogData.TIMESTAMP,
+                            LogData.SONG_ID
+                    }
+            );
         }
 
         DbUtils.writeBackupFile(jsonObject, BACKUP_FILENAME);
@@ -711,6 +810,14 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Playlist.PLAYLIST_ID
                         },
                         Playlist.SONG_ID, songIds);
+
+                DbUtils.restoreTable(jsonObject, db,
+                        TABLE_LOG, SQL_CREATE_LOG,
+                        new String[]{
+                                LogData._ID,
+                                LogData.TIMESTAMP
+                        },
+                        LogData.SONG_ID, songIds);
 
                 db.setTransactionSuccessful();
             } finally {
@@ -1039,6 +1146,11 @@ public class DbHelper extends SQLiteOpenHelper {
         String ARCHIVED = "archived";
         String LAST_PLAYED = "last_played";
         String TIMES_PLAYED = "times_played";
+    }
+
+    interface LogColumns extends BaseColumns  {
+        String TIMESTAMP = "timestamp";
+        String SONG_ID = "song_id";
     }
 
     public static class SyncResult {

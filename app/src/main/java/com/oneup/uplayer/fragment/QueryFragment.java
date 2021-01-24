@@ -2,10 +2,6 @@ package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.widget.PopupMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -16,7 +12,13 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.PopupMenu;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.activity.LogActivity;
 import com.oneup.uplayer.activity.SettingsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
 import com.oneup.uplayer.activity.StatisticsActivity;
@@ -69,6 +71,7 @@ public class QueryFragment extends Fragment
 
         bStatistics = rootView.findViewById(R.id.bStatistics);
         bStatistics.setOnClickListener(this);
+        bStatistics.setOnLongClickListener(this);
 
         bSettings = rootView.findViewById(R.id.bSettings);
         bSettings.setOnClickListener(this);
@@ -98,7 +101,7 @@ public class QueryFragment extends Fragment
                             filterFragment.getSelection(), filterFragment.getSelectionArgs(),
                             sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
         } else if (v == bStatistics) {
-            startActivity(new Intent(getActivity(), StatisticsActivity.class));
+            startActivity(new Intent(getActivity(), LogActivity.class));
         } else if (v == bSettings) {
             startActivity(new Intent(getActivity(), SettingsActivity.class));
         }
@@ -129,6 +132,9 @@ public class QueryFragment extends Fragment
                 }
             });
             pm.show();
+        } else if (v == bStatistics) {
+            startActivity(new Intent(getActivity(), StatisticsActivity.class));
+            //dbHelper.t();
         }
         return true;
     }

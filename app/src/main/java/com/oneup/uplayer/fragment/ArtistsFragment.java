@@ -7,8 +7,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.oneup.uplayer.R;
+import com.oneup.uplayer.activity.LogActivity;
 import com.oneup.uplayer.activity.SongsActivity;
-import com.oneup.uplayer.activity.StatisticsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Song;
@@ -86,11 +86,11 @@ public class ArtistsFragment extends ListFragment<Artist> {
     @Override
     protected boolean onListItemLongClick(int position, Artist artist) {
         try {
-            startActivity(new Intent(getActivity(), StatisticsActivity.class)
-                    .putExtra(StatisticsActivity.EXTRA_TITLE, artist.getArtist())
-                    .putExtra(StatisticsActivity.EXTRA_QUERY_ARTIST, false)
-                    .putExtra(StatisticsActivity.EXTRA_BASE_SELECTION, Song.ARTIST_ID + "=?")
-                    .putExtra(StatisticsActivity.EXTRA_BASE_SELECTION_ARGS,
+            startActivity(new Intent(getActivity(), LogActivity.class)
+                    .putExtra(LogActivity.EXTRA_TITLE, artist.getArtist())
+                    .putExtra(LogActivity.EXTRA_QUERY_ARTIST, false)
+                    .putExtra(LogActivity.EXTRA_BASE_SELECTION, Song.ARTIST_ID + "=?")
+                    .putExtra(LogActivity.EXTRA_BASE_SELECTION_ARGS,
                             DbHelper.getWhereArgs(artist.getId())));
         } catch (Exception ex) {
             Log.e(TAG, "Error querying artist stats", ex);

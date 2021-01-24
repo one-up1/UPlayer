@@ -2,7 +2,6 @@ package com.oneup.uplayer.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,10 +12,12 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.FilterActivity;
-import com.oneup.uplayer.activity.StatisticsActivity;
+import com.oneup.uplayer.activity.LogActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -130,19 +131,19 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 Utils.showToast(getActivity(), R.string.playing_all_last);
                 return true;
             case R.id.statistics:
-                Intent intent = new Intent(getActivity(), StatisticsActivity.class);
+                Intent intent = new Intent(getActivity(), LogActivity.class);
                 if (artist != null) {
-                    intent.putExtra(StatisticsActivity.EXTRA_TITLE, artist.getArtist());
-                    intent.putExtra(StatisticsActivity.EXTRA_QUERY_ARTIST, false);
+                    intent.putExtra(LogActivity.EXTRA_TITLE, artist.getArtist());
+                    intent.putExtra(LogActivity.EXTRA_QUERY_ARTIST, false);
                 }
-                intent.putExtra(StatisticsActivity.EXTRA_QUERY_BOOKMARKED,
+                intent.putExtra(LogActivity.EXTRA_QUERY_BOOKMARKED,
                         filterValues == null || filterValues.getBookmarked() == 0);
-                intent.putExtra(StatisticsActivity.EXTRA_QUERY_ARCHIVED,
+                intent.putExtra(LogActivity.EXTRA_QUERY_ARCHIVED,
                         filterValues == null || filterValues.getArchived() == 0);
-                intent.putExtra(StatisticsActivity.EXTRA_BASE_SELECTION, getSelection());
-                intent.putExtra(StatisticsActivity.EXTRA_BASE_SELECTION_ARGS, getSelectionArgs());
-                intent.putExtra(StatisticsActivity.EXTRA_SELECTION, filterSelection);
-                intent.putExtra(StatisticsActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
+                intent.putExtra(LogActivity.EXTRA_BASE_SELECTION, getSelection());
+                intent.putExtra(LogActivity.EXTRA_BASE_SELECTION_ARGS, getSelectionArgs());
+                intent.putExtra(LogActivity.EXTRA_SELECTION, filterSelection);
+                intent.putExtra(LogActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
                 startActivity(intent);
                 return true;
             case R.id.filter:

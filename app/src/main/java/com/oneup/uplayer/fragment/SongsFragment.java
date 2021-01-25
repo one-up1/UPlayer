@@ -134,14 +134,8 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
                 intent.putExtra(LogActivity.EXTRA_TITLE, artist.getArtist());
                 intent.putExtra(LogActivity.EXTRA_QUERY_ARTIST, false);
             }
-            intent.putExtra(LogActivity.EXTRA_QUERY_BOOKMARKED,
-                    filterValues == null || filterValues.getBookmarked() == 0);
-            intent.putExtra(LogActivity.EXTRA_QUERY_ARCHIVED,
-                    filterValues == null || filterValues.getArchived() == 0);
-            intent.putExtra(LogActivity.EXTRA_BASE_SELECTION, getSelection());
-            intent.putExtra(LogActivity.EXTRA_BASE_SELECTION_ARGS, getSelectionArgs());
-            intent.putExtra(LogActivity.EXTRA_SELECTION, filterSelection);
-            intent.putExtra(LogActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
+            intent.putExtra(LogActivity.EXTRA_SELECTION, getSelection());
+            intent.putExtra(LogActivity.EXTRA_SELECTION_ARGS, getSelectionArgs());
             startActivity(intent);
         } else if (id == R.id.filter) {
             startActivityForResult(new Intent(getActivity(), FilterActivity.class)
@@ -219,10 +213,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
 
     @Override
     protected ArrayList<Song> loadData() {
-        return getDbHelper().querySongs(
-                DbHelper.concatSelection(getSelection(), filterSelection),
-                DbHelper.concatWhereArgs(getSelectionArgs(), filterSelectionArgs),
-                getOrderBy());
+        return getDbHelper().querySongs(getSelection(), getSelectionArgs(), getOrderBy());
     }
 
     @Override
@@ -292,6 +283,16 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
             add(song, false);
             Utils.showToast(getActivity(), R.string.playing_song_last, song);
         }
+    }
+
+    @Override
+    protected String getSelection() {
+        return DbHelper.concatSelection(super.getSelection(), filterSelection);
+    }
+
+    @Override
+    protected String[] getSelectionArgs() {
+        return DbHelper.concatWhereArgs(super.getSelectionArgs(), filterSelectionArgs);
     }
 
     @Override

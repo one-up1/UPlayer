@@ -15,17 +15,13 @@ import com.oneup.uplayer.util.Settings;
 import com.oneup.uplayer.util.Util;
 import com.oneup.util.Utils;
 
+import java.util.ArrayList;
+
 public class LogActivity extends AppCompatActivity
         implements View.OnClickListener, View.OnLongClickListener {
     public static final String EXTRA_TITLE = "com.oneup.extra.TITLE";
 
     public static final String EXTRA_QUERY_ARTIST = "com.oneup.extra.QUERY_ARTIST";
-    public static final String EXTRA_QUERY_BOOKMARKED = "com.oneup.extra.QUERY_BOOKMARKED";
-    public static final String EXTRA_QUERY_ARCHIVED = "com.oneup.extra.QUERY_ARCHIVED";
-
-    public static final String EXTRA_BASE_SELECTION = "com.oneup.extra.BASE_SELECTION";
-    public static final String EXTRA_BASE_SELECTION_ARGS = "com.oneup.extra.BASE_SELECTION_ARGS";
-
     public static final String EXTRA_SELECTION = "com.oneup.extra.SELECTION";
     public static final String EXTRA_SELECTION_ARGS = "com.oneup.extra.SELECTION_ARGS";
 
@@ -37,6 +33,9 @@ public class LogActivity extends AppCompatActivity
     private long maxTime;
 
     private DbHelper dbHelper;
+    private boolean queryArtist;
+    private String selection;
+    private String[] selectionArgs;
 
     private Button bMinTime;
     private Button bMaxTime;
@@ -58,6 +57,9 @@ public class LogActivity extends AppCompatActivity
         maxTime = settings.getLong(R.string.key_log_max_timestamp, 0);
 
         dbHelper = new DbHelper(this);
+        queryArtist = getIntent().getBooleanExtra(EXTRA_QUERY_ARTIST, true);
+        selection = getIntent().getStringExtra(EXTRA_SELECTION);
+        selectionArgs = getIntent().getStringArrayExtra(EXTRA_SELECTION_ARGS);
 
         bMinTime = findViewById(R.id.bMinTime);
         if (minTime != 0) {
@@ -142,19 +144,36 @@ public class LogActivity extends AppCompatActivity
     }
 
     private void query() {
-        LogData log = dbHelper.queryLog(
-                getIntent().getBooleanExtra(EXTRA_QUERY_ARTIST, true),
-                getIntent().getBooleanExtra(EXTRA_QUERY_BOOKMARKED, true),
-                getIntent().getBooleanExtra(EXTRA_QUERY_ARCHIVED, true),
-                getIntent().getStringExtra(EXTRA_BASE_SELECTION),
-                getIntent().getStringArrayExtra(EXTRA_BASE_SELECTION_ARGS),
-                getIntent().getStringExtra(EXTRA_SELECTION),
-                getIntent().getStringArrayExtra(EXTRA_SELECTION_ARGS),
-                minTime, maxTime);
+        String selection = null;
+        ArrayList<String> selectionArgs = new ArrayList<>();
+        if (minTime != 0) {
+            selection = LogData.TIMESTAMP + ">=?";
+            selectionArgs.add(Long.toString(minTime));
+        }
+        if (maxTime != 0) {
+            selection = DbHelper.concatSelection(selection, LogData.TIMESTAMP + "<=?");
+            selectionArgs.add(Long.toString(maxTime));
+        }
 
-        tvCount.setText(getString(R.string.log_count_duration,
-                log.getCount(), Util.formatDuration(log.getDuration())));
+        LogData[] logs = dbHelper.queryLog(queryArtist, selection,
+                selection == null ? null : selectionArgs.toArray(new String[0]),
+                this.selection, this.selectionArgs);
+        LogData log = logs[0];
+        String count = getString(R.string.log_count_duration,
+                log.getCount(), Util.formatDuration(log.getDuration()));
+
+        if (logs.length > 1) {
+            count += "\n" + Util.formatPercent(log.getDuration(), logs[1].getDuration());
+        }
+
+        tvCount.setText(count);
         tvSongCount.setText(Utils.getCountString(this, R.plurals.songs, log.getSongCount()));
-        tvArtistCount.setText(Utils.getCountString(this, R.plurals.artists, log.getArtistCount()));
+        if (queryArtist) {
+            tvArtistCount.setText(Utils.getCountString(this,
+                    R.plurals.artists, log.getArtistCount()));
+            tvArtistCount.setVisibility(View.VISIBLE);
+        } else {
+            tvArtistCount.setVisibility(View.GONE);
+        }
     }
 }

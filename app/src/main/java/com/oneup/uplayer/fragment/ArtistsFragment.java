@@ -89,8 +89,8 @@ public class ArtistsFragment extends ListFragment<Artist> {
             startActivity(new Intent(getActivity(), LogActivity.class)
                     .putExtra(LogActivity.EXTRA_TITLE, artist.getArtist())
                     .putExtra(LogActivity.EXTRA_QUERY_ARTIST, false)
-                    .putExtra(LogActivity.EXTRA_BASE_SELECTION, Song.ARTIST_ID + "=?")
-                    .putExtra(LogActivity.EXTRA_BASE_SELECTION_ARGS,
+                    .putExtra(LogActivity.EXTRA_SELECTION, Song.ARTIST_ID + "=?")
+                    .putExtra(LogActivity.EXTRA_SELECTION_ARGS,
                             DbHelper.getWhereArgs(artist.getId())));
         } catch (Exception ex) {
             Log.e(TAG, "Error querying artist stats", ex);

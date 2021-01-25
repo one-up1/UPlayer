@@ -82,6 +82,14 @@ public class DbHelper extends SQLiteOpenHelper {
                     LogData.TIMESTAMP + " INTEGER," +
                     LogData.SONG_ID + " INTEGER)";
 
+    private static final String SQL_QUERY_LOG = "SELECT " +
+            "COUNT(*)," +
+            "COUNT(DISTINCT song_id)," +
+            "COUNT(DISTINCT artist_id)," +
+            "SUM(DURATION) " +
+            "FROM " + TABLE_LOG + " JOIN " + TABLE_SONGS + " ON " +
+            LogData.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID;
+
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
     private static final String ORDER_BY_ARCHIVED =
@@ -581,61 +589,40 @@ public class DbHelper extends SQLiteOpenHelper {
         return stats;
     }
 
-    public LogData queryLog(boolean artist, boolean bookmarked, boolean archived,
-                           String baseSelection, String[] baseSelectionArgs,
-                           String selection, String[] selectionArgs,
-                           long minTime, long maxTime) {
-        Log.d(TAG, "DbHelper.queryLog(" + artist + ", " + bookmarked + ", " + archived + ", " +
+    public LogData[] queryLog(boolean artist,
+                              String baseSelection, String[] baseSelectionArgs,
+                              String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryLog(" + artist + ", " +
                 baseSelection + ", " + Arrays.toString(baseSelectionArgs) + ", " +
-                selection + ", " + Arrays.toString(selectionArgs) +
-                ", " + minTime + ", " + maxTime + ")");
-        LogData log = new LogData();
+                selection + ", " + Arrays.toString(selectionArgs));
         try (SQLiteDatabase db = getReadableDatabase()) {
-            String sql = "SELECT " +
-                    "COUNT(*)," +
-                    "COUNT(DISTINCT song_id)," +
-                    "COUNT(DISTINCT artist_id)," +
-                    "SUM(DURATION) " +
-                    "FROM " + TABLE_LOG + " JOIN " + TABLE_SONGS + " ON " +
-                    LogData.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID;
-
-            if (selection == null) {
-                selection = baseSelection;
-                selectionArgs = baseSelectionArgs;
-            } else {
-                selection = concatSelection(baseSelection, selection);
-                selectionArgs = concatWhereArgs(baseSelectionArgs, selectionArgs);
-            }
-
-            ArrayList<String> logSelectionArgs = new ArrayList<>();
-            if (minTime != 0) {
-                selection = concatSelection(selection, LogData.TIMESTAMP + ">=?");
-                logSelectionArgs.add(Long.toString(minTime));
-            }
-            if (maxTime != 0) {
-                selection = concatSelection(selection, LogData.TIMESTAMP + "<=?");
-                logSelectionArgs.add(Long.toString(maxTime));
-            }
-            if (!logSelectionArgs.isEmpty()) {
-                selectionArgs = concatWhereArgs(selectionArgs,
-                        logSelectionArgs.toArray(new String[0]));
-            }
-
-            Log.d(TAG, "selection=" + selection +
-                    ", selectionArgs=" + Arrays.toString(selectionArgs));
+            ArrayList<LogData> logs = new ArrayList<>();
             if (selection != null) {
-                sql += " WHERE " + selection;
+                logs.add(queryLog(db, concatSelection(baseSelection, selection),
+                        concatWhereArgs(baseSelectionArgs, selectionArgs)));
             }
-
-            try (Cursor c = db.rawQuery(sql, selectionArgs)) {
-                c.moveToFirst();
-                log.setCount(c.getInt(0));
-                log.setSongCount(c.getInt(1));
-                log.setArtistCount(c.getInt(2));
-                log.setDuration(c.getLong(3));
-            }
+            logs.add(queryLog(db, baseSelection, baseSelectionArgs));
+            return logs.toArray(new LogData[0]);
         }
-        return log;
+    }
+
+    private static LogData queryLog(SQLiteDatabase db, String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryLog(" + selection + ", " + Arrays.toString(selectionArgs) + ")");
+        String sql = SQL_QUERY_LOG;
+        if (selection != null) {
+            sql += " WHERE " + selection;
+        }
+
+        try (Cursor c = db.rawQuery(sql, selectionArgs)) {
+            c.moveToFirst();
+
+            LogData log = new LogData();
+            log.setCount(c.getInt(0));
+            log.setSongCount(c.getInt(1));
+            log.setArtistCount(c.getInt(2));
+            log.setDuration(c.getLong(3));
+            return log;
+        }
     }
 
     public SyncResult[] syncWithMediaStore(Context context) {

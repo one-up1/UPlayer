@@ -7,8 +7,8 @@ android {
         minSdkVersion 28
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 28
-        versionCode 467
-        versionName "10.5.467"
+        versionCode 468
+        versionName "10.6.468"
     }
     buildTypes {
         release {

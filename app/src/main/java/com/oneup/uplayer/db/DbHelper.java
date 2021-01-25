@@ -127,7 +127,7 @@ public class DbHelper extends SQLiteOpenHelper {
     /*public void t() {
         Log.d(TAG, "DbHelper.t()");
         try (SQLiteDatabase db = getWritableDatabase()) {
-            Log.d(TAG, db.delete(TABLE_LOG, null, null) + " log records deleted");
+            Log.d(TAG, db.delete(TABLE_LOG, LogData.TIMESTAMP + "<1611495296", null) + " log records deleted");
             try (Cursor c = db.query(TABLE_SONGS, new String[]{Song._ID, Song.LAST_PLAYED},
                     Song.LAST_PLAYED + " IS NOT NULL", null, null, null, Song.LAST_PLAYED)) {
                 ContentValues values;
@@ -598,16 +598,19 @@ public class DbHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getReadableDatabase()) {
             ArrayList<LogData> logs = new ArrayList<>();
             if (selection != null) {
-                logs.add(queryLog(db, concatSelection(baseSelection, selection),
+                logs.add(queryLog(db, artist,
+                        concatSelection(baseSelection, selection),
                         concatWhereArgs(baseSelectionArgs, selectionArgs)));
             }
-            logs.add(queryLog(db, baseSelection, baseSelectionArgs));
+            logs.add(queryLog(db, artist, baseSelection, baseSelectionArgs));
             return logs.toArray(new LogData[0]);
         }
     }
 
-    private static LogData queryLog(SQLiteDatabase db, String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryLog(" + selection + ", " + Arrays.toString(selectionArgs) + ")");
+    private static LogData queryLog(SQLiteDatabase db, boolean artist,
+                                    String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryLog(" + artist + ", " +
+                selection + ", " + Arrays.toString(selectionArgs) + ")");
         String sql = SQL_QUERY_LOG;
         if (selection != null) {
             sql += " WHERE " + selection;
@@ -619,7 +622,9 @@ public class DbHelper extends SQLiteOpenHelper {
             LogData log = new LogData();
             log.setCount(c.getInt(0));
             log.setSongCount(c.getInt(1));
-            log.setArtistCount(c.getInt(2));
+            if (artist) {
+                log.setArtistCount(c.getInt(2));
+            }
             log.setDuration(c.getLong(3));
             return log;
         }

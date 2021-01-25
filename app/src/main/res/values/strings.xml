@@ -35,7 +35,8 @@
     <string name="clear_query_values">Clear values</string>
     <string name="statistics">Statistics</string>
     <string name="log">Log</string>
-    <string name="log_count_duration">%1$d (%2$s)</string>
+    <string name="min_time">Min time&#8230;</string>
+    <string name="max_time">Max time&#8230;</string>
     <string name="not_selected">Not: %1$s</string>
 
     <string name="settings">Settings</string>
@@ -151,14 +152,14 @@
     <string name="select_all">Select all</string>
     <string name="not">Not</string>
 
-    <plurals name="artists">
-        <item quantity="one">%1$d artist</item>
-        <item quantity="other">%1$d artists</item>
-    </plurals>
-
     <plurals name="songs">
         <item quantity="one">%1$d song</item>
         <item quantity="other">%1$d songs</item>
+    </plurals>
+
+    <plurals name="artists">
+        <item quantity="one">%1$d artist</item>
+        <item quantity="other">%1$d artists</item>
     </plurals>
 
     <plurals name="tags">
@@ -170,7 +171,4 @@
         <item quantity="one">%1$d playlist</item>
         <item quantity="other">%1$d playlists</item>
     </plurals>
-
-    <string name="min_time">Min time&#8230;</string>
-    <string name="max_time">Max time&#8230;</string>
 </resources>

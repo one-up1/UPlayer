@@ -159,16 +159,28 @@ public class LogActivity extends AppCompatActivity
                 selection == null ? null : selectionArgs.toArray(new String[0]),
                 this.selection, this.selectionArgs);
         LogData log = logs[0];
-        String count = getString(R.string.log_count_duration,
-                log.getCount(), Util.formatDuration(log.getDuration()));
-
-        if (logs.length > 1) {
-            count += "\n" + Util.formatPercent(log.getDuration(), logs[1].getDuration());
+        if (log.getCount() > 0) {
+            String count = log.getCount() + " (" +
+                    Util.formatDuration(log.getDuration()) + ")";
+            if (logs.length > 1) {
+                count += " (" + Util.formatPercent(
+                        log.getDuration(), logs[1].getDuration()) + ")";
+            }
+            tvCount.setText(count);
+            tvCount.setVisibility(View.VISIBLE);
+        } else {
+            tvCount.setVisibility(View.GONE);
         }
 
-        tvCount.setText(count);
-        tvSongCount.setText(Utils.getCountString(this, R.plurals.songs, log.getSongCount()));
-        if (queryArtist) {
+        if (log.getSongCount() > 1) {
+            tvSongCount.setText(Utils.getCountString(this,
+                    R.plurals.songs, log.getSongCount()));
+            tvSongCount.setVisibility(View.VISIBLE);
+        } else {
+            tvSongCount.setVisibility(View.GONE);
+        }
+
+        if (log.getArtistCount() > 1) {
             tvArtistCount.setText(Utils.getCountString(this,
                     R.plurals.artists, log.getArtistCount()));
             tvArtistCount.setVisibility(View.VISIBLE);

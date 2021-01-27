@@ -153,7 +153,6 @@ public class LogActivity extends AppCompatActivity
             tvCount.setVisibility(View.VISIBLE);
         } else {
             tvCount.setVisibility(View.GONE);
-            lvDays.setVisibility(View.GONE);
         }
 
         if (log.getSongCount() > 1) {

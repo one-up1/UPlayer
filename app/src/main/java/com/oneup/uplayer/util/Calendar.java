@@ -23,6 +23,10 @@ public class Calendar {
         calendar.set(java.util.Calendar.DAY_OF_MONTH, dayOfMonth);
     }
 
+    public void addDay() {
+        calendar.add(java.util.Calendar.DATE, 1);
+    }
+
     public long getTimeOfDay() {
         return TimeUnit.HOURS.toSeconds(calendar.get(java.util.Calendar.HOUR_OF_DAY)) +
                 TimeUnit.MINUTES.toSeconds(calendar.get(java.util.Calendar.MINUTE)) +

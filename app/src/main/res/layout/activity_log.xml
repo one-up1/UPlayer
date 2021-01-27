@@ -11,16 +11,16 @@
     tools:context=".activity.LogActivity">
 
     <Button
-        android:id="@+id/bMinTime"
+        android:id="@+id/bMinDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/min_time" />
+        android:text="@string/min_date" />
 
     <Button
-        android:id="@+id/bMaxTime"
+        android:id="@+id/bMaxDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/max_time" />
+        android:text="@string/max_date" />
 
     <TextView
         android:id="@+id/tvCount"
@@ -36,5 +36,10 @@
         android:id="@+id/tvArtistCount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <ListView
+        android:id="@+id/lvDays"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </LinearLayout>

@@ -35,8 +35,8 @@
     <string name="clear_query_values">Clear values</string>
     <string name="statistics">Statistics</string>
     <string name="log">Log</string>
-    <string name="min_time">Min time&#8230;</string>
-    <string name="max_time">Max time&#8230;</string>
+    <string name="min_date">Min date&#8230;</string>
+    <string name="max_date">Max date&#8230;</string>
     <string name="not_selected">Not: %1$s</string>
 
     <string name="settings">Settings</string>
@@ -138,7 +138,7 @@
     <string name="save_playlist_confirm">Overwrite \'%1$s\'?</string>
     <string name="playlist_saved">Playlist saved</string>
 
-    <string name="add">Add</string>
+    <string name="add">Add</string>f
     <string name="add_playlist">Add playlist</string>
     <string name="rename">Rename</string>
     <string name="rename_playlist">Rename playlist</string>

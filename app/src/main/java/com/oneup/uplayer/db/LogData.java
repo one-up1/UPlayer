@@ -1,25 +1,32 @@
 package com.oneup.uplayer.db;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import com.oneup.uplayer.util.Util;
 
-public class LogData implements Parcelable, DbHelper.LogColumns {
+import java.util.ArrayList;
+
+public class LogData implements DbHelper.LogColumns {
     private int count;
     private int songCount;
     private int artistCount;
     private long duration;
 
-    @Override
-    public int describeContents() {
-        return 0;
+    private LogData total;
+    private ArrayList<LogData> days;
+    private long date;
+
+    public LogData() {
     }
 
     @Override
-    public void writeToParcel(Parcel out, int flags) {
-        out.writeInt(count);
-        out.writeInt(songCount);
-        out.writeInt(artistCount);
-        out.writeLong(duration);
+    public String toString() {
+        String s = count + " (" + Util.formatDuration(duration) + ")";
+        if (total != null) {
+            s += " (" + Util.formatPercent(duration, total.duration) + ")";
+        }
+        if (date != 0) {
+            s = Util.formatDate(date) + "\n" + s;
+        }
+        return s;
     }
 
     public int getCount() {
@@ -54,21 +61,27 @@ public class LogData implements Parcelable, DbHelper.LogColumns {
         this.duration = duration;
     }
 
-    public static final Parcelable.Creator<?> CREATOR = new Parcelable.Creator<LogData>() {
+    public LogData getTotal() {
+        return total;
+    }
 
-        @Override
-        public LogData createFromParcel(Parcel in) {
-            LogData log = new LogData();
-            log.count = in.readInt();
-            log.songCount = in.readInt();
-            log.artistCount = in.readInt();
-            log.duration = in.readLong();
-            return log;
-        }
+    public void setTotal(LogData total) {
+        this.total = total;
+    }
 
-        @Override
-        public LogData[] newArray(int size) {
-            return new LogData[size];
-        }
-    };
+    public ArrayList<LogData> getDays() {
+        return days;
+    }
+
+    public void setDays(ArrayList<LogData> days) {
+        this.days = days;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public void setDate(long date) {
+        this.date = date;
+    }
 }

@@ -589,28 +589,64 @@ public class DbHelper extends SQLiteOpenHelper {
         return stats;
     }
 
-    public LogData[] queryLog(boolean artist,
-                              String baseSelection, String[] baseSelectionArgs,
-                              String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryLog(" + artist + ", " +
-                baseSelection + ", " + Arrays.toString(baseSelectionArgs) + ", " +
-                selection + ", " + Arrays.toString(selectionArgs));
+    public LogData queryLog(long minDate, long maxDate, String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryLog(" + minDate + ", " + maxDate +
+                ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
-            ArrayList<LogData> logs = new ArrayList<>();
-            if (selection != null) {
-                logs.add(queryLog(db, artist,
-                        concatSelection(baseSelection, selection),
-                        concatWhereArgs(baseSelectionArgs, selectionArgs)));
+            LogData log = queryLog(db, minDate, maxDate, selection, selectionArgs);
+
+            if (minDate != 0 && log.getCount() != 0) {
+                Calendar calendar = new Calendar();
+                calendar.setTime(minDate);
+
+                long start, end = maxDate == 0 ? Calendar.currentTime() : maxDate;
+                ArrayList<LogData> days = new ArrayList<>();
+                LogData day;
+                while ((start = calendar.getTime()) <= end) {
+                    calendar.addDay();
+                    day = queryLog(db, start, calendar.getTime(), selection, selectionArgs);
+                    if (day.getCount() != 0) {
+                        day.setDate(start);
+                        days.add(day);
+                    }
+                }
+                Log.d(TAG, days.size() + " days queried");
+                log.setDays(days);
             }
-            logs.add(queryLog(db, artist, baseSelection, baseSelectionArgs));
-            return logs.toArray(new LogData[0]);
+
+            return log;
         }
     }
 
-    private static LogData queryLog(SQLiteDatabase db, boolean artist,
-                                    String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryLog(" + artist + ", " +
-                selection + ", " + Arrays.toString(selectionArgs) + ")");
+    private LogData queryLog(SQLiteDatabase db,
+                             long minDate, long maxDate, String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryLog(" + minDate + ", " + maxDate +
+                ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
+        String dateSelection = null;
+        ArrayList<String> dateSelectionArgsList = new ArrayList<>();
+        if (minDate != 0) {
+            dateSelection = LogData.TIMESTAMP + ">=?";
+            dateSelectionArgsList.add(Long.toString(minDate));
+        }
+        if (maxDate != 0) {
+            dateSelection = DbHelper.concatSelection(dateSelection, LogData.TIMESTAMP + "<=?");
+            dateSelectionArgsList.add(Long.toString(maxDate));
+        }
+        String[] dateSelectionArgs = dateSelection == null ? null :
+                dateSelectionArgsList.toArray(new String[0]);
+
+        LogData total = queryLog(db, dateSelection, dateSelectionArgs);
+        if (selection != null) {
+            LogData log = queryLog(db, dateSelection + " AND " + selection,
+                    concatWhereArgs(dateSelectionArgs, selectionArgs));
+            log.setTotal(total);
+            return log;
+        }
+        return total;
+    }
+
+    private static LogData queryLog(SQLiteDatabase db, String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryLog(" + selection + ", " + Arrays.toString(selectionArgs) + ")");
         String sql = SQL_QUERY_LOG;
         if (selection != null) {
             sql += " WHERE " + selection;
@@ -622,9 +658,7 @@ public class DbHelper extends SQLiteOpenHelper {
             LogData log = new LogData();
             log.setCount(c.getInt(0));
             log.setSongCount(c.getInt(1));
-            if (artist) {
-                log.setArtistCount(c.getInt(2));
-            }
+            log.setArtistCount(c.getInt(2));
             log.setDuration(c.getLong(3));
             return log;
         }

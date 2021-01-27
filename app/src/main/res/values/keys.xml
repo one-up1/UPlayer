@@ -20,8 +20,8 @@
     <string name="key_query_min_times_played">query_min_times_played</string>
     <string name="key_query_max_times_played">query_max_times_played</string>
 
-    <string name="key_log_min_timestamp">log_min_timestamp</string>
-    <string name="key_log_max_timestamp">log_max_timestamp</string>
+    <string name="key_log_min_date">log_min_date</string>
+    <string name="key_log_max_date">log_max_date</string>
 
     <string name="key_query_sort_column">query_sort_column</string>
     <string name="key_query_sort_desc">query_sort_desc</string>

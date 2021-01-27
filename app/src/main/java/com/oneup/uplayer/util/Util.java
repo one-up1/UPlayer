@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressLint("SimpleDateFormat")
 public class Util {
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("E dd-MM-yyyy");
     private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
     private static final DateFormat DATE_TIME_FORMAT_WEEKDAY =
             new SimpleDateFormat("E dd-MM-yyyy HH:mm");
@@ -59,12 +60,16 @@ public class Util {
         view.requestFocus();
     }
 
+    public static String formatDate(long seconds) {
+        return formatDate(seconds, DATE_FORMAT);
+    }
+
     public static String formatDateTime(long seconds) {
-        return formatDateTime(seconds, DATE_TIME_FORMAT);
+        return formatDate(seconds, DATE_TIME_FORMAT);
     }
 
     public static String formatDateTimeAgo(long seconds) {
-        return formatDateTime(seconds, DATE_TIME_FORMAT_WEEKDAY) +
+        return formatDate(seconds, DATE_TIME_FORMAT_WEEKDAY) +
                 "\n" + formatTimeAgo(seconds);
     }
 
@@ -133,7 +138,7 @@ public class Util {
         }
     }
 
-    private static String formatDateTime(long seconds, DateFormat format) {
+    private static String formatDate(long seconds, DateFormat format) {
         return format.format(TimeUnit.SECONDS.toMillis(seconds));
     }
 

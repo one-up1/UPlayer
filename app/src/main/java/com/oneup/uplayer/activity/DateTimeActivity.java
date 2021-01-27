@@ -19,8 +19,10 @@ public class DateTimeActivity extends AppCompatActivity
         implements CalendarView.OnDateChangeListener, View.OnClickListener {
     public static final String EXTRA_TITLE_ID = "com.oneup.extra.TITLE_ID";
     public static final String EXTRA_TIME = "com.oneup.extra.TIME";
+    public static final String EXTRA_SHOW_EDIT_TIME = "com.oneup.extra.SHOW_EDIT_TIME";
 
     private Calendar calendar;
+    private boolean showEditTime;
 
     private CalendarView cvDate;
     private EditTime etTime;
@@ -36,13 +38,18 @@ public class DateTimeActivity extends AppCompatActivity
         if (getIntent().hasExtra(EXTRA_TIME)) {
             calendar.setTime(getIntent().getLongExtra(EXTRA_TIME, 0));
         }
+        showEditTime = getIntent().getBooleanExtra(EXTRA_SHOW_EDIT_TIME, true);
 
         cvDate = findViewById(R.id.cvDate);
         cvDate.setOnDateChangeListener(this);
         cvDate.setDate(TimeUnit.SECONDS.toMillis(calendar.getTime()));
 
         etTime = findViewById(R.id.etTime);
-        etTime.setTime(calendar.getTimeOfDay());
+        if (showEditTime) {
+            etTime.setTime(calendar.getTimeOfDay());
+        } else {
+            etTime.setVisibility(View.GONE);
+        }
 
         bOk = findViewById(R.id.bOk);
         bOk.setOnClickListener(this);
@@ -80,7 +87,7 @@ public class DateTimeActivity extends AppCompatActivity
     }
 
     private void ok() {
-        calendar.setTimeOfDay(etTime.getTime());
+        calendar.setTimeOfDay(showEditTime ? etTime.getTime() : 0);
         setResult(RESULT_OK, new Intent()
                 .putExtra(EXTRA_TIME, calendar.getTime()));
         finish();

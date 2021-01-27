@@ -13,9 +13,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.LogData;
+import com.oneup.uplayer.fragment.ListFragment;
 import com.oneup.uplayer.util.Settings;
 import com.oneup.uplayer.util.Util;
 import com.oneup.util.Utils;
+
+import java.util.ArrayList;
 
 public class LogActivity extends AppCompatActivity
         implements View.OnClickListener, View.OnLongClickListener {
@@ -28,22 +31,9 @@ public class LogActivity extends AppCompatActivity
     private static final int REQUEST_SELECT_MIN_DATE = 1;
     private static final int REQUEST_SELECT_MAX_DATE = 2;
 
-    private Settings settings;
-    private long minDate;
-    private long maxDate;
-
-    private DbHelper dbHelper;
-    private boolean queryArtist;
-    private String selection;
-    private String[] selectionArgs;
-
     private Button bMinDate;
     private Button bMaxDate;
-    private TextView tvCount;
-    private TextView tvSongCount;
-    private TextView tvArtistCount;
-
-    private ListView lvDays;
+    private LogsFragment logsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,14 +44,9 @@ public class LogActivity extends AppCompatActivity
             setTitle(getIntent().getStringExtra(EXTRA_TITLE));
         }
 
-        settings = Settings.get(this);
-        minDate = settings.getLong(R.string.key_log_min_date, 0);
-        maxDate = settings.getLong(R.string.key_log_max_date, 0);
-
-        dbHelper = new DbHelper(this);
-        queryArtist = getIntent().getBooleanExtra(EXTRA_QUERY_ARTIST, true);
-        selection = getIntent().getStringExtra(EXTRA_SELECTION);
-        selectionArgs = getIntent().getStringArrayExtra(EXTRA_SELECTION_ARGS);
+        Settings settings = Settings.get(this);
+        long minDate = settings.getLong(R.string.key_log_min_date, 0);
+        long maxDate = settings.getLong(R.string.key_log_max_date, 0);
 
         bMinDate = findViewById(R.id.bMinDate);
         if (minDate != 0) {
@@ -77,12 +62,13 @@ public class LogActivity extends AppCompatActivity
         bMaxDate.setOnClickListener(this);
         bMaxDate.setOnLongClickListener(this);
 
-        tvCount = findViewById(R.id.tvCount);
-        tvSongCount = findViewById(R.id.tvSongCount);
-        tvArtistCount = findViewById(R.id.tvArtistCount);
-
-        lvDays = findViewById(R.id.lvDays);
-        query();
+        logsFragment = (LogsFragment)
+                getSupportFragmentManager().findFragmentById(R.id.logsFragment);
+        logsFragment.setMinDate(minDate);
+        logsFragment.setMaxDate(maxDate);
+        logsFragment.setSelection(getIntent().getStringExtra(EXTRA_SELECTION));
+        logsFragment.setSelectionArgs(getIntent().getStringArrayExtra(EXTRA_SELECTION_ARGS));
+        logsFragment.setArtist(getIntent().getBooleanExtra(EXTRA_QUERY_ARTIST, true));
     }
 
     @Override
@@ -91,47 +77,40 @@ public class LogActivity extends AppCompatActivity
         if (resultCode == AppCompatActivity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_SELECT_MIN_DATE:
-                    minDate = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    long minDate = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMinDate.setText(Util.formatDate(minDate));
-                    query();
+                    logsFragment.setMinDate(minDate);
+                    logsFragment.reloadData();
                     break;
                 case REQUEST_SELECT_MAX_DATE:
-                    maxDate = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
+                    long maxDate = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMaxDate.setText(Util.formatDate(maxDate));
-                    query();
+                    logsFragment.setMaxDate(maxDate);
+                    logsFragment.reloadData();
                     break;
             }
         }
     }
 
     @Override
-    protected void onDestroy() {
-        settings.edit()
-                .putLong(R.string.key_log_min_date, minDate)
-                .putLong(R.string.key_log_max_date, maxDate)
-                .apply();
-        super.onDestroy();
-    }
-
-    @Override
     public void onClick(View v) {
         if (v == bMinDate) {
-            selectDate(R.string.min_date, minDate, REQUEST_SELECT_MIN_DATE);
+            selectDate(R.string.min_date, logsFragment.getMinDate(), REQUEST_SELECT_MIN_DATE);
         } else if (v == bMaxDate) {
-            selectDate(R.string.max_date, maxDate, REQUEST_SELECT_MAX_DATE);
+            selectDate(R.string.max_date, logsFragment.getMaxDate(), REQUEST_SELECT_MAX_DATE);
         }
     }
 
     @Override
     public boolean onLongClick(View v) {
         if (v == bMinDate) {
-            minDate = 0;
             bMinDate.setText(R.string.min_date);
-            query();
+            logsFragment.setMinDate(0);
+            logsFragment.reloadData();
         } else if (v == bMaxDate) {
-            maxDate = 0;
             bMaxDate.setText(R.string.max_date);
-            query();
+            logsFragment.setMaxDate(0);
+            logsFragment.reloadData();
         }
         return true;
     }
@@ -146,45 +125,120 @@ public class LogActivity extends AppCompatActivity
         startActivityForResult(intent, requestCode);
     }
 
-    private void query() {
-        LogData log = dbHelper.queryLog(minDate, maxDate, selection, selectionArgs);
-        if (log.getCount() > 0) {
-            tvCount.setText(log.toString());
-            tvCount.setVisibility(View.VISIBLE);
-        } else {
-            tvCount.setVisibility(View.GONE);
+    public static class LogsFragment extends ListFragment<LogData> {
+        private long minDate;
+        private long maxDate;
+        private String selection;
+        private String[] selectionArgs;
+        private boolean artist;
+
+        public LogsFragment() {
+            super(R.layout.list_item_log, 0, 0, 0, 0, null, null);
         }
 
-        if (log.getSongCount() > 1) {
-            String count = Utils.getCountString(this, R.plurals.songs, log.getSongCount());
-            if (log.getSongCount() != log.getCount()) {
-                count += " (" + Util.formatFraction(
-                        log.getCount(), log.getSongCount()) + ")";
+        @Override
+        public void onResume() {
+            super.onResume();
+            reloadData();
+        }
+
+        @Override
+        public void onDestroy() {
+            Settings.get(getActivity()).edit()
+                    .putLong(R.string.key_log_min_date, minDate)
+                    .putLong(R.string.key_log_max_date, maxDate)
+                    .apply();
+            super.onDestroy();
+        }
+
+        @Override
+        protected ArrayList<LogData> loadData() {
+            return getDbHelper().queryLog(minDate, maxDate, selection, selectionArgs);
+        }
+
+        @Override
+        protected void setListItemContent(View rootView, int position, LogData log) {
+            super.setListItemContent(rootView, position, log);
+
+            TextView tvDate = rootView.findViewById(R.id.tvDate);
+            if (log.getDate() == 0) {
+                tvDate.setVisibility(View.GONE);
+            } else {
+                tvDate.setText(Util.formatDate(log.getDate()));
+                tvDate.setVisibility(View.VISIBLE);
             }
-            tvSongCount.setText(count);
-            tvSongCount.setVisibility(View.VISIBLE);
-        } else {
-            tvSongCount.setVisibility(View.GONE);
-        }
 
-        if (queryArtist && log.getArtistCount() > 1) {
-            String count = Utils.getCountString(this, R.plurals.artists, log.getArtistCount());
-            if (log.getArtistCount() != log.getSongCount()) {
-                count += " (" + Util.formatFraction(
-                        log.getSongCount(), log.getArtistCount()) + ")";
+            TextView tvCount = rootView.findViewById(R.id.tvCount);
+            if (log.getCount() > 0) {
+                String count = log.getCount() + " (" +
+                        Util.formatDuration(log.getDuration()) + ")";
+                if (log.getTotal() != null) {
+                    count += " (" + Util.formatPercent(log.getDuration(),
+                            log.getTotal().getDuration()) + ")";
+                }
+                tvCount.setText(count);
+                tvCount.setVisibility(View.VISIBLE);
+            } else {
+                tvCount.setVisibility(View.GONE);
             }
-            tvArtistCount.setText(count);
-            tvArtistCount.setVisibility(View.VISIBLE);
-        } else {
-            tvArtistCount.setVisibility(View.GONE);
+
+            TextView tvSongCount = rootView.findViewById(R.id.tvSongCount);
+            if (log.getSongCount() > 1) {
+                String count = Utils.getCountString(getActivity(),
+                        R.plurals.songs, log.getSongCount());
+                if (log.getSongCount() != log.getCount()) {
+                    count += " (" + Util.formatFraction(
+                            log.getCount(), log.getSongCount()) + ")";
+                }
+                tvSongCount.setText(count);
+                tvSongCount.setVisibility(View.VISIBLE);
+            } else {
+                tvSongCount.setVisibility(View.GONE);
+            }
+
+            TextView tvArtistCount = rootView.findViewById(R.id.tvArtistCount);
+            if (artist && log.getArtistCount() > 1) {
+                String count = Utils.getCountString(getActivity(),
+                        R.plurals.artists, log.getArtistCount());
+                if (log.getArtistCount() != log.getSongCount()) {
+                    count += " (" + Util.formatFraction(
+                            log.getSongCount(), log.getArtistCount()) + ")";
+                }
+                tvArtistCount.setText(count);
+                tvArtistCount.setVisibility(View.VISIBLE);
+            } else {
+                tvArtistCount.setVisibility(View.GONE);
+            }
         }
 
-        if (log.getDays() == null) {
-            lvDays.setVisibility(View.GONE);
-        } else {
-            lvDays.setAdapter(new ArrayAdapter<>(this,
-                    android.R.layout.simple_list_item_1, log.getDays()));
-            lvDays.setVisibility(View.VISIBLE);
+        public long getMinDate() {
+            return minDate;
+        }
+
+        public void setMinDate(long minDate) {
+            this.minDate = minDate;
+        }
+
+        public long getMaxDate() {
+            return maxDate;
+        }
+
+        public void setMaxDate(long maxDate) {
+            this.maxDate = maxDate;
+        }
+
+        @Override
+        public void setSelection(String selection) {
+            this.selection = selection;
+        }
+
+        @Override
+        public void setSelectionArgs(String[] selectionArgs) {
+            this.selectionArgs = selectionArgs;
+        }
+
+        public void setArtist(boolean artist) {
+            this.artist = artist;
         }
     }
 }

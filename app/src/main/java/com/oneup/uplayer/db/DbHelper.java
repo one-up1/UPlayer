@@ -589,32 +589,32 @@ public class DbHelper extends SQLiteOpenHelper {
         return stats;
     }
 
-    public LogData queryLog(long minDate, long maxDate, String selection, String[] selectionArgs) {
+    public ArrayList<LogData> queryLog(long minDate, long maxDate, String selection, String[] selectionArgs) {
         Log.d(TAG, "DbHelper.queryLog(" + minDate + ", " + maxDate +
                 ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
+            ArrayList<LogData> logs = new ArrayList<>();
             LogData log = queryLog(db, minDate, maxDate, selection, selectionArgs);
+            logs.add(log);
 
             if (minDate != 0 && log.getCount() != 0) {
                 Calendar calendar = new Calendar();
                 calendar.setTime(minDate);
 
                 long start, end = maxDate == 0 ? Calendar.currentTime() : maxDate;
-                ArrayList<LogData> days = new ArrayList<>();
                 LogData day;
                 while ((start = calendar.getTime()) <= end) {
                     calendar.addDay();
                     day = queryLog(db, start, calendar.getTime(), selection, selectionArgs);
                     if (day.getCount() != 0) {
                         day.setDate(start);
-                        days.add(day);
+                        logs.add(day);
                     }
                 }
-                Log.d(TAG, days.size() + " days queried");
-                log.setDays(days);
+                Log.d(TAG, (logs.size() - 1) + " days queried");
             }
 
-            return log;
+            return logs;
         }
     }
 

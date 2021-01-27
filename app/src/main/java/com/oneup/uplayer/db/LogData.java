@@ -1,9 +1,5 @@
 package com.oneup.uplayer.db;
 
-import com.oneup.uplayer.util.Util;
-
-import java.util.ArrayList;
-
 public class LogData implements DbHelper.LogColumns {
     private int count;
     private int songCount;
@@ -11,22 +7,9 @@ public class LogData implements DbHelper.LogColumns {
     private long duration;
 
     private LogData total;
-    private ArrayList<LogData> days;
     private long date;
 
     public LogData() {
-    }
-
-    @Override
-    public String toString() {
-        String s = count + " (" + Util.formatDuration(duration) + ")";
-        if (total != null) {
-            s += " (" + Util.formatPercent(duration, total.duration) + ")";
-        }
-        if (date != 0) {
-            s = Util.formatDate(date) + "\n" + s;
-        }
-        return s;
     }
 
     public int getCount() {
@@ -67,14 +50,6 @@ public class LogData implements DbHelper.LogColumns {
 
     public void setTotal(LogData total) {
         this.total = total;
-    }
-
-    public ArrayList<LogData> getDays() {
-        return days;
-    }
-
-    public void setDays(ArrayList<LogData> days) {
-        this.days = days;
     }
 
     public long getDate() {

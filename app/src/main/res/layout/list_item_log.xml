@@ -7,7 +7,7 @@
     android:gravity="center_vertical"
     android:paddingStart="@dimen/list_item_padding_start"
     android:paddingEnd="@dimen/list_item_padding_end"
-    android:minHeight="@dimen/list_item_height"
+    android:minHeight="@dimen/list_item_height_large"
     android:descendantFocusability="blocksDescendants"
     android:baselineAligned="false">
 

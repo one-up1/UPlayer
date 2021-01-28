@@ -23,8 +23,8 @@ public class Calendar {
         calendar.set(java.util.Calendar.DAY_OF_MONTH, dayOfMonth);
     }
 
-    public void addDay() {
-        calendar.add(java.util.Calendar.DATE, 1);
+    public void addDate(int amount) {
+        calendar.add(java.util.Calendar.DATE, amount);
     }
 
     public long getTimeOfDay() {

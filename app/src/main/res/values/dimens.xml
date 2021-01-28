@@ -9,6 +9,7 @@
     <dimen name="list_item_padding_start">12dp</dimen>
     <dimen name="list_item_padding_end">4dp</dimen>
     <dimen name="list_item_height">36dp</dimen>
+    <dimen name="list_item_height_large">48dp</dimen>
     <dimen name="list_item_header_height">42dp</dimen>
     <dimen name="list_item_text_large">14sp</dimen>
     <dimen name="list_item_text_small">12sp</dimen>

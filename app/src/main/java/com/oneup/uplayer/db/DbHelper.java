@@ -14,6 +14,7 @@ import android.util.LongSparseArray;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.util.Calendar;
+import com.oneup.uplayer.util.Util;
 import com.oneup.util.DbUtils;
 
 import org.json.JSONArray;
@@ -589,8 +590,10 @@ public class DbHelper extends SQLiteOpenHelper {
         return stats;
     }
 
-    public ArrayList<LogData> queryLog(long minDate, long maxDate, String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryLog(" + minDate + ", " + maxDate +
+    public ArrayList<LogData> queryLog(long minDate, long maxDate,
+                                       String selection, String[] selectionArgs) {
+        Log.d(TAG, "DbHelper.queryLog(" +
+                Util.formatDate(minDate) + ", " + Util.formatDate(maxDate) +
                 ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
         try (SQLiteDatabase db = getReadableDatabase()) {
             ArrayList<LogData> logs = new ArrayList<>();
@@ -599,6 +602,26 @@ public class DbHelper extends SQLiteOpenHelper {
 
             if (minDate != 0 && log.getCount() != 0) {
                 Calendar calendar = new Calendar();
+                if (maxDate == 0) {
+                    calendar.setTimeOfDay(0);
+                } else {
+                    calendar.setTime(maxDate);
+                }
+                calendar.addDate(1);
+
+                long date;
+                LogData dateLog;
+                while ((maxDate = calendar.getTime()) > minDate) {
+                    calendar.addDate(-1);
+                    date = calendar.getTime();
+
+                    dateLog = queryLog(db, date, maxDate, selection, selectionArgs);
+                    if (dateLog.getCount() != 0) {
+                        dateLog.setDate(date);
+                        logs.add(dateLog);
+                    }
+                }
+                /*Calendar calendar = new Calendar();
                 calendar.setTime(minDate);
 
                 long start, end = maxDate == 0 ? Calendar.currentTime() : maxDate;
@@ -608,9 +631,9 @@ public class DbHelper extends SQLiteOpenHelper {
                     day = queryLog(db, start, calendar.getTime(), selection, selectionArgs);
                     if (day.getCount() != 0) {
                         day.setDate(start);
-                        logs.add(day);
+                        logs.add(1, day);
                     }
-                }
+                }*/
                 Log.d(TAG, (logs.size() - 1) + " days queried");
             }
 
@@ -620,7 +643,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private LogData queryLog(SQLiteDatabase db,
                              long minDate, long maxDate, String selection, String[] selectionArgs) {
-        Log.d(TAG, "DbHelper.queryLog(" + minDate + ", " + maxDate +
+        Log.d(TAG, "DbHelper.queryLog(" +
+                Util.formatDate(minDate) + ", " + Util.formatDate(maxDate) +
                 ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
         String dateSelection = null;
         ArrayList<String> dateSelectionArgsList = new ArrayList<>();

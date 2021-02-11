@@ -3,15 +3,12 @@ package com.oneup.uplayer.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.oneup.uplayer.R;
-import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.LogData;
 import com.oneup.uplayer.fragment.ListFragment;
 import com.oneup.uplayer.util.Settings;

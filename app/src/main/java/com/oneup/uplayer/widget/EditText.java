@@ -10,8 +10,9 @@ import android.view.View;
 import java.text.NumberFormat;
 
 public class EditText extends AppCompatEditText implements View.OnLongClickListener {
-    private NumberFormat numberFormat;
-    private TextWatcher textWatcher;
+    private final NumberFormat numberFormat;
+    private final TextWatcher textWatcher;
+
     private OnTextChangeListener onTextChangeListener;
 
     public EditText(Context context) {

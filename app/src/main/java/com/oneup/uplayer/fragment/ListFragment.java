@@ -29,13 +29,13 @@ public abstract class ListFragment<T>
 
     private static final String TAG = "UPlayer";
 
-    private int listItemResource;
-    private int listItemContextMenuResource;
-    private int listItemHeaderId;
-    private int listItemContentId;
-    private int listItemInfoId;
+    private final int listItemResource;
+    private final int listItemContextMenuResource;
+    private final int listItemHeaderId;
+    private final int listItemContentId;
+    private final int listItemInfoId;
 
-    private String[] sortColumnValues;
+    private final String[] sortColumnValues;
     private String[] sortColumns;
 
     private DbHelper dbHelper;
@@ -303,7 +303,7 @@ public abstract class ListFragment<T>
     }
 
     private class ListAdapter extends BaseAdapter {
-        private LayoutInflater layoutInflater;
+        private final LayoutInflater layoutInflater;
 
         private ListAdapter() {
             layoutInflater = LayoutInflater.from(getActivity());

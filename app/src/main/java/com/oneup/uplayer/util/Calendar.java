@@ -3,7 +3,7 @@ package com.oneup.uplayer.util;
 import java.util.concurrent.TimeUnit;
 
 public class Calendar {
-    private java.util.Calendar calendar;
+    private final java.util.Calendar calendar;
 
     public Calendar() {
         calendar = java.util.Calendar.getInstance();

@@ -11,10 +11,10 @@ import com.oneup.uplayer.util.Util;
 import java.util.concurrent.TimeUnit;
 
 public class EditTime extends LinearLayout implements EditText.OnTextChangeListener {
-    private Context context;
+    private final Context context;
 
-    private EditText etHour;
-    private EditText etMinute;
+    private final EditText etHour;
+    private final EditText etMinute;
 
     public EditTime(Context context, AttributeSet attrs) {
         super(context, attrs);

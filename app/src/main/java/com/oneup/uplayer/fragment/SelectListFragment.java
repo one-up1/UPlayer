@@ -21,7 +21,7 @@ public abstract class SelectListFragment<T> extends ListFragment<T>
         implements CompoundButton.OnCheckedChangeListener {
     public static final String ARG_NOT = "not";
 
-    private int listItemCheckBoxId;
+    private final int listItemCheckBoxId;
 
     private CheckBox cbNot;
 

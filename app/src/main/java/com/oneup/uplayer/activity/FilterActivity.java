@@ -30,8 +30,7 @@ public class FilterActivity extends AppCompatActivity {
         filterFragment.setShowArtistFilter(getIntent().getBooleanExtra(
                 EXTRA_SHOW_ARTIST_FILTER, true));
         filterFragment.setSelectPlaylistConfirmId(-1);
-        filterFragment.setValues((FilterFragment.Values) getIntent()
-                .getParcelableExtra(FilterActivity.EXTRA_VALUES));
+        filterFragment.setValues(getIntent().getParcelableExtra(FilterActivity.EXTRA_VALUES));
         fragmentTransaction.commit();
     }
 

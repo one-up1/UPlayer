@@ -98,7 +98,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String BACKUP_FILENAME = "UPlayer.json";
 
-    private Context context;
+    private final Context context;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

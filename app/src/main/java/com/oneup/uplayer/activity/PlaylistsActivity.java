@@ -59,7 +59,7 @@ public class PlaylistsActivity extends AppCompatActivity {
 
             Bundle args = getArguments();
             if (args != null) {
-                setCheckedListItems(args.<Playlist>getParcelableArrayList(ARG_CHECKED_PLAYLISTS));
+                setCheckedListItems(args.getParcelableArrayList(ARG_CHECKED_PLAYLISTS));
                 selectConfirmId = args.getInt(ARG_SELECT_CONFIRM_ID);
             }
         }

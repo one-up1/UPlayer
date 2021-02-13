@@ -4,8 +4,8 @@ import android.text.InputFilter;
 import android.text.Spanned;
 
 class NumberFilter implements InputFilter {
-    private double max;
-    private boolean inclusive;
+    private final double max;
+    private final boolean inclusive;
 
     private NumberFilter(double max, boolean inclusive) {
         this.max = max;

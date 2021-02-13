@@ -103,10 +103,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
-        private Fragment[] items;
+        private final Fragment[] items;
 
         private SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
             items = new Fragment[6];
         }
 

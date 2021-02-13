@@ -10,8 +10,8 @@ import java.util.Set;
 public class Settings {
     public static final int DEFAULT_VOLUME = 25; // Also set in settings.xml.
 
-    private Context context;
-    private SharedPreferences settings;
+    private final Context context;
+    private final SharedPreferences settings;
 
     private Settings(Context context, SharedPreferences settings) {
         this.context = context;
@@ -56,7 +56,7 @@ public class Settings {
     }
 
     public class Editor {
-        private SharedPreferences.Editor editor;
+        private final SharedPreferences.Editor editor;
 
         private Editor(SharedPreferences.Editor editor) {
             this.editor = editor;

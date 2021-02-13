@@ -154,16 +154,16 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         int action = intent.getIntExtra(EXTRA_ACTION, 0);
         switch (action) {
             case ACTION_PLAY:
-                play(intent.<Song>getParcelableArrayListExtra(EXTRA_SONGS),
-                        (Playlist) intent.getParcelableExtra(EXTRA_PLAYLIST));
+                play(intent.getParcelableArrayListExtra(EXTRA_SONGS),
+                        intent.getParcelableExtra(EXTRA_PLAYLIST));
                 break;
             case ACTION_ADD:
-                add(intent.<Song>getParcelableArrayListExtra(EXTRA_SONGS),
+                add(intent.getParcelableArrayListExtra(EXTRA_SONGS),
                         intent.getBooleanExtra(EXTRA_NEXT, false));
                 break;
             case ACTION_UPDATE:
                 update(intent.getBooleanExtra(EXTRA_LOAD_SETTINGS, false),
-                        (Song) intent.getParcelableExtra(EXTRA_EDITED_SONG));
+                        intent.getParcelableExtra(EXTRA_EDITED_SONG));
                 break;
             case ACTION_EDIT_SONG:
                 editSong();

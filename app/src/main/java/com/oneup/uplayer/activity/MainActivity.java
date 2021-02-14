@@ -1,7 +1,9 @@
 package com.oneup.uplayer.activity;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import com.google.android.material.tabs.TabLayout;
 import androidx.fragment.app.Fragment;
@@ -9,6 +11,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.PowerManager;
 import android.util.Log;
 
 import com.oneup.uplayer.R;
@@ -61,6 +65,17 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_PHONE_STATE
             }, 0);
+        }
+
+        String packageName = getPackageName();
+        if (((PowerManager) getSystemService(POWER_SERVICE))
+                .isIgnoringBatteryOptimizations(packageName)) {
+            Log.d(TAG, "Ignoring battery optimizations");
+        } else {
+            Log.d(TAG, "Requesting ignore battery optimizations");
+            startActivity(new Intent()
+                    .setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .setData(Uri.parse("package:" + packageName)));
         }
     }
 

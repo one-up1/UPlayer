@@ -30,7 +30,7 @@ import com.oneup.uplayer.util.Util;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class MainService extends Service implements MediaPlayer.OnPreparedListener,
+public class MainService extends Service implements
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
     public static final String EXTRA_ACTION = "com.oneup.extra.ACTION";
     public static final String EXTRA_SONGS = "com.oneup.extra.SONGS";
@@ -100,7 +100,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .build()
         );
-        player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
 
@@ -213,20 +212,6 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
     @Override
     public IBinder onBind(Intent intent) {
         return mainBinder;
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer player) {
-        Log.d(TAG, "MainService.onPrepared()");
-
-        seekTo(playlist.getSongPosition(), true);
-        playlist.setSongPosition(0);
-
-        setVolume();
-        player.start();
-
-        prepared = true;
-        update();
     }
 
     @Override
@@ -524,9 +509,26 @@ public class MainService extends Service implements MediaPlayer.OnPreparedListen
         Log.d(TAG, "MainService.prepare()");
         prepared = completed = false;
         try {
+            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK, TAG + ":wake");
+            wakeLock.acquire(2500);
+
             player.reset();
             player.setDataSource(getApplicationContext(), getSong().getContentUri());
-            player.prepareAsync();
+            player.prepare();
+
+            seekTo(playlist.getSongPosition(), true);
+            playlist.setSongPosition(0);
+
+            setVolume();
+            player.start();
+
+            prepared = true;
+            update();
+
+            wakeLock.release();
+            Log.d(TAG, "Playback started");
         } catch (Exception ex) {
             Log.e(TAG, "Error preparing MediaPlayer", ex);
         }

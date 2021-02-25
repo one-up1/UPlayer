@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 29
     defaultConfig {
         applicationId "com.oneup.uplayer"
         minSdkVersion 28
-        targetSdkVersion 30
-        versionCode 480
-        versionName "10.8.480"
+        targetSdkVersion 29
+        versionCode 481
+        versionName "10.8.481"
     }
     buildTypes {
         release {

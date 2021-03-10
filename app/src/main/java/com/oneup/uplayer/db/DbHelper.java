@@ -662,7 +662,7 @@ public class DbHelper extends SQLiteOpenHelper {
         LogData total = queryLog(db, dateSelection, dateSelectionArgs);
         if (selection != null) {
             if (dateSelection != null) {
-                selection = dateSelection + " AND " + dateSelection;
+                selection = dateSelection + " AND " + selection;
                 selectionArgs = concatWhereArgs(dateSelectionArgs, selectionArgs);
             }
             LogData log = queryLog(db, selection, selectionArgs);

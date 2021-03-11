@@ -10,7 +10,7 @@ public class Playlist implements Parcelable, BaseColumns {
     static final String SONG_POSITION = "song_position";
 
     static final String PLAYLIST_ID = "playlist_id";
-    static final String SONG_ID = "song_id";
+    static final String SONG_ID = DbHelper.SongColumns.SONG_ID;
 
     static final int DEFAULT_PLAYLIST_ID = 1;
 

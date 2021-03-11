@@ -359,7 +359,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     delete(db, TABLE_ARTISTS, song.getArtistId());
                 }
 
-                deleteOrphanedPlaylistSongs(db, song);
+                deleteOrphanedRecords(db, song);
 
                 db.setTransactionSuccessful();
             } finally {
@@ -734,7 +734,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 // Delete orphaned playlist songs when songs have been deleted.
                 if (results[1].rowsDeleted > 0) {
-                    deleteOrphanedPlaylistSongs(db, null);
+                    deleteOrphanedRecords(db, null);
                 }
 
                 db.setTransactionSuccessful();
@@ -962,19 +962,24 @@ public class DbHelper extends SQLiteOpenHelper {
                 getWhereArgs(playlist.getId())) + " playlist songs deleted");
     }
 
-    private static void deleteOrphanedPlaylistSongs(SQLiteDatabase db, Song song) {
+    private static void deleteOrphanedRecords(SQLiteDatabase db, Song song) {
+        deleteOrphanedRecords(db, TABLE_PLAYLIST_SONGS, song);
+        deleteOrphanedRecords(db, TABLE_LOG, song);
+    }
+
+    private static void deleteOrphanedRecords(SQLiteDatabase db, String table, Song song) {
         String whereClause;
         String[] whereArgs;
         if (song == null) {
-            whereClause = Playlist.SONG_ID + " NOT IN(SELECT " +
+            whereClause = SongColumns.SONG_ID + " NOT IN(SELECT " +
                     TABLE_SONGS + "." + Song._ID + " FROM " + TABLE_SONGS + ")";
             whereArgs = null;
         } else {
-            whereClause = Playlist.SONG_ID + "=?";
+            whereClause = SongColumns.SONG_ID + "=?";
             whereArgs = getWhereArgs(song.getId());
         }
-        Log.d(TAG, db.delete(TABLE_PLAYLIST_SONGS, whereClause, whereArgs) +
-                " orphaned playlist songs deleted");
+        Log.d(TAG, db.delete(table, whereClause, whereArgs) +
+                " orphaned records deleted from " + table);
     }
 
     private static void queryTotal(SQLiteDatabase db, Stats.Total total, boolean artist,
@@ -1195,6 +1200,8 @@ public class DbHelper extends SQLiteOpenHelper {
         String ADDED = "added";
         String TAG = "tag";
         String COMMENTS = "comments";
+
+        String SONG_ID = "song_id";
     }
 
     interface StatColumns {
@@ -1206,7 +1213,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     interface LogColumns extends BaseColumns  {
         String TIMESTAMP = "timestamp";
-        String SONG_ID = "song_id";
+        String SONG_ID = SongColumns.SONG_ID;
     }
 
     public static class SyncResult {

@@ -23,6 +23,10 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/log"
+        android:title="@string/log" />
+
+    <item
         android:id="@+id/filter"
         android:title="@string/filter" />
 

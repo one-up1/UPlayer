@@ -38,6 +38,7 @@ public class QueryFragment extends Fragment
     private Spinner sSortColumn;
     private CheckBox cbSortDesc;
     private Button bQuery;
+    private Button bStatistics;
     private Button bLog;
     private Button bSettings;
 
@@ -68,9 +69,11 @@ public class QueryFragment extends Fragment
         bQuery.setOnClickListener(this);
         bQuery.setOnLongClickListener(this);
 
+        bStatistics = rootView.findViewById(R.id.bStatistics);
+        bStatistics.setOnClickListener(this);
+
         bLog = rootView.findViewById(R.id.bLog);
         bLog.setOnClickListener(this);
-        bLog.setOnLongClickListener(this);
 
         bSettings = rootView.findViewById(R.id.bSettings);
         bSettings.setOnClickListener(this);
@@ -99,6 +102,8 @@ public class QueryFragment extends Fragment
                     .putExtras(SongsFragment.getArguments(
                             filterFragment.getSelection(), filterFragment.getSelectionArgs(),
                             sSortColumn.getSelectedItemPosition(), cbSortDesc.isChecked())));
+        } else if (v == bStatistics) {
+            startActivity(new Intent(getActivity(), StatisticsActivity.class));
         } else if (v == bLog) {
             startActivity(new Intent(getActivity(), LogActivity.class));
         } else if (v == bSettings) {
@@ -125,9 +130,6 @@ public class QueryFragment extends Fragment
                 return true;
             });
             pm.show();
-        } else if (v == bLog) {
-            startActivity(new Intent(getActivity(), StatisticsActivity.class));
-            //dbHelper.t();
         }
         return true;
     }

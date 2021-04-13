@@ -18,6 +18,7 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.FilterActivity;
 import com.oneup.uplayer.activity.LogActivity;
+import com.oneup.uplayer.activity.StatisticsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
 import com.oneup.uplayer.db.Playlist;
@@ -129,6 +130,21 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
             add(getData(), false);
             Utils.showToast(getActivity(), R.string.playing_all_last);
         } else if (id == R.id.statistics) {
+            Intent intent = new Intent(getActivity(), StatisticsActivity.class);
+            if (artist != null) {
+                intent.putExtra(StatisticsActivity.EXTRA_TITLE, artist.getArtist());
+                intent.putExtra(StatisticsActivity.EXTRA_QUERY_ARTIST, false);
+            }
+            intent.putExtra(StatisticsActivity.EXTRA_QUERY_BOOKMARKED,
+                    filterValues == null || filterValues.getBookmarked() == 0);
+            intent.putExtra(StatisticsActivity.EXTRA_QUERY_ARCHIVED,
+                    filterValues == null || filterValues.getArchived() == 0);
+            intent.putExtra(StatisticsActivity.EXTRA_BASE_SELECTION, getSelection());
+            intent.putExtra(StatisticsActivity.EXTRA_BASE_SELECTION_ARGS, getSelectionArgs());
+            intent.putExtra(StatisticsActivity.EXTRA_SELECTION, filterSelection);
+            intent.putExtra(StatisticsActivity.EXTRA_SELECTION_ARGS, filterSelectionArgs);
+            startActivity(intent);
+        } else if (id == R.id.log) {
             Intent intent = new Intent(getActivity(), LogActivity.class);
             if (artist != null) {
                 intent.putExtra(LogActivity.EXTRA_TITLE, artist.getArtist());

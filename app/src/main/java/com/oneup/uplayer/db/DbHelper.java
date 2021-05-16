@@ -108,7 +108,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     Song.BOOKMARKED + "," +
                     Song.ARCHIVED +
                     SQL_SELECT_FROM_LOG +
-                    " WHERE " + LogData.TIMESTAMP + ">? AND " + LogData.TIMESTAMP + "<?";
+                    " WHERE " + LogData.TIMESTAMP + ">? AND " + LogData.TIMESTAMP + "<?" +
+                    " ORDER BY " + LogData.TIMESTAMP + " DESC";
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 

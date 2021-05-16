@@ -6,9 +6,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
+import android.text.SpannableString;
+import android.text.style.StrikethroughSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.util.LongSparseArray;
 
@@ -83,13 +87,28 @@ public class DbHelper extends SQLiteOpenHelper {
                     LogData.TIMESTAMP + " INTEGER," +
                     LogData.SONG_ID + " INTEGER)";
 
-    private static final String SQL_QUERY_LOG = "SELECT " +
-            "COUNT(*)," +
-            "COUNT(DISTINCT song_id)," +
-            "COUNT(DISTINCT artist_id)," +
-            "SUM(DURATION) " +
-            "FROM " + TABLE_LOG + " JOIN " + TABLE_SONGS + " ON " +
-            LogData.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID;
+    private static final String SQL_SELECT_FROM_LOG =
+            " FROM " + TABLE_LOG +
+                    " JOIN " + TABLE_SONGS + " ON " +
+                    LogData.SONG_ID + "=" + TABLE_SONGS + "." + Song._ID;
+
+    private static final String SQL_QUERY_LOG =
+            "SELECT " +
+                    "COUNT(*)," +
+                    "COUNT(DISTINCT song_id)," +
+                    "COUNT(DISTINCT artist_id)," +
+                    "SUM(DURATION)" +
+                    SQL_SELECT_FROM_LOG;
+
+    private static final String SQL_QUERY_LOG_DAY =
+            "SELECT " +
+                    LogData.TIMESTAMP + "," +
+                    Song.TITLE + "," +
+                    Song.ARTIST + "," +
+                    Song.BOOKMARKED + "," +
+                    Song.ARCHIVED +
+                    SQL_SELECT_FROM_LOG +
+                    " WHERE " + LogData.TIMESTAMP + ">? AND " + LogData.TIMESTAMP + "<?";
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
@@ -595,8 +614,8 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d(TAG, "DbHelper.queryLog(" +
                 Util.formatDate(minDate) + ", " + Util.formatDate(maxDate) +
                 ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
+        ArrayList<LogData> logs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            ArrayList<LogData> logs = new ArrayList<>();
             LogData log = queryLog(db, minDate, maxDate, selection, selectionArgs);
             logs.add(log);
 
@@ -636,9 +655,8 @@ public class DbHelper extends SQLiteOpenHelper {
                 }*/
                 Log.d(TAG, (logs.size() - 1) + " days queried");
             }
-
-            return logs;
         }
+        return logs;
     }
 
     private LogData queryLog(SQLiteDatabase db,
@@ -679,16 +697,47 @@ public class DbHelper extends SQLiteOpenHelper {
             sql += " WHERE " + selection;
         }
 
+        LogData log = new LogData();
         try (Cursor c = db.rawQuery(sql, selectionArgs)) {
             c.moveToFirst();
-
-            LogData log = new LogData();
             log.setCount(c.getInt(0));
             log.setSongCount(c.getInt(1));
             log.setArtistCount(c.getInt(2));
             log.setDuration(c.getLong(3));
-            return log;
         }
+        return log;
+    }
+
+    public CharSequence[] queryLogDay(long date) {
+        Log.d(TAG, "DbHelper.queryLog(" + Util.formatDate(date) + ")");
+        ArrayList<CharSequence> songs = new ArrayList<>();
+        SpannableString ss;
+        String time;
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            Calendar calendar = new Calendar();
+            calendar.setTime(date);
+            calendar.addDate(1);
+
+            try (Cursor c = db.rawQuery(SQL_QUERY_LOG_DAY,
+                    new String[]{
+                            Long.toString(date),
+                            Long.toString(calendar.getTime())
+                    })) {
+                while (c.moveToNext()) {
+                    time = Util.formatTimeOfDay(c.getLong(0)) + "\n";
+                    ss = new SpannableString(time + c.getString(2) + " - " + c.getString(1));
+                    if (c.getLong(3) != 0) { // Bookmarked.
+                        ss.setSpan(new StyleSpan(Typeface.BOLD), time.length(), ss.length(), 0);
+                    }
+                    if (c.getLong(4) != 0) { // Archived.
+                        ss.setSpan(new StrikethroughSpan(), time.length(), ss.length(), 0);
+                    }
+                    songs.add(ss);
+                }
+            }
+        }
+        Log.d(TAG, songs.size() + " songs queried");
+        return songs.toArray(new CharSequence[0]);
     }
 
     public SyncResult[] syncWithMediaStore(Context context) {

@@ -1,5 +1,6 @@
 package com.oneup.uplayer.activity;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -205,6 +206,16 @@ public class LogActivity extends AppCompatActivity
                 tvArtistCount.setVisibility(View.VISIBLE);
             } else {
                 tvArtistCount.setVisibility(View.GONE);
+            }
+        }
+
+        @Override
+        protected void onListItemClick(int position, LogData logData) {
+            if (position != 0) {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(Util.formatDate(logData.getDate()))
+                        .setItems(getDbHelper().queryLogDay(logData.getDate()), null)
+                        .show();
             }
         }
 

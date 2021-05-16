@@ -28,6 +28,7 @@ public class Util {
     private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
     private static final DateFormat DATE_TIME_FORMAT_WEEKDAY =
             new SimpleDateFormat("E dd-MM-yyyy HH:mm");
+    private static final DateFormat TIME_OF_DAY_FORMAT = new SimpleDateFormat("HH:mm");
     private static final NumberFormat TIME_NUMBER_FORMAT = NumberFormat.getInstance();
     private static final NumberFormat FRACTION_FORMAT = NumberFormat.getInstance();
     private static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
@@ -71,6 +72,10 @@ public class Util {
     public static String formatDateTimeAgo(long seconds) {
         return formatDate(seconds, DATE_TIME_FORMAT_WEEKDAY) +
                 "\n" + formatTimeAgo(seconds);
+    }
+
+    public static String formatTimeOfDay(long seconds) {
+        return formatDate(seconds, TIME_OF_DAY_FORMAT);
     }
 
     public static String formatTimeAgo(long seconds) {

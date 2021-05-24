@@ -35,6 +35,7 @@
     <string name="clear_query_values">Clear values</string>
     <string name="statistics">Statistics</string>
     <string name="log">Log</string>
+    <string name="log_title">%1$d at %2$s</string>
     <string name="min_date">Min date&#8230;</string>
     <string name="max_date">Max date&#8230;</string>
     <string name="not_selected">Not: %1$s</string>

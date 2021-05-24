@@ -1,6 +1,5 @@
 package com.oneup.uplayer.activity;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -31,7 +30,7 @@ public class LogActivity extends AppCompatActivity
 
     private Button bMinDate;
     private Button bMaxDate;
-    private LogsFragment logsFragment;
+    private LogFragment logFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,13 +59,12 @@ public class LogActivity extends AppCompatActivity
         bMaxDate.setOnClickListener(this);
         bMaxDate.setOnLongClickListener(this);
 
-        logsFragment = (LogsFragment)
-                getSupportFragmentManager().findFragmentById(R.id.logsFragment);
-        logsFragment.setMinDate(minDate);
-        logsFragment.setMaxDate(maxDate);
-        logsFragment.setSelection(getIntent().getStringExtra(EXTRA_SELECTION));
-        logsFragment.setSelectionArgs(getIntent().getStringArrayExtra(EXTRA_SELECTION_ARGS));
-        logsFragment.setArtist(getIntent().getBooleanExtra(EXTRA_QUERY_ARTIST, true));
+        logFragment = (LogFragment) getSupportFragmentManager().findFragmentById(R.id.logFragment);
+        logFragment.setMinDate(minDate);
+        logFragment.setMaxDate(maxDate);
+        logFragment.setSelection(getIntent().getStringExtra(EXTRA_SELECTION));
+        logFragment.setSelectionArgs(getIntent().getStringArrayExtra(EXTRA_SELECTION_ARGS));
+        logFragment.setArtist(getIntent().getBooleanExtra(EXTRA_QUERY_ARTIST, true));
     }
 
     @Override
@@ -77,14 +75,14 @@ public class LogActivity extends AppCompatActivity
                 case REQUEST_SELECT_MIN_DATE:
                     long minDate = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMinDate.setText(Util.formatDate(minDate));
-                    logsFragment.setMinDate(minDate);
-                    logsFragment.reloadData();
+                    logFragment.setMinDate(minDate);
+                    logFragment.reloadData();
                     break;
                 case REQUEST_SELECT_MAX_DATE:
                     long maxDate = data.getLongExtra(DateTimeActivity.EXTRA_TIME, 0);
                     bMaxDate.setText(Util.formatDate(maxDate));
-                    logsFragment.setMaxDate(maxDate);
-                    logsFragment.reloadData();
+                    logFragment.setMaxDate(maxDate);
+                    logFragment.reloadData();
                     break;
             }
         }
@@ -93,9 +91,9 @@ public class LogActivity extends AppCompatActivity
     @Override
     public void onClick(View v) {
         if (v == bMinDate) {
-            selectDate(R.string.min_date, logsFragment.getMinDate(), REQUEST_SELECT_MIN_DATE);
+            selectDate(R.string.min_date, logFragment.getMinDate(), REQUEST_SELECT_MIN_DATE);
         } else if (v == bMaxDate) {
-            selectDate(R.string.max_date, logsFragment.getMaxDate(), REQUEST_SELECT_MAX_DATE);
+            selectDate(R.string.max_date, logFragment.getMaxDate(), REQUEST_SELECT_MAX_DATE);
         }
     }
 
@@ -103,12 +101,12 @@ public class LogActivity extends AppCompatActivity
     public boolean onLongClick(View v) {
         if (v == bMinDate) {
             bMinDate.setText(R.string.min_date);
-            logsFragment.setMinDate(0);
-            logsFragment.reloadData();
+            logFragment.setMinDate(0);
+            logFragment.reloadData();
         } else if (v == bMaxDate) {
             bMaxDate.setText(R.string.max_date);
-            logsFragment.setMaxDate(0);
-            logsFragment.reloadData();
+            logFragment.setMaxDate(0);
+            logFragment.reloadData();
         }
         return true;
     }
@@ -123,14 +121,14 @@ public class LogActivity extends AppCompatActivity
         startActivityForResult(intent, requestCode);
     }
 
-    public static class LogsFragment extends ListFragment<LogData> {
+    public static class LogFragment extends ListFragment<LogData> {
         private long minDate;
         private long maxDate;
         private String selection;
         private String[] selectionArgs;
         private boolean artist;
 
-        public LogsFragment() {
+        public LogFragment() {
             super(R.layout.list_item_log, 0, 0, 0, 0, null, null);
         }
 
@@ -212,10 +210,8 @@ public class LogActivity extends AppCompatActivity
         @Override
         protected void onListItemClick(int position, LogData logData) {
             if (position != 0) {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(Util.formatDate(logData.getDate()))
-                        .setItems(getDbHelper().queryLogDay(logData.getDate()), null)
-                        .show();
+                startActivity(new Intent(getActivity(), LogDayActivity.class)
+                        .putExtras(LogDayActivity.LogDayFragment.getArguments(logData.getDate())));
             }
         }
 

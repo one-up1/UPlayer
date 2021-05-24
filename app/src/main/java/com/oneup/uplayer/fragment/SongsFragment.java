@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 public class SongsFragment extends SongsListFragment implements AdapterView.OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {
+    public static final int SORT_COLUMN_LOG_TIMESTAMP = 0;
     public static final int SORT_COLUMN_ADDED = 1;
     public static final int SORT_COLUMN_LAST_PLAYED = 2;
     public static final int SORT_COLUMN_TIMES_PLAYED = 3;
@@ -53,9 +54,13 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     private CheckBox cbSortDesc;
 
     public SongsFragment() {
+        this(null);
+    }
+
+    protected SongsFragment(String sortColumn) {
         super(R.layout.list_item_song, R.id.llSorting, R.id.llSong, R.id.tvInfo,
                 new String[]{
-                        null,
+                        sortColumn,
                         Song.ADDED,
                         Song.LAST_PLAYED,
                         Song.TIMES_PLAYED,
@@ -255,6 +260,9 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     @Override
     protected String getListItemInfo(Song song) {
         switch (getSortColumn()) {
+            case SORT_COLUMN_LOG_TIMESTAMP:
+                return song.getLogTimestamp() == 0 ? null
+                        : Util.formatTimeOfDay(song.getLogTimestamp());
             case SORT_COLUMN_ADDED:
                 return song.getAdded() == 0 ? null
                         : Util.formatTimeAgo(song.getAdded());

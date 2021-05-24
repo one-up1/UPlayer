@@ -23,8 +23,8 @@
         android:text="@string/max_date" />
 
     <fragment
-        android:name="com.oneup.uplayer.activity.LogActivity$LogsFragment"
-        android:id="@+id/logsFragment"
+        android:name="com.oneup.uplayer.activity.LogActivity$LogFragment"
+        android:id="@+id/logFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingTop="@dimen/activity_vertical_margin" />

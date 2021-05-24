@@ -6,13 +6,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
-import android.text.SpannableString;
-import android.text.style.StrikethroughSpan;
-import android.text.style.StyleSpan;
 import android.util.Log;
 import android.util.LongSparseArray;
 
@@ -103,13 +99,21 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String SQL_QUERY_LOG_DAY =
             "SELECT " +
                     LogData.TIMESTAMP + "," +
+                    LogData.SONG_ID + "," +
                     Song.TITLE + "," +
+                    Song.ARTIST_ID + "," +
                     Song.ARTIST + "," +
+                    Song.DURATION + "," +
+                    Song.YEAR + "," +
+                    Song.ADDED + "," +
+                    Song.TAG + "," +
                     Song.BOOKMARKED + "," +
-                    Song.ARCHIVED +
+                    Song.ARCHIVED + "," +
+                    Song.LAST_PLAYED + "," +
+                    Song.TIMES_PLAYED +
                     SQL_SELECT_FROM_LOG +
                     " WHERE " + LogData.TIMESTAMP + ">? AND " + LogData.TIMESTAMP + "<?" +
-                    " ORDER BY " + LogData.TIMESTAMP + " DESC";
+                    " ORDER BY ";
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
@@ -709,36 +713,39 @@ public class DbHelper extends SQLiteOpenHelper {
         return log;
     }
 
-    public CharSequence[] queryLogDay(long date) {
-        Log.d(TAG, "DbHelper.queryLog(" + Util.formatDate(date) + ")");
-        ArrayList<CharSequence> songs = new ArrayList<>();
-        SpannableString ss;
-        String time;
+    public ArrayList<Song> queryLogDay(long date, String orderBy) {
+        Log.d(TAG, "DbHelper.queryLogDay(" + Util.formatDate(date) + ", " + orderBy + ")");
+        ArrayList<Song> songs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
             Calendar calendar = new Calendar();
             calendar.setTime(date);
             calendar.addDate(1);
-
-            try (Cursor c = db.rawQuery(SQL_QUERY_LOG_DAY,
+            try (Cursor c = db.rawQuery(SQL_QUERY_LOG_DAY + orderBy,
                     new String[]{
                             Long.toString(date),
                             Long.toString(calendar.getTime())
                     })) {
                 while (c.moveToNext()) {
-                    time = Util.formatTimeOfDay(c.getLong(0)) + "\n";
-                    ss = new SpannableString(time + c.getString(2) + " - " + c.getString(1));
-                    if (c.getLong(3) != 0) { // Bookmarked.
-                        ss.setSpan(new StyleSpan(Typeface.BOLD), time.length(), ss.length(), 0);
-                    }
-                    if (c.getLong(4) != 0) { // Archived.
-                        ss.setSpan(new StrikethroughSpan(), time.length(), ss.length(), 0);
-                    }
-                    songs.add(ss);
+                    Song song = new Song();
+                    song.setLogTimestamp(c.getLong(0));
+                    song.setId(c.getLong(1));
+                    song.setTitle(c.getString(2));
+                    song.setArtistId(c.getLong(3));
+                    song.setArtist(c.getString(4));
+                    song.setDuration(c.getLong(5));
+                    song.setYear(c.getInt(6));
+                    song.setAdded(c.getLong(7));
+                    song.setTag(c.getString(8));
+                    song.setBookmarked(c.getLong(9));
+                    song.setArchived(c.getLong(10));
+                    song.setLastPlayed(c.getLong(11));
+                    song.setTimesPlayed(c.getInt(12));
+                    songs.add(song);
                 }
             }
         }
         Log.d(TAG, songs.size() + " songs queried");
-        return songs.toArray(new CharSequence[0]);
+        return songs;
     }
 
     public SyncResult[] syncWithMediaStore(Context context) {

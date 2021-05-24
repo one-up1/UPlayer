@@ -294,7 +294,10 @@ public abstract class ListFragment<T>
     private void setActivityTitle() {
         Activity activity = getActivity();
         if (activity != null && !(activity instanceof MainActivity)) {
-            activity.setTitle(getActivityTitle());
+            String title = getActivityTitle();
+            if (title != null) {
+                activity.setTitle(getActivityTitle());
+            }
         }
     }
 

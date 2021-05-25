@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.LogData;
 import com.oneup.uplayer.fragment.ListFragment;
+import com.oneup.uplayer.util.Calendar;
 import com.oneup.uplayer.util.Settings;
 import com.oneup.uplayer.util.Util;
 import com.oneup.util.Utils;
@@ -208,11 +209,28 @@ public class LogActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onListItemClick(int position, LogData logData) {
-            if (position != 0) {
+        protected void onListItemClick(int position, LogData log) {
+            if (log.getCount() > 0) {
+                String activityTitle;
+                long minDate, maxDate;
+                if (log.getDate() == 0) {
+                    activityTitle = null;
+                    minDate = this.minDate;
+                    maxDate = this.maxDate;
+                } else {
+                    activityTitle = getString(R.string.log_title,
+                            log.getCount(), Util.formatDate(log.getDate()));
+                    minDate = maxDate = log.getDate();
+                }
+                if (maxDate != 0) {
+                    Calendar calendar = new Calendar(maxDate);
+                    calendar.addDate(1);
+                    maxDate = calendar.getTime();
+                }
+
                 startActivity(new Intent(getActivity(), LogDayActivity.class)
-                        .putExtras(LogDayActivity.LogDayFragment.getArguments(
-                                logData.getDate(), selection, selectionArgs)));
+                        .putExtras(LogDayActivity.LogDayFragment.getArguments(activityTitle,
+                                minDate, maxDate, selection, selectionArgs)));
             }
         }
 

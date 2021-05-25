@@ -30,9 +30,13 @@ public class LogDayActivity extends AppCompatActivity {
     }
 
     public static class LogDayFragment extends SongsFragment {
-        private static final String ARG_DATE = "date";
+        private static final String ARG_ACTIVITY_TITLE = "activity_title";
+        private static final String ARG_MIN_DATE = "min_date";
+        private static final String ARG_MAX_DATE = "max_date";
 
-        private long date;
+        private String activityTitle;
+        private long minDate;
+        private long maxDate;
 
         public LogDayFragment() {
             super(LogData.TIMESTAMP);
@@ -44,25 +48,30 @@ public class LogDayActivity extends AppCompatActivity {
 
             Bundle args = getArguments();
             if (args != null) {
-                date = args.getLong(ARG_DATE);
+                activityTitle = args.getString(ARG_ACTIVITY_TITLE);
+                minDate = args.getLong(ARG_MIN_DATE);
+                maxDate = args.getLong(ARG_MAX_DATE);
             }
         }
 
         @Override
         protected ArrayList<Song> loadData() {
-            return getDbHelper().queryLogDay(date,
+            return getDbHelper().queryLogDay(minDate, maxDate,
                     getSelection(), getSelectionArgs(),
                     getOrderBy());
         }
 
         @Override
         protected String getActivityTitle() {
-            return getString(R.string.log_title, getCount(), Util.formatDate(date));
+            return activityTitle == null ? super.getActivityTitle() : activityTitle;
         }
 
-        public static Bundle getArguments(long date, String selection, String[] selectionArgs) {
+        public static Bundle getArguments(String activityTitle, long minDate, long maxDate,
+                                          String selection, String[] selectionArgs) {
             Bundle args = new Bundle();
-            args.putLong(ARG_DATE, date);
+            args.putString(ARG_ACTIVITY_TITLE, activityTitle);
+            args.putLong(ARG_MIN_DATE, minDate);
+            args.putLong(ARG_MAX_DATE, maxDate);
             args.putString(ARG_SELECTION, selection);
             args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_SORT_DESC, true);

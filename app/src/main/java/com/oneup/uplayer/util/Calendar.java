@@ -9,6 +9,11 @@ public class Calendar {
         calendar = java.util.Calendar.getInstance();
     }
 
+    public Calendar(long time) {
+        this();
+        setTime(time);
+    }
+
     public long getTime() {
         return TimeUnit.MILLISECONDS.toSeconds(calendar.getTimeInMillis());
     }

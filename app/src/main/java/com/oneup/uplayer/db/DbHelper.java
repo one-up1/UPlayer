@@ -111,8 +111,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Song.ARCHIVED + "," +
                     Song.LAST_PLAYED + "," +
                     Song.TIMES_PLAYED +
-                    SQL_SELECT_FROM_LOG +
-                    " WHERE " + LogData.TIMESTAMP + ">? AND " + LogData.TIMESTAMP + "<?";
+                    SQL_SELECT_FROM_LOG;
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
@@ -620,7 +619,13 @@ public class DbHelper extends SQLiteOpenHelper {
                 ", " + selection + ", " + Arrays.toString(selectionArgs) + ")");
         ArrayList<LogData> logs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            LogData log = queryLog(db, minDate, maxDate, selection, selectionArgs);
+            long end = 0;
+            if (maxDate != 0) {
+                Calendar calendar = new Calendar(maxDate);
+                calendar.addDate(1);
+                end = calendar.getTime();
+            }
+            LogData log = queryLog(db, minDate, end, selection, selectionArgs);
             logs.add(log);
 
             if (minDate != 0 && log.getCount() != 0) {
@@ -697,25 +702,41 @@ public class DbHelper extends SQLiteOpenHelper {
         return log;
     }
 
-    public ArrayList<Song> queryLogDay(long date,
+    public ArrayList<Song> queryLogDay(long minDate, long maxDate,
                                        String selection, String[] selectionArgs,
                                        String orderBy) {
-        Log.d(TAG, "DbHelper.queryLogDay(" + Util.formatDateTime(date) + ", " +
+        Log.d(TAG, "DbHelper.queryLogDay(" +
+                Util.formatDateTime(minDate) + ", " + Util.formatDateTime(maxDate) + ", " +
                 selection + ", " + Arrays.toString(selectionArgs) + ", " + orderBy + ")");
         ArrayList<Song> songs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            String sql = concatSelection(SQL_QUERY_LOG_DAY, selection);
+            String dateSelection = null;
+            ArrayList<String> dateSelectionArgsList = new ArrayList<>();
+            if (minDate != 0) {
+                dateSelection = LogData.TIMESTAMP + ">=?";
+                dateSelectionArgsList.add(Long.toString(minDate));
+            }
+            if (maxDate != 0) {
+                dateSelection = concatSelection(dateSelection, LogData.TIMESTAMP + "<=?");
+                dateSelectionArgsList.add(Long.toString(maxDate));
+            }
+
+            selection = concatSelection(dateSelection, selection);
+            selectionArgs = concatWhereArgs(dateSelection == null ? null :
+                    dateSelectionArgsList.toArray(new String[0]), selectionArgs);
+
+            String sql = SQL_QUERY_LOG_DAY;
+            if (selection != null) {
+                sql += " WHERE " + selection;
+            }
             if (orderBy != null) {
                 sql += " ORDER BY " + orderBy;
             }
 
-            Calendar end = new Calendar();
-            end.setTime(date);
-            end.addDate(1);
-            try (Cursor c = db.rawQuery(sql, concatWhereArgs(new String[]{
-                    Long.toString(date),
-                    Long.toString(end.getTime())
-            }, selectionArgs))) {
+            Log.d(TAG, "sql=" + selection);
+            Log.d(TAG, "selectionArgs=" + Arrays.toString(selectionArgs));
+
+            try (Cursor c = db.rawQuery(sql, selectionArgs)) {
                 while (c.moveToNext()) {
                     Song song = new Song();
                     song.setLogTimestamp(c.getLong(0));

@@ -55,7 +55,7 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".activity.LogDayActivity"
+            android:name=".activity.LogRecordsActivity"
             android:screenOrientation="portrait" />
 
         <activity

@@ -18,6 +18,7 @@ import com.oneup.uplayer.MainService;
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.FilterActivity;
 import com.oneup.uplayer.activity.LogActivity;
+import com.oneup.uplayer.activity.LogRecordsActivity;
 import com.oneup.uplayer.activity.StatisticsActivity;
 import com.oneup.uplayer.db.Artist;
 import com.oneup.uplayer.db.DbHelper;
@@ -261,7 +262,12 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
     protected String getListItemInfo(Song song) {
         switch (getSortColumn()) {
             case SORT_COLUMN_LOG_TIMESTAMP:
-                return song.getLogTimestamp() == 0 ? null
+                if (song.getLogTimestamp() == 0) {
+                    return null;
+                }
+                return getArguments().getString(
+                        LogRecordsActivity.LogRecordsFragment.ARG_ACTIVITY_TITLE) == null
+                        ? Util.formatDateTime(song.getLogTimestamp())
                         : Util.formatTimeOfDay(song.getLogTimestamp());
             case SORT_COLUMN_ADDED:
                 return song.getAdded() == 0 ? null

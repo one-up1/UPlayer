@@ -702,10 +702,10 @@ public class DbHelper extends SQLiteOpenHelper {
         return log;
     }
 
-    public ArrayList<Song> queryLogDay(long minDate, long maxDate,
-                                       String selection, String[] selectionArgs,
-                                       String orderBy) {
-        Log.d(TAG, "DbHelper.queryLogDay(" +
+    public ArrayList<Song> queryLogRecords(long minDate, long maxDate,
+                                           String selection, String[] selectionArgs,
+                                           String orderBy) {
+        Log.d(TAG, "DbHelper.queryLogRecords(" +
                 Util.formatDateTime(minDate) + ", " + Util.formatDateTime(maxDate) + ", " +
                 selection + ", " + Arrays.toString(selectionArgs) + ", " + orderBy + ")");
         ArrayList<Song> songs = new ArrayList<>();

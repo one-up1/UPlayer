@@ -228,8 +228,8 @@ public class LogActivity extends AppCompatActivity
                     maxDate = calendar.getTime();
                 }
 
-                startActivity(new Intent(getActivity(), LogDayActivity.class)
-                        .putExtras(LogDayActivity.LogDayFragment.getArguments(activityTitle,
+                startActivity(new Intent(getActivity(), LogRecordsActivity.class)
+                        .putExtras(LogRecordsActivity.LogRecordsFragment.getArguments(activityTitle,
                                 minDate, maxDate, selection, selectionArgs)));
             }
         }

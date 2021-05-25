@@ -9,11 +9,10 @@ import com.oneup.uplayer.R;
 import com.oneup.uplayer.db.LogData;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.fragment.SongsFragment;
-import com.oneup.uplayer.util.Util;
 
 import java.util.ArrayList;
 
-public class LogDayActivity extends AppCompatActivity {
+public class LogRecordsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,13 +23,13 @@ public class LogDayActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, LogDayFragment.newInstance(getIntent().getExtras()))
+                    .add(R.id.container, LogRecordsFragment.newInstance(getIntent().getExtras()))
                     .commit();
         }
     }
 
-    public static class LogDayFragment extends SongsFragment {
-        private static final String ARG_ACTIVITY_TITLE = "activity_title";
+    public static class LogRecordsFragment extends SongsFragment {
+        public static final String ARG_ACTIVITY_TITLE = "activity_title";
         private static final String ARG_MIN_DATE = "min_date";
         private static final String ARG_MAX_DATE = "max_date";
 
@@ -38,7 +37,7 @@ public class LogDayActivity extends AppCompatActivity {
         private long minDate;
         private long maxDate;
 
-        public LogDayFragment() {
+        public LogRecordsFragment() {
             super(LogData.TIMESTAMP);
         }
 
@@ -56,7 +55,7 @@ public class LogDayActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Song> loadData() {
-            return getDbHelper().queryLogDay(minDate, maxDate,
+            return getDbHelper().queryLogRecords(minDate, maxDate,
                     getSelection(), getSelectionArgs(),
                     getOrderBy());
         }
@@ -78,8 +77,8 @@ public class LogDayActivity extends AppCompatActivity {
             return args;
         }
 
-        public static LogDayFragment newInstance(Bundle args) {
-            LogDayFragment fragment = new LogDayFragment();
+        public static LogRecordsFragment newInstance(Bundle args) {
+            LogRecordsFragment fragment = new LogRecordsFragment();
             fragment.setArguments(args);
             return fragment;
         }

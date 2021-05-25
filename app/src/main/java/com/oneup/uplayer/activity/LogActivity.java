@@ -211,7 +211,8 @@ public class LogActivity extends AppCompatActivity
         protected void onListItemClick(int position, LogData logData) {
             if (position != 0) {
                 startActivity(new Intent(getActivity(), LogDayActivity.class)
-                        .putExtras(LogDayActivity.LogDayFragment.getArguments(logData.getDate())));
+                        .putExtras(LogDayActivity.LogDayFragment.getArguments(
+                                logData.getDate(), selection, selectionArgs)));
             }
         }
 

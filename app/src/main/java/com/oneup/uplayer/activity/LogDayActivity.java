@@ -50,7 +50,9 @@ public class LogDayActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Song> loadData() {
-            return getDbHelper().queryLogDay(date, getOrderBy());
+            return getDbHelper().queryLogDay(date,
+                    getSelection(), getSelectionArgs(),
+                    getOrderBy());
         }
 
         @Override
@@ -58,9 +60,11 @@ public class LogDayActivity extends AppCompatActivity {
             return getString(R.string.log_title, getCount(), Util.formatDate(date));
         }
 
-        public static Bundle getArguments(long date) {
+        public static Bundle getArguments(long date, String selection, String[] selectionArgs) {
             Bundle args = new Bundle();
             args.putLong(ARG_DATE, date);
+            args.putString(ARG_SELECTION, selection);
+            args.putStringArray(ARG_SELECTION_ARGS, selectionArgs);
             args.putBoolean(ARG_SORT_DESC, true);
             return args;
         }

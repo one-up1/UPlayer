@@ -112,8 +112,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     Song.LAST_PLAYED + "," +
                     Song.TIMES_PLAYED +
                     SQL_SELECT_FROM_LOG +
-                    " WHERE " + LogData.TIMESTAMP + ">? AND " + LogData.TIMESTAMP + "<?" +
-                    " ORDER BY ";
+                    " WHERE " + LogData.TIMESTAMP + ">? AND " + LogData.TIMESTAMP + "<?";
 
     private static final String SQL_ID_IS = BaseColumns._ID + "=?";
 
@@ -645,19 +644,6 @@ public class DbHelper extends SQLiteOpenHelper {
                         logs.add(dateLog);
                     }
                 }
-                /*Calendar calendar = new Calendar();
-                calendar.setTime(minDate);
-
-                long start, end = maxDate == 0 ? Calendar.currentTime() : maxDate;
-                LogData day;
-                while ((start = calendar.getTime()) <= end) {
-                    calendar.addDay();
-                    day = queryLog(db, start, calendar.getTime(), selection, selectionArgs);
-                    if (day.getCount() != 0) {
-                        day.setDate(start);
-                        logs.add(1, day);
-                    }
-                }*/
                 Log.d(TAG, (logs.size() - 1) + " days queried");
             }
         }
@@ -676,7 +662,7 @@ public class DbHelper extends SQLiteOpenHelper {
             dateSelectionArgsList.add(Long.toString(minDate));
         }
         if (maxDate != 0) {
-            dateSelection = DbHelper.concatSelection(dateSelection, LogData.TIMESTAMP + "<=?");
+            dateSelection = concatSelection(dateSelection, LogData.TIMESTAMP + "<=?");
             dateSelectionArgsList.add(Long.toString(maxDate));
         }
         String[] dateSelectionArgs = dateSelection == null ? null :
@@ -684,11 +670,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
         LogData total = queryLog(db, dateSelection, dateSelectionArgs);
         if (selection != null) {
-            if (dateSelection != null) {
-                selection = dateSelection + " AND " + selection;
-                selectionArgs = concatWhereArgs(dateSelectionArgs, selectionArgs);
-            }
-            LogData log = queryLog(db, selection, selectionArgs);
+            LogData log = queryLog(db,
+                    concatSelection(dateSelection, selection),
+                    concatWhereArgs(dateSelectionArgs, selectionArgs));
             log.setTotal(total);
             return log;
         }
@@ -713,18 +697,25 @@ public class DbHelper extends SQLiteOpenHelper {
         return log;
     }
 
-    public ArrayList<Song> queryLogDay(long date, String orderBy) {
-        Log.d(TAG, "DbHelper.queryLogDay(" + Util.formatDate(date) + ", " + orderBy + ")");
+    public ArrayList<Song> queryLogDay(long date,
+                                       String selection, String[] selectionArgs,
+                                       String orderBy) {
+        Log.d(TAG, "DbHelper.queryLogDay(" + Util.formatDateTime(date) + ", " +
+                selection + ", " + Arrays.toString(selectionArgs) + ", " + orderBy + ")");
         ArrayList<Song> songs = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase()) {
-            Calendar calendar = new Calendar();
-            calendar.setTime(date);
-            calendar.addDate(1);
-            try (Cursor c = db.rawQuery(SQL_QUERY_LOG_DAY + orderBy,
-                    new String[]{
-                            Long.toString(date),
-                            Long.toString(calendar.getTime())
-                    })) {
+            String sql = concatSelection(SQL_QUERY_LOG_DAY, selection);
+            if (orderBy != null) {
+                sql += " ORDER BY " + orderBy;
+            }
+
+            Calendar end = new Calendar();
+            end.setTime(date);
+            end.addDate(1);
+            try (Cursor c = db.rawQuery(sql, concatWhereArgs(new String[]{
+                    Long.toString(date),
+                    Long.toString(end.getTime())
+            }, selectionArgs))) {
                 while (c.moveToNext()) {
                     Song song = new Song();
                     song.setLogTimestamp(c.getLong(0));

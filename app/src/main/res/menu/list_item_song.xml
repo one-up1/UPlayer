@@ -10,11 +10,17 @@
         android:id="@+id/edit"
         android:title="@string/edit" />
 
-    <item android:id="@+id/toggle_bookmark"
+    <item
+        android:id="@+id/toggle_bookmark"
         tools:ignore="MenuTitle" />
 
-    <item android:id="@+id/toggle_archive"
+    <item
+        android:id="@+id/toggle_archive"
         tools:ignore="MenuTitle" />
+
+    <item
+        android:id="@+id/log"
+        android:title="@string/songs_log" />
 
     <item
         android:id="@+id/delete"

@@ -32,7 +32,7 @@ public class StatisticsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_statistics);
 
         if (getIntent().hasExtra(EXTRA_TITLE)) {
-            setTitle(getIntent().getStringExtra(EXTRA_TITLE));
+            setTitle(getIntent().getCharSequenceExtra(EXTRA_TITLE));
         }
 
         stats = new DbHelper(this).queryStats(

@@ -67,6 +67,7 @@
     <string name="playing_song_next">Playing next: \'%1$s\'</string>
     <string name="playing_song_last">Playing last: \'%1$s\'</string>
     <string name="songs_statistics">Statistics&#8230;</string>
+    <string name="songs_log">Log&#8230;</string>
     <string name="filter">Filter&#8230;</string>
     <string name="clear_filter">Clear filter</string>
 

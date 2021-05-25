@@ -137,7 +137,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         } else if (id == R.id.statistics) {
             Intent intent = new Intent(getActivity(), StatisticsActivity.class);
             if (artist != null) {
-                intent.putExtra(StatisticsActivity.EXTRA_TITLE, artist.getArtist());
+                intent.putExtra(StatisticsActivity.EXTRA_TITLE, artist.getStyledArtist());
                 intent.putExtra(StatisticsActivity.EXTRA_QUERY_ARTIST, false);
             }
             intent.putExtra(StatisticsActivity.EXTRA_QUERY_BOOKMARKED,
@@ -152,7 +152,7 @@ public class SongsFragment extends SongsListFragment implements AdapterView.OnIt
         } else if (id == R.id.log) {
             Intent intent = new Intent(getActivity(), LogActivity.class);
             if (artist != null) {
-                intent.putExtra(LogActivity.EXTRA_TITLE, artist.getArtist());
+                intent.putExtra(LogActivity.EXTRA_TITLE, artist.getStyledArtist());
                 intent.putExtra(LogActivity.EXTRA_QUERY_ARTIST, false);
             }
             intent.putExtra(LogActivity.EXTRA_SELECTION, getSelection());

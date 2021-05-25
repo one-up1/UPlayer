@@ -17,8 +17,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.oneup.uplayer.R;
 import com.oneup.uplayer.activity.EditSongActivity;
+import com.oneup.uplayer.activity.LogActivity;
 import com.oneup.uplayer.activity.PlaylistsActivity;
 import com.oneup.uplayer.activity.SongsActivity;
+import com.oneup.uplayer.db.DbHelper;
+import com.oneup.uplayer.db.LogData;
 import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
@@ -152,6 +155,13 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 Log.e(TAG, "Error archiving song", ex);
                 Utils.showErrorDialog(getActivity(), ex);
             }
+        } else if (itemId == R.id.log) {
+            startActivity(new Intent(getActivity(), LogActivity.class)
+                    .putExtra(LogActivity.EXTRA_TITLE, song.getStyledTitle())
+                    .putExtra(LogActivity.EXTRA_QUERY_ARTIST, false)
+                    .putExtra(LogActivity.EXTRA_SELECTION, LogData.SONG_ID + "=?")
+                    .putExtra(LogActivity.EXTRA_SELECTION_ARGS,
+                            DbHelper.getWhereArgs(song.getId())));
         } else if (itemId == R.id.delete) {
             deleteSong(position, song);
         } else {

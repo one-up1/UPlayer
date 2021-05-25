@@ -38,7 +38,7 @@ public class LogActivity extends AppCompatActivity
         setContentView(R.layout.activity_log);
 
         if (getIntent().hasExtra(EXTRA_TITLE)) {
-            setTitle(getIntent().getStringExtra(EXTRA_TITLE));
+            setTitle(getIntent().getCharSequenceExtra(EXTRA_TITLE));
         }
 
         Settings settings = Settings.get(this);

@@ -87,17 +87,11 @@ public class ArtistsFragment extends ListFragment<Artist> {
     protected boolean onListItemLongClick(int position, Artist artist) {
         try {
             startActivity(new Intent(getActivity(), StatisticsActivity.class)
-                    .putExtra(StatisticsActivity.EXTRA_TITLE, artist.getArtist())
+                    .putExtra(StatisticsActivity.EXTRA_TITLE, artist.getStyledArtist())
                     .putExtra(StatisticsActivity.EXTRA_QUERY_ARTIST, false)
                     .putExtra(StatisticsActivity.EXTRA_BASE_SELECTION, Song.ARTIST_ID + "=?")
                     .putExtra(StatisticsActivity.EXTRA_BASE_SELECTION_ARGS,
                             DbHelper.getWhereArgs(artist.getId())));
-            /*startActivity(new Intent(getActivity(), LogActivity.class)
-                    .putExtra(LogActivity.EXTRA_TITLE, artist.getArtist())
-                    .putExtra(LogActivity.EXTRA_QUERY_ARTIST, false)
-                    .putExtra(LogActivity.EXTRA_SELECTION, Song.ARTIST_ID + "=?")
-                    .putExtra(LogActivity.EXTRA_SELECTION_ARGS,
-                            DbHelper.getWhereArgs(artist.getId())));*/
         } catch (Exception ex) {
             Log.e(TAG, "Error querying artist stats", ex);
             Utils.showErrorDialog(getActivity(), ex);

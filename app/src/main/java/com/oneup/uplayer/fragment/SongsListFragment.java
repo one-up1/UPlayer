@@ -1,9 +1,7 @@
 package com.oneup.uplayer.fragment;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.net.Uri;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -26,6 +24,8 @@ import com.oneup.uplayer.db.Playlist;
 import com.oneup.uplayer.db.Song;
 import com.oneup.uplayer.util.Util;
 import com.oneup.util.Utils;
+
+import java.io.File;
 
 public abstract class SongsListFragment extends ListFragment<Song> {
     private static final String TAG = "UPlayer";
@@ -180,15 +180,35 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                 (dialog, which) -> {
                     Log.d(TAG, "Deleting song " + song.getId() + ":" + song);
                     try {
-                        ContentResolver resolver = getActivity().getContentResolver();
-                        Uri uri = song.getContentUri();
+                        // Get absolute path of song.
+                        String path;
+                        try (Cursor c = getActivity().getContentResolver().query(
+                                song.getContentUri(), new String[]{Song.DATA}, null, null, null)) {
+                            if (c.moveToFirst()) {
+                                path = c.getString(0);
+                            } else {
+                                throw new Exception("Song not found");
+                            }
+                        }
+                        Log.d(TAG, "path=" + path);
 
-                        // Change type to image, otherwise nothing will be deleted.
+                        // Delete song from file system and database.
+                        if (new File(path).delete()) {
+                            Log.d(TAG, "Song deleted");
+                        } else {
+                            throw new Exception("Could not delete song");
+                        }
+                        getDbHelper().deleteSong(song);
+
+                        Utils.showToast(getActivity(), R.string.deleted, song);
+                        removeListItem(position);
+
+                        /* Change type to image, otherwise nothing will be deleted.
                         ContentValues values = new ContentValues();
                         values.put("media_type", 1);
                         resolver.update(uri, values, null, null);
 
-                        // Delete song from MediaStore and database.
+                        // Delete song from MediaStore.
                         int rowsAffected = resolver.delete(uri, null, null);
                         switch (rowsAffected) {
                             case 0:
@@ -198,11 +218,7 @@ public abstract class SongsListFragment extends ListFragment<Song> {
                                 break;
                             default:
                                 throw new RuntimeException("Duplicate song");
-                        }
-                        getDbHelper().deleteSong(song);
-
-                        Utils.showToast(getActivity(), R.string.deleted, song);
-                        removeListItem(position);
+                        }*/
                     } catch (Exception ex) {
                         Log.e(TAG, "Error deleting song", ex);
                         Utils.showErrorDialog(getActivity(), ex);

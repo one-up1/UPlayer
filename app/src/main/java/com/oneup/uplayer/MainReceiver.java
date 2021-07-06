@@ -31,6 +31,7 @@ public class MainReceiver extends BroadcastReceiver {
 
         switch (action) {
             case Intent.ACTION_SCREEN_ON:
+            case Intent.ACTION_USER_PRESENT:
                 screenOn();
                 break;
             case Intent.ACTION_HEADSET_PLUG:

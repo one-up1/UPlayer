@@ -137,6 +137,7 @@ public class MainService extends Service implements
         mainReceiver = new MainReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_USER_PRESENT);
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(mainReceiver, filter);
 

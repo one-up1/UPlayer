@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -28,28 +29,34 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvVolume"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:gravity="center_vertical"
-        android:padding="@dimen/notification_margin"
-        style="@style/TextAppearance.Compat.Notification" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <ImageButton
-        android:id="@+id/ibVolumeDown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_notification_volume_down"
-        android:contentDescription="@string/volume_down"
-        style="@style/NotificationButton.Small"  />
+        <TextView
+            android:id="@+id/tvVolume"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/NotificationVolumeText" />
 
-    <ImageButton
-        android:id="@+id/ibVolumeUp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_notification_volume_up"
-        android:contentDescription="@string/volume_up"
-        style="@style/NotificationButton.Small" />
+        <ImageButton
+            android:id="@+id/ibVolumeDown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_notification_volume_down"
+            android:contentDescription="@string/volume_down"
+            style="@style/NotificationButton"  />
+
+        <ImageButton
+            android:id="@+id/ibVolumeUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_notification_volume_up"
+            android:contentDescription="@string/volume_up"
+            style="@style/NotificationButton" />
+
+    </LinearLayout>
 
 </LinearLayout>

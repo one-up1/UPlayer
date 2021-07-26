@@ -14,17 +14,14 @@
     </style>
 
     <style name="NotificationButton" parent="Widget.AppCompat.ImageButton">
-        <item name="android:layout_marginStart">@dimen/notification_margin</item>
-        <item name="android:layout_marginEnd">@dimen/notification_margin</item>
+        <item name="android:layout_marginStart">6dp</item>
+        <item name="android:layout_marginEnd">6dp</item>
         <item name="android:background">@drawable/notification_button</item>
     </style>
 
-    <style name="NotificationButton.Small" parent="NotificationButton">
-        <item name="android:layout_gravity">center_vertical</item>
-    </style>
-
-    <style name="NotificationButton.Large" parent="NotificationButton">
-        <item name="android:layout_marginTop">@dimen/notification_margin</item>
+    <style name="NotificationVolumeText" parent="TextAppearance.Compat.Notification">
+        <item name="android:paddingStart">3dp</item>
+        <item name="android:paddingEnd">3dp</item>
     </style>
 
 </resources>

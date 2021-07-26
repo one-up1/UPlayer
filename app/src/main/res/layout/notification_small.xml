@@ -33,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:padding="2dp"
+        android:padding="@dimen/notification_margin"
         style="@style/TextAppearance.Compat.Notification" />
 
     <ImageButton
@@ -41,13 +41,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_notification_volume_down"
-        android:contentDescription="@string/volume_down" />
+        android:contentDescription="@string/volume_down"
+        style="@style/NotificationButton.Small"  />
 
     <ImageButton
         android:id="@+id/ibVolumeUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_notification_volume_up"
-        android:contentDescription="@string/volume_up" />
+        android:contentDescription="@string/volume_up"
+        style="@style/NotificationButton.Small" />
 
 </LinearLayout>

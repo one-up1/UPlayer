@@ -34,4 +34,6 @@
 
     <dimen name="design_tab_text_size" tools:ignore="UnusedResources">9sp</dimen>
     <dimen name="design_tab_text_size_2line" tools:ignore="UnusedResources">9sp</dimen>
+
+    <dimen name="notification_margin">6dp</dimen>
 </resources>

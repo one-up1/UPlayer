@@ -79,6 +79,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/notification_margin"
         android:orientation="horizontal">
 
         <ImageButton
@@ -86,27 +87,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification_edit_song"
-            android:contentDescription="@string/edit_song" />
+            android:contentDescription="@string/edit_song"
+            style="@style/NotificationButton.Large" />
 
         <ImageButton
             android:id="@+id/ibPausePlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/pause_play" />
+            android:contentDescription="@string/pause_play"
+            style="@style/NotificationButton.Large" />
 
         <ImageButton
             android:id="@+id/ibNext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification_next"
-            android:contentDescription="@string/next" />
+            android:contentDescription="@string/next"
+            style="@style/NotificationButton.Large" />
 
         <ImageButton
             android:id="@+id/ibStop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification_stop"
-            android:contentDescription="@string/stop" />
+            android:contentDescription="@string/stop"
+            style="@style/NotificationButton.Large" />
 
         <TextView
             android:id="@+id/tvVolume"
@@ -114,7 +119,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="end|center_vertical"
-            android:padding="2dp"
+            android:padding="@dimen/notification_margin"
             style="@style/TextAppearance.Compat.Notification" />
 
         <ImageButton
@@ -122,14 +127,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification_volume_down"
-            android:contentDescription="@string/stop" />
+            android:contentDescription="@string/stop"
+            style="@style/NotificationButton.Large" />
 
         <ImageButton
             android:id="@+id/ibVolumeUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification_volume_up"
-            android:contentDescription="@string/stop" />
+            android:contentDescription="@string/stop"
+            style="@style/NotificationButton.Large" />
 
     </LinearLayout>
 

@@ -39,7 +39,7 @@
             android:id="@+id/tvVolume"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/NotificationVolumeText" />
+            style="@style/TextAppearance.Compat.Notification" />
 
         <ImageButton
             android:id="@+id/ibVolumeDown"
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification_volume_down"
             android:contentDescription="@string/volume_down"
-            style="@style/NotificationButton"  />
+            style="@style/NotificationButton.Volume"  />
 
         <ImageButton
             android:id="@+id/ibVolumeUp"
@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_notification_volume_up"
             android:contentDescription="@string/volume_up"
-            style="@style/NotificationButton" />
+            style="@style/NotificationButton.Volume" />
 
     </LinearLayout>
 

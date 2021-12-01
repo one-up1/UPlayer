@@ -13,9 +13,6 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.View;
@@ -73,9 +70,9 @@ public class MainService extends Service implements
     private boolean prepared;
     private boolean completed;
 
-    private MediaSessionCompat mediaSession;
+    /*private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder playbackState;
-    private MediaMetadataCompat.Builder mediaMetadata;
+    private MediaMetadataCompat.Builder mediaMetadata;*/
 
     private RemoteViews notificationLayout;
     private RemoteViews notificationLayoutExpanded;
@@ -111,7 +108,7 @@ public class MainService extends Service implements
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
 
-        mediaSession = new MediaSessionCompat(this, TAG);
+        /*mediaSession = new MediaSessionCompat(this, TAG);
         mediaSession.setActive(true);
         mediaSession.setCallback(new MediaSessionCallback());
 
@@ -121,13 +118,13 @@ public class MainService extends Service implements
                 PlaybackStateCompat.ACTION_PLAY |
                 PlaybackStateCompat.ACTION_STOP |
                 PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS |
-                PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT);*/
         /*playbackState.addCustomAction("com.oneup.action.VOLUME_DOWN",
                 getString(R.string.volume_down), R.drawable.ic_action_volume_down);
         playbackState.addCustomAction(new PlaybackStateCompat.CustomAction.Builder("volume_up",
                 getString(R.string.volume_up), R.drawable.ic_notification_volume_up).build());
         setSessionToken(mediaSession.getSessionToken());*/
-        mediaMetadata = new MediaMetadataCompat.Builder();
+        //mediaMetadata = new MediaMetadataCompat.Builder();
 
         NotificationChannel notificationChannel = new NotificationChannel(TAG,
                 getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW);
@@ -220,9 +217,9 @@ public class MainService extends Service implements
         running = false;
         savePlaylist();
 
-        if (mediaSession != null) {
+        /*if (mediaSession != null) {
             mediaSession.release();
-        }
+        }*/
 
         if (player != null) {
             player.stop();
@@ -620,20 +617,20 @@ public class MainService extends Service implements
         // Get current song from playlist.
         Song song = getSong();
         dbHelper.querySong(song);
-        mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.getDuration());
+        //mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.getDuration());
 
         // Set song title.
-        mediaMetadata.putText(MediaMetadataCompat.METADATA_KEY_TITLE, song.getTitle());
+        //mediaMetadata.putText(MediaMetadataCompat.METADATA_KEY_TITLE, song.getTitle());
         //mediaMetadata.putText(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, song.getStyledTitle());
         setTextViewText(true, R.id.tvSongTitle, song.getStyledTitle());
 
         // Set song artist.
-        mediaMetadata.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
-                song.getArtist() + " (" + volume + ")");
+        /*mediaMetadata.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
+                song.getArtist() + " (" + volume + ")");*/
         setTextViewText(true, R.id.tvSongArtist, song.getArtist());
 
         // Set song tag.
-        mediaMetadata.putString(MediaMetadataCompat.METADATA_KEY_GENRE, song.getTag());
+        //mediaMetadata.putString(MediaMetadataCompat.METADATA_KEY_GENRE, song.getTag());
         setTextViewText(false, R.id.tvSongTag, song.getTag());
 
         // Set the names of the playlists the song is on, marking the current playlist.
@@ -653,7 +650,7 @@ public class MainService extends Service implements
                 }
             }
         }
-        mediaMetadata.putText(MediaMetadataCompat.METADATA_KEY_ALBUM, playlistNames);
+        //mediaMetadata.putText(MediaMetadataCompat.METADATA_KEY_ALBUM, playlistNames);
         setTextViewText(false, R.id.tvSongPlaylistNames,
                 playlistNames.length() == 0 ? null : playlistNames);
 
@@ -663,14 +660,14 @@ public class MainService extends Service implements
         if (hasSongsLeft()) {
             left = (songs.size() - playlist.getSongIndex() - 1) + " / " + left;
         }
-        mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, songs.size());
+        //mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, songs.size());
         long trackNumber = playlist.getSongIndex() + 1;
-        mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, trackNumber);
+        //mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, trackNumber);
         setTextViewText(false, R.id.tvPlaylistPosition, getString(
                 R.string.playlist_position, trackNumber, songs.size(), left));
 
         // Set song year.
-        mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_YEAR, song.getYear());
+        //mediaMetadata.putLong(MediaMetadataCompat.METADATA_KEY_YEAR, song.getYear());
         setTextViewText(false, R.id.tvSongYear,
                 song.getYear() == 0 ? null : Integer.toString(song.getYear()));
 
@@ -682,7 +679,7 @@ public class MainService extends Service implements
         setTextViewText(true, R.id.tvVolume, Integer.toString(volume));
 
         // Update MediaSession.
-        if (prepared) {
+        /*if (prepared) {
             if (player.isPlaying()) {
                 playbackState.setState(PlaybackStateCompat.STATE_PLAYING,
                         player.getCurrentPosition(), 1f);
@@ -694,7 +691,7 @@ public class MainService extends Service implements
             playbackState.setState(PlaybackStateCompat.STATE_STOPPED, 0L, 0f);
         }
         mediaSession.setPlaybackState(playbackState.build());
-        mediaSession.setMetadata(mediaMetadata.build());
+        mediaSession.setMetadata(mediaMetadata.build());*/
 
         // Update notification and PlaylistActivity.
         startForeground(1, notification);
@@ -751,7 +748,7 @@ public class MainService extends Service implements
         }
     }
 
-    private class MediaSessionCallback extends MediaSessionCompat.Callback {
+    //private class MediaSessionCallback extends MediaSessionCompat.Callback {
         /*@Override
         public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
             Log.d(TAG, "MediaSessionCallback.onMediaButtonEvent()");
@@ -765,7 +762,7 @@ public class MainService extends Service implements
             return super.onMediaButtonEvent(mediaButtonEvent);
         }*/
 
-        @Override
+        /*@Override
         public void onPlay() {
             Log.d(TAG, "MediaSessionCallback.onPlay()");
             pausePlay(true);
@@ -787,13 +784,13 @@ public class MainService extends Service implements
         public void onSkipToNext() {
             Log.d(TAG, "MediaSessionCallback.onSkipToNext()");
             volumeUp();
-        }
+        }*/
 
         /*@Override
         public void onCustomAction(String action, Bundle extras) {
             Log.d(TAG, "onCustomAction(" + action + ")");
         }*/
-    }
+    //}
 
     public class MainBinder extends Binder {
         public MainService getService() {

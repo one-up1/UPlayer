@@ -33,6 +33,7 @@ public class DateTimeActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_date_time);
         setTitle(getIntent().getIntExtra(EXTRA_TITLE_ID, 0));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         calendar = new Calendar();
         if (getIntent().hasExtra(EXTRA_TIME)) {
@@ -66,6 +67,8 @@ public class DateTimeActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.ok) {
             ok();
+        } else if (id == android.R.id.home) {
+            finish();
         } else {
             return super.onOptionsItemSelected(item);
         }

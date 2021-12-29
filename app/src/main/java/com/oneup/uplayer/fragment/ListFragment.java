@@ -93,6 +93,17 @@ public abstract class ListFragment<T>
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            getActivity().finish();
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+
+    @Override
     public boolean onContextItemSelected(MenuItem item) {
         // getUserVisibleHint() or the wrong fragment may receive the onContextItemSelected() call,
         // because there are multiple fragments with the same context menu item ID's.

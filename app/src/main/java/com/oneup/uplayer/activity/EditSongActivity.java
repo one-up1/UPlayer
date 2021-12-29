@@ -58,6 +58,7 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_song);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         dbHelper = new DbHelper(this);
 
@@ -149,6 +150,8 @@ public class EditSongActivity extends AppCompatActivity implements View.OnClickL
             Utils.showToast(this, R.string.song_updated);
             MainService.update(this, false, song);
 
+            finish();
+        } else if (id == android.R.id.home) {
             finish();
         } else {
             return super.onOptionsItemSelected(item);

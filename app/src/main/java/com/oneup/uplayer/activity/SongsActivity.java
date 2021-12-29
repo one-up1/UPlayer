@@ -13,6 +13,7 @@ public class SongsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         FrameLayout container = new FrameLayout(this);
         container.setId(R.id.container);

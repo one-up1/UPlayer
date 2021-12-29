@@ -23,6 +23,7 @@ public class FilterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -48,6 +49,8 @@ public class FilterActivity extends AppCompatActivity {
                     .putExtra(EXTRA_VALUES, filterFragment.getValues())
                     .putExtra(EXTRA_SELECTION, filterFragment.getSelection())
                     .putExtra(EXTRA_SELECTION_ARGS, filterFragment.getSelectionArgs()));
+            finish();
+        } else if (id == android.R.id.home) {
             finish();
         } else {
             return super.onOptionsItemSelected(item);

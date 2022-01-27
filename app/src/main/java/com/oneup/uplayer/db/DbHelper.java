@@ -118,6 +118,9 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String ORDER_BY_ARCHIVED =
             "(CASE WHEN " + StatColumns.ARCHIVED + " IS NULL THEN 0 ELSE 1 END)";
 
+    private static final String SYNC_EXCLUDE =
+            MediaStore.Audio.AudioColumns.ARTIST + "!='<unknown>'";
+
     private static final String BACKUP_FILENAME = "UPlayer.json";
 
     private final Context context;
@@ -779,7 +782,7 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Artist._ID,
                                 Artist.ARTIST
                         },
-                        new int[]{1}, null, null, null, 0);
+                        new int[]{1}, null, SYNC_EXCLUDE, null, 0);
 
                 results[1] = syncTable(context, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         db, TABLE_SONGS,
@@ -792,7 +795,8 @@ public class DbHelper extends SQLiteOpenHelper {
                                 Song.YEAR
                         },
                         new int[]{1, 2, 3, 4}, new int[]{5},
-                        Song.IS_MUSIC + "=1", Song.ADDED, time);
+                        SYNC_EXCLUDE + " AND " + Song.IS_MUSIC + "=1",
+                        Song.ADDED, time);
 
                 // Update artists when songs have been inserted or deleted.
                 if (results[1].rowsInserted > 0 || results[1].rowsDeleted > 0) {

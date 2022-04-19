@@ -127,19 +127,26 @@ public abstract class ListFragment<T>
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         position = getListItemPosition(position);
-        onListItemClick(position, data.get(position));
+        if (position != -1) {
+            onListItemClick(position, data.get(position));
+        }
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         position = getListItemPosition(position);
-        return onListItemLongClick(position, data.get(position));
+        if (position != -1) {
+            return onListItemLongClick(position, data.get(position));
+        }
+        return false;
     }
 
     @Override
     public void onClick(View v) {
         int position = getListItemPosition(v);
-        onListItemViewClick(v.getId(), position, data.get(position));
+        if (position != -1) {
+            onListItemViewClick(v.getId(), position, data.get(position));
+        }
     }
 
     public void reloadData() {

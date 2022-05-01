@@ -41,8 +41,9 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".activity.PlaylistActivity" />
-            <!-- android:launchMode="singleInstance" -->
+            android:name=".activity.PlaylistActivity"
+            android:launchMode="singleInstance" />
+        <!-- android:launchMode="singleInstance" to prevent other activities from showing on close -->
 
         <activity
             android:name=".activity.StatisticsActivity"

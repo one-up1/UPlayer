@@ -2,6 +2,7 @@ package com.oneup.uplayer.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -37,6 +38,7 @@ public class LogActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (getIntent().hasExtra(EXTRA_TITLE)) {
             setTitle(getIntent().getCharSequenceExtra(EXTRA_TITLE));
@@ -66,6 +68,17 @@ public class LogActivity extends AppCompatActivity
         logFragment.setSelection(getIntent().getStringExtra(EXTRA_SELECTION));
         logFragment.setSelectionArgs(getIntent().getStringArrayExtra(EXTRA_SELECTION_ARGS));
         logFragment.setArtist(getIntent().getBooleanExtra(EXTRA_QUERY_ARTIST, true));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     @Override

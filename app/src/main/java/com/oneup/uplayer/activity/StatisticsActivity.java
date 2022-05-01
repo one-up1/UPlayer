@@ -1,6 +1,8 @@
 package com.oneup.uplayer.activity;
 
 import android.os.Bundle;
+import android.view.MenuItem;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.gridlayout.widget.GridLayout;
 
@@ -30,6 +32,7 @@ public class StatisticsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (getIntent().hasExtra(EXTRA_TITLE)) {
             setTitle(getIntent().getCharSequenceExtra(EXTRA_TITLE));
@@ -74,6 +77,17 @@ public class StatisticsActivity extends AppCompatActivity {
                     stats.getTotal().getArtistCount() > 1 ? formatAvgTimesPlayed(
                             stats.getTimesPlayed(), stats.getTotal().getArtistCount()) : null);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     private String formatAvgTimesPlayed(int timesPlayed, int total) {
